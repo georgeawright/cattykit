@@ -26,21 +26,27 @@ class Group(Object):
         pass
 
     @property
-    def leftmost_letter():
+    def letters(self):
+        letters = []
+        for o in self.objects:
+            letters += o.letters
+
+    @property
+    def leftmost_letter(self):
         pass
 
     @property
-    def rightmost_letter():
+    def rightmost_letter(self):
         pass
 
-    def is_leftmost_in_string() -> bool:
+    def is_leftmost_in_string(self) -> bool:
         pass
 
-    def is_rightmost_in_string() -> bool:
+    def is_rightmost_in_string(self) -> bool:
         pass
 
-    def get_left_neighbour():
+    def get_left_neighbour(self):
         pass
 
-    def get_right_neighbour():
+    def get_right_neighbour(self):
         pass
