@@ -1,7 +1,7 @@
 from copycat.codelets.scouts import CorrespondenceScout
 
 
-class BottomUpCorrespondenceScount(CorrespondenceScout):
+class BottomUpCorrespondenceScout(CorrespondenceScout):
     """Chooses an object each from the initial and target strings
     probabilistically by inter-string-salience.
     Finds all concept mappings between nodes at most one link away.

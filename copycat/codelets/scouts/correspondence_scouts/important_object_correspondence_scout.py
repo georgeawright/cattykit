@@ -1,7 +1,7 @@
 from copycat.codelets.scouts import CorrespondenceScout
 
 
-class ImportantObjectCorrespondenceScount(CorrespondenceScout):
+class ImportantObjectCorrespondenceScout(CorrespondenceScout):
     """Chooses an object from the intial string probabilistically by importance.
     Probabilistically picks a description of the object and looks for an object
     in the target string with the same description modulo the appropriate slippage
