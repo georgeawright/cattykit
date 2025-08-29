@@ -2,6 +2,16 @@ class Copycat:
     def __init__(self):
         pass
 
+    @classmethod
+    def initialize(
+        cls,
+        initial_string: str,
+        modified_string: str,
+        target_string: str,
+        random_state: int = 1,
+    ):
+        return cls()
+
     def run(self):
         pass
 
