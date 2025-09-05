@@ -7,24 +7,26 @@ from .coderack_bin import CoderackBin
 # quantizing urgency into 7 levels reduces jitter and the chasing of tiny differences
 # it avoids starving low urgency codelets by giving them some small chance of running.
 
-MAX_CODERACK_POPULATION = 100  # check this
 URGENCY_TEMPERATURE_FUNCTION = lambda u, t: (u + 1) ** ((110 - t) / 15)
 
 
 class Coderack:
-    def __init__(self, urgency_bins: list, urgency_lookup_table: list):
+    def __init__(
+        self, urgency_bins: list, urgency_lookup_table: list, max_population: int
+    ):
         self.urgency_bins = urgency_bins
         self.urgency_lookup_table = urgency_lookup_table
+        self.max_population = max_population
         self.number_of_codelets_run = 0
 
     @classmethod
-    def create(cls, number_of_bins):
+    def create(cls, number_of_bins, max_population):
         urgency_bins = [CoderackBin() for _ in range(number_of_bins)]
         urgency_temperature_lookup_table = [
-            [URGENCY_TEMPERATURE_FUNCTION(u, t) for u in range(urgency_bins)]
+            [URGENCY_TEMPERATURE_FUNCTION(u, t) for u in range(number_of_bins)]
             for t in range(101)
         ]
-        return cls(urgency_bins, urgency_temperature_lookup_table)
+        return cls(urgency_bins, urgency_temperature_lookup_table, max_population)
 
     @property
     def codelets(self):
@@ -39,22 +41,23 @@ class Coderack:
         return sum([len(urgency_bin) for urgency_bin in self.urgency_bins])
 
     def get_urgency_bin_weights(self, temperature: float):
-        temperature_index = round(self.temperature * 100, 0)
+        temperature_index = int(round(temperature * 100, 0))
         return self.urgency_lookup_table[temperature_index]
 
     def empty(self):
         self.urgency_bins = [CoderackBin() for _ in self.urgency_bins]
 
     def post(self, codelet: "Codelet", temperature: float):
-        if self.population > MAX_CODERACK_POPULATION:
+        if self.population >= self.max_population:
             self.remove_codelets(1, temperature)
         self._post(codelet)
 
     def post_many(self, codelets: list, temperature: float):
         number_of_codelets_to_remove = max(
-            self.population + len(codelets) - MAX_CODERACK_POPULATION, 0
+            self.population + len(codelets) - self.max_population, 0
         )
-        self.remove_codelets(number_to_remove, temperature)
+        if number_of_codelets_to_remove > 0:
+            self.remove_codelets(number_of_codelets_to_remove, temperature)
         for codelet in codelets:
             self._post(codelet)
 
@@ -67,12 +70,16 @@ class Coderack:
             * (1 + urgency_bin_weights[-1] - urgency_bin_weights[codelet.urgency_bin])
             for codelet in self.codelets
         ]
-        codelets_to_remove = random.choice(self.codelets, weights=removal_probabilities)
+        codelets_to_remove = random.choices(
+            self.codelets,
+            weights=removal_probabilities,
+            k=number_to_remove,
+        )
         for codelet in codelets_to_remove:
             self._remove(codelet)
 
     def choose(self, temperature: float):
-        chosen_urgency_bin = random.choice(
+        chosen_urgency_bin = random.choices(
             self.urgency_bins,
             weights=[
                 urgency_bin.total_urgency * urgency_bin_weight
@@ -80,13 +87,16 @@ class Coderack:
                     self.urgency_bins, self.get_urgency_bin_weights(temperature)
                 )
             ],
-        )
-        chosen_codelet = chosen_urgency_bin.choose()
+            k=1,
+        )[0]
+        chosen_codelet = random.choice(chosen_urgency_bin.codelets)
         self.number_of_codelets_run += 1
-        return codelet
+        return chosen_codelet
 
     def _post(self, codelet):
-        urgency_bin_number = (codelet.urgency * 10) % len(self.urgency_bins)
+        urgency_bin_number = int(
+            round(codelet.urgency * (len(self.urgency_bins) - 1), 0)
+        )
         self.urgency_bins[urgency_bin_number].add(codelet)
         codelet.birth_time = self.number_of_codelets_run
 
