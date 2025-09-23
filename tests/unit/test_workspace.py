@@ -1,1 +1,1 @@
-from copycat import .Workspace
+from copycat import Workspace

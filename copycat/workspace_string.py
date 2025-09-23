@@ -1,24 +1,30 @@
+from collections import defaultdict
+
+
 class WorkspaceString:
     def __init__(self):
         self.letters = []
-        self.object_positions = {}
+        self.object_positions = defaultdict(list)
 
-        self.proposed_bonds_by_role = {}
-        self.bonds_by_role = {}
-        self.bonds_by_position = {}
+        self.proposed_bonds_by_role = defaultdict(lambda: defaultdict(list))
+        self.bonds_by_role = defaultdict(lambda: defaultdict(list))
+        self.bonds_by_position = defaultdict(lambda: defaultdict(list))
 
-        self.proposed_groups = {}
-        self.groups = {}
+        self._proposed_groups = defaultdict(lambda: defaultdict(list))
+        self._groups = {}
 
     @property
     def proposed_bonds(self):
+        print(self.proposed_bonds_by_role)
         unique_bonds = []
         added = set()
         for from_index, bonds in self.proposed_bonds_by_role.items():
-            for to_index, bond in bonds:
-                if bond in added:
-                    continue
-                unique_bonds.append(bond)
+            for to_index, bond_list in bonds.items():
+                for bond in bond_list:
+                    if bond in added:
+                        continue
+                    unique_bonds.append(bond)
+                    added.add(bond)
         return unique_bonds
 
     @property
@@ -26,26 +32,28 @@ class WorkspaceString:
         unique_bonds = []
         added = set()
         for from_index, bonds in self.bonds_by_role.items():
-            for to_index, bond in bonds:
+            for to_index, bond in bonds.items():
+                if bond is None:
+                    continue
                 if bond in added:
                     continue
                 unique_bonds.append(bond)
+                added.add(bond)
         return unique_bonds
 
     @property
     def proposed_groups(self):
         return [
             group
-            for left_index, groups in self.proposed_groups.items()
-            for right_index, group in groups
+            for left_index, groups in self._proposed_groups.items()
+            for right_index, group_list in groups.items()
+            for group in group_list
         ]
 
     @property
     def groups(self):
         return [
-            group
-            for left_index, groups in self.groups.items()
-            for right_index, group in groups
+            group for left_index, group in self._groups.items() if group is not None
         ]
 
     @property
@@ -80,18 +88,18 @@ class WorkspaceString:
             self.bonds_by_position[bond.left_node.id][bond.right_node.id] = None
 
     def add_proposed_group(self, group):
-        self.proposed_group[group.left_node.id][group.right_node.id].append(group)
+        self._proposed_groups[group.left_node.id][group.right_node.id].append(group)
 
     def delete_proposed_group(self, group):
-        self.proposed_group[group.left_node.id][group.right_node.id].remove(group)
+        self._proposed_groups[group.left_node.id][group.right_node.id].remove(group)
 
     def add_group(self, group):
-        self.groups[group.left_node.id] = group
+        self._groups[group.left_node.id] = group
         self.object_positions[group.left_position].append(group)
         self.object_positions[group.right_position].append(group)
 
     def delete_group(self, group):
-        self.groups[group.left_node.id] = None
+        self._groups[group.left_node.id] = None
         self.object_positions[group.left_position].remove(group)
         self.object_positions[group.right_position].remove(group)
 
