@@ -49,7 +49,7 @@ def test_add_and_delete_proposed_bond():
     assert 0 == len(workspace_string.proposed_bonds)
 
 
-def test_add_and_delete_sameness_bond():
+def test_add_get_and_delete_sameness_bond():
     workspace_string = WorkspaceString()
     assert 0 == len(workspace_string.bonds)
     from_node = MockNode(id="a")
@@ -61,8 +61,10 @@ def test_add_and_delete_sameness_bond():
         right_node=to_node,
         is_sameness_bond=True,
     )
+    assert False == workspace_string.get_bond_if_present(bond)
     workspace_string.add_bond(bond)
     assert 1 == len(workspace_string.bonds)
+    assert bond == workspace_string.get_bond_if_present(bond)
     workspace_string.delete_bond(bond)
     assert 0 == len(workspace_string.bonds)
 
@@ -79,8 +81,10 @@ def test_add_and_delete_non_sameness_bond():
         right_node=to_node,
         is_sameness_bond=False,
     )
+    assert False == workspace_string.get_bond_if_present(bond)
     workspace_string.add_bond(bond)
     assert 1 == len(workspace_string.bonds)
+    assert bond == workspace_string.get_bond_if_present(bond)
     workspace_string.delete_bond(bond)
     assert 0 == len(workspace_string.bonds)
 
@@ -99,7 +103,7 @@ def test_add_and_delete_proposed_group():
     assert 0 == len(workspace_string.proposed_groups)
 
 
-def test_add_and_delete_group():
+def test_add_get_and_delete_group():
     workspace_string = WorkspaceString()
     assert 0 == len(workspace_string.proposed_groups)
     left_node = MockNode(id="a")
@@ -107,7 +111,9 @@ def test_add_and_delete_group():
     group = MockGroup(
         left_node=left_node, right_node=right_node, left_position=1, right_position=2
     )
+    assert False == workspace_string.get_group_if_present(group)
     workspace_string.add_group(group)
     assert 1 == len(workspace_string.groups)
+    assert group == workspace_string.get_group_if_present(group)
     workspace_string.delete_group(group)
     assert 0 == len(workspace_string.groups)

@@ -65,7 +65,7 @@ class WorkspaceString:
 
     @property
     def non_string_spanning_objects(self):
-        pass
+        return [obj for obj in self.objects if not obj.spans_whole_string]
 
     def add_letter(self, letter):
         self.letters.append(letter)
@@ -94,6 +94,13 @@ class WorkspaceString:
             self.bonds_by_role[bond.to_node.id][bond.from_node.id] = None
             self.bonds_by_position[bond.left_node.id][bond.right_node.id] = None
 
+    def get_bond_if_present(self, bond):
+        """Return the equivalent bond if it is already in the string, else False."""
+        existing_bond = self.bonds_by_role[bond.from_node.id][bond.to_node.id]
+        if existing_bond == bond:
+            return existing_bond
+        return False
+
     def add_proposed_group(self, group):
         """Add to a list of proposed groups spanning from one node to another."""
         self._proposed_groups[group.left_node.id][group.right_node.id].append(group)
@@ -114,6 +121,16 @@ class WorkspaceString:
         self.object_positions[group.left_position].remove(group)
         self.object_positions[group.right_position].remove(group)
 
+    def get_group_if_present(self, group):
+        """Return the equivalent group if it is already in the string, else False."""
+        try:
+            existing_group = self._groups[group.left_node.id]
+        except KeyError:
+            return False
+        if existing_group == group:
+            return existing_group
+        return False
+
     def choose_object(self, temperature, method):
         """Return an object probabilistically according to temperature and method."""
         weights = [temperature_adjust(method(obj), temperature) for obj in self.objects]
@@ -121,4 +138,9 @@ class WorkspaceString:
 
     def choose_leftmost_object(self):
         """Returns one of the leftmost objects probabilistically."""
-        pass
+        leftmost_objects = [obj for obj in self.objects if obj.is_leftmost]
+        weights = [obj.relative_importance for obj in leftmost_objects]
+        try:
+            return random.choices(leftmost_objects, weights=weights, k=1)
+        except IndexError:
+            return None
