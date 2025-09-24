@@ -1,6 +1,6 @@
 import pytest
 
-from copycat.formulas import *
+from copycat.tools import *
 
 
 @pytest.mark.parametrize(
