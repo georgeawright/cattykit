@@ -1,8 +1,8 @@
+import random
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
-import random
 
 from copycat import Coderack
 

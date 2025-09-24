@@ -105,7 +105,7 @@ def test_add_and_delete_proposed_group():
 
 def test_add_get_and_delete_group():
     workspace_string = WorkspaceString()
-    assert 0 == len(workspace_string.proposed_groups)
+    assert 0 == len(workspace_string.groups)
     left_node = MockNode(id="a")
     right_node = MockNode(id="b")
     group = MockGroup(

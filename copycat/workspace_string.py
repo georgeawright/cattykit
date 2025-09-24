@@ -18,7 +18,6 @@ class WorkspaceString:
 
     @property
     def proposed_bonds(self):
-        print(self.proposed_bonds_by_role)
         unique_bonds = []
         added = set()
         for from_index, bonds in self.proposed_bonds_by_role.items():
