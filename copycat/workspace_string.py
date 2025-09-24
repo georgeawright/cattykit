@@ -136,11 +136,11 @@ class WorkspaceString:
         weights = [temperature_adjust(method(obj), temperature) for obj in self.objects]
         return random.choices(self.objects, weights=weights, k=1)
 
-    def choose_leftmost_object(self):
+    def choose_from_leftmost_objects(self):
         """Returns one of the leftmost objects probabilistically."""
         leftmost_objects = [obj for obj in self.objects if obj.is_leftmost]
         weights = [obj.relative_importance for obj in leftmost_objects]
         try:
-            return random.choices(leftmost_objects, weights=weights, k=1)
+            return random.choices(leftmost_objects, weights=weights, k=1)[0]
         except IndexError:
             return None

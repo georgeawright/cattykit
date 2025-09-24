@@ -117,3 +117,22 @@ def test_add_get_and_delete_group():
     assert group == workspace_string.get_group_if_present(group)
     workspace_string.delete_group(group)
     assert 0 == len(workspace_string.groups)
+
+
+def test_choose_from_leftmost_objects():
+    workspace_string = WorkspaceString()
+    a = SimpleNamespace(id="a", is_leftmost=True, relative_importance=0.1)
+    b = SimpleNamespace(id="b", is_leftmost=False, relative_importance=0.1)
+    c = SimpleNamespace(id="c", is_leftmost=False, relative_importance=0.1)
+    abc = SimpleNamespace(
+        left_node=a,
+        left_position=0,
+        right_position=2,
+        is_leftmost=True,
+        relative_importance=0.1,
+    )
+    workspace_string.add_letter(a)
+    workspace_string.add_letter(b)
+    workspace_string.add_letter(c)
+    workspace_string.add_group(abc)
+    assert workspace_string.choose_from_leftmost_objects() in (a, abc)

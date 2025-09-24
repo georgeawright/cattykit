@@ -2,8 +2,11 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
+import random
 
 from copycat import Coderack
+
+random.seed(1)
 
 
 @pytest.mark.parametrize(
