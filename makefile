@@ -1,2 +1,2 @@
 unit:
-	pipenv run python -m pytest tests/unit
+	uv run python -m pytest tests/unit
