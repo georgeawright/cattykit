@@ -1,9 +1,11 @@
 from types import SimpleNamespace
 
+import numpy as np
 import pytest
-import torch
 
 from copycat import Slipnet
+
+np.random.seed(0)
 
 
 def test_get_node_activation():
@@ -11,7 +13,7 @@ def test_get_node_activation():
     dog_node = SimpleNamespace(name="dog", activation=0.0)
     nodes = [cat_node, dog_node]
     node_index_lookup = {node.name: index for index, node in enumerate(nodes)}
-    node_activations = torch.tensor([node.activation for node in nodes])
+    node_activations = np.array([node.activation for node in nodes])
     slipnet = Slipnet(
         nodes, None, node_index_lookup, node_activations, None, None, 0.55, 3
     )
@@ -118,6 +120,15 @@ def test_update_activations_no_jumping(
 
     slipnet.update_activations()
 
-    assert slipnet.get_node_activation("cat") == expected_end_state["cat"]
-    assert slipnet.get_node_activation("dog") == expected_end_state["dog"]
-    assert slipnet.get_node_activation("animal") == expected_end_state["animal"]
+    assert np.isclose(
+        slipnet.get_node_activation("cat"),
+        expected_end_state["cat"],
+    )
+    assert np.isclose(
+        slipnet.get_node_activation("dog"),
+        expected_end_state["dog"],
+    )
+    assert np.isclose(
+        slipnet.get_node_activation("animal"),
+        expected_end_state["animal"],
+    )

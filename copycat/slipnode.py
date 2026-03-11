@@ -17,5 +17,9 @@ class Slipnode:
         self.clamp = False
         self.codelets = []
 
+    @property
+    def depth_factor(self) -> float:
+        return 1 / self.conceptual_depth if self.conceptual_depth > 0 else 0
+
     def is_active(self) -> bool:
         return self.activation >= 1.0
