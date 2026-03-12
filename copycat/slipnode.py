@@ -1,14 +1,20 @@
+from typing import Optional
+
+
 class Slipnode:
     def __init__(
         self,
         name: str,
-        intrinsic_link_length: float,  # intrinsic length of links of this node type
-        shrunk_link_length: float,
         conceptual_depth: float,
-        description_tester: callable,  # tests if this node can describe an object
+        intrinsic_link_length: Optional[float] = None,
+        shrunk_link_length: Optional[float] = None,
+        description_tester: Optional[callable] = None,
     ):
         self.name = name
         self.intrinsic_link_length = intrinsic_link_length
+        self.intrinsic_degree_of_association = (
+            1 - intrinsic_link_length if intrinsic_link_length is not None else None
+        )
         self.shrunk_link_length = shrunk_link_length
         self.conceptual_depth = conceptual_depth
         self.description_tester = description_tester

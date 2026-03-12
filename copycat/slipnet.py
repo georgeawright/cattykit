@@ -1,4 +1,9 @@
+from typing import Callable, Dict, List
+
 import numpy as np
+
+from .sliplink import Sliplink
+from .slipnode import Slipnode
 
 
 class Slipnet:
@@ -6,9 +11,9 @@ class Slipnet:
 
     def __init__(
         self,
-        nodes: list,  # a list of the nodes in the slipnet
+        nodes: List[Slipnode],  # a list of the nodes in the slipnet
         adjacency_table: np.ndarray,  # 2D adjacency table (from-node, to-node)
-        node_index_lookup: dict,  # mapping of node_id to index in adjacency table
+        node_index_lookup: Dict[str, int],  # maps node_id to index in adjacency table
         node_activations: np.ndarray,  # the activation value of each node
         clamped_nodes: np.ndarray,  # nodes which should be clamped at full activation
         node_depth_factors: np.ndarray,  # the reciprocal of nodes' conceptual depth
@@ -30,8 +35,8 @@ class Slipnet:
     @classmethod
     def create(
         cls,
-        nodes: list,
-        links: list,
+        nodes: List[Slipnode],
+        links: List[Sliplink],
         full_activation_threshold: float = 0.55,
         full_activation_probability_exponent: int = 3,
     ):
@@ -54,6 +59,40 @@ class Slipnet:
             node_depth_factors,
             full_activation_threshold,
             full_activation_probability_exponent,
+        )
+
+    @classmethod
+    def from_json(cls, json_data: dict, description_testers: Dict[str, Callable]):
+        nodes = {
+            node_data["name"]: Slipnode(
+                name=node_data["name"],
+                conceptual_depth=node_data["conceptual_depth"],
+                intrinsic_link_length=node_data.get("intrinsic_link_length"),
+                shrunk_link_length=node_data.get("shrunk_link_length"),
+                description_tester=description_testers[
+                    node_data.get("description_tester")
+                ]
+                if node_data.get("description_tester") is not None
+                else None,
+            )
+            for node_data in json_data["nodes"]
+        }
+        links = [
+            Sliplink(
+                from_node=nodes[link_data["from_node"]],
+                to_node=nodes[link_data["to_node"]],
+                type_node=nodes[link_data.get("type_node")]
+                if link_data.get("type_node") is not None
+                else None,
+                fixed_length=link_data.get("fixed_length"),
+            )
+            for link_data in json_data["links"]
+        ]
+        return cls.create(
+            list(nodes.values()),
+            links,
+            json_data["full_activation_threshold"],
+            json_data["full_activation_probability_exponent"],
         )
 
     def get_node_activation(self, node_id):
