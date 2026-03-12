@@ -95,6 +95,9 @@ class Slipnet:
             json_data["full_activation_probability_exponent"],
         )
 
+    def __getitem__(self, node_id):
+        return self.nodes[self.node_index_lookup[node_id]]
+
     def get_node_activation(self, node_id):
         return self.node_activations[self.node_index_lookup[node_id]]
 

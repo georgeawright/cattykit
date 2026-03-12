@@ -2,8 +2,7 @@ from copycat.structure import Structure
 
 
 class Object(Structure):
-    def __init__(self, object_id: str, string, left_position: int, right_position: int):
-        self.object_id = object_id
+    def __init__(self, string, left_position: int, right_position: int):
         self.string = string
         self.left_position = left_position
         self.right_position = right_position

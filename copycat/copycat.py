@@ -58,13 +58,51 @@ class Copycat:
 
     def solve(self, string: str):
         """
+        Solve a string analogy problem (e.g. "abc -> abd ==> ijk -> ?")
+        """
+        self.input_string(string)
+        self.run()
+
+    def input_string(self, string: str):
+        """
         Initialize workspace with a problem (e.g. "abc -> abd ==> ijk -> ?")
         """
-        initial_string, rest = string.split("->")
-        modified_string, rest = rest.split("==>")
-        target_string, rest = rest.split("->")
-        answer_string, _ = rest.split("?")
-        raise NotImplementedError
+        initial_and_modified, target_and_answer = string.split("==>")
+        initial_string, modified_string = initial_and_modified.split("->")
+        target_string, answer_string = target_and_answer.split("->")
+        answer_string = answer_string.split("?")[0]
+        self.workspace.initial_string.letters = [
+            Letter(
+                string=self.workspace.initial_string,
+                letter_category=self.slipnet[char],
+                string_position=i,
+            )
+            for i, char in enumerate(initial_string.strip())
+        ]
+        self.workspace.modified_string.letters = [
+            Letter(
+                string=self.workspace.modified_string,
+                letter_category=self.slipnet[char],
+                string_position=i,
+            )
+            for i, char in enumerate(modified_string.strip())
+        ]
+        self.workspace.target_string.letters = [
+            Letter(
+                string=self.workspace.target_string,
+                letter_category=self.slipnet[char],
+                string_position=i,
+            )
+            for i, char in enumerate(target_string.strip())
+        ]
+        self.workspace.answer_string.letters = [
+            Letter(
+                string=self.workspace.answer_string,
+                letter_category=self.slipnet[char],
+                string_position=i,
+            )
+            for i, char in enumerate(answer_string.strip())
+        ]
 
     def run(self):
         pass
