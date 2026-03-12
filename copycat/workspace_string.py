@@ -8,11 +8,9 @@ class WorkspaceString:
     def __init__(self):
         self.letters = []
         self.object_positions = defaultdict(list)
-
         self.proposed_bonds_by_role = defaultdict(lambda: defaultdict(list))
         self.bonds_by_role = defaultdict(lambda: defaultdict(list))
         self.bonds_by_position = defaultdict(lambda: defaultdict(list))
-
         self._proposed_groups = defaultdict(lambda: defaultdict(list))
         self._groups = {}
 

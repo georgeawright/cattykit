@@ -14,7 +14,7 @@ class MockCorrespondence(NamedTuple):
 
 
 def test_add_and_delete_proposed_correspondence():
-    workspace = Workspace(None, None)
+    workspace = Workspace(None, None, None, None)
     assert 0 == len(workspace.proposed_correspondences)
     from_node = MockNode(id="a")
     to_node = MockNode(id="b")
@@ -26,7 +26,7 @@ def test_add_and_delete_proposed_correspondence():
 
 
 def test_add_get_and_delete_group():
-    workspace = Workspace(None, None)
+    workspace = Workspace(None, None, None, None)
     assert 0 == len(workspace.correspondences)
     from_node = MockNode(id="a")
     to_node = MockNode(id="b")
@@ -45,7 +45,7 @@ def test_letters_without_replacement():
     c = SimpleNamespace(replacement=None)
     letters = [a, b, c]
     initial_string = SimpleNamespace(letters=letters)
-    workspace = Workspace(initial_string, None)
+    workspace = Workspace(initial_string, None, None, None)
     assert 3 == len(workspace.letters_without_replacement)
     a.replacement = SimpleNamespace()
     assert 2 == len(workspace.letters_without_replacement)
@@ -62,7 +62,7 @@ def test_ungrouped_objects():
     objects = [a, b, c]
     initial_string = SimpleNamespace(objects=objects)
     target_string = SimpleNamespace(objects=[])
-    workspace = Workspace(initial_string, target_string)
+    workspace = Workspace(initial_string, None, target_string, None)
     assert 3 == len(workspace.ungrouped_objects)
     ab = SimpleNamespace(spans_whole_string=False, group=None)
     a.group = ab
@@ -91,7 +91,7 @@ def test_unbonded_objects():
     objects = [a, b, c]
     initial_string = SimpleNamespace(objects=objects)
     target_string = SimpleNamespace(objects=[])
-    workspace = Workspace(initial_string, target_string)
+    workspace = Workspace(initial_string, None, target_string, None)
     assert 3 == len(workspace.unbonded_objects)
     a_to_b = SimpleNamespace()
     a.bonds.append(a_to_b)
@@ -112,7 +112,7 @@ def test_uncorresponded_objects():
     y = SimpleNamespace(correspondence=None)
     z = SimpleNamespace(correspondence=None)
     target_string = SimpleNamespace(objects=[x, y, z])
-    workspace = Workspace(initial_string, target_string)
+    workspace = Workspace(initial_string, None, target_string, None)
     assert 6 == len(workspace.uncorresponded_objects)
     a_to_z = SimpleNamespace()
     a.correspondence = a_to_z

@@ -1,23 +1,55 @@
 from collections import defaultdict
 import itertools
 import random
+from typing import Dict, List, Optional
 
 from .tools import describe_count
+from .workspace_string import WorkspaceString
+from .structure import Structure
+from .structures import Correspondence, Replacement, Rule
 
 
 class Workspace:
-    def __init__(self, initial_string, target_string):
-        """The workspace contains an initial string and a target string.
-        These each contain objects (letters and groups), and bonds between objects.
-        The workspace also contains correspondences between objects in the two strings
-        and can contain a rule."""
+    def __init__(
+        self,
+        initial_string: WorkspaceString,
+        modified_string: WorkspaceString,
+        target_string: WorkspaceString,
+        answer_string: WorkspaceString,
+    ):
+        """
+        The workspace contains:
+        (e.g. abc -> abd ==> ijk -> ?)
+        - an initial string (abc),
+        - a modified string (abd),
+        - a target string (ijk),
+        - and an answer string (?).
+        These each contain:
+        - objects (letters and groups),
+        - and bonds between objects.
+        The workspace also contains
+        - inter-string correspondences between objects
+        - and can contain a rule.
+        """
         self.initial_string = initial_string
+        self.modified_string = modified_string
         self.target_string = target_string
-        self._proposed_correspondences = defaultdict(lambda: defaultdict(list))
-        self._correspondences = {}
-        self.replacements = []
-        self.rule = None
-        self.snag_structure_list = []
+        self.answer_string = answer_string
+        self._proposed_correspondences: Dict[
+            str, Dict[str, List[Correspondence]]
+        ] = defaultdict(lambda: defaultdict(list))
+        self._correspondences: Dict[str, Correspondence] = {}
+        self.replacements: List[Replacement] = []
+        self.rule: Optional[Rule] = None
+        self.snag_structure_list: List[Structure] = []
+
+    @classmethod
+    def setup(cls):
+        initial_string = WorkspaceString()
+        modified_string = WorkspaceString()
+        target_string = WorkspaceString()
+        answer_string = WorkspaceString()
+        return cls(initial_string, modified_string, target_string, answer_string)
 
     @property
     def letters(self):

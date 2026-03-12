@@ -1,4 +1,4 @@
-from copycat import Structure
+from copycat.structure import Structure
 
 
 class Description(Structure):

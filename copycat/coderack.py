@@ -20,13 +20,17 @@ class Coderack:
         self.number_of_codelets_run = 0
 
     @classmethod
-    def create(cls, number_of_bins, max_population):
+    def create(cls, number_of_bins: int, max_population: int):
         urgency_bins = [CoderackBin() for _ in range(number_of_bins)]
         urgency_temperature_lookup_table = [
             [URGENCY_TEMPERATURE_FUNCTION(u, t) for u in range(number_of_bins)]
             for t in range(101)
         ]
         return cls(urgency_bins, urgency_temperature_lookup_table, max_population)
+
+    @classmethod
+    def from_json(cls, json_data: dict):
+        return cls.create(json_data["number_of_bins"], json_data["max_population"])
 
     @property
     def codelets(self):
