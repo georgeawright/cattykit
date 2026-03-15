@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 
 from copycat import Copycat
@@ -10,9 +11,8 @@ def test_single_run():
     # initial set up
     copycat = Copycat.from_json(SLIPNET_JSON_FILE, CODERACK_JSON_FILE)
 
+    # coderack starts empty
     assert copycat.coderack.population == 0
-
-    copycat.solve("abc -> abd ==> ijk -> ?")
 
     # all node activations are zero except for initially clamped nodes
     active_node_count = 0
@@ -23,6 +23,10 @@ def test_single_run():
         else:
             assert copycat.slipnet.get_node_activation(node_id) == 0.0
     assert active_node_count == 2
+
+    # add problem to workspace
+    copycat._add_letters_to_workspace("abc -> abd ==> ijk -> ?")
+    copycat._add_initial_descriptions_to_workspace()
 
     # each string should have letter category and position descriptions
     assert {
@@ -96,6 +100,14 @@ def test_single_run():
         l.letter_category.name for l in copycat.workspace.answer_string.letters
     ] == []
 
+    copycat._post_intial_codelets()
+
     # 3 types of codelets have been added.
     # 2 for each workspace object (initial and target string objects)
     assert copycat.coderack.population == 36
+
+    copycat.slipnet.update_activations()
+
+    # letter category spreads activation to letters
+    assert 1.0 == copycat.slipnet.get_node_activation("letter_category")
+    assert np.isclose(0.03, copycat.slipnet.get_node_activation("a"))

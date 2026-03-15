@@ -69,6 +69,7 @@ class Copycat:
         self._add_letters_to_workspace(string)
         self._add_initial_descriptions_to_workspace()
         self._post_intial_codelets()
+        self.slipnet.update_activations()
         self.run()
 
     def _add_letters_to_workspace(self, string: str):

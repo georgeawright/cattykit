@@ -114,7 +114,6 @@ class Slipnet:
         self.node_activations = (
             self.node_activations
             + self._spread_activations()
-            # + self._boost_activations()
             + self._decay_activations()
         ).clip(0, 1)
         # here "clamp" is copycat terminology meaning to keep activation held at 1
