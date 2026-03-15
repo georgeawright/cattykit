@@ -14,6 +14,9 @@ class WorkspaceString:
         self._proposed_groups = defaultdict(lambda: defaultdict(list))
         self._groups = {}
 
+    def __len__(self):
+        return len(self.letters)
+
     @property
     def proposed_bonds(self):
         unique_bonds = []

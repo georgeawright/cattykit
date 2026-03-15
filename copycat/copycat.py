@@ -5,7 +5,7 @@ from .coderack_bin import CoderackBin
 from .slipnet import Slipnet
 from .workspace import Workspace
 from .workspace_string import WorkspaceString
-from .structures import Group, Letter
+from .structures import Description, Group, Letter
 
 DESCRIPTION_TESTERS = {
     # LENGTH
@@ -47,10 +47,10 @@ class Copycat:
 
     @classmethod
     def from_json(cls, slipnet_json_file: str, coderack_json_file: str):
-        with open("slipnet.json") as f:
+        with open(slipnet_json_file) as f:
             slipnet_json = json.load(f)
         slipnet = Slipnet.from_json(slipnet_json, DESCRIPTION_TESTERS)
-        with open("coderack.json") as f:
+        with open(coderack_json_file) as f:
             coderack_json = json.load(f)
         coderack = Coderack.from_json(coderack_json)
         workspace = Workspace.setup()
@@ -60,10 +60,11 @@ class Copycat:
         """
         Solve a string analogy problem (e.g. "abc -> abd ==> ijk -> ?")
         """
-        self.input_string(string)
+        self._add_letters_to_workspace(string)
+        self._add_initial_descriptions_to_workspace()
         self.run()
 
-    def input_string(self, string: str):
+    def _add_letters_to_workspace(self, string: str):
         """
         Initialize workspace with a problem (e.g. "abc -> abd ==> ijk -> ?")
         """
@@ -103,6 +104,59 @@ class Copycat:
             )
             for i, char in enumerate(answer_string.strip())
         ]
+
+    def _add_initial_descriptions_to_workspace(self):
+        for string in [
+            self.workspace.initial_string,
+            self.workspace.modified_string,
+            self.workspace.target_string,
+        ]:
+            for letter in string.letters:
+                letter.add_description(
+                    Description(
+                        letter,
+                        self.slipnet["object_category"],
+                        self.slipnet["letter"],
+                    )
+                )
+                letter.add_description(
+                    Description(
+                        letter,
+                        self.slipnet["letter_category"],
+                        letter.letter_category,
+                    )
+                )
+            if len(string) > 1:
+                string.letters[0].add_description(
+                    Description(
+                        string.letters[0],
+                        self.slipnet["string_position_category"],
+                        self.slipnet["leftmost"],
+                    )
+                )
+                string.letters[-1].add_description(
+                    Description(
+                        string.letters[-1],
+                        self.slipnet["string_position_category"],
+                        self.slipnet["rightmost"],
+                    )
+                )
+            else:
+                string.letters[0].add_description(
+                    Description(
+                        string.letters[0],
+                        self.slipnet["string_position_category"],
+                        self.slipnet["single"],
+                    )
+                )
+            if len(string) == 3:
+                string.letters[1].add_description(
+                    Description(
+                        letter,
+                        self.slipnet["string_position_category"],
+                        self.slipnet["middle"],
+                    )
+                )
 
     def run(self):
         pass

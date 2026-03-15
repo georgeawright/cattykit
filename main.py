@@ -1,7 +1,7 @@
 from copycat import Copycat
 
-SLIPNET_JSON_FILE = "slipnet.json"
-CODERACK_JSON_FILE = "coderack.json"
+SLIPNET_JSON_FILE = "configs/slipnet.json"
+CODERACK_JSON_FILE = "configs/coderack.json"
 
 
 def main():

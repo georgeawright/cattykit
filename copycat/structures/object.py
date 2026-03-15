@@ -1,4 +1,8 @@
+from typing import List
+
 from copycat.structure import Structure
+from .bond import Bond
+from .description import Description
 
 
 class Object(Structure):
@@ -14,13 +18,16 @@ class Object(Structure):
         self.intra_string_salience = 0
         self.inter_string_salience = 0
         self.total_salience = 0
-        self.descriptions = []
-        self.extrinsic_descriptions = []
-        self.outgoing_bonds = []
-        self.incoming_bonds = []
+        self.descriptions: List[Description] = []
+        self.extrinsic_descriptions: List[Description] = []
+        self.outgoing_bonds: List[Bond] = []
+        self.incoming_bonds: List[Bond] = []
         self.group = None
         self.replacement = None
         self.correspondence = None
         self.is_changed_letter = False
         self.is_new_answer_letter = False
         self.salience_is_clamped = False
+
+    def add_description(self, description: Description):
+        self.descriptions.append(description)
