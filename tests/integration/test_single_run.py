@@ -11,6 +11,16 @@ def test_single_run():
     copycat = Copycat.from_json(SLIPNET_JSON_FILE, CODERACK_JSON_FILE)
     copycat.solve("abc -> abd ==> ijk -> ?")
 
+    # all node activations are zero except for initially clamped nodes
+    active_node_count = 0
+    for node_id, node in copycat.slipnet.node_index_lookup.items():
+        if node_id in ["letter_category", "string_position_category"]:
+            assert copycat.slipnet.get_node_activation(node_id) == 1.0
+            active_node_count += 1
+        else:
+            assert copycat.slipnet.get_node_activation(node_id) == 0.0
+    assert active_node_count == 2
+
     # each string should have letter category and position descriptions
     assert {
         l.letter_category.name: [

@@ -88,12 +88,15 @@ class Slipnet:
             )
             for link_data in json_data["links"]
         ]
-        return cls.create(
+        slipnet = cls.create(
             list(nodes.values()),
             links,
             json_data["full_activation_threshold"],
             json_data["full_activation_probability_exponent"],
         )
+        for node in json_data["initially_clamped_nodes"]:
+            slipnet.clamp_node(node)
+        return slipnet
 
     def __getitem__(self, node_id):
         return self.nodes[self.node_index_lookup[node_id]]
@@ -117,6 +120,12 @@ class Slipnet:
         # here "clamp" is copycat terminology meaning to keep activation held at 1
         self.node_activations[self.clamped_nodes] = 1.0
         self._probabilistically_activate_nodes()
+
+    def clamp_node(self, node_id: str):
+        """Clamp a node at full activation."""
+        index = self.node_index_lookup[node_id]
+        self.clamped_nodes[index] = True
+        self.node_activations[index] = 1.0
 
     def _spread_activations(self):
         """calculates how much activation nodes should receive
