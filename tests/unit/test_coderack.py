@@ -65,29 +65,14 @@ def test_get_urgency_bin_weights(temperature, list_index):
     assert coderack.urgency_lookup_table[list_index] == bin_weights
 
 
-@pytest.mark.parametrize(
-    ["urgency", "expected_urgency_bin"],
-    [
-        (0.0, 0),
-        (0.1, 1),
-        (0.2, 1),
-        (0.3, 2),
-        (0.4, 2),
-        (0.5, 3),
-        (0.6, 4),
-        (0.7, 4),
-        (0.8, 5),
-        (0.9, 5),
-        (1.0, 6),
-    ],
-)
-def test_post_to_empty_coderack(urgency, expected_urgency_bin):
+def test_post_to_empty_coderack():
     coderack = Coderack.create(7, 100)
-    codelet = SimpleNamespace(urgency=urgency)
-    temperature = 0.0
-    assert 0 == len(coderack.urgency_bins[expected_urgency_bin])
-    coderack.post(codelet, temperature)
-    assert 1 == len(coderack.urgency_bins[expected_urgency_bin])
+    for urgency_bin in range(1, 8):
+        codelet = SimpleNamespace(urgency_bin=urgency_bin)
+        temperature = 0.0
+        assert 0 == len(coderack.get_urgency_bin(urgency_bin))
+        coderack.post(codelet, temperature)
+        assert 1 == len(coderack.get_urgency_bin(urgency_bin))
 
 
 def test_post_removes_excess_codelets():
@@ -110,7 +95,7 @@ def test_post_removes_excess_codelets():
 
 
 def test_post_many():
-    codelets = [SimpleNamespace(urgency=0.1 * i) for i in range(11)]
+    codelets = [SimpleNamespace(urgency_bin=i % 7 + 1) for i in range(11)]
     coderack = Coderack.create(7, 100)
     temperature = 0.0
     assert 0 == coderack.population
@@ -119,10 +104,10 @@ def test_post_many():
 
 
 def test_choose():
-    codelets = [SimpleNamespace(urgency=0.1 * i) for i in range(11)]
+    codelets = [SimpleNamespace(urgency_bin=i % 7 + 1) for i in range(11)]
     coderack = Coderack.create(7, 100)
     temperature = 0.0
     assert 0 == coderack.population
     coderack.post_many(codelets, temperature)
     codelet = coderack.choose(temperature)
-    assert codelet.urgency == 1.0
+    assert codelet.urgency_bin == 7

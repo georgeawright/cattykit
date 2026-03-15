@@ -6,4 +6,4 @@ class Scout(Codelet):
     If possible, it makes a proposed structure of that type and posts a strength tester.
     """
 
-    raise NotImplementedError
+    pass

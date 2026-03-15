@@ -1,4 +1,4 @@
-from copycat.codelets.scouts import CorrespondenceScout
+from copycat.codelets.scouts.correspondence_scout import CorrespondenceScout
 
 
 class BottomUpCorrespondenceScout(CorrespondenceScout):
@@ -10,4 +10,5 @@ class BottomUpCorrespondenceScout(CorrespondenceScout):
     and posts a correspondence strength tester with urgency a function of the average strength
     of the distinguishing concept mappings."""
 
-    raise NotImplementedError
+    def __init__(self, urgency_bin: int):
+        self.urgency_bin = urgency_bin

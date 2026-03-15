@@ -9,6 +9,9 @@ CODERACK_JSON_FILE = "configs/coderack.json"
 def test_single_run():
     # initial set up
     copycat = Copycat.from_json(SLIPNET_JSON_FILE, CODERACK_JSON_FILE)
+
+    assert copycat.coderack.population == 0
+
     copycat.solve("abc -> abd ==> ijk -> ?")
 
     # all node activations are zero except for initially clamped nodes
@@ -92,3 +95,7 @@ def test_single_run():
     assert [
         l.letter_category.name for l in copycat.workspace.answer_string.letters
     ] == []
+
+    # 3 types of codelets have been added.
+    # 2 for each workspace object (initial and target string objects)
+    assert copycat.coderack.population == 36

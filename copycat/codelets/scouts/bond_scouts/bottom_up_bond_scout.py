@@ -1,4 +1,4 @@
-from copycat.codelets.scouts import BondScout
+from copycat.codelets.scouts.bond_scout import BondScout
 
 
 class BottomUpBondScout(BondScout):
@@ -8,4 +8,5 @@ class BottomUpBondScout(BondScout):
     posts a bond strength tester with urgency a function of the degree of association
     of bonds of the bond category."""
 
-    raise NotImplementedError
+    def __init__(self, urgency_bin: int):
+        self.urgency_bin = urgency_bin

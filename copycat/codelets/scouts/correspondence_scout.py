@@ -1,4 +1,4 @@
-from copycat.codelets import Scout
+from copycat.codelets.scout import Scout
 
 
 class CorrespondenceScout(Scout):
@@ -6,4 +6,4 @@ class CorrespondenceScout(Scout):
     If possible, it makes a proposed correspondence and posts a
     correspondence strength tester."""
 
-    raise NotImplementedError
+    pass

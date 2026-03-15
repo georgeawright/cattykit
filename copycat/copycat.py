@@ -1,5 +1,10 @@
 import json
 
+from .codelets import (
+    BottomUpBondScout,
+    BottomUpCorrespondenceScout,
+    ReplacementFinder,
+)
 from .coderack import Coderack
 from .coderack_bin import CoderackBin
 from .slipnet import Slipnet
@@ -44,6 +49,7 @@ class Copycat:
         self.slipnet = slipnet
         self.coderack = coderack
         self.workspace = workspace
+        self.temperature = 1.0
 
     @classmethod
     def from_json(cls, slipnet_json_file: str, coderack_json_file: str):
@@ -62,6 +68,7 @@ class Copycat:
         """
         self._add_letters_to_workspace(string)
         self._add_initial_descriptions_to_workspace()
+        self._post_intial_codelets()
         self.run()
 
     def _add_letters_to_workspace(self, string: str):
@@ -157,6 +164,21 @@ class Copycat:
                         self.slipnet["middle"],
                     )
                 )
+
+    def _post_intial_codelets(self):
+        for _ in range(2 * len(self.workspace.objects)):
+            self.coderack.post(
+                BottomUpBondScout(urgency_bin=2),
+                self.temperature,
+            )
+            self.coderack.post(
+                ReplacementFinder(urgency_bin=2),
+                self.temperature,
+            )
+            self.coderack.post(
+                BottomUpCorrespondenceScout(urgency_bin=2),
+                self.temperature,
+            )
 
     def run(self):
         pass

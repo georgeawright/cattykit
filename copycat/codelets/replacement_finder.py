@@ -1,4 +1,4 @@
-from copycat import Codelet
+from copycat.codelet import Codelet
 
 
 class ReplacementFinder(Codelet):
@@ -6,4 +6,5 @@ class ReplacementFinder(Codelet):
     If it is the changed letter, it marks it as such
     and adds a description of the change if there is one."""
 
-    raise NotImplementedError
+    def __init__(self, urgency_bin: int):
+        self.urgency_bin = urgency_bin

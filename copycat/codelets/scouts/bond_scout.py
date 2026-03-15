@@ -1,4 +1,4 @@
-from copycat.codelets import Scout
+from copycat.codelets.scout import Scout
 
 
 class BondScout(Scout):
@@ -6,4 +6,4 @@ class BondScout(Scout):
     If possible, it makes a proposed bond and posts a bond strength tester.
     """
 
-    raise NotImplementedError
+    pass

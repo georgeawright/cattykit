@@ -2,7 +2,8 @@ import random
 
 
 class CoderackBin:
-    def __init__(self):
+    def __init__(self, urgency_value):
+        self.urgency_value = urgency_value
         self.codelets = []
 
     def __len__(self):
@@ -10,7 +11,7 @@ class CoderackBin:
 
     @property
     def total_urgency(self):
-        return sum([codelet.urgency for codelet in self.codelets])
+        return self.urgency_value * len(self.codelets)
 
     def add(self, codelet):
         self.codelets.append(codelet)
