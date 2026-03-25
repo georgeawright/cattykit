@@ -62,7 +62,14 @@ class Slipnet:
         )
 
     @classmethod
-    def from_json(cls, json_data: dict, description_testers: Dict[str, Callable]):
+    def from_json(
+        cls,
+        json_data: dict,
+        description_testers: Dict[str, Callable],
+        full_activation_threshold: float,
+        full_activation_probability_exponent: int,
+        initially_clamped_nodes: List[str],
+    ):
         nodes = {
             node_data["name"]: Slipnode(
                 name=node_data["name"],
@@ -91,10 +98,10 @@ class Slipnet:
         slipnet = cls.create(
             list(nodes.values()),
             links,
-            json_data["full_activation_threshold"],
-            json_data["full_activation_probability_exponent"],
+            full_activation_threshold,
+            full_activation_probability_exponent,
         )
-        for node in json_data["initially_clamped_nodes"]:
+        for node in initially_clamped_nodes:
             slipnet.clamp_node(node)
         return slipnet
 
@@ -125,6 +132,11 @@ class Slipnet:
         index = self.node_index_lookup[node_id]
         self.clamped_nodes[index] = True
         self.node_activations[index] = 1.0
+
+    def unclamp_node(self, node_id: str):
+        """Unclamp a node so that its activation can decay."""
+        index = self.node_index_lookup[node_id]
+        self.clamped_nodes[index] = False
 
     def _spread_activations(self):
         """calculates how much activation nodes should receive

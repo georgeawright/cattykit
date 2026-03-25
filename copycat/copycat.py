@@ -1,5 +1,8 @@
 import json
+import random
+from typing import List
 
+from .build_answer import build_answer
 from .codelets import (
     BottomUpBondScout,
     BottomUpCorrespondenceScout,
@@ -10,7 +13,7 @@ from .coderack_bin import CoderackBin
 from .slipnet import Slipnet
 from .workspace import Workspace
 from .workspace_string import WorkspaceString
-from .structures import Description, Group, Letter
+from .structures import Bond, Description, Group, Letter
 
 DESCRIPTION_TESTERS = {
     # LENGTH
@@ -45,22 +48,42 @@ class Copycat:
         slipnet: Slipnet,
         coderack: Coderack,
         workspace: Workspace,
+        time_step_length: int,
+        initially_clamped_nodes: List[str],
     ):
         self.slipnet = slipnet
         self.coderack = coderack
         self.workspace = workspace
         self.temperature = 1.0
+        self.time_step_length = time_step_length
+        self.initially_clamped_nodes = initially_clamped_nodes
+        self.translated_rule = False
+        self.found_answer = False
+        self.snag_condition = False
+        self.snag_object = False
 
     @classmethod
-    def from_json(cls, slipnet_json_file: str, coderack_json_file: str):
+    def from_json(
+        cls, slipnet_json_file: str, coderack_json_file: str, hyperparameters_file: str
+    ):
+        with open(hyperparameters_file) as f:
+            hyperparameters = json.load(f)
         with open(slipnet_json_file) as f:
             slipnet_json = json.load(f)
-        slipnet = Slipnet.from_json(slipnet_json, DESCRIPTION_TESTERS)
+        slipnet = Slipnet.from_json(
+            slipnet_json,
+            DESCRIPTION_TESTERS,
+            full_activation_threshold=hyperparameters["full_activation_threshold"],
+            full_activation_probability_exponent=hyperparameters[
+                "full_activation_probability_exponent"
+            ],
+            initially_clamped_nodes=hyperparameters["initially_clamped_nodes"],
+        )
         with open(coderack_json_file) as f:
             coderack_json = json.load(f)
         coderack = Coderack.from_json(coderack_json)
         workspace = Workspace.setup()
-        return cls(slipnet, coderack=coderack, workspace=workspace)
+        return cls(slipnet, coderack=coderack, workspace=workspace, **hyperparameters)
 
     def solve(self, string: str):
         """
@@ -182,14 +205,71 @@ class Copycat:
             )
 
     def run(self):
-        pass
+        while True:
+            if self.coderack.number_of_codelets_run % self.time_step_length == 0:
+                self.update()
+            if self.coderack.empty():
+                self._clamp_initially_clamped_nodes()
+                self._post_intial_codelets()
+            self.step()
+            if self.translated_rule:
+                self.found_answer = self.build_answer()
+                if self.found_answer:
+                    print(self.answer)
+                    break
 
     def update(self):
         """Update values of workspace structures and slipnet activations."""
-        pass
+        self.workspace.update()
+        if (
+            self.coderack.number_of_codelets_run
+            == self.initial_slipnode_clamp_time * self.time_step_length
+        ):
+            self._unclamp_initially_clamped_nodes()
+        if self.snag_object and self.snag_condition:
+            self._probabilistically_unsnag()
+        if self.coderack.number_of_codelets_run > 0:
+            self._update_temperature()
+            self.coderack.prepare_bottom_up_codelets()
+            self._get_top_down_codelets()
+            self.slipnet.update_activations()
+        self.coderack.post_codelets()
 
     def step(self):
         """Run a single codelet."""
+        codelet = self.coderack.choose(self.temperature)
+        codelet.run()
+
+    def _probabilistically_unsnag(self):
+        """Check if new structures have been made since snag
+        and probabilistically end snag."""
+        new_structure_list = [
+            s
+            for s in self.workspace.structures
+            if not isinstance(s, Bond) and s not in self.workspace.snag_structure_list
+        ]
+        unclamp_probability = (
+            max([s.total_strength for s in new_structure_list])
+            if new_structure_list
+            else 0
+        )
+        if random.random() > unclamp_probability:
+            self.snag_condition = False
+            self.clamp_temperature = False
+            for description in self.snag_object.descriptions:
+                description.descriptor.unclamp()
+            self.snag_object.set_clamp_salience = False
+
+    def _clamp_initially_clamped_nodes(self):
+        for node in self.initially_clamped_nodes:
+            self.slipnet.clamp_node(node)
+
+    def _unclamp_initially_clamped_nodes(self):
+        for node in self.initially_clamped_nodes:
+            self.slipnet.unclamp_node(node)
+
+    def _get_top_down_codelets(self):
+        pass
 
     def handle_snag(self):
         """If there is a snag in building the answer:

@@ -1,7 +1,4 @@
 {
-  "full_activation_threshold": 0.55,
-  "full_activation_probability_exponent": 3,
-  "initially_clamped_nodes": ["letter_category", "string_position_category"],
   "nodes": [
     { "name": "a", "conceptual_depth": 0.1 },
     { "name": "b", "conceptual_depth": 0.1 },

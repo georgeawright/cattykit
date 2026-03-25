@@ -19,6 +19,7 @@ class Coderack:
         self.urgency_lookup_table = urgency_lookup_table
         self.max_population = max_population
         self.number_of_codelets_run = 0
+        self._codelets_to_post = []
 
     @classmethod
     def create(cls, number_of_bins: int, max_population: int) -> Coderack:
@@ -42,8 +43,11 @@ class Coderack:
         ]
 
     @property
-    def population(self):
+    def population(self) -> int:
         return sum([len(urgency_bin) for urgency_bin in self._urgency_bins])
+
+    def is_empty(self) -> bool:
+        return self.population == 0
 
     def get_urgency_bin(self, urgency_level):
         return self._urgency_bins[urgency_level - 1]

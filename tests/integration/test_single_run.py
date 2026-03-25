@@ -5,11 +5,14 @@ from copycat import Copycat
 
 SLIPNET_JSON_FILE = "configs/slipnet.json"
 CODERACK_JSON_FILE = "configs/coderack.json"
+HYPERPARAMETERS_FILE = "configs/hyperparameters.json"
 
 
 def test_single_run():
     # initial set up
-    copycat = Copycat.from_json(SLIPNET_JSON_FILE, CODERACK_JSON_FILE)
+    copycat = Copycat.from_json(
+        SLIPNET_JSON_FILE, CODERACK_JSON_FILE, HYPERPARAMETERS_FILE
+    )
 
     # coderack starts empty
     assert copycat.coderack.population == 0
@@ -108,6 +111,7 @@ def test_single_run():
 
     copycat.slipnet.update_activations()
 
-    # letter category spreads activation to letters
+    # letter category spreads activation to letters and other structure types
     assert 1.0 == copycat.slipnet.get_node_activation("letter_category")
     assert np.isclose(0.03, copycat.slipnet.get_node_activation("a"))
+    assert np.isclose(0.4, copycat.slipnet.get_node_activation("bond_facet"))
