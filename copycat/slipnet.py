@@ -138,6 +138,13 @@ class Slipnet:
         index = self.node_index_lookup[node_id]
         self.clamped_nodes[index] = False
 
+    def get_top_down_codelets(self) -> List["Codelet"]:
+        top_down_codelets = []
+        for node in self.nodes:
+            if node.activation > self.full_activation_threshold:
+                top_down_codelets.extend(node.get_top_down_codelets())
+        return top_down_codelets
+
     def _spread_activations(self):
         """calculates how much activation nodes should receive
         from active related nodes in the slipnet."""

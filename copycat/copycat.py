@@ -220,6 +220,7 @@ class Copycat:
 
     def update(self):
         """Update values of workspace structures and slipnet activations."""
+        codelets_to_post = []
         self.workspace.update()
         if (
             self.coderack.number_of_codelets_run
@@ -230,10 +231,11 @@ class Copycat:
             self._probabilistically_unsnag()
         if self.coderack.number_of_codelets_run > 0:
             self._update_temperature()
-            self.coderack.prepare_bottom_up_codelets()
-            self._get_top_down_codelets()
+            codelets_to_post += self.workspace.get_bottom_up_codelets()
+            codelets_to_post += self.slipnet.get_top_down_codelets()
             self.slipnet.update_activations()
-        self.coderack.post_codelets()
+        if codelets_to_post:
+            self.coderack.post_many(codelets_to_post, self.temperature)
 
     def step(self):
         """Run a single codelet."""
@@ -267,9 +269,6 @@ class Copycat:
     def _unclamp_initially_clamped_nodes(self):
         for node in self.initially_clamped_nodes:
             self.slipnet.unclamp_node(node)
-
-    def _get_top_down_codelets(self):
-        pass
 
     def handle_snag(self):
         """If there is a snag in building the answer:

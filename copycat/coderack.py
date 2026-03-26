@@ -19,7 +19,7 @@ class Coderack:
         self.urgency_lookup_table = urgency_lookup_table
         self.max_population = max_population
         self.number_of_codelets_run = 0
-        self._codelets_to_post = []
+        self.codelets_to_post = []
 
     @classmethod
     def create(cls, number_of_bins: int, max_population: int) -> Coderack:
@@ -115,35 +115,3 @@ class Coderack:
         delete the argument from the workspace."""
         self.get_urgency_bin(codelet.urgency_bin).remove(codelet)
         # TODO: remove arguments of workspace structures
-
-    def post_bottom_up_codelets(self):
-        """Adds bottom up codelets in amount and with urgency according to need."""
-        # TODO arguments are not correct, need temperature
-        if random.random() > 0.5:
-            for _ in range(self.codelets_to_post["description"]):
-                self.post_codelet(BottomUpDescriptionScout(), 3)
-        if random.random() > 0.5:
-            for _ in range(self.codelets_to_post["bond"]):
-                self.post_codelet(BottomUpBondScout(), 3)
-        if random.random() > 0.5:
-            for _ in range(self.codelets_to_post["group"]):
-                self.post_codelet(WholeStringGroupScout(), 3)
-        if random.random() > 0.5:
-            for _ in range(self.codelets_to_post["replacement"]):
-                self.post_codelet(ReplacementFinder(), 3)
-        if random.random() > 0.5:
-            for _ in range(self.codelets_to_post["correspondence"]):
-                self.post_codelet(BottomUpCorrespondenceScout(), 3)
-                self.post_codelet(ImportantObjectCorrespondenceScout(), 3)
-        if random.random() > 0.5:
-            for _ in range(self.codelets_to_post["rule"]):
-                self.post_codelet(RuleScout(), 3)
-        if random.random() > 0.5:
-            for _ in range(self.codelets_to_post["translated-rule"]):
-                urgency_bin = (
-                    self.get_urgency_bin(3)
-                    if self.temperature > 25
-                    else self.get_urgency_bin(7)
-                )
-                self.post_codelet(TranslatedRule(), urgency_bin)
-        self.post_codelet(Breaker(), self.get_urgency_bin(1))
