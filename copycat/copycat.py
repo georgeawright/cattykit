@@ -83,7 +83,13 @@ class Copycat:
             coderack_json = json.load(f)
         coderack = Coderack.from_json(coderack_json)
         workspace = Workspace.setup()
-        return cls(slipnet, coderack=coderack, workspace=workspace, **hyperparameters)
+        return cls(
+            slipnet,
+            coderack=coderack,
+            workspace=workspace,
+            time_step_length=hyperparameters["time_step_length"],
+            initially_clamped_nodes=hyperparameters["initially_clamped_nodes"],
+        )
 
     def solve(self, string: str):
         """

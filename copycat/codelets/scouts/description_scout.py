@@ -1,4 +1,4 @@
-from copycat.codelets import Scout
+from copycat.codelets.scout import Scout
 
 
 class DescriptionScout(Scout):
@@ -6,4 +6,4 @@ class DescriptionScout(Scout):
     If possible, it makes a proposed description and posts a description strength tester.
     """
 
-    raise NotImplementedError
+    pass

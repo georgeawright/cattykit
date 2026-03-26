@@ -1,4 +1,4 @@
-from copycat.codelets import Scout
+from copycat.codelets.scout import Scout
 
 
 class GroupScout(Scout):
@@ -6,4 +6,4 @@ class GroupScout(Scout):
     If possible, it makes a proposed group and posts a group strength tester.
     """
 
-    raise NotImplementedError
+    pass

@@ -1,5 +1,5 @@
-from copycat.codelets.scouts import GroupScout
+from copycat.codelets.scouts.group_scout import GroupScout
 
 
 class TopDownCategoryGroupScout(GroupScout):
-    raise NotImplementedError
+    pass

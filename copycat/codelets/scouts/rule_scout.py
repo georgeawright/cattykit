@@ -1,4 +1,4 @@
-from copycat.codelets import Scout
+from copycat.codelets.scout import Scout
 
 
 class RuleScout(Scout):
@@ -7,4 +7,4 @@ class RuleScout(Scout):
     If the rule can be made, it proposes it and posts a rule strength tester
     with urgency a function of the conceptual depth of the descriptions."""
 
-    raise NotImplementedError
+    pass

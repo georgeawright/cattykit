@@ -1,4 +1,4 @@
-from copycat.codelets.scouts import DescriptionScout
+from copycat.codelets.scouts.description_scout import DescriptionScout
 
 
 class BottomUpDescriptionScout(DescriptionScout):
@@ -9,4 +9,4 @@ class BottomUpDescriptionScout(DescriptionScout):
     Proposes a description based on the property and posts a description strength tester
     with urgency a function of the property's activation."""
 
-    raise NotImplementedError
+    pass
