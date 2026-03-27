@@ -1,7 +1,6 @@
 from typing import List
 
 from .workspace_structure import WorkspaceStructure
-from .workspace_structures import Bond, Description
 
 
 class WorkspaceObject:
@@ -17,10 +16,10 @@ class WorkspaceObject:
         self.intra_string_salience = 0
         self.inter_string_salience = 0
         self.total_salience = 0
-        self.descriptions: List[Description] = []
-        self.extrinsic_descriptions: List[Description] = []
-        self.outgoing_bonds: List[Bond] = []
-        self.incoming_bonds: List[Bond] = []
+        self.descriptions: List["Description"] = []
+        self.extrinsic_descriptions: List["Description"] = []
+        self.outgoing_bonds: List["Bond"] = []
+        self.incoming_bonds: List["Bond"] = []
         self.group = None
         self.replacement = None
         self.correspondence = None
@@ -28,8 +27,12 @@ class WorkspaceObject:
         self.is_new_answer_letter = False
         self.salience_is_clamped = False
 
-    def add_description(self, description: Description):
+    def add_description(self, description: "Description"):
         self.descriptions.append(description)
+
+    def has_recursive_group_member(self, other_object) -> bool:
+        if self == other_object:
+            return True
 
     def update_values(self):
         # TODO
