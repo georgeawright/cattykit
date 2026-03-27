@@ -104,6 +104,7 @@ class Coderack:
             k=1,
         )[0]
         chosen_codelet = random.choice(chosen_urgency_bin.codelets)
+        self._remove(chosen_codelet)
         self.number_of_codelets_run += 1
         return chosen_codelet
 
@@ -115,8 +116,5 @@ class Coderack:
         """Remove codelet from coderack and
         If codelet is not a breaker and its argument is not rule or description,
         delete the argument from the workspace."""
-        print(codelet)
-        print(codelet.urgency_bin)
-        print(self.get_urgency_bin(codelet.urgency_bin).codelets)
         self.get_urgency_bin(codelet.urgency_bin).remove(codelet)
         # TODO: remove arguments of workspace structures
