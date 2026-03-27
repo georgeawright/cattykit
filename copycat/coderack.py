@@ -57,7 +57,9 @@ class Coderack:
         return self.urgency_lookup_table[temperature_index]
 
     def empty(self):
-        self.urgency_bins = [CoderackBin(i + 1) for i in self._urgency_bins]
+        self.urgency_bins = [
+            CoderackBin(i + 1) for i, _ in enumerate(self._urgency_bins)
+        ]
 
     def post(self, codelet: "Codelet", temperature: float):
         if self.population >= self.max_population:
@@ -113,5 +115,8 @@ class Coderack:
         """Remove codelet from coderack and
         If codelet is not a breaker and its argument is not rule or description,
         delete the argument from the workspace."""
+        print(codelet)
+        print(codelet.urgency_bin)
+        print(self.get_urgency_bin(codelet.urgency_bin).codelets)
         self.get_urgency_bin(codelet.urgency_bin).remove(codelet)
         # TODO: remove arguments of workspace structures

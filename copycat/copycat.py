@@ -12,8 +12,9 @@ from .coderack import Coderack
 from .coderack_bin import CoderackBin
 from .slipnet import Slipnet
 from .workspace import Workspace
+from .workspace_objects import Group, Letter
 from .workspace_string import WorkspaceString
-from .structures import Bond, Description, Group, Letter
+from .workspace_structures import Bond, Description
 
 DESCRIPTION_TESTERS = {
     # LENGTH
@@ -50,6 +51,7 @@ class Copycat:
         workspace: Workspace,
         time_step_length: int,
         initially_clamped_nodes: List[str],
+        initial_slipnode_clamp_time: int,
     ):
         self.slipnet = slipnet
         self.coderack = coderack
@@ -57,6 +59,7 @@ class Copycat:
         self.temperature = 1.0
         self.time_step_length = time_step_length
         self.initially_clamped_nodes = initially_clamped_nodes
+        self.initial_slipnode_clamp_time = initial_slipnode_clamp_time
         self.translated_rule = False
         self.found_answer = False
         self.snag_condition = False
@@ -89,6 +92,7 @@ class Copycat:
             workspace=workspace,
             time_step_length=hyperparameters["time_step_length"],
             initially_clamped_nodes=hyperparameters["initially_clamped_nodes"],
+            initial_slipnode_clamp_time=hyperparameters["initial_slipnode_clamp_time"],
         )
 
     def solve(self, string: str):
@@ -237,7 +241,7 @@ class Copycat:
             self._probabilistically_unsnag()
         if self.coderack.number_of_codelets_run > 0:
             self._update_temperature()
-            codelets_to_post += self.workspace.get_bottom_up_codelets()
+            codelets_to_post += self.workspace.get_bottom_up_codelets(self.temperature)
             codelets_to_post += self.slipnet.get_top_down_codelets()
             self.slipnet.update_activations()
         if codelets_to_post:
@@ -247,6 +251,10 @@ class Copycat:
         """Run a single codelet."""
         codelet = self.coderack.choose(self.temperature)
         codelet.run()
+
+    def _update_temperature(self):
+        # TODO
+        pass
 
     def _probabilistically_unsnag(self):
         """Check if new structures have been made since snag

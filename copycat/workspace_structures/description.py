@@ -1,10 +1,10 @@
 from copycat.slipnode import Slipnode
-from copycat.structure import Structure
+from copycat.workspace_structure import WorkspaceStructure
 
 
-class Description(Structure):
+class Description(WorkspaceStructure):
     def __init__(
-        self, argument_object: Structure, facet: Slipnode, descriptor: Slipnode
+        self, argument_object: WorkspaceStructure, facet: Slipnode, descriptor: Slipnode
     ):
         self.argument_object = argument_object
         self.facet = facet

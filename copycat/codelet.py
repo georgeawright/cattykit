@@ -1,4 +1,6 @@
 class Codelet:
-    def __init__(self, birth_time, urgency_bin):
-        self.birth_time = birth_time
+    def __init__(self, urgency_bin):
         self.urgency_bin = urgency_bin
+
+    def run(self):
+        pass

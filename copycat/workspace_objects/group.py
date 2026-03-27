@@ -1,7 +1,7 @@
-from copycat.structures.object import Object
+from copycat.workspace_object import WorkspaceObject
 
 
-class Group(Object):
+class Group(WorkspaceObject):
     def __init__(self):
         self.bond_descriptions = []
         self.objects = []

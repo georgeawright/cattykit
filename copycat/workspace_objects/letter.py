@@ -1,7 +1,7 @@
-from copycat.structures.object import Object
+from copycat.workspace_object import WorkspaceObject
 
 
-class Letter(Object):
+class Letter(WorkspaceObject):
     def __init__(self, string, letter_category, string_position):
         super().__init__(string, string_position, string_position)
         self.letter_category = letter_category

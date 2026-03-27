@@ -16,8 +16,9 @@ from .codelets import (
 )
 from .tools import describe_count
 from .workspace_string import WorkspaceString
-from .structure import Structure
-from .structures import Correspondence, Replacement, Rule
+from .workspace_object import WorkspaceObject
+from .workspace_structure import WorkspaceStructure
+from .workspace_structures import Correspondence, Replacement, Rule
 
 
 class Workspace:
@@ -50,9 +51,10 @@ class Workspace:
             str, Dict[str, List[Correspondence]]
         ] = defaultdict(lambda: defaultdict(list))
         self._correspondences: Dict[str, Correspondence] = {}
+        self.unreplaced_objects: List[WorkspaceObject] = []
         self.replacements: List[Replacement] = []
         self.rule: Optional[Rule] = None
-        self.snag_structure_list: List[Structure] = []
+        self.snag_structure_list: List[WorkspaceStructure] = []
 
     @classmethod
     def setup(cls):
@@ -76,15 +78,15 @@ class Workspace:
 
     @property
     def bonds(self):
-        return self.intial_string.bonds + self.target_string.bonds
+        return self.initial_string.bonds + self.target_string.bonds
 
     @property
     def proposed_groups(self):
-        return self.intial_string.proposed_groups + self.target_string.proposed_groups
+        return self.initial_string.proposed_groups + self.target_string.proposed_groups
 
     @property
     def groups(self):
-        return self.intial_string.groups + self.target_string.groups
+        return self.initial_string.groups + self.target_string.groups
 
     @property
     def proposed_correspondences(self):
@@ -114,6 +116,23 @@ class Workspace:
         if self.rule is not None:
             structures.append(self.rule)
         return structures
+
+    def update(self):
+        """Update values for structures and objects."""
+        self._update_strength_values()
+        self._update_object_values()
+        self.initial_string.update_relative_importances()
+        self.target_string.update_relative_importances()
+        self.initial_string.update_intra_string_unhappiness()
+        self.target_string.update_intra_string_unhappiness()
+
+    def _update_strength_values(self):
+        for structure in self.structures:
+            structure.update_strength_values()
+
+    def _update_object_values(self):
+        for obj in self.objects:
+            obj.update_values()
 
     def add_proposed_correspondence(self, correspondence):
         """Add to a maintained list of proposed correspondences between two nodes."""
@@ -278,7 +297,7 @@ class Workspace:
         if self._post_codelet_probability("bond", temperature) > random.random():
             for _ in range(self._number_of_codelets_to_post("bond")):
                 codelets.append(BottomUpBondScout(urgency_bin=2))
-        if self._post_codelet_probability("group") > random.random():
+        if self._post_codelet_probability("group", temperature) > random.random():
             for _ in range(self._number_of_codelets_to_post("group")):
                 codelets.append(WholeStringGroupScout(urgency_bin=2))
         if self._post_codelet_probability("replacement", temperature) > random.random():
@@ -327,7 +346,7 @@ class Workspace:
             probability = 1 if self.rule else 0
         return probability
 
-    def __number_of_codelets_to_post(self, structure_category: str) -> int:
+    def _number_of_codelets_to_post(self, structure_category: str) -> int:
         """For a given structure-category (e.g., description, or bond),
         returns the number of codelets looking for this type of structure
         that should be posted.

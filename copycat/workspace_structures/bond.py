@@ -1,7 +1,7 @@
-from copycat.structure import Structure
+from copycat.workspace_structure import WorkspaceStructure
 
 
-class Bond(Structure):
+class Bond(WorkspaceStructure):
     def __init__(
         from_object,
         to_object,

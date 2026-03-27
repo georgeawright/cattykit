@@ -1,0 +1,2 @@
+class WorkspaceStructure:
+    pass

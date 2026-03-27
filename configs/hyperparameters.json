@@ -1,0 +1,7 @@
+{
+    "time_step_length": 15,
+    "full_activation_threshold": 0.55,
+    "full_activation_probability_exponent": 3,
+    "initially_clamped_nodes": ["letter_category", "string_position_category"],
+    "initial_slipnode_clamp_time": 50
+}

@@ -67,6 +67,14 @@ class WorkspaceString:
     def non_string_spanning_objects(self):
         return [obj for obj in self.objects if not obj.spans_whole_string]
 
+    def update_relative_importances(self):
+        # TODO
+        pass
+
+    def update_intra_string_unhappiness(self):
+        # TODO
+        pass
+
     def add_letter(self, letter):
         self.letters.append(letter)
 

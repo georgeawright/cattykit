@@ -1,7 +1,7 @@
-from copycat.structure import Structure
+from copycat.workspace_structure import WorkspaceStructure
 
 
-class Rule(Structure):
+class Rule(WorkspaceStructure):
     def __init__(
         self,
         object_category_1,

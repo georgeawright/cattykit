@@ -1,7 +1,7 @@
-from copycat.structure import Structure
+from copycat.workspace_structure import WorkspaceStructure
 
 
-class Correspondence(Structure):
+class Correspondence(WorkspaceStructure):
     def __init__(from_object, to_object, concept_mappings):
         self.from_object = from_object
         self.to_object = to_object

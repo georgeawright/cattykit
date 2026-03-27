@@ -1,11 +1,10 @@
 from typing import List
 
-from copycat.structure import Structure
-from .bond import Bond
-from .description import Description
+from .workspace_structure import WorkspaceStructure
+from .workspace_structures import Bond, Description
 
 
-class Object(Structure):
+class WorkspaceObject:
     def __init__(self, string, left_position: int, right_position: int):
         self.string = string
         self.left_position = left_position
@@ -31,3 +30,7 @@ class Object(Structure):
 
     def add_description(self, description: Description):
         self.descriptions.append(description)
+
+    def update_values(self):
+        # TODO
+        pass
