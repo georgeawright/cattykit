@@ -76,12 +76,10 @@ class Group(WorkspaceObject):
         return False
 
     def is_leftmost_in_string(self) -> bool:
-        # TODO
-        pass
+        return self.left_position == 0
 
     def is_rightmost_in_string(self) -> bool:
-        # TODO
-        pass
+        return self.right_position == len(self.string.letters) - 1
 
     def spans_whole_string(self) -> bool:
         return len(self) == len(self.string.letters)
