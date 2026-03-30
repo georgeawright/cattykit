@@ -3,6 +3,7 @@ from copycat.workspace_structure import WorkspaceStructure
 
 class Bond(WorkspaceStructure):
     def __init__(
+        self,
         from_object,
         to_object,
         bond_category,
@@ -40,4 +41,19 @@ class Bond(WorkspaceStructure):
         pass
 
     def is_rightmost_in_string(self) -> bool:
+        pass
+
+    def calculate_internal_strength(self) -> float:
+        member_compatability_factor = (
+            1 if type(self.from_object) is type(self.to_object) else 0.7
+        )
+        bond_facet_factor = 1 if self.bond_facet.name == "letter_category" else 0.7
+        return min(
+            1,
+            member_compatability_factor
+            * bond_facet_factor
+            * self.bond_category.bond_degree_of_association,
+        )
+
+    def calculate_external_strength(self) -> float:
         pass

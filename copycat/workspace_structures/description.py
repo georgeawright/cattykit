@@ -13,10 +13,10 @@ class Description(WorkspaceStructure):
     def __eq__(self, other):
         return (self.facet, self.descriptor) == (other.facet, other.descriptor)
 
-    def calculate_internal_strength(self):
+    def calculate_internal_strength(self) -> float:
         return self.descriptor.conceptual_depth
 
-    def calculate_external_strength(self):
+    def calculate_external_strength(self) -> float:
         return (self._local_support() + self.facet.activation) / 2
 
     def _local_support(self) -> float:
