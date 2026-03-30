@@ -1,5 +1,6 @@
+from __future__ import annotations
 import random
-from typing import List
+from typing import List, Union
 
 from .workspace_structure import WorkspaceStructure
 
@@ -51,12 +52,18 @@ class WorkspaceObject:
             o for o in self.string.objects if o.left_position == self.right_position + 1
         ]
 
-    def choose_left_neighbor(self):
+    def choose_left_neighbor(self) -> Union[WorkspaceObject, None]:
         """Returns a left-neighbor probabilistically, based on intra-string-salience."""
         saliences = [o.intra_string_salience for o in self.left_neighbours]
-        return random.choices(self.left_neighbours, weights=saliences, k=1)[0]
+        try:
+            return random.choices(self.left_neighbours, weights=saliences, k=1)[0]
+        except IndexError:
+            return None
 
-    def choose_right_neighbor(self):
+    def choose_right_neighbor(self) -> Union[WorkspaceObject, None]:
         """Returns a right-neighbor probabilistically, based on intra-string-salience."""
         saliences = [o.intra_string_salience for o in self.right_neighbours]
-        return random.choices(self.right_neighbours, weights=saliences, k=1)[0]
+        try:
+            return random.choices(self.right_neighbours, weights=saliences, k=1)[0]
+        except IndexError:
+            return None
