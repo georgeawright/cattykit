@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Optional
 
 
@@ -22,6 +23,7 @@ class Slipnode:
         self.activation_buffer = 0
         self.clamp = False
         self.codelets = []
+        self.outgoing_links = []
 
     @property
     def depth_factor(self) -> float:
@@ -29,3 +31,11 @@ class Slipnode:
 
     def is_active(self) -> bool:
         return self.activation >= 1.0
+
+    def get_related_node(self, relationship_name: str) -> Optional[Slipnode]:
+        if relationship_name == "identity":
+            return self
+        for link in self.outgoing_links:
+            if link.type_node.name == relationship_name:
+                return link.to_node
+        return None

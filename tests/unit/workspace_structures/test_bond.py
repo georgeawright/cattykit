@@ -83,9 +83,9 @@ def test_calculate_external_strength():
         "o3": {"o0": None, "o1": None, "o2": None, "o3": None},
     }
 
-    assert bond_0_1._number_of_supporting_bonds() == 1
-    assert bond_1_2._number_of_supporting_bonds() == 1
-    assert bond_2_3._number_of_supporting_bonds() == 0
+    assert bond_0_1._number_of_local_supporting_bonds() == 1
+    assert bond_1_2._number_of_local_supporting_bonds() == 1
+    assert bond_2_3._number_of_local_supporting_bonds() == 0
 
     assert bond_0_1._local_density() == pytest.approx(0.5)
     assert bond_1_2._local_density() == pytest.approx(0.5)

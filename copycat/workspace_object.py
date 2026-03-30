@@ -1,3 +1,4 @@
+import random
 from typing import List
 
 from .workspace_structure import WorkspaceStructure
@@ -37,3 +38,25 @@ class WorkspaceObject:
     def update_values(self):
         # TODO
         pass
+
+    @property
+    def left_neighbours(self):
+        return [
+            o for o in self.string.objects if o.right_position == self.left_position - 1
+        ]
+
+    @property
+    def right_neighbours(self):
+        return [
+            o for o in self.string.objects if o.left_position == self.right_position + 1
+        ]
+
+    def choose_left_neighbor(self):
+        """Returns a left-neighbor probabilistically, based on intra-string-salience."""
+        saliences = [o.intra_string_salience for o in self.left_neighbours]
+        return random.choices(self.left_neighbours, weights=saliences, k=1)[0]
+
+    def choose_right_neighbor(self):
+        """Returns a right-neighbor probabilistically, based on intra-string-salience."""
+        saliences = [o.intra_string_salience for o in self.right_neighbours]
+        return random.choices(self.right_neighbours, weights=saliences, k=1)[0]

@@ -67,16 +67,18 @@ class Bond(WorkspaceStructure):
         """Measures the support of a bond according to
         presence of bonds of the same type in the string.
         Doesn't take distance into account."""
-        number_of_supporting_bonds = self._number_of_supporting_bonds()
-        if number_of_supporting_bonds == 0:
+        number_of_local_supporting_bonds = self._number_of_local_supporting_bonds()
+        if number_of_local_supporting_bonds == 0:
             return 0.0
         else:
             density = self._local_density()
             adjusted_density = density**0.5
-            support_factor = min(1, 0.6 ** (1 / (number_of_supporting_bonds**3)))
+            support_factor = min(
+                1, 0.6 ** (1 / (number_of_local_supporting_bonds**3))
+            )
             return adjusted_density * support_factor
 
-    def _number_of_supporting_bonds(self) -> int:
+    def _number_of_local_supporting_bonds(self) -> int:
         supporting_bonds = [
             b
             for b in self.from_object.string.bonds
