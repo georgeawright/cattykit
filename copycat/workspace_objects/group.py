@@ -162,7 +162,9 @@ class Group(WorkspaceObject):
         left_object = right_object.choose_left_neighbor()
         # might need to be fixed
         left_object = (
-            left_object if isinstance(left_object, Group) else left_object.group
+            left_object
+            if left_object is None or isinstance(left_object, Group)
+            else left_object.group
         )
         # TODO: fix left neighbour choice
         while left_object is not None:
@@ -181,7 +183,9 @@ class Group(WorkspaceObject):
         left_object = self.rightmost_letter
         right_object = left_object.choose_right_neighbor()
         right_object = (
-            right_object if isinstance(right_object, Group) else right_object.group
+            right_object
+            if right_object is None or isinstance(right_object, Group)
+            else right_object.group
         )
         while right_object is not None:
             slot_sum += 1

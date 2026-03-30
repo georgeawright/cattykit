@@ -13,6 +13,7 @@ class MockLetter:
         self.right_position = string_position
         self.string = string
         self.intra_string_salience = 1
+        self.letters = [self]
 
 
 def test_has_recursive_group_member():
@@ -100,48 +101,59 @@ def test_calculate_external_strength():
 
     string_length = 6
     string = SimpleNamespace(letters=[])
-    for i in range(string_length):
-        string.letters.append(MockLetter(id=f"l{i}", string_position=i, string=string))
-    for i, letter in enumerate(string.letters):
-        letter.letters = [letter]
-        letter.choose_left_neighbor = lambda: string.letters[i - 1] if i > 0 else None
-        letter.choose_right_neighbor = (
-            lambda: string.letters[i + 1] if i < string_length - 1 else None
-        )
+    letter_0 = MockLetter(id="l0", string_position=0, string=string)
+    letter_1 = MockLetter(id="l1", string_position=1, string=string)
+    letter_2 = MockLetter(id="l2", string_position=2, string=string)
+    letter_3 = MockLetter(id="l3", string_position=3, string=string)
+    letter_4 = MockLetter(id="l4", string_position=4, string=string)
+    letter_5 = MockLetter(id="l5", string_position=5, string=string)
+    letter_0.choose_left_neighbor = lambda: None
+    letter_0.choose_right_neighbor = lambda: letter_1
+    letter_1.choose_left_neighbor = lambda: letter_0
+    letter_1.choose_right_neighbor = lambda: letter_2
+    letter_2.choose_left_neighbor = lambda: letter_1
+    letter_2.choose_right_neighbor = lambda: letter_3
+    letter_3.choose_left_neighbor = lambda: letter_2
+    letter_3.choose_right_neighbor = lambda: letter_4
+    letter_4.choose_left_neighbor = lambda: letter_3
+    letter_4.choose_right_neighbor = lambda: letter_5
+    letter_5.choose_left_neighbor = lambda: letter_4
+    letter_5.choose_right_neighbor = lambda: None
 
     group_0_1 = Group(
         string,
         0,
         1,
-        [string.letters[0], string.letters[1]],
+        [letter_0, letter_1],
         letter_category,
         predecessor_category,
         right_category,
     )
-    string.letters[0].group = group_0_1
-    string.letters[1].group = group_0_1
+    letter_0.group = group_0_1
+    letter_1.group = group_0_1
     group_2_3 = Group(
         string,
         2,
         3,
-        [string.letters[2], string.letters[3]],
+        [letter_2, letter_3],
         letter_category,
         predecessor_category,
         right_category,
     )
-    string.letters[2].group = group_2_3
-    string.letters[3].group = group_2_3
+    letter_2.group = group_2_3
+    letter_3.group = group_2_3
     group_4_5 = Group(
         string,
         4,
         5,
-        [string.letters[4], string.letters[5]],
+        [letter_4, letter_5],
         letter_category,
         successor_category,
         left_category,
     )
-    string.letters[4].group = group_4_5
-    string.letters[5].group = group_4_5
+    letter_4.group = group_4_5
+    letter_5.group = group_4_5
+    string.letters = [letter_0, letter_1, letter_2, letter_3, letter_4, letter_5]
     string.groups = [group_0_1, group_2_3, group_4_5]
     string.objects = string.letters + string.groups
 
@@ -149,10 +161,36 @@ def test_calculate_external_strength():
     assert group_2_3._number_of_local_supporting_groups() == 1
     assert group_4_5._number_of_local_supporting_groups() == 0
 
-    assert group_0_1._local_density() == pytest.approx(0.5)
-    assert group_2_3._local_density() == pytest.approx(0.5)
-    assert group_4_5._local_density() == pytest.approx(0)
+    # because choosing neighbours is probabilistic,density is 1/2 if the other group is chosen as neighbour and 1/3 if it is not
+    group_0_1_density = group_0_1._local_density()
+    assert any(
+        [
+            group_0_1_density == pytest.approx(1 / 3),
+            group_0_1_density == pytest.approx(1 / 2),
+        ]
+    )
+    group_2_3_density = group_2_3._local_density()
+    assert any(
+        [
+            group_2_3_density == pytest.approx(1 / 3),
+            group_2_3_density == pytest.approx(1 / 2),
+        ]
+    )
+    group_4_5_density = group_4_5._local_density()
+    assert group_4_5_density == pytest.approx(0)
 
-    assert group_0_1.calculate_external_strength() == pytest.approx(0.4242641)
-    assert group_2_3.calculate_external_strength() == pytest.approx(0.4242641)
+    group_0_1_external_strength = group_0_1.calculate_external_strength()
+    assert any(
+        [
+            group_0_1_external_strength == pytest.approx(0.3464102),
+            group_0_1_external_strength == pytest.approx(0.4242641),
+        ]
+    )
+    group_2_3_external_strength = group_2_3.calculate_external_strength()
+    assert any(
+        [
+            group_2_3_external_strength == pytest.approx(0.3464102),
+            group_2_3_external_strength == pytest.approx(0.4242641),
+        ]
+    )
     assert group_4_5._local_support() == pytest.approx(0.0)
