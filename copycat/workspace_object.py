@@ -52,6 +52,9 @@ class WorkspaceObject:
             o for o in self.string.objects if o.left_position == self.right_position + 1
         ]
 
+    def spans_whole_string(self) -> bool:
+        return len(self) == len(self.string.letters)
+
     def choose_left_neighbor(self) -> Union[WorkspaceObject, None]:
         """Returns a left-neighbor probabilistically, based on intra-string-salience."""
         saliences = [o.intra_string_salience for o in self.left_neighbours]

@@ -81,9 +81,6 @@ class Group(WorkspaceObject):
     def is_rightmost_in_string(self) -> bool:
         return self.right_position == len(self.string.letters) - 1
 
-    def spans_whole_string(self) -> bool:
-        return len(self) == len(self.string.letters)
-
     def has_sub_group(self, other_group: Group) -> bool:
         return (
             self.left_position <= other_group.left_position
