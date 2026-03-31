@@ -27,4 +27,14 @@ class ConceptMapping:
         )
 
     def is_distinguishing(self) -> bool:
-        pass
+        # in Copycat a "whole -> whole" mapping is not distinguishing,
+        # the original source code states that a more general definition is desirable
+        if self.descriptor_1.name == "whole" and self.descriptor_2.name == "whole":
+            return False
+        descriptor_1_is_distinguishing = self.object_1.is_distinguished_by(
+            self.descriptor_1
+        )
+        descriptor_2_is_distinguishing = self.object_2.is_distinguished_by(
+            self.descriptor_2
+        )
+        return descriptor_1_is_distinguishing and descriptor_2_is_distinguishing
