@@ -87,3 +87,21 @@ class ConceptMapping:
         if self.label is None or other.label is None:
             return False
         return self.label == other.label
+
+    def is_incompatible_with(self, other: ConceptMapping) -> bool:
+        """Concept-mappings (a -> b) and (c -> d) are incompatible
+        if a is related to c or if b is related to d,
+        and the relationships a -> b and c -> d are different.
+        E.g., rightmost -> leftmost is incompatible with right -> right,
+        since rightmost is linked to right,
+        but the relationships (opposite and identity) are different.
+        Slipnet distances are not considered, only slipnet links.
+        According to original source, this should be changed eventually."""
+        if not (
+            self.descriptor_1.is_related_to(other.descriptor_1)
+            or self.descriptor_2.is_related_to(other.descriptor_2)
+        ):
+            return False
+        if self.label is None or other.label is None:
+            return False
+        return self.label != other.label
