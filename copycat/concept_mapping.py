@@ -20,3 +20,11 @@ class ConceptMapping:
         self.label = label
         self.object_1 = object_1
         self.object_2 = object_2
+
+    def is_relevant(self) -> bool:
+        return (
+            self.description_type_1.is_active() and self.description_type_2.is_active()
+        )
+
+    def is_distinguishing(self) -> bool:
+        pass
