@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 import pytest
 
 from copycat import Slipnode
@@ -18,3 +20,18 @@ def test_is_active(activation, is_active):
     slipnode = Slipnode("name", 1, 1, 1, lambda x: None)
     slipnode.activation = activation
     assert is_active == slipnode.is_active()
+
+
+def test_is_related_to_and_is_linked_to():
+    node_a = Slipnode("a", 1)
+    node_b = Slipnode("b", 1)
+    node_c = Slipnode("c", 1)
+    node_a.outgoing_links.append(SimpleNamespace(from_node=node_a, to_node=node_b))
+
+    assert not node_a.is_linked_to(node_a)  # no self-links
+    assert node_a.is_linked_to(node_b)  # linked relationship
+    assert not node_a.is_linked_to(node_c)  # no relationship
+
+    assert node_a.is_related_to(node_a)  # identity relationship
+    assert node_a.is_related_to(node_b)  # linked relationship
+    assert not node_a.is_related_to(node_c)  # no relationship

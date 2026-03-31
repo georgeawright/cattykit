@@ -43,3 +43,12 @@ class Slipnode:
             if link.type_node.name == relationship_name:
                 return link.to_node
         return None
+
+    def is_related_to(self, other: Slipnode) -> bool:
+        return self == other or self.is_linked_to(other)
+
+    def is_linked_to(self, other: Slipnode) -> bool:
+        for link in self.outgoing_links:
+            if link.to_node == other:
+                return True
+        return False
