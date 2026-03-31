@@ -6,6 +6,110 @@ from copycat.concept_mapping import ConceptMapping
 
 
 @pytest.mark.parametrize(
+    "descriptor_1_name, descriptor_2_name, degree_of_association, expected",
+    [
+        ("same_descriptor", "same_descriptor", None, 1.0),
+        ("descriptor_1", "descriptor_2", 0.5, 0.5),
+        ("descriptor_1", "descriptor_2", 0.0, 0.0),
+    ],
+)
+def test_degree_of_association(
+    descriptor_1_name, descriptor_2_name, degree_of_association, expected
+):
+    slipnodes = {
+        name: SimpleNamespace(name=name)
+        for name in [descriptor_1_name, descriptor_2_name]
+    }
+    slipnodes[descriptor_1_name].lateral_sliplinks = [
+        SimpleNamespace(
+            to_node=slipnodes[descriptor_2_name],
+            degree_of_association=degree_of_association,
+        )
+    ]
+    concept_mapping = ConceptMapping(
+        description_type_1=None,
+        description_type_2=None,
+        descriptor_1=slipnodes[descriptor_1_name],
+        descriptor_2=slipnodes[descriptor_2_name],
+        label=None,
+        object_1=None,
+        object_2=None,
+    )
+    assert expected == concept_mapping.degree_of_assocation
+
+
+@pytest.mark.parametrize(
+    "descriptor_1_depth, descriptor_2_depth, expected",
+    [
+        (1.0, 1.0, 1.0),
+        (1.0, 0.0, 0.5),
+        (0.0, 1.0, 0.5),
+        (0.0, 0.0, 0.0),
+    ],
+)
+def test_conceptual_depth(descriptor_1_depth, descriptor_2_depth, expected):
+    descriptor_1 = SimpleNamespace(conceptual_depth=descriptor_1_depth)
+    descriptor_2 = SimpleNamespace(conceptual_depth=descriptor_2_depth)
+    concept_mapping = ConceptMapping(
+        description_type_1=None,
+        description_type_2=None,
+        descriptor_1=descriptor_1,
+        descriptor_2=descriptor_2,
+        label=None,
+        object_1=None,
+        object_2=None,
+    )
+    assert expected == concept_mapping.conceptual_depth
+
+
+@pytest.mark.parametrize(
+    "descriptor_1_name, descriptor_2_name, "
+    "descriptor_1_depth, descriptor_2_depth, "
+    "degree_of_association, expected",
+    [
+        ("same_descriptor", "same_descriptor", 1.0, 1.0, None, 1.0),
+        ("descriptor_1", "descriptor_2", 1.0, 1.0, 1.0, 1.0),
+        ("descriptor_1", "descriptor_2", 1.0, 1.0, 0.5, 0.5),
+        ("descriptor_1", "descriptor_2", 1.0, 1.0, 0.0, 0.0),
+        ("descriptor_1", "descriptor_2", 1.0, 0.0, 0.5, 0.125),
+        ("descriptor_1", "descriptor_2", 0.0, 1.0, 0.5, 0.125),
+        ("descriptor_1", "descriptor_2", 0.0, 0.0, 0.5, 0.005),
+    ],
+)
+def test_strength(
+    descriptor_1_name,
+    descriptor_2_name,
+    descriptor_1_depth,
+    descriptor_2_depth,
+    degree_of_association,
+    expected,
+):
+    slipnodes = {
+        name: SimpleNamespace(name=name, conceptual_depth=depth)
+        for name, depth in [
+            (descriptor_1_name, descriptor_1_depth),
+            (descriptor_2_name, descriptor_2_depth),
+        ]
+    }
+    slipnodes[descriptor_1_name].lateral_sliplinks = [
+        SimpleNamespace(
+            to_node=slipnodes[descriptor_2_name],
+            degree_of_association=degree_of_association,
+        )
+    ]
+    concept_mapping = ConceptMapping(
+        description_type_1=None,
+        description_type_2=None,
+        descriptor_1=slipnodes[descriptor_1_name],
+        descriptor_2=slipnodes[descriptor_2_name],
+        label=None,
+        object_1=None,
+        object_2=None,
+    )
+    assert expected == concept_mapping.strength
+
+
+@pytest.mark.parametrize(
     "description_type_1_activated, description_type_2_activated, expected",
     [
         (True, True, True),

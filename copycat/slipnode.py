@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Optional
+from typing import List, Optional
 
 
 class Slipnode:
@@ -10,6 +10,7 @@ class Slipnode:
         intrinsic_link_length: Optional[float] = None,
         shrunk_link_length: Optional[float] = None,
         description_tester: Optional[callable] = None,
+        lateral_sliplinks: Optional[List["Sliplink"]] = None,
     ):
         self.name = name
         self.intrinsic_link_length = intrinsic_link_length
@@ -22,6 +23,9 @@ class Slipnode:
         self.activation = 0
         self.activation_buffer = 0
         self.clamp = False
+        self.lateral_sliplinks = (
+            lateral_sliplinks if lateral_sliplinks is not None else []
+        )
         self.codelets = []
         self.outgoing_links = []
 
