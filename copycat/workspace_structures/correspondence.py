@@ -7,7 +7,8 @@ from copycat.workspace_structure import WorkspaceStructure
 
 
 class Correspondence(WorkspaceStructure):
-    def __init__(self, from_object, to_object, concept_mappings):
+    def __init__(self, workspace, from_object, to_object, concept_mappings):
+        self.workspace = workspace
         self.from_object = from_object
         self.to_object = to_object
         self.concept_mappings = concept_mappings
