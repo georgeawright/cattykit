@@ -1,5 +1,7 @@
 from __future__ import annotations
+from typing import List
 
+from copycat.concept_mapping import ConceptMapping
 from copycat.workspace_objects import Letter
 from copycat.workspace_structure import WorkspaceStructure
 
@@ -23,6 +25,27 @@ class Correspondence(WorkspaceStructure):
         pass
 
     def calculate_internal_strength(self) -> float:
+        relevant_distinguishing_mappings = self.get_relevant_distinguishing_mappings()
+        if not relevant_distinguishing_mappings:
+            return 0.0
+        average_strength = sum(
+            [cm.strength for cm in relevant_distinguishing_mappings]
+        ) / len(relevant_distinguishing_mappings)
+        number_of_mappings_factor = {
+            1: 0.8,
+            2: 1.2,
+        }.get(len(relevant_distinguishing_mappings), 1.6)
+        internal_coherence_factor = 2.5 if self.is_internally_coherent() else 1.0
+        return min(
+            1.0,
+            average_strength * internal_coherence_factor * number_of_mappings_factor,
+        )
+
+    def get_relevant_distinguishing_mappings(self) -> List[ConceptMapping]:
+        # TODO
+        pass
+
+    def is_internally_coherent(self) -> bool:
         # TODO
         pass
 
