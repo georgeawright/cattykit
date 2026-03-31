@@ -29,7 +29,7 @@ class Correspondence(WorkspaceStructure):
         if not relevant_distinguishing_mappings:
             return 0.0
         average_strength = sum(
-            [cm.strength for cm in relevant_distinguishing_mappings]
+            [mapping.strength for mapping in relevant_distinguishing_mappings]
         ) / len(relevant_distinguishing_mappings)
         number_of_mappings_factor = {
             1: 0.8,
@@ -42,12 +42,22 @@ class Correspondence(WorkspaceStructure):
         )
 
     def get_relevant_distinguishing_mappings(self) -> List[ConceptMapping]:
-        # TODO
-        pass
+        return [
+            mapping
+            for mapping in self.concept_mappings
+            if mapping.is_relevant() and mapping.is_distinguishing()
+        ]
 
     def is_internally_coherent(self) -> bool:
-        # TODO
-        pass
+        """Returns True if there is any pair of relevant-distinguishing mappings
+        that support each other.
+        According to original source code, this isn't quite right."""
+        relevant_distinguishing_mappings = self.get_relevant_distinguishing_mappings()
+        for i, mapping in enumerate(relevant_distinguishing_mappings):
+            for other_mapping in relevant_distinguishing_mappings[i + 1 :]:
+                if mapping.supports(other_mapping):
+                    return True
+        return False
 
     def calculate_external_strength(self) -> float:
         return self._support()
