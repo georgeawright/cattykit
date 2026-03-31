@@ -55,6 +55,15 @@ class WorkspaceObject:
     def spans_whole_string(self) -> bool:
         return len(self) == len(self.string.letters)
 
+    def is_distinguished_by(self, descriptor: "Slipnode") -> bool:
+        """True if no other object of the same type has the same descriptor."""
+        if descriptor.name in ["letter", "group", "1", "2", "3", "4", "5", "6"]:
+            return False
+        return self._is_distinguished_by(descriptor)
+
+    def _is_distinguished_by(self, descriptor: "Slipnode") -> bool:
+        raise NotImplementedError
+
     def choose_left_neighbor(self) -> Union[WorkspaceObject, None]:
         """Returns a left-neighbor probabilistically, based on intra-string-salience."""
         saliences = [o.intra_string_salience for o in self.left_neighbours]

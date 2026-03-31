@@ -93,6 +93,17 @@ class Group(WorkspaceObject):
             or self.left_position >= other_group.right_position
         )
 
+    def _is_distinguished_by(self, descriptor: "Slipnode") -> bool:
+        other_objects = [
+            g
+            for g in self.string.groups
+            if g != self and g != self.group and g not in self.objects
+        ]
+        other_descriptors = []
+        for o in other_objects:
+            other_descriptors += [d.descriptor for d in o.descriptions]
+        return descriptor not in other_descriptors
+
     def get_left_neighbour(self):
         # TODO
         pass

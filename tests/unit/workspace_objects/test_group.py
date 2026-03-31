@@ -40,6 +40,99 @@ def test_has_recursive_group_member():
 
 
 @pytest.mark.parametrize(
+    "descriptor, super_group_descriptors, sub_group_descriptors,"
+    " other_group_descriptors, expected",
+    [
+        (
+            "letter",
+            ["super_descriptor"],
+            ["sub_descriptor"],
+            ["other_descriptor"],
+            False,
+        ),
+        (
+            "group",
+            ["super_descriptor"],
+            ["sub_descriptor"],
+            ["other_descriptor"],
+            False,
+        ),
+        (
+            "1",
+            ["super_descriptor"],
+            ["sub_descriptor"],
+            ["other_descriptor"],
+            False,
+        ),
+        (
+            "descriptor",
+            ["super_descriptor"],
+            ["sub_descriptor"],
+            ["other_descriptor"],
+            True,
+        ),
+        (
+            "descriptor",
+            ["super_descriptor"],
+            ["sub_descriptor"],
+            ["descriptor"],
+            False,
+        ),
+        (
+            "descriptor",
+            ["super_descriptor"],
+            ["descriptor"],
+            ["other_descriptor"],
+            True,
+        ),
+        (
+            "descriptor",
+            ["descriptor"],
+            ["sub_descriptor"],
+            ["other_descriptor"],
+            True,
+        ),
+    ],
+)
+def test_is_distinguished_by(
+    descriptor,
+    super_group_descriptors,
+    sub_group_descriptors,
+    other_group_descriptors,
+    expected,
+):
+    string = SimpleNamespace()
+
+    slipnodes = {
+        d: SimpleNamespace(name=d)
+        for d in set(
+            [descriptor]
+            + super_group_descriptors
+            + sub_group_descriptors
+            + other_group_descriptors
+        )
+    }
+
+    sub_group = Group(string, 0, 1, [], None, None, None)
+    for d in sub_group_descriptors:
+        sub_group.descriptions.append(SimpleNamespace(descriptor=slipnodes[d]))
+    group = Group(string, 0, 2, [sub_group], None, None, None)
+    sub_group.group = group
+    group.descriptions.append(SimpleNamespace(descriptor=slipnodes[descriptor]))
+    super_group = Group(string, 0, 3, [group], None, None, None)
+    group.group = super_group
+    for d in super_group_descriptors:
+        super_group.descriptions.append(SimpleNamespace(descriptor=slipnodes[d]))
+    other_group = Group(string, 4, 5, [], None, None, None)
+    for d in other_group_descriptors:
+        other_group.descriptions.append(SimpleNamespace(descriptor=slipnodes[d]))
+
+    string.groups = [group, sub_group, super_group, other_group]
+
+    assert expected == group.is_distinguished_by(slipnodes[descriptor])
+
+
+@pytest.mark.parametrize(
     "group_category_name, bond_category_degree_of_association, length, expected",
     [
         ("letter_category", 1.0, 4, 1.0),
