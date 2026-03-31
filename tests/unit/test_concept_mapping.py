@@ -187,3 +187,68 @@ def test_is_distinguishing(
         object_2=object_2,
     )
     assert expected == concept_mapping.is_distinguishing()
+
+
+@pytest.mark.parametrize(
+    "self_descriptor_1, self_descriptor_2, "
+    "other_descriptor_1, other_descriptor_2, "
+    "related_1, related_2, "
+    "self_label, other_label, "
+    "expected",
+    [
+        ("a", "b", "a", "b", None, None, None, None, True),
+        ("a", "b", "c", "d", True, False, "e", "e", True),
+        ("a", "b", "c", "d", False, True, "e", "e", True),
+        ("a", "b", "c", "d", False, False, None, None, False),
+        ("a", "b", "c", "d", False, True, "e", "f", False),
+        ("a", "b", "c", "d", False, True, None, None, False),
+    ],
+)
+def test_supports(
+    self_descriptor_1,
+    self_descriptor_2,
+    other_descriptor_1,
+    other_descriptor_2,
+    related_1,
+    related_2,
+    self_label,
+    other_label,
+    expected,
+):
+    slipnodes = {
+        name: SimpleNamespace(name=name)
+        for name in [
+            self_descriptor_1,
+            self_descriptor_2,
+            other_descriptor_1,
+            other_descriptor_2,
+            self_label,
+            other_label,
+        ]
+    }
+    slipnodes[self_descriptor_1].is_related_to = (
+        lambda other: related_1 if other.name == other_descriptor_1 else False
+    )
+    slipnodes[self_descriptor_2].is_related_to = (
+        lambda other: related_2 if other.name == other_descriptor_2 else False
+    )
+    self_concept_mapping = ConceptMapping(
+        description_type_1=None,
+        description_type_2=None,
+        descriptor_1=slipnodes[self_descriptor_1],
+        descriptor_2=slipnodes[self_descriptor_2],
+        label=slipnodes[self_label] if self_label is not None else None,
+        object_1=None,
+        object_2=None,
+    )
+    other_concept_mapping = ConceptMapping(
+        description_type_1=None,
+        description_type_2=None,
+        descriptor_1=slipnodes[other_descriptor_1],
+        descriptor_2=slipnodes[other_descriptor_2],
+        label=slipnodes[other_label] if other_label is not None else None,
+        object_1=None,
+        object_2=None,
+    )
+
+    assert expected == self_concept_mapping.supports(other_concept_mapping)

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .slipnode import Slipnode
 from .workspace_object import WorkspaceObject
 
@@ -63,3 +65,25 @@ class ConceptMapping:
             self.descriptor_2
         )
         return descriptor_1_is_distinguishing and descriptor_2_is_distinguishing
+
+    def supports(self, other: ConceptMapping) -> bool:
+        """Concept-mappings (a -> b) and (c -> d) support each other
+        if a is related to c and if b is related to d
+        and the a -> b relationship is the same as the c -> d relationship.
+        E.g.:
+        rightmost->rightmost supports right->right and leftmost->leftmost.
+        Slipnet distances are not considered, only links.
+        According to original source, this should be changed eventually."""
+        if (
+            self.descriptor_1 == other.descriptor_1
+            and self.descriptor_2 == other.descriptor_2
+        ):
+            return True
+        if not (
+            self.descriptor_1.is_related_to(other.descriptor_1)
+            or self.descriptor_2.is_related_to(other.descriptor_2)
+        ):
+            return False
+        if self.label is None or other.label is None:
+            return False
+        return self.label == other.label
