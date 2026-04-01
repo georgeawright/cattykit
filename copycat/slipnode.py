@@ -1,5 +1,8 @@
 from __future__ import annotations
-from typing import List, Optional
+import random
+from typing import Callable, List, Optional
+
+from .tools import temperature_adjust
 
 
 class Slipnode:
@@ -9,8 +12,7 @@ class Slipnode:
         conceptual_depth: float,
         intrinsic_link_length: Optional[float] = None,
         shrunk_link_length: Optional[float] = None,
-        description_tester: Optional[callable] = None,
-        lateral_sliplinks: Optional[List["Sliplink"]] = None,
+        description_tester: Optional[Callable] = None,
     ):
         self.name = name
         self.intrinsic_link_length = intrinsic_link_length
@@ -23,15 +25,27 @@ class Slipnode:
         self.activation = 0
         self.activation_buffer = 0
         self.clamp = False
-        self.lateral_sliplinks = (
-            lateral_sliplinks if lateral_sliplinks is not None else []
-        )
-        self.codelets = []
-        self.outgoing_links = []
+        self.category_links: List["Sliplink"] = []
+        self.instance_links: List["Sliplink"] = []
+        self.has_property_links: List["Sliplink"] = []
+        self.lateral_sliplinks: List["Sliplink"] = []
+        self.lateral_non_sliplinks: List["Sliplink"] = []
+        self.incoming_links: List["Sliplink"] = []
+        self.codelets: List["Codelet"] = []
 
     @property
     def depth_factor(self) -> float:
         return 1 / self.conceptual_depth if self.conceptual_depth > 0 else 0
+
+    @property
+    def outgoing_links(self) -> List["Sliplink"]:
+        return (
+            self.category_links
+            + self.instance_links
+            + self.has_property_links
+            + self.lateral_sliplinks
+            + self.lateral_non_sliplinks
+        )
 
     def is_active(self) -> bool:
         return self.activation >= 1.0
@@ -52,3 +66,11 @@ class Slipnode:
             if link.to_node == other:
                 return True
         return False
+
+    def get_similar_has_property_links(self, temperature: float) -> List["Sliplink"]:
+        return [
+            link
+            for link in self.has_property_links
+            if temperature_adjust(link.degree_of_association, temperature)
+            > random.random()
+        ]

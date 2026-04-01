@@ -26,7 +26,7 @@ def test_is_related_to_and_is_linked_to():
     node_a = Slipnode("a", 1)
     node_b = Slipnode("b", 1)
     node_c = Slipnode("c", 1)
-    node_a.outgoing_links.append(SimpleNamespace(from_node=node_a, to_node=node_b))
+    node_a.lateral_sliplinks.append(SimpleNamespace(from_node=node_a, to_node=node_b))
 
     assert not node_a.is_linked_to(node_a)  # no self-links
     assert node_a.is_linked_to(node_b)  # linked relationship
@@ -35,3 +35,22 @@ def test_is_related_to_and_is_linked_to():
     assert node_a.is_related_to(node_a)  # identity relationship
     assert node_a.is_related_to(node_b)  # linked relationship
     assert not node_a.is_related_to(node_c)  # no relationship
+
+
+def test_get_similar_has_property_links():
+    node = Slipnode("node", 1)
+    link1 = SimpleNamespace(
+        type_node=SimpleNamespace(name="has_property"),
+        to_node=SimpleNamespace(name="property1"),
+        degree_of_association=1.0,
+    )
+    link2 = SimpleNamespace(
+        type_node=SimpleNamespace(name="has_property"),
+        to_node=SimpleNamespace(name="property2"),
+        degree_of_association=0.0,
+    )
+    node.has_property_links.extend([link1, link2])
+
+    similar_links = node.get_similar_has_property_links(temperature=0.5)
+    assert link1 in similar_links
+    assert link2 not in similar_links
