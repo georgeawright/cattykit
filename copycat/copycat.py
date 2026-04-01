@@ -60,10 +60,11 @@ class Copycat:
         self.time_step_length = time_step_length
         self.initially_clamped_nodes = initially_clamped_nodes
         self.initial_slipnode_clamp_time = initial_slipnode_clamp_time
-        self.translated_rule = False
+        self.translated_rule = None
         self.found_answer = False
         self.snag_condition = False
         self.snag_object = False
+        self.clamp_temperature = False
 
     @classmethod
     def from_json(
@@ -253,8 +254,12 @@ class Copycat:
         codelet.run()
 
     def _update_temperature(self):
-        # TODO
-        pass
+        if self.clamp_temperature:
+            return
+        rule_weakness = (
+            1 if not self.translated_rule else 1 - self.translated_rule.total_strength
+        )
+        self.temperature = self.workspace.total_unhappiness * 0.8 + rule_weakness * 0.2
 
     def _probabilistically_unsnag(self):
         """Check if new structures have been made since snag
