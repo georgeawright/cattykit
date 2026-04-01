@@ -94,6 +94,13 @@ class WorkspaceObject:
         except IndexError:
             return None
 
+    def choose_relevant_description_by_activation(self) -> Union["Description", None]:
+        relevant_descriptions = self.get_relevant_descriptions()
+        if len(relevant_descriptions) == 0:
+            return None
+        activations = [d.descriptor.activation for d in relevant_descriptions]
+        return random.choices(relevant_descriptions, weights=activations, k=1)[0]
+
     def calculate_raw_importance(self) -> float:
         """Returns raw (not relative) importance of the object.
         A function of the number and activation of relevant descriptions.

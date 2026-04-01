@@ -53,6 +53,25 @@ def test_left_and_right_neighbours():
     assert g2.choose_right_neighbor() is None
 
 
+def test_choose_relevant_description_by_activation():
+    object = WorkspaceObject(string=None, left_position=None, right_position=None)
+    object.descriptions = [
+        SimpleNamespace(
+            is_relevant=lambda: True, descriptor=SimpleNamespace(activation=0.5)
+        ),
+        SimpleNamespace(
+            is_relevant=lambda: True, descriptor=SimpleNamespace(activation=0.8)
+        ),
+        SimpleNamespace(
+            is_relevant=lambda: False, descriptor=SimpleNamespace(activation=1.0)
+        ),
+    ]
+    assert object.choose_relevant_description_by_activation() in [
+        object.descriptions[0],
+        object.descriptions[1],
+    ]
+
+
 @pytest.mark.parametrize(
     "number_of_relevant_descriptions, is_changed_letter, group, expected",
     [
