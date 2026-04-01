@@ -98,14 +98,6 @@ class Group(WorkspaceObject):
             other_descriptors += [d.descriptor for d in o.descriptions]
         return descriptor not in other_descriptors
 
-    def get_left_neighbour(self):
-        # TODO
-        pass
-
-    def get_right_neighbour(self):
-        # TODO
-        pass
-
     def calculate_internal_strength(self) -> float:
         """The description-type upon which the bonds making up
         this group are based (i.e., letter-category or
