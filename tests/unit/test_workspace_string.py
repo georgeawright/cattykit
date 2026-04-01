@@ -42,10 +42,29 @@ def test_update_relative_importances(raw_importances, expected_relative_importan
     workspace_string = WorkspaceString()
     for i, raw_importance in enumerate(raw_importances):
         obj = SimpleNamespace(raw_importance=raw_importance, relative_importance=None)
-        workspace_string.objects.append(obj)
+        workspace_string.letters.append(obj)
     workspace_string.update_relative_importances()
-    for obj, expected in zip(workspace_string.objects, expected_relative_importances):
+    for obj, expected in zip(workspace_string.letters, expected_relative_importances):
         assert obj.relative_importance == pytest.approx(expected)
+
+
+@pytest.mark.parametrize(
+    "intra_string_unhappinesses, expected",
+    [
+        ([], 0),
+        ([0, 0, 0], 0),
+        ([1, 0, 0], 1 / 3),
+        ([1, 0, 1], 2 / 3),
+        ([0.5, 0, 1], 0.5),
+    ],
+)
+def test_update_intra_string_unhappiness(intra_string_unhappinesses, expected):
+    workspace_string = WorkspaceString()
+    for intra_string_unhappiness in intra_string_unhappinesses:
+        obj = SimpleNamespace(intra_string_unhappiness=intra_string_unhappiness)
+        workspace_string.letters.append(obj)
+    workspace_string.update_intra_string_unhappiness()
+    assert workspace_string.intra_string_unhappiness == pytest.approx(expected)
 
 
 def test_add_letter():

@@ -76,8 +76,11 @@ class WorkspaceString:
                 obj.relative_importance = obj.raw_importance / total_raw_importance
 
     def update_intra_string_unhappiness(self):
-        # TODO
-        pass
+        self.intra_string_unhappiness = (
+            sum(o.intra_string_unhappiness for o in self.objects) / len(self.objects)
+            if self.objects
+            else 0
+        )
 
     def add_letter(self, letter):
         self.letters.append(letter)
