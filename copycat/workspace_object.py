@@ -41,6 +41,12 @@ class WorkspaceObject:
             o for o in self.string.objects if o.left_position == self.right_position + 1
         ]
 
+    def is_leftmost_in_string(self) -> bool:
+        return self.left_position == 0
+
+    def is_rightmost_in_string(self) -> bool:
+        return self.right_position == len(self.string.letters) - 1
+
     def add_description(self, description: "Description"):
         self.descriptions.append(description)
 
@@ -103,7 +109,22 @@ class WorkspaceObject:
         return result
 
     def calculate_intra_string_unhappiness(self) -> float:
-        pass
+        return 1 - self.calculate_intra_string_happiness()
+
+    def calculate_intra_string_happiness(self) -> float:
+        """Represents how well the object fits into the structure of its string.
+        It is a function of the strength of the bonds/group involving the object.
+        Bonds have a third the weight of groups."""
+        if self.spans_whole_string():
+            return 1.0
+        if self.group is not None:
+            return self.group.total_strength
+        bonds = self.incoming_bonds + self.outgoing_bonds
+        if not bonds:
+            return 0.0
+        if self.is_leftmost_in_string() or self.is_rightmost_in_string():
+            return bonds[0].total_strength / 3
+        return sum(bond.total_strength for bond in bonds) / 6
 
     def calculate_inter_string_unhappiness(self) -> float:
         pass

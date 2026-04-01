@@ -75,12 +75,6 @@ class Group(WorkspaceObject):
                 return True
         return False
 
-    def is_leftmost_in_string(self) -> bool:
-        return self.left_position == 0
-
-    def is_rightmost_in_string(self) -> bool:
-        return self.right_position == len(self.string.letters) - 1
-
     def has_sub_group(self, other_group: Group) -> bool:
         return (
             self.left_position <= other_group.left_position

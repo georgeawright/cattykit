@@ -287,3 +287,30 @@ def test_calculate_external_strength():
         ]
     )
     assert group_4_5._local_support() == pytest.approx(0.0)
+
+
+def test_intra_string_happiness_and_unhappiness():
+    string = SimpleNamespace()
+
+    letter_1 = MockLetter(id="l1", string_position=0, string=string)
+    letter_2 = MockLetter(id="l2", string_position=1, string=string)
+    letter_3 = MockLetter(id="l3", string_position=2, string=string)
+    string.letters = [letter_1, letter_2, letter_3]
+
+    group_1 = Group(string, 0, 3, [letter_1, letter_2, letter_3], None, None, None)
+    string.groups = [group_1]
+
+    # group spans whole string so is maximally happy and not unhappy
+    assert group_1.calculate_intra_string_happiness() == 1
+    assert group_1.calculate_intra_string_unhappiness() == 0
+
+    # no group, no bonds
+    group_2 = Group(string, 0, 2, [letter_1, letter_2], None, None, None)
+    assert group_2.calculate_intra_string_happiness() == 0
+    assert group_2.calculate_intra_string_unhappiness() == 1
+
+    # one bond, leftmost position
+    bond = SimpleNamespace(total_strength=1.0)
+    group_2.outgoing_bonds.append(bond)
+    assert group_2.calculate_intra_string_happiness() == pytest.approx(1 / 3)
+    assert group_2.calculate_intra_string_unhappiness() == pytest.approx(2 / 3)
