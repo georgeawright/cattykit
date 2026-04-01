@@ -51,3 +51,34 @@ def test_left_and_right_neighbours():
     assert g1.choose_right_neighbor() in {l3, g2}
     assert set(g2.right_neighbours) == set()
     assert g2.choose_right_neighbor() is None
+
+
+@pytest.mark.parametrize(
+    "number_of_relevant_descriptions, is_changed_letter, group, expected",
+    [
+        (0, False, None, 0),
+        (0, False, "group", 0),
+        (0, True, None, 0),
+        (0, True, "group", 0),
+        (1, False, None, 1),
+        (1, False, "group", 0.666667),
+        (1, True, None, 2),
+        (1, True, "group", 1.333333),
+        (2, False, None, 2),
+        (2, False, "group", 1.333333),
+        (2, True, None, 4),
+        (2, True, "group", 2.666667),
+    ],
+)
+def test_calculate_raw_importance(
+    number_of_relevant_descriptions, is_changed_letter, group, expected
+):
+    object = WorkspaceObject(string=None, left_position=None, right_position=None)
+    object.is_changed_letter = is_changed_letter
+    object.group = None if group is None else SimpleNamespace(members=[object])
+    object.descriptions = [
+        SimpleNamespace(is_relevant=lambda: True)
+        for _ in range(number_of_relevant_descriptions)
+    ]
+
+    assert object.calculate_raw_importance() == pytest.approx(expected)

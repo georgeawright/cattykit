@@ -29,24 +29,6 @@ class WorkspaceObject:
         self.is_new_answer_letter = False
         self.salience_is_clamped = False
 
-    def add_description(self, description: "Description"):
-        self.descriptions.append(description)
-
-    def has_recursive_group_member(self, other_object) -> bool:
-        if self == other_object:
-            return True
-
-    def update_values(self):
-        self.raw_importance = self.calculate_raw_importance()
-        self.intra_string_unhappiness = self.calculate_intra_string_unhappiness()
-        self.inter_string_unhappiness = self.calculate_inter_string_unhappiness()
-        self.total_unhappiness = (
-            self.intra_string_unhappiness + self.inter_string_unhappiness
-        )
-        self.intra_string_salience = self.calculate_intra_string_salience()
-        self.inter_string_salience = self.calculate_inter_string_salience()
-        self.total_salience = self.intra_string_salience + self.inter_string_salience
-
     @property
     def left_neighbours(self):
         return [
@@ -58,6 +40,27 @@ class WorkspaceObject:
         return [
             o for o in self.string.objects if o.left_position == self.right_position + 1
         ]
+
+    def add_description(self, description: "Description"):
+        self.descriptions.append(description)
+
+    def has_recursive_group_member(self, other_object) -> bool:
+        if self == other_object:
+            return True
+
+    def get_relevant_descriptions(self) -> List["Description"]:
+        return [d for d in self.descriptions if d.is_relevant()]
+
+    def update_values(self):
+        self.raw_importance = self.calculate_raw_importance()
+        self.intra_string_unhappiness = self.calculate_intra_string_unhappiness()
+        self.inter_string_unhappiness = self.calculate_inter_string_unhappiness()
+        self.total_unhappiness = (
+            self.intra_string_unhappiness + self.inter_string_unhappiness
+        )
+        self.intra_string_salience = self.calculate_intra_string_salience()
+        self.inter_string_salience = self.calculate_inter_string_salience()
+        self.total_salience = self.intra_string_salience + self.inter_string_salience
 
     def spans_whole_string(self) -> bool:
         return len(self) == len(self.string.letters)
@@ -88,7 +91,16 @@ class WorkspaceObject:
             return None
 
     def calculate_raw_importance(self) -> float:
-        pass
+        """Returns raw (not relative) importance of the object.
+        A function of the number and activation of relevant descriptions.
+        Importance of changed objects is enhanced.
+        Importance of grouped objects is diminished."""
+        result = min(3, len(self.get_relevant_descriptions()))
+        if self.is_changed_letter:
+            result *= 2
+        if self.group is not None:
+            result *= 2 / 3
+        return result
 
     def calculate_intra_string_unhappiness(self) -> float:
         pass

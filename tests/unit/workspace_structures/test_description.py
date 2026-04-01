@@ -6,6 +6,20 @@ from copycat.workspace_structures import Description
 
 
 @pytest.mark.parametrize(
+    "is_active, expected",
+    [
+        (True, True),
+        (False, False),
+    ],
+)
+def test_is_relevant(is_active, expected):
+    descriptor = SimpleNamespace(is_active=lambda: is_active)
+    description = Description(argument_object=None, facet=None, descriptor=descriptor)
+
+    assert expected == description.is_relevant()
+
+
+@pytest.mark.parametrize(
     "descriptor_depth, expected",
     [
         (0.0, 0.0),

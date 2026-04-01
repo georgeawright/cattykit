@@ -13,6 +13,9 @@ class Description(WorkspaceStructure):
     def __eq__(self, other):
         return (self.facet, self.descriptor) == (other.facet, other.descriptor)
 
+    def is_relevant(self) -> bool:
+        return self.descriptor.is_active()
+
     def calculate_internal_strength(self) -> float:
         return self.descriptor.conceptual_depth
 
