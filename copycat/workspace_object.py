@@ -127,7 +127,13 @@ class WorkspaceObject:
         return sum(bond.total_strength for bond in bonds) / 6
 
     def calculate_inter_string_unhappiness(self) -> float:
-        pass
+        return 1 - self.calculate_inter_string_happiness()
+
+    def calculate_inter_string_happiness(self) -> float:
+        """Represents how well the object fits into a mapping
+        from the initial-string to the target-string.
+        It is a function of the strength of its correspondence, if any."""
+        return self.correspondence.total_strength if self.correspondence else 0.0
 
     def calculate_intra_string_salience(self) -> float:
         pass

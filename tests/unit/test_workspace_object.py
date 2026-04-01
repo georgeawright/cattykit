@@ -82,3 +82,29 @@ def test_calculate_raw_importance(
     ]
 
     assert object.calculate_raw_importance() == pytest.approx(expected)
+
+
+@pytest.mark.parametrize(
+    "correspondence_strength, expected_happiness, expected_unhappiness",
+    [
+        (None, 0, 1),
+        (0, 0, 1),
+        (0.5, 0.5, 0.5),
+        (1, 1, 0),
+    ],
+)
+def test_inter_string_happiness_and_unhappiness(
+    correspondence_strength, expected_happiness, expected_unhappiness
+):
+    object = WorkspaceObject(string=None, left_position=None, right_position=None)
+    object.correspondence = (
+        SimpleNamespace(total_strength=correspondence_strength)
+        if correspondence_strength is not None
+        else None
+    )
+    assert object.calculate_inter_string_happiness() == pytest.approx(
+        expected_happiness
+    )
+    assert object.calculate_inter_string_unhappiness() == pytest.approx(
+        expected_unhappiness
+    )
