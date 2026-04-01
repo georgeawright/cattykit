@@ -1,6 +1,8 @@
 from types import SimpleNamespace
 from typing import NamedTuple
 
+import pytest
+
 from copycat import WorkspaceString
 
 
@@ -21,6 +23,29 @@ class MockGroup(NamedTuple):
     right_node: MockNode
     left_position: int
     right_position: int
+
+
+@pytest.mark.parametrize(
+    "raw_importances, expected_relative_importances",
+    [
+        ([0, 0, 0], [0, 0, 0]),
+        ([1, 0, 0], [1, 0, 0]),
+        ([0, 1, 0], [0, 1, 0]),
+        ([0, 0, 1], [0, 0, 1]),
+        ([1, 1, 0], [0.5, 0.5, 0]),
+        ([1, 0, 1], [0.5, 0, 0.5]),
+        ([0, 1, 1], [0, 0.5, 0.5]),
+        ([1, 1, 1], [1 / 3, 1 / 3, 1 / 3]),
+    ],
+)
+def test_update_relative_importances(raw_importances, expected_relative_importances):
+    workspace_string = WorkspaceString()
+    for i, raw_importance in enumerate(raw_importances):
+        obj = SimpleNamespace(raw_importance=raw_importance, relative_importance=None)
+        workspace_string.objects.append(obj)
+    workspace_string.update_relative_importances()
+    for obj, expected in zip(workspace_string.objects, expected_relative_importances):
+        assert obj.relative_importance == pytest.approx(expected)
 
 
 def test_add_letter():

@@ -68,8 +68,12 @@ class WorkspaceString:
         return [obj for obj in self.objects if not obj.spans_whole_string]
 
     def update_relative_importances(self):
-        # TODO
-        pass
+        total_raw_importance = sum(obj.raw_importance for obj in self.objects)
+        for obj in self.objects:
+            if total_raw_importance == 0:
+                obj.relative_importance = 0
+            else:
+                obj.relative_importance = obj.raw_importance / total_raw_importance
 
     def update_intra_string_unhappiness(self):
         # TODO
