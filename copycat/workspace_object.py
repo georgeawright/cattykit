@@ -64,7 +64,7 @@ class WorkspaceObject:
         self.total_unhappiness = self.calculate_total_unhappiness()
         self.intra_string_salience = self.calculate_intra_string_salience()
         self.inter_string_salience = self.calculate_inter_string_salience()
-        self.total_salience = self.intra_string_salience + self.inter_string_salience
+        self.total_salience = self.calculate_total_salience()
 
     def spans_whole_string(self) -> bool:
         return len(self) == len(self.string.letters)
