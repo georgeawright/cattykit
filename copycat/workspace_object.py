@@ -142,8 +142,28 @@ class WorkspaceObject:
         It is a function of the strength of its correspondence, if any."""
         return self.correspondence.total_strength if self.correspondence else 0.0
 
+    def calculate_total_salience(self) -> float:
+        return (self.intra_string_salience + self.inter_string_salience) / 2
+
     def calculate_intra_string_salience(self) -> float:
-        pass
+        """How much the object is crying out for attention from codelets
+        that build structures inside a single string (bonds and groups).
+        It is a function of the object's relative importance in its string
+        and its intra-string unhappiness.
+        Greater weight placed on unhappiness than importance
+        may be domain dependent."""
+        if self.salience_is_clamped:
+            return 1.0
+        return self.relative_importance * 0.2 + self.intra_string_unhappiness * 0.8
 
     def calculate_inter_string_salience(self) -> float:
-        pass
+        """How much the object is crying out for attention from codelets
+        that build structures between strings (correspondences).
+        It is a function of the object's relative importance in its string
+        and its inter-string unhappiness.
+        Importance counts more than inter-string unhappiness
+        to pressure the program to map important objects,
+        and to pay less attention to mapping unimportant ones."""
+        if self.salience_is_clamped:
+            return 1.0
+        return self.relative_importance * 0.8 + self.inter_string_unhappiness * 0.2

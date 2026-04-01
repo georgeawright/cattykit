@@ -108,3 +108,45 @@ def test_inter_string_happiness_and_unhappiness(
     assert object.calculate_inter_string_unhappiness() == pytest.approx(
         expected_unhappiness
     )
+
+
+@pytest.mark.parametrize(
+    "relative_importance, intra_string_unhappiness, clamped, expected",
+    [
+        (0, 0, False, 0.0),
+        (0, 1, False, 0.8),
+        (1, 0, False, 0.2),
+        (1, 1, False, 1.0),
+        (0.5, 0.5, False, 0.5),
+        (0.5, 0.5, True, 1.0),
+    ],
+)
+def test_calculate_intra_string_salience(
+    relative_importance, intra_string_unhappiness, clamped, expected
+):
+    object = WorkspaceObject(string=None, left_position=None, right_position=None)
+    object.salience_is_clamped = clamped
+    object.relative_importance = relative_importance
+    object.intra_string_unhappiness = intra_string_unhappiness
+    assert object.calculate_intra_string_salience() == pytest.approx(expected)
+
+
+@pytest.mark.parametrize(
+    "relative_importance, inter_string_unhappiness, clamped, expected",
+    [
+        (0, 0, False, 0.0),
+        (0, 1, False, 0.2),
+        (1, 0, False, 0.8),
+        (1, 1, False, 1.0),
+        (0.5, 0.5, False, 0.5),
+        (0.5, 0.5, True, 1.0),
+    ],
+)
+def test_calculate_inter_string_salience(
+    relative_importance, inter_string_unhappiness, clamped, expected
+):
+    object = WorkspaceObject(string=None, left_position=None, right_position=None)
+    object.salience_is_clamped = clamped
+    object.relative_importance = relative_importance
+    object.inter_string_unhappiness = inter_string_unhappiness
+    assert object.calculate_inter_string_salience() == pytest.approx(expected)
