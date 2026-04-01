@@ -61,9 +61,7 @@ class WorkspaceObject:
         self.raw_importance = self.calculate_raw_importance()
         self.intra_string_unhappiness = self.calculate_intra_string_unhappiness()
         self.inter_string_unhappiness = self.calculate_inter_string_unhappiness()
-        self.total_unhappiness = (
-            self.intra_string_unhappiness + self.inter_string_unhappiness
-        )
+        self.total_unhappiness = self.calculate_total_unhappiness()
         self.intra_string_salience = self.calculate_intra_string_salience()
         self.inter_string_salience = self.calculate_inter_string_salience()
         self.total_salience = self.intra_string_salience + self.inter_string_salience
@@ -107,6 +105,15 @@ class WorkspaceObject:
         if self.group is not None:
             result *= 2 / 3
         return result
+
+    def calculate_total_unhappiness(self) -> float:
+        return 1 - self.calculate_total_happiness()
+
+    def calculate_total_happiness(self) -> float:
+        return (
+            self.calculate_intra_string_happiness()
+            + self.calculate_inter_string_happiness()
+        ) / 2
 
     def calculate_intra_string_unhappiness(self) -> float:
         return 1 - self.calculate_intra_string_happiness()
