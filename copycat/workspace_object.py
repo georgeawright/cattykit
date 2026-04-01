@@ -37,8 +37,15 @@ class WorkspaceObject:
             return True
 
     def update_values(self):
-        # TODO
-        pass
+        self.raw_importance = self.calculate_raw_importance()
+        self.intra_string_unhappiness = self.calculate_intra_string_unhappiness()
+        self.inter_string_unhappiness = self.calculate_inter_string_unhappiness()
+        self.total_unhappiness = (
+            self.intra_string_unhappiness + self.inter_string_unhappiness
+        )
+        self.intra_string_salience = self.calculate_intra_string_salience()
+        self.inter_string_salience = self.calculate_inter_string_salience()
+        self.total_salience = self.intra_string_salience + self.inter_string_salience
 
     @property
     def left_neighbours(self):
@@ -79,3 +86,18 @@ class WorkspaceObject:
             return random.choices(self.right_neighbours, weights=saliences, k=1)[0]
         except IndexError:
             return None
+
+    def calculate_raw_importance(self) -> float:
+        pass
+
+    def calculate_intra_string_unhappiness(self) -> float:
+        pass
+
+    def calculate_inter_string_unhappiness(self) -> float:
+        pass
+
+    def calculate_intra_string_salience(self) -> float:
+        pass
+
+    def calculate_inter_string_salience(self) -> float:
+        pass
