@@ -54,3 +54,22 @@ def test_get_similar_has_property_links():
     similar_links = node.get_similar_has_property_links(temperature=0.5)
     assert link1 in similar_links
     assert link2 not in similar_links
+
+
+def test_get_possible_descriptors():
+    ginger_cat = SimpleNamespace(name="ginger_cat")
+    striped_cat = SimpleNamespace(name="striped_cat")
+
+    cat_node = Slipnode("cat", 1)
+    ginger_descriptor = Slipnode(
+        "ginger", 1, description_tester=lambda x: x.name == "ginger_cat"
+    )
+    striped_descriptor = Slipnode(
+        "striped", 1, description_tester=lambda x: x.name == "striped_cat"
+    )
+    cat_ginger = SimpleNamespace(from_node=cat_node, to_node=ginger_descriptor)
+    cat_striped = SimpleNamespace(from_node=cat_node, to_node=striped_descriptor)
+    cat_node.instance_links.extend([cat_ginger, cat_striped])
+
+    assert cat_node.get_possible_descriptors(ginger_cat) == [ginger_descriptor]
+    assert cat_node.get_possible_descriptors(striped_cat) == [striped_descriptor]

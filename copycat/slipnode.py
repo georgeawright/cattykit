@@ -74,3 +74,12 @@ class Slipnode:
             if temperature_adjust(link.degree_of_association, temperature)
             > random.random()
         ]
+
+    def get_possible_descriptors(
+        self, workspace_object: "WorkspaceObject"
+    ) -> List[Slipnode]:
+        return [
+            link.to_node
+            for link in self.instance_links
+            if link.to_node.description_tester(workspace_object)
+        ]
