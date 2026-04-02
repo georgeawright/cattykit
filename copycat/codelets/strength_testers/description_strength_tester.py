@@ -1,4 +1,9 @@
+import random
+
+from copycat.codelets.builders import DescriptionBuilder
 from copycat.codelets.strength_tester import StrengthTester
+from copycat.tools import temperature_adjust
+from copycat.workspace_structures import Description
 
 
 class DescriptionStrengthTester(StrengthTester):
@@ -9,10 +14,10 @@ class DescriptionStrengthTester(StrengthTester):
     def __init__(
         self,
         urgency_bin: int,
-        coderack,
-        slipnet,
-        workspace,
-        proposed_description,
+        coderack: "Coderack",
+        slipnet: "Slipnet",
+        workspace: "Workspace",
+        proposed_description: Description,
     ):
         super().__init__(
             urgency_bin=urgency_bin,
@@ -22,3 +27,26 @@ class DescriptionStrengthTester(StrengthTester):
             proposed_structure=proposed_description,
         )
         self.proposed_description = proposed_description
+
+    def run(self, temperature: float):
+        self.slipnet.activate_node_from_workspace(
+            self.proposed_description.descriptor.name
+        )
+        self.proposed_description.update_strength_values()
+        build_probability = temperature_adjust(
+            self.proposed_description.total_strength, temperature
+        )
+        if build_probability < random.random():
+            return
+        urgency = self.coderack.get_urgency_level_from_activation(
+            self.proposed_description.total_strength
+        )
+        self.coderack.post(
+            DescriptionBuilder(
+                urgency_bin=urgency,
+                coderack=self.coderack,
+                slipnet=self.slipnet,
+                workspace=self.workspace,
+                proposed_description=self.proposed_description,
+            )
+        )
