@@ -1,4 +1,4 @@
-from copycat.codelets import StrengthTester
+from copycat.codelets.strength_tester import StrengthTester
 
 
 class DescriptionStrengthTester(StrengthTester):
@@ -6,4 +6,19 @@ class DescriptionStrengthTester(StrengthTester):
     It probabilistically posts a description builder with urgency a function of strength.
     """
 
-    raise NotImplementedError
+    def __init__(
+        self,
+        urgency_bin: int,
+        coderack,
+        slipnet,
+        workspace,
+        proposed_description,
+    ):
+        super().__init__(
+            urgency_bin=urgency_bin,
+            coderack=coderack,
+            slipnet=slipnet,
+            workspace=workspace,
+            proposed_structure=proposed_description,
+        )
+        self.proposed_description = proposed_description
