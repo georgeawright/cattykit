@@ -52,6 +52,11 @@ class Coderack:
     def get_urgency_bin(self, urgency_level):
         return self._urgency_bins[urgency_level - 1]
 
+    def get_urgency_level_from_activation(self, activation: float):
+        return min(
+            int(activation * len(self._urgency_bins)), len(self._urgency_bins) - 1
+        )
+
     def get_urgency_bin_weights(self, temperature: float):
         temperature_index = int(round(temperature * 100, 0))
         return self.urgency_lookup_table[temperature_index]

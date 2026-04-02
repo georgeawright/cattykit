@@ -65,6 +65,32 @@ def test_get_urgency_bin_weights(temperature, list_index):
     assert coderack.urgency_lookup_table[list_index] == bin_weights
 
 
+@pytest.mark.parametrize(
+    ["number_of_bins", "activation", "expected"],
+    [
+        (7, 0.00, 0),
+        (7, 0.01, 0),
+        (7, 0.14, 0),
+        (7, 0.15, 1),
+        (7, 0.28, 1),
+        (7, 0.29, 2),
+        (7, 0.42, 2),
+        (7, 0.43, 3),
+        (7, 0.57, 3),
+        (7, 0.58, 4),
+        (7, 0.71, 4),
+        (7, 0.72, 5),
+        (7, 0.85, 5),
+        (7, 0.86, 6),
+        (7, 1.00, 6),
+    ],
+)
+def test_get_urgency_level_from_activation(number_of_bins, activation, expected):
+    coderack = Coderack.create(number_of_bins, 100)
+    urgency_level = coderack.get_urgency_level_from_activation(activation)
+    assert expected == urgency_level
+
+
 def test_post_to_empty_coderack():
     coderack = Coderack.create(7, 100)
     for urgency_bin in range(1, 8):
