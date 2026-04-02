@@ -1,1 +1,2 @@
 from .bottom_up_description_scout import BottomUpDescriptionScout
+from .top_down_description_scout import TopDownDescriptionScout
