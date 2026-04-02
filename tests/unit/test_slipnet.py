@@ -15,7 +15,7 @@ def test_get_node_activation():
     node_index_lookup = {node.name: index for index, node in enumerate(nodes)}
     node_activations = np.array([node.activation for node in nodes])
     slipnet = Slipnet(
-        nodes, None, node_index_lookup, node_activations, None, None, 0.55, 3
+        nodes, None, node_index_lookup, node_activations, None, None, None, 0.55, 3
     )
 
     assert 1.0 == slipnet.get_node_activation("cat")
@@ -132,3 +132,26 @@ def test_update_activations_no_jumping(
         slipnet.get_node_activation("animal"),
         expected_end_state["animal"],
     )
+
+
+def test_activate_node_from_workspace():
+    cat_node = SimpleNamespace(name="cat", depth_factor=0.0)
+    nodes = [cat_node]
+    node_index_lookup = {node.name: index for index, node in enumerate(nodes)}
+    node_activations = np.array([0.0 for _ in nodes])
+    node_activation_buffers = np.array([0.0 for _ in nodes])
+    slipnet = Slipnet(
+        nodes,
+        None,
+        node_index_lookup,
+        node_activations,
+        node_activation_buffers,
+        None,
+        None,
+        0.55,
+        3,
+    )
+    slipnet.activate_node_from_workspace("cat", 1.0)
+
+    assert 0.0 == node_activations[0]
+    assert 1.0 == node_activation_buffers[0]

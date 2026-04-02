@@ -15,6 +15,7 @@ class Slipnet:
         adjacency_table: np.ndarray,  # 2D adjacency table (from-node, to-node)
         node_index_lookup: Dict[str, int],  # maps node_id to index in adjacency table
         node_activations: np.ndarray,  # the activation value of each node
+        activation_buffers: np.ndarray,  # buffers for pending updates
         clamped_nodes: np.ndarray,  # nodes which should be clamped at full activation
         node_depth_factors: np.ndarray,  # the reciprocal of nodes' conceptual depth
         # nodes with activation above threshold probabilistically jump to full activation
@@ -27,6 +28,7 @@ class Slipnet:
         self.number_of_nodes = len(nodes)
         self.node_index_lookup = node_index_lookup
         self.node_activations = node_activations
+        self.activation_buffers = activation_buffers
         self.clamped_nodes = clamped_nodes
         self.node_depth_factors = node_depth_factors
         self.full_activation_threshold = full_activation_threshold
@@ -43,6 +45,7 @@ class Slipnet:
         number_of_nodes = len(nodes)
         node_index_lookup = {node.name: index for index, node in enumerate(nodes)}
         node_activations = np.zeros(number_of_nodes, dtype=np.float32)
+        activation_buffers = np.zeros(number_of_nodes, dtype=np.float32)
         clamped_nodes = np.array([False for node in nodes])
         node_depth_factors = np.array([node.depth_factor for node in nodes])
         adjacency_table = np.zeros((number_of_nodes, number_of_nodes))
@@ -55,6 +58,7 @@ class Slipnet:
             adjacency_table,
             node_index_lookup,
             node_activations,
+            activation_buffers,
             clamped_nodes,
             node_depth_factors,
             full_activation_threshold,
@@ -118,6 +122,7 @@ class Slipnet:
         - activation decay according to nodes' conceptual depth
         - probabilistic jumping of node activations
         - clamped nodes remain active."""
+        # TODO: activation buffers need to be added
         self.node_activations = (
             self.node_activations
             + self._spread_activations()
@@ -137,6 +142,10 @@ class Slipnet:
         """Unclamp a node so that its activation can decay."""
         index = self.node_index_lookup[node_id]
         self.clamped_nodes[index] = False
+
+    def activate_node_from_workspace(self, node_id: str, activation_boost: float):
+        index = self.node_index_lookup[node_id]
+        self.activation_buffers[index] += activation_boost
 
     def get_top_down_codelets(self) -> List["Codelet"]:
         top_down_codelets = []
