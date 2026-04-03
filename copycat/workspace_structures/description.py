@@ -11,10 +11,17 @@ class Description(WorkspaceStructure):
         self.descriptor = descriptor
 
     def __eq__(self, other):
-        return (self.facet, self.descriptor) == (other.facet, other.descriptor)
+        return (self.argument_object, self.facet, self.descriptor) == (
+            other.argument_object,
+            other.facet,
+            other.descriptor,
+        )
 
     def is_relevant(self) -> bool:
         return self.descriptor.is_active()
+
+    def is_bond_description(self) -> bool:
+        return self.facet.name in ("bond_category", "bond_facet")
 
     def calculate_internal_strength(self) -> float:
         return self.descriptor.conceptual_depth

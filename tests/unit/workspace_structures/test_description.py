@@ -20,6 +20,22 @@ def test_is_relevant(is_active, expected):
 
 
 @pytest.mark.parametrize(
+    "facet_name, expected",
+    [
+        ("bond_category", True),
+        ("bond_facet", True),
+        ("object_category", False),
+        ("letter_category", False),
+    ],
+)
+def test_is_bond_description(facet_name, expected):
+    facet = SimpleNamespace(name=facet_name)
+    description = Description(argument_object=None, facet=facet, descriptor=None)
+
+    assert expected == description.is_bond_description()
+
+
+@pytest.mark.parametrize(
     "descriptor_depth, expected",
     [
         (0.0, 0.0),
