@@ -5,6 +5,17 @@ import pytest
 from copycat.workspace_object import WorkspaceObject
 
 
+def test_has_description():
+    object = WorkspaceObject(string=None, left_position=None, right_position=None)
+    description = SimpleNamespace(
+        facet=SimpleNamespace(name="test_facet"),
+        descriptor=SimpleNamespace(name="test_descriptor"),
+    )
+    assert not object.has_description(description)
+    object.descriptions.append(description)
+    assert object.has_description(description)
+
+
 def test_has_recursive_group_member_equivalent_to_object_equality():
     o1 = WorkspaceObject(string=None, left_position=None, right_position=None)
     o2 = WorkspaceObject(string=None, left_position=None, right_position=None)

@@ -47,8 +47,8 @@ class WorkspaceObject:
     def is_rightmost_in_string(self) -> bool:
         return self.right_position == len(self.string.letters) - 1
 
-    def add_description(self, description: "Description"):
-        self.descriptions.append(description)
+    def has_description(self, description: "Description") -> bool:
+        return description in self.descriptions
 
     def has_recursive_group_member(self, other_object) -> bool:
         if self == other_object:

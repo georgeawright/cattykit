@@ -21,7 +21,7 @@ class Group(WorkspaceObject):
         self.group_category = group_category
         self.direction_category = direction_category
         self.bond_facet = bond_facet
-        self.bond_descriptions: List = []
+        self.bond_descriptions: List["Description"] = []
 
     def __len__(self):
         return len(self.letters)
@@ -66,6 +66,9 @@ class Group(WorkspaceObject):
             for letter in self.letters
             if letter.right_position == self.right_position
         ][0]
+
+    def has_description(self, description: "Description") -> bool:
+        return description in self.descriptions or description in self.bond_descriptions
 
     def has_recursive_group_member(self, other_object) -> bool:
         if self == other_object:

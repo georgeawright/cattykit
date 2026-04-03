@@ -39,6 +39,24 @@ def test_has_recursive_group_member():
     assert not group2.has_recursive_group_member(group1)
 
 
+def test_has_description():
+    group = Group(None, None, None, [], None, None, None)
+    description = SimpleNamespace(
+        facet=SimpleNamespace(name="test_facet"),
+        descriptor=SimpleNamespace(name="test_descriptor"),
+    )
+    bond_description = SimpleNamespace(
+        facet=SimpleNamespace(name="bond_facet"),
+        descriptor=SimpleNamespace(name="test_descriptor"),
+    )
+    assert not group.has_description(description)
+    assert not group.has_description(bond_description)
+    group.descriptions.append(description)
+    assert group.has_description(description)
+    group.bond_descriptions.append(bond_description)
+    assert group.has_description(bond_description)
+
+
 @pytest.mark.parametrize(
     "descriptor, super_group_descriptors, sub_group_descriptors,"
     " other_group_descriptors, expected",
