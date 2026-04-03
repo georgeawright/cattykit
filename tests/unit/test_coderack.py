@@ -121,7 +121,7 @@ def test_post_removes_excess_codelets():
 
 
 def test_post_many():
-    codelets = [SimpleNamespace(urgency_bin=i % 7 + 1) for i in range(11)]
+    codelets = [SimpleNamespace(urgency_bin=i % 7) for i in range(11)]
     coderack = Coderack.create(7, 100)
     temperature = 0.0
     assert 0 == coderack.population
@@ -130,10 +130,10 @@ def test_post_many():
 
 
 def test_choose():
-    codelets = [SimpleNamespace(urgency_bin=i % 7 + 1) for i in range(11)]
+    codelets = [SimpleNamespace(urgency_bin=i % 7) for i in range(7)]
     coderack = Coderack.create(7, 100)
     temperature = 0.0
     assert 0 == coderack.population
     coderack.post_many(codelets, temperature)
     codelet = coderack.choose(temperature)
-    assert codelet.urgency_bin == 7
+    assert codelet.urgency_bin == 6
