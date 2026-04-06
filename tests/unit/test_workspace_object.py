@@ -63,6 +63,19 @@ def test_left_and_right_neighbours():
     assert set(g2.right_neighbours) == set()
     assert g2.choose_right_neighbor() is None
 
+    assert set(l1.neighbours) == {l2}
+    assert l1.choose_neighbour() == l2
+    assert set(l2.neighbours) == {l1, l3, g2}
+    assert l2.choose_neighbour() in {l1, l3, g2}
+    assert set(l3.neighbours) == {l2, l4, g1}
+    assert l3.choose_neighbour() in {l2, l4, g1}
+    assert set(l4.neighbours) == {l3}
+    assert l4.choose_neighbour() == l3
+    assert set(g1.neighbours) == {l3, g2}
+    assert g1.choose_neighbour() in {l3, g2}
+    assert set(g2.neighbours) == {l2, g1}
+    assert g2.choose_neighbour() in {l2, g1}
+
 
 def test_choose_relevant_description_by_activation():
     object = WorkspaceObject(string=None, left_position=None, right_position=None)

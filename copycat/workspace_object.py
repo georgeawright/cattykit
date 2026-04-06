@@ -30,6 +30,10 @@ class WorkspaceObject:
         self.salience_is_clamped = False
 
     @property
+    def neighbours(self):
+        return self.left_neighbours + self.right_neighbours
+
+    @property
     def left_neighbours(self):
         return [
             o for o in self.string.objects if o.right_position == self.left_position - 1
@@ -77,6 +81,13 @@ class WorkspaceObject:
 
     def _is_distinguished_by(self, descriptor: "Slipnode") -> bool:
         raise NotImplementedError
+
+    def choose_neighbour(self) -> Union[WorkspaceObject, None]:
+        saliences = [o.intra_string_salience for o in self.neighbours]
+        try:
+            return random.choices(self.neighbours, weights=saliences, k=1)[0]
+        except IndexError:
+            return None
 
     def choose_left_neighbor(self) -> Union[WorkspaceObject, None]:
         """Returns a left-neighbor probabilistically, based on intra-string-salience."""
