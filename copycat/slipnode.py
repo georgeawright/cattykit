@@ -47,6 +47,13 @@ class Slipnode:
             + self.lateral_non_sliplinks
         )
 
+    @property
+    def category(self) -> Optional["Slipnode"]:
+        """Assumes at most one category link per node."""
+        if not self.category_links:
+            return None
+        return self.category_links[0].to_node
+
     def is_active(self) -> bool:
         return self.activation >= 1.0
 

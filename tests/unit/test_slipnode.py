@@ -5,6 +5,14 @@ import pytest
 from copycat import Slipnode
 
 
+def test_category():
+    node = Slipnode("node", 1)
+    assert node.category is None
+    category_node = Slipnode("category", 1)
+    node.category_links.append(SimpleNamespace(to_node=category_node))
+    assert node.category == category_node
+
+
 @pytest.mark.parametrize(
     ["activation", "is_active"],
     [
@@ -80,8 +88,8 @@ def test_get_possible_descriptors():
     [
         (0, 0, 0.0, 0.0),  # no objects, no support
         (0, 0, 1.0, 0.5),  # no objects, no support
-        (1, 0, 1.0, 1.0),  # one object supports, full support
         (1, 0, 0.0, 0.5),  # one object supports, full support
+        (1, 0, 1.0, 1.0),  # one object supports, full support
         (0, 1, 0.0, 0.0),  # one object doesn't support, no support
         (0, 1, 1.0, 0.5),  # one object doesn't support, no support
         (2, 0, 0.0, 0.5),  # all objects support, full support
