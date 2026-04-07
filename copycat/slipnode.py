@@ -83,3 +83,22 @@ class Slipnode:
             for link in self.instance_links
             if link.to_node.description_tester(workspace_object)
         ]
+
+    def total_description_type_support(
+        self, workspace_string: "WorkspaceString"
+    ) -> float:
+        return (
+            self.local_description_type_support(workspace_string) + self.activation
+        ) / 2
+
+    def local_description_type_support(
+        self, workspace_string: "WorkspaceString"
+    ) -> float:
+        description_type_count = sum(
+            1 for obj in workspace_string.objects if obj.has_description_type(self)
+        )
+        return (
+            description_type_count / len(workspace_string.objects)
+            if workspace_string.objects
+            else 0
+        )

@@ -131,6 +131,8 @@ class Slipnet:
         # here "clamp" is copycat terminology meaning to keep activation held at 1
         self.node_activations[self.clamped_nodes] = 1.0
         self._probabilistically_activate_nodes()
+        for node in self.nodes:
+            node.activation = self.node_activations[self.node_index_lookup[node.name]]
 
     def clamp_node(self, node_id: str):
         """Clamp a node at full activation."""

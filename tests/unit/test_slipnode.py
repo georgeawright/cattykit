@@ -73,3 +73,35 @@ def test_get_possible_descriptors():
 
     assert cat_node.get_possible_descriptors(ginger_cat) == [ginger_descriptor]
     assert cat_node.get_possible_descriptors(striped_cat) == [striped_descriptor]
+
+
+@pytest.mark.parametrize(
+    ["supporting_objects", "non_supporting_objects", "activation", "expected"],
+    [
+        (0, 0, 0.0, 0.0),  # no objects, no support
+        (0, 0, 1.0, 0.5),  # no objects, no support
+        (1, 0, 1.0, 1.0),  # one object supports, full support
+        (1, 0, 0.0, 0.5),  # one object supports, full support
+        (0, 1, 0.0, 0.0),  # one object doesn't support, no support
+        (0, 1, 1.0, 0.5),  # one object doesn't support, no support
+        (2, 0, 0.0, 0.5),  # all objects support, full support
+        (2, 0, 1.0, 1.0),  # all objects support, full support
+        (1, 1, 0.0, 0.25),  # half of the objects support, half support
+        (1, 1, 1.0, 0.75),  # half of the objects support, half support
+        (0, 2, 0.0, 0.0),  # no objects support, no support
+        (0, 2, 1.0, 0.5),  # no objects support, no support
+    ],
+)
+def test_support(supporting_objects, non_supporting_objects, activation, expected):
+    node = Slipnode("node", 1)
+    node.activation = activation
+    workspace_string = SimpleNamespace(name="workspace_string", objects=[])
+    for _ in range(supporting_objects):
+        obj = SimpleNamespace(name="object")
+        obj.has_description_type = lambda x: True
+        workspace_string.objects.append(obj)
+    for _ in range(non_supporting_objects):
+        obj = SimpleNamespace(name="object")
+        obj.has_description_type = lambda x: False
+        workspace_string.objects.append(obj)
+    assert node.total_description_type_support(workspace_string) == expected
