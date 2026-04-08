@@ -74,6 +74,14 @@ class Slipnode:
                 return True
         return False
 
+    def is_directed(self) -> bool:
+        return self.name in (
+            "predecessor",
+            "successor",
+            "predecessor_group",
+            "successor_group",
+        )
+
     def get_similar_has_property_links(self, temperature: float) -> List["Sliplink"]:
         return [
             link
