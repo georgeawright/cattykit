@@ -34,7 +34,7 @@ class TopDownDirectionBondScout(BondScout):
             )
         )
         target_string_relevance = (
-            self.workspace.target_string.get_local_bond_category_relevance(
+            self.workspace.target_string.get_local_direction_category_relevance(
                 self.direction_category
             )
         )
