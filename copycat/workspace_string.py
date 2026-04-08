@@ -171,3 +171,17 @@ class WorkspaceString:
             and obj.right_bond.bond_category == bond_category
         )
         return bond_count / (len(self.non_string_spanning_objects) - 1)
+
+    def get_local_direction_category_relevance(
+        self, direction_category: "Slipnode"
+    ) -> float:
+        """A rough estimate of the relevance of direction category in this string."""
+        if len(self.non_string_spanning_objects) <= 1:
+            return 0
+        bond_count = sum(
+            1
+            for obj in self.non_string_spanning_objects
+            if obj.right_bond is not None
+            and obj.right_bond.direction_category == direction_category
+        )
+        return bond_count / (len(self.non_string_spanning_objects) - 1)
