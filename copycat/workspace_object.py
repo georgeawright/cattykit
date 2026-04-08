@@ -54,6 +54,12 @@ class WorkspaceObject:
     def has_description(self, description: "Description") -> bool:
         return description in self.descriptions
 
+    def get_descriptor(self, facet: "Slipnode") -> Union["Slipnode", None]:
+        for description in self.descriptions:
+            if description.facet == facet:
+                return description.descriptor
+        return None
+
     def has_recursive_group_member(self, other_object) -> bool:
         if self == other_object:
             return True

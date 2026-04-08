@@ -6,8 +6,6 @@ import pytest
 
 from copycat import Coderack
 
-random.seed(1)
-
 
 @pytest.mark.parametrize(
     ["bin_populations", "total_population"],
@@ -130,6 +128,7 @@ def test_post_many():
 
 
 def test_choose():
+    random.seed(1)
     codelets = [SimpleNamespace(urgency_bin=i % 7) for i in range(7)]
     coderack = Coderack.create(7, 100)
     temperature = 0.0

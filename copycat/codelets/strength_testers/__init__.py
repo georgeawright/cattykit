@@ -1,1 +1,2 @@
+from .bond_strength_tester import BondStrengthTester
 from .description_strength_tester import DescriptionStrengthTester
