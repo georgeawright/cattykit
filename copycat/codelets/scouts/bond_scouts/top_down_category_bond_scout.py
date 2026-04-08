@@ -57,7 +57,7 @@ class TopDownCategoryBondScout(BondScout):
         object_1 = string.choose_object(temperature, lambda x: x.intra_string_salience)
         if object_1 is None:
             return
-        object_2 = object_1.choose_neighbor(temperature)
+        object_2 = object_1.choose_neighbor()
         if object_2 is None:
             return
         bond_facet = self._choose_bond_facet(object_1, object_2)
