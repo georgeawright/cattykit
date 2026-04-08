@@ -180,3 +180,20 @@ def test_choose_from_leftmost_objects():
     workspace_string.add_letter(c)
     workspace_string.add_group(abc)
     assert workspace_string.choose_from_leftmost_objects() in (a, abc)
+
+
+def test_get_local_bond_category_relevance():
+    workspace_string = WorkspaceString()
+    category = SimpleNamespace(name="category")
+    assert workspace_string.get_local_bond_category_relevance(category) == 0.0
+
+    bond = SimpleNamespace(bond_category=category)
+    object_1 = SimpleNamespace(right_bond=bond, spans_whole_string=False)
+    object_2 = SimpleNamespace(right_bond=None, spans_whole_string=False)
+    workspace_string.add_letter(object_1)
+    workspace_string.add_letter(object_2)
+    assert workspace_string.get_local_bond_category_relevance(category) == 1.0
+
+    object_3 = SimpleNamespace(right_bond=None, spans_whole_string=False)
+    workspace_string.add_letter(object_3)
+    assert workspace_string.get_local_bond_category_relevance(category) == 0.5

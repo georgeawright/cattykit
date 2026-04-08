@@ -20,6 +20,8 @@ class WorkspaceObject:
         self.total_salience = 0
         self.descriptions: List["Description"] = []
         self.extrinsic_descriptions: List["Description"] = []
+        self.right_bond: Optional["Bond"] = None
+        self.left_bond: Optional["Bond"] = None
         self.outgoing_bonds: List["Bond"] = []
         self.incoming_bonds: List["Bond"] = []
         self.group = None

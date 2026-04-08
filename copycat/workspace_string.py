@@ -159,3 +159,15 @@ class WorkspaceString:
             return random.choices(leftmost_objects, weights=weights, k=1)[0]
         except IndexError:
             return None
+
+    def get_local_bond_category_relevance(self, bond_category: "Slipnode") -> float:
+        """A rough estimate of the relevance of bond category in this string."""
+        if len(self.non_string_spanning_objects) <= 1:
+            return 0
+        bond_count = sum(
+            1
+            for obj in self.non_string_spanning_objects
+            if obj.right_bond is not None
+            and obj.right_bond.bond_category == bond_category
+        )
+        return bond_count / (len(self.non_string_spanning_objects) - 1)
