@@ -1,6 +1,6 @@
 import random
 
-from copycat.codelets.scouts import BondScout
+from copycat.codelets.scouts.bond_scout import BondScout
 from copycat.slipnode import Slipnode
 
 
@@ -11,7 +11,7 @@ class TopDownCategoryBondScout(BondScout):
     poses a bond strength tester with urgency a function of the degree of association
     of bonds of the bond category."""
 
-    def __init___(
+    def __init__(
         self,
         urgency_bin: int,
         coderack: "Coderack",
@@ -19,7 +19,12 @@ class TopDownCategoryBondScout(BondScout):
         workspace: "Workspace",
         bond_category: Slipnode,
     ):
-        super().__init__(urgency_bin, coderack, slipnet, workspace)
+        super().__init__(
+            urgency_bin=urgency_bin,
+            coderack=coderack,
+            workspace=workspace,
+            slipnet=slipnet,
+        )
         self.bond_category = bond_category
 
     def run(self, temperature: float):
