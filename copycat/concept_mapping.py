@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional
 
 from .slipnode import Slipnode
 from .workspace_object import WorkspaceObject
@@ -11,9 +12,9 @@ class ConceptMapping:
         description_type_2: Slipnode,
         descriptor_1: Slipnode,
         descriptor_2: Slipnode,
-        label: Slipnode,
-        object_1: WorkspaceObject,
-        object_2: WorkspaceObject,
+        label: Optional[Slipnode],
+        object_1: Optional[WorkspaceObject],
+        object_2: Optional[WorkspaceObject],
     ):
         self.description_type_1 = description_type_1
         self.description_type_2 = description_type_2
