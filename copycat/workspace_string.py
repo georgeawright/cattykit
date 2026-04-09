@@ -87,59 +87,69 @@ class WorkspaceString:
 
     def add_proposed_bond(self, bond):
         """Add to a maintained list of proposed bonds between two nodes."""
-        self.proposed_bonds_by_role[bond.from_node.id][bond.to_node.id].append(bond)
+        self.proposed_bonds_by_role[bond.from_object.id][bond.to_object.id].append(bond)
 
     def delete_proposed_bond(self, bond):
-        """Delete from a maintained list of proposed bonds between two nodes."""
-        self.proposed_bonds_by_role[bond.from_node.id][bond.to_node.id].remove(bond)
+        """Delete from a maintained list of proposed bonds between two objects."""
+        self.proposed_bonds_by_role[bond.from_object.id][bond.to_object.id].remove(bond)
 
     def add_bond(self, bond):
-        """Add the only bond between two nodes."""
-        self.bonds_by_role[bond.from_node.id][bond.to_node.id] = bond
-        self.bonds_by_position[bond.left_node.id][bond.right_node.id] = bond
+        """Add the only bond between two objects."""
+        self.bonds_by_role[bond.from_object.id][bond.to_object.id] = bond
+        self.bonds_by_position[bond.left_object.id][bond.right_object.id] = bond
         if bond.is_sameness_bond:
-            self.bonds_by_role[bond.to_node.id][bond.from_node.id] = bond
-            self.bonds_by_position[bond.left_node.id][bond.right_node.id] = bond
+            self.bonds_by_role[bond.to_object.id][bond.from_object.id] = bond
+            self.bonds_by_position[bond.left_object.id][bond.right_object.id] = bond
+
+    def break_bond(self, bond):
+        self.delete_bond(bond)
+        bond.from_object.outgoing_bonds.remove(bond)
+        bond.to_object.incoming_bonds.remove(bond)
+        if bond.is_sameness_bond:
+            bond.to_object.outgoing_bonds.remove(bond)
+            bond.from_object.incoming_bonds.remove(bond)
+        bond.left_object.right_bond = None
+        bond.right_object.left_bond = None
 
     def delete_bond(self, bond):
-        """Delete the only bond between two nodes."""
-        self.bonds_by_role[bond.from_node.id][bond.to_node.id] = None
-        self.bonds_by_position[bond.left_node.id][bond.right_node.id] = None
+        """Delete the only bond between two objects."""
+        self.bonds_by_role[bond.from_object.id][bond.to_object.id] = None
+        self.bonds_by_position[bond.left_object.id][bond.right_object.id] = None
         if bond.is_sameness_bond:
-            self.bonds_by_role[bond.to_node.id][bond.from_node.id] = None
-            self.bonds_by_position[bond.left_node.id][bond.right_node.id] = None
+            self.bonds_by_role[bond.to_object.id][bond.from_object.id] = None
+            self.bonds_by_position[bond.left_object.id][bond.right_object.id] = None
 
     def get_bond_if_present(self, bond):
         """Return the equivalent bond if it is already in the string, else False."""
-        existing_bond = self.bonds_by_role[bond.from_node.id][bond.to_node.id]
+        existing_bond = self.bonds_by_role[bond.from_object.id][bond.to_object.id]
         if existing_bond == bond:
             return existing_bond
         return False
 
     def add_proposed_group(self, group):
-        """Add to a list of proposed groups spanning from one node to another."""
-        self._proposed_groups[group.left_node.id][group.right_node.id].append(group)
+        """Add to a list of proposed groups spanning from one object to another."""
+        self._proposed_groups[group.left_object.id][group.right_object.id].append(group)
 
     def delete_proposed_group(self, group):
-        """Delete from a list of proposed bonds spanning from one node to another."""
-        self._proposed_groups[group.left_node.id][group.right_node.id].remove(group)
+        """Delete from a list of proposed bonds spanning from one object to another."""
+        self._proposed_groups[group.left_object.id][group.right_object.id].remove(group)
 
     def add_group(self, group):
-        """Add the only group spanning from one node to another."""
-        self._groups[group.left_node.id] = group
+        """Add the only group spanning from one object to another."""
+        self._groups[group.left_object.id] = group
         self.object_positions[group.left_position].append(group)
         self.object_positions[group.right_position].append(group)
 
     def delete_group(self, group):
-        """Delete the only group spanning from one node to another."""
-        self._groups[group.left_node.id] = None
+        """Delete the only group spanning from one object to another."""
+        self._groups[group.left_object.id] = None
         self.object_positions[group.left_position].remove(group)
         self.object_positions[group.right_position].remove(group)
 
     def get_group_if_present(self, group):
         """Return the equivalent group if it is already in the string, else False."""
         try:
-            existing_group = self._groups[group.left_node.id]
+            existing_group = self._groups[group.left_object.id]
         except KeyError:
             return False
         if existing_group == group:

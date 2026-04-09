@@ -6,21 +6,24 @@ import pytest
 from copycat import WorkspaceString
 
 
-class MockNode(NamedTuple):
-    id: str
+class MockObject:
+    def __init__(self, id):
+        self.id = id
+        self.outgoing_bonds = []
+        self.incoming_bonds = []
 
 
 class MockBond(NamedTuple):
-    from_node: MockNode
-    to_node: MockNode
-    left_node: MockNode
-    right_node: MockNode
+    from_object: MockObject
+    to_object: MockObject
+    left_object: MockObject
+    right_object: MockObject
     is_sameness_bond: bool
 
 
 class MockGroup(NamedTuple):
-    left_node: MockNode
-    right_node: MockNode
+    left_object: MockObject
+    right_object: MockObject
     left_position: int
     right_position: int
 
@@ -78,13 +81,13 @@ def test_add_letter():
 def test_add_and_delete_proposed_bond():
     workspace_string = WorkspaceString()
     assert 0 == len(workspace_string.proposed_bonds)
-    from_node = MockNode(id="a")
-    to_node = MockNode(id="b")
+    from_object = MockObject(id="a")
+    to_object = MockObject(id="b")
     proposed_bond = MockBond(
-        from_node=from_node,
-        to_node=to_node,
-        left_node=from_node,
-        right_node=to_node,
+        from_object=from_object,
+        to_object=to_object,
+        left_object=from_object,
+        right_object=to_object,
         is_sameness_bond=True,
     )
     workspace_string.add_proposed_bond(proposed_bond)
@@ -96,50 +99,59 @@ def test_add_and_delete_proposed_bond():
 def test_add_get_and_delete_sameness_bond():
     workspace_string = WorkspaceString()
     assert 0 == len(workspace_string.bonds)
-    from_node = MockNode(id="a")
-    to_node = MockNode(id="b")
+    from_object = MockObject(id="a")
+    to_object = MockObject(id="b")
     bond = MockBond(
-        from_node=from_node,
-        to_node=to_node,
-        left_node=from_node,
-        right_node=to_node,
+        from_object=from_object,
+        to_object=to_object,
+        left_object=from_object,
+        right_object=to_object,
         is_sameness_bond=True,
     )
     assert False == workspace_string.get_bond_if_present(bond)
     workspace_string.add_bond(bond)
     assert 1 == len(workspace_string.bonds)
     assert bond == workspace_string.get_bond_if_present(bond)
-    workspace_string.delete_bond(bond)
+    from_object.outgoing_bonds.append(bond)
+    from_object.incoming_bonds.append(bond)
+    to_object.outgoing_bonds.append(bond)
+    to_object.incoming_bonds.append(bond)
+    workspace_string.break_bond(bond)
     assert 0 == len(workspace_string.bonds)
 
 
 def test_add_and_delete_non_sameness_bond():
     workspace_string = WorkspaceString()
     assert 0 == len(workspace_string.bonds)
-    from_node = MockNode(id="a")
-    to_node = MockNode(id="b")
+    from_object = MockObject(id="a")
+    to_object = MockObject(id="b")
     bond = MockBond(
-        from_node=from_node,
-        to_node=to_node,
-        left_node=from_node,
-        right_node=to_node,
+        from_object=from_object,
+        to_object=to_object,
+        left_object=from_object,
+        right_object=to_object,
         is_sameness_bond=False,
     )
     assert False == workspace_string.get_bond_if_present(bond)
     workspace_string.add_bond(bond)
     assert 1 == len(workspace_string.bonds)
     assert bond == workspace_string.get_bond_if_present(bond)
-    workspace_string.delete_bond(bond)
+    from_object.outgoing_bonds.append(bond)
+    to_object.incoming_bonds.append(bond)
+    workspace_string.break_bond(bond)
     assert 0 == len(workspace_string.bonds)
 
 
 def test_add_and_delete_proposed_group():
     workspace_string = WorkspaceString()
     assert 0 == len(workspace_string.proposed_groups)
-    left_node = MockNode(id="a")
-    right_node = MockNode(id="b")
+    left_object = MockObject(id="a")
+    right_object = MockObject(id="b")
     proposed_group = MockGroup(
-        left_node=left_node, right_node=right_node, left_position=1, right_position=2
+        left_object=left_object,
+        right_object=right_object,
+        left_position=1,
+        right_position=2,
     )
     workspace_string.add_proposed_group(proposed_group)
     assert 1 == len(workspace_string.proposed_groups)
@@ -150,10 +162,13 @@ def test_add_and_delete_proposed_group():
 def test_add_get_and_delete_group():
     workspace_string = WorkspaceString()
     assert 0 == len(workspace_string.groups)
-    left_node = MockNode(id="a")
-    right_node = MockNode(id="b")
+    left_object = MockObject(id="a")
+    right_object = MockObject(id="b")
     group = MockGroup(
-        left_node=left_node, right_node=right_node, left_position=1, right_position=2
+        left_object=left_object,
+        right_object=right_object,
+        left_position=1,
+        right_position=2,
     )
     assert False == workspace_string.get_group_if_present(group)
     workspace_string.add_group(group)
@@ -169,7 +184,7 @@ def test_choose_from_leftmost_objects():
     b = SimpleNamespace(id="b", is_leftmost=False, relative_importance=0.1)
     c = SimpleNamespace(id="c", is_leftmost=False, relative_importance=0.1)
     abc = SimpleNamespace(
-        left_node=a,
+        left_object=a,
         left_position=0,
         right_position=2,
         is_leftmost=True,
