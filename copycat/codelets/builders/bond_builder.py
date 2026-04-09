@@ -1,3 +1,6 @@
+from typing import List
+
+from copycat.concept_mapping import ConceptMapping
 from copycat.codelets.builder import Builder
 from copycat.workspace_structures.bond import Bond
 
@@ -74,7 +77,7 @@ class BondBuilder(Builder):
     ):
         pass
 
-    def _get_incompatible_bonds(self):
+    def _get_incompatible_bonds(self) -> List[Bond]:
         incompatble_bonds = [self.proposed_bond.left_object.right_bond]
         if (
             self.proposed_bond.right_object.left_bond
@@ -83,7 +86,7 @@ class BondBuilder(Builder):
             incompatble_bonds.append(self.proposed_bond.right_object.left_bond)
         return incompatble_bonds
 
-    def _get_incompatible_groups(self):
+    def _get_incompatible_groups(self) -> List["Group"]:
         return [
             group
             for group in self.proposed_bond.string.groups
@@ -91,5 +94,53 @@ class BondBuilder(Builder):
             and group.has_recursive_member(self.proposed_bond.right_object)
         ]
 
-    def _get_incompatible_correspondences(self):
-        pass
+    def _get_incompatible_correspondences(self) -> List["Correspondence"]:
+        if self.proposed_bond.direction_category is None:
+            return []
+        incompatible_correspondences = []
+        if self.proposed_bond.is_leftmost_in_string():
+            correspondence = self.proposed_bond.left_object.correspondence
+            if correspondence is not None and self._correspondence_is_incompatible(
+                correspondence
+            ):
+                incompatible_correspondences.append(correspondence)
+        if self.proposed_bond.is_rightmost_in_string():
+            correspondence = self.proposed_bond.right_object.correspondence
+            if correspondence is not None and self._correspondence_is_incompatible(
+                correspondence
+            ):
+                incompatible_correspondences.append(correspondence)
+        return incompatible_correspondences
+
+    def _correspondence_is_incompatible(self, correspondence: "Correspondence") -> bool:
+        string_position_category_concept_mapping = next(
+            (
+                mapping
+                for mapping in correspondence.concept_mappings
+                if mapping.description_type_1.name == "string_position_category"
+            ),
+            None,
+        )
+        if string_position_category_concept_mapping is None:
+            return False
+        other_object = correspondence.other_object(self.proposed_bond.left_object)
+        if other_object.is_leftmost_in_string():
+            other_bond = other_object.right_bond
+        elif other_object.is_rightmost_in_string():
+            other_bond = other_object.left_bond
+        else:
+            return False
+        if other_bond is None or other_bond.direction_category is None:
+            return False
+        bond_concept_mapping = ConceptMapping(
+            description_type_1=self.slipnet.direction_category,
+            description_type_2=self.slipnet.direction_category,
+            value1=self.proposed_bond.direction_category,
+            value2=other_bond.direction_category,
+        )
+        if bond_concept_mapping.is_incompatible_with(
+            string_position_category_concept_mapping
+        ):
+            return True
+        else:
+            return False
