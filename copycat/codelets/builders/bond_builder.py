@@ -25,4 +25,71 @@ class BondBuilder(Builder):
         self.proposed_bond = proposed_bond
 
     def run(self, temperature: float):
-        raise NotImplementedError
+        if (
+            self.proposed_bond.from_object not in self.workspace.objects
+            or self.proposed_bond.to_object not in self.workspace.objects
+        ):
+            return
+        if self.proposed_bond in self.proposed_bond.string.bonds:
+            return
+        self.proposed_bond.string.delete_proposed_bond(self.proposed_bond)
+        incompatible_bonds = self._get_incompatible_bonds()
+        if incompatible_bonds:
+            fight_result = self.fight_it_out(
+                self.proposed_bond, 1, incompatible_bonds, 1
+            )
+            if not fight_result:
+                return
+        incompatible_groups = self._get_incompatible_groups()
+        if incompatible_groups:
+            fight_result = self.fight_it_out(
+                self.proposed_bond,
+                1,
+                incompatible_groups,
+                max([g.letter_span for g in incompatible_groups]),
+            )
+            if not fight_result:
+                return
+        incompatible_correspondences = self._get_incompatible_correspondences()
+        if incompatible_correspondences:
+            fight_result = self.fight_it_out(
+                self.proposed_bond, 2, incompatible_correspondences, 3
+            )
+            if not fight_result:
+                return
+        for group in incompatible_groups:
+            group.break_group()
+        for bond in incompatible_bonds:
+            bond.break_bond()
+        for correspondence in incompatible_correspondences:
+            correspondence.break_correspondence()
+        self.proposed_bond.build_bond()
+
+    def fight_it_out(
+        self,
+        proposed_bond,
+        proposed_bond_weight,
+        incompatible_structures,
+        incompatible_structure_weight,
+    ):
+        pass
+
+    def _get_incompatible_bonds(self):
+        incompatble_bonds = [self.proposed_bond.left_object.right_bond]
+        if (
+            self.proposed_bond.right_object.left_bond
+            != self.proposed_bond.left_object.right_bond
+        ):
+            incompatble_bonds.append(self.proposed_bond.right_object.left_bond)
+        return incompatble_bonds
+
+    def _get_incompatible_groups(self):
+        return [
+            group
+            for group in self.proposed_bond.string.groups
+            if group.has_recursive_member(self.proposed_bond.left_object)
+            and group.has_recursive_member(self.proposed_bond.right_object)
+        ]
+
+    def _get_incompatible_correspondences(self):
+        pass
