@@ -1,4 +1,8 @@
+import random
+
+from copycat.codelets.builders import BondBuilder
 from copycat.codelets.strength_tester import StrengthTester
+from copycat.tools import temperature_adjust
 from copycat.workspace_structures.bond import Bond
 
 
@@ -25,4 +29,22 @@ class BondStrengthTester(StrengthTester):
         self.proposed_bond = proposed_bond
 
     def run(self, temperature: float):
-        raise NotImplementedError
+        self.proposed_bond.update_strength_values()
+        build_probability = temperature_adjust(
+            self.proposed_bond.total_strength, temperature
+        )
+        if build_probability < random.random():
+            self.proposed_bond.string.delete_proposed_bond(self.proposed_bond)
+            return
+        urgency = self.coderack.get_urgency_level_from_activation(
+            self.proposed_bond.total_strength
+        )
+        self.coderack.post(
+            BondBuilder(
+                urgency_bin=urgency,
+                coderack=self.coderack,
+                slipnet=self.slipnet,
+                workspace=self.workspace,
+                proposed_bond=self.proposed_bond,
+            )
+        )

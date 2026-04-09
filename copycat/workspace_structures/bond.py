@@ -13,6 +13,7 @@ class Bond(WorkspaceStructure):
     ):
         self.from_object = from_object
         self.to_object = to_object
+        self.string = from_object.string
         (self.left_object, self.right_object) = (
             (from_object, to_object)
             if from_object.left_position < to_object.left_position
