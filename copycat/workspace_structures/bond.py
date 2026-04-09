@@ -1,15 +1,18 @@
+from typing import Optional
+
 from copycat.workspace_structure import WorkspaceStructure
 
 
 class Bond(WorkspaceStructure):
     def __init__(
         self,
-        from_object,
-        to_object,
-        bond_category,
-        bond_facet,
-        from_object_descriptor,
-        to_object_descriptor,
+        from_object: "WorkspaceObject",
+        to_object: "WorkspaceObject",
+        bond_category: "Slipnode",
+        direction_category: Optional["Slipnode"],
+        bond_facet: "Slipnode",
+        from_object_descriptor: "Slipnode",
+        to_object_descriptor: "Slipnode",
     ):
         self.from_object = from_object
         self.to_object = to_object
@@ -20,6 +23,7 @@ class Bond(WorkspaceStructure):
             else (to_object, from_object)
         )
         self.bond_category = bond_category
+        self.direction_category = direction_category
         self.bond_facet = bond_facet
         self.from_object_descriptor = from_object_descriptor
         self.to_object_descriptor = to_object_descriptor

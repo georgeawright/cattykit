@@ -24,6 +24,9 @@ def test_run():
         def __init__(self):
             self.activate_called = 0
 
+        def __getitem__(self, name):
+            return SimpleNamespace(name=name)
+
         def activate_node_from_workspace(self, name):
             self.activate_called += 1
 

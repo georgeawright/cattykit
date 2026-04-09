@@ -24,13 +24,19 @@ class BondScout(Scout):
         self.slipnet.activate_node_from_workspace(from_obj_descriptor.name)
         self.slipnet.activate_node_from_workspace(to_obj_descriptor.name)
         self.slipnet.activate_node_from_workspace(bond_facet.name)
+        direction_category = (
+            self.slipnet["right"]
+            if from_obj.left_position < to_obj.left_position
+            else self.slipnet["left"]
+        )
         proposed_bond = Bond(
-            from_obj,
-            to_obj,
-            bond_category,
-            bond_facet,
-            from_obj_descriptor,
-            to_obj_descriptor,
+            from_object=from_obj,
+            to_object=to_obj,
+            bond_category=bond_category,
+            direction_category=direction_category,
+            bond_facet=bond_facet,
+            from_object_descriptor=from_obj_descriptor,
+            to_object_descriptor=to_obj_descriptor,
         )
         proposed_bond.proposal_level = 1
         from_obj.string.add_proposed_bond(proposed_bond)

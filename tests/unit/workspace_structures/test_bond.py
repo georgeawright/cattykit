@@ -42,7 +42,7 @@ def test_calculate_internal_strength(
         bond_degree_of_association=bond_degree_of_association
     )
     bond_facet = SimpleNamespace(name=bond_facet_name)
-    bond = Bond(from_object, to_object, bond_category, bond_facet, None, None)
+    bond = Bond(from_object, to_object, bond_category, None, bond_facet, None, None)
 
     actual = bond.calculate_internal_strength()
     assert expected == pytest.approx(actual)
@@ -70,10 +70,14 @@ def test_calculate_external_strength():
     object_2.choose_right_neighbor = lambda: object_3
     object_3.choose_right_neighbor = lambda: None
 
-    bond_0_1 = Bond(object_0, object_1, successor_category, letter_category, None, None)
-    bond_1_2 = Bond(object_1, object_2, successor_category, letter_category, None, None)
+    bond_0_1 = Bond(
+        object_0, object_1, successor_category, None, letter_category, None, None
+    )
+    bond_1_2 = Bond(
+        object_1, object_2, successor_category, None, letter_category, None, None
+    )
     bond_2_3 = Bond(
-        object_3, object_2, predecessor_category, letter_category, None, None
+        object_3, object_2, predecessor_category, None, letter_category, None, None
     )
 
     string.bonds = [bond_0_1, bond_1_2, bond_2_3]
