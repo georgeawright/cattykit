@@ -169,6 +169,16 @@ class Workspace:
             return False
         return existing_correspondence == correspondence
 
+    def break_bond(self, bond):
+        bond.from_object.string.delete_bond(bond)
+        bond.from_object.outgoing_bonds.remove(bond)
+        bond.to_object.incoming_bonds.remove(bond)
+        if bond.is_sameness_bond:
+            bond.to_object.outgoing_bonds.remove(bond)
+            bond.from_object.incoming_bonds.remove(bond)
+        bond.left_object.right_bond = None
+        bond.right_object.left_bond = None
+
     def contains_slippage(self, slippage) -> bool:
         """Returns True if the workspace contains the slippage."""
         return slippage in self.slippages

@@ -4,10 +4,22 @@ from typing import NamedTuple
 from copycat import Workspace
 
 
+class MockString:
+    def __init__(self, objects):
+        self.objects = objects
+        self.called_delete_bond = 0
+
+    def delete_bond(self, bond):
+        self.called_delete_bond += 1
+
+
 class MockObject:
-    def __init__(self, id):
+    def __init__(self, id, string=None):
         self.id = id
+        self.string = string
         self.correspondence = None
+        self.outgoing_bonds = []
+        self.incoming_bonds = []
 
 
 class MockCorrespondence(NamedTuple):
@@ -43,6 +55,24 @@ def test_add_get_and_break_correspondence():
     to_object.correspondence = correspondence
     workspace.break_correspondence(correspondence)
     assert 0 == len(workspace.correspondences)
+
+
+def test_break_bond():
+    workspace = Workspace(None, None, None, None)
+    string = MockString(objects=[])
+    from_object = MockObject(id="a", string=string)
+    to_object = MockObject(id="b", string=string)
+    bond = SimpleNamespace(
+        from_object=from_object,
+        to_object=to_object,
+        is_sameness_bond=False,
+        left_object=from_object,
+        right_object=to_object,
+    )
+    from_object.outgoing_bonds.append(bond)
+    to_object.incoming_bonds.append(bond)
+    workspace.break_bond(bond)
+    assert string.called_delete_bond == 1
 
 
 def test_letters_without_replacement():

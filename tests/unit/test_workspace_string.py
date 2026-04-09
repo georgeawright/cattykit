@@ -112,11 +112,7 @@ def test_add_get_and_delete_sameness_bond():
     workspace_string.add_bond(bond)
     assert 1 == len(workspace_string.bonds)
     assert bond == workspace_string.get_bond_if_present(bond)
-    from_object.outgoing_bonds.append(bond)
-    from_object.incoming_bonds.append(bond)
-    to_object.outgoing_bonds.append(bond)
-    to_object.incoming_bonds.append(bond)
-    workspace_string.break_bond(bond)
+    workspace_string.delete_bond(bond)
     assert 0 == len(workspace_string.bonds)
 
 
@@ -136,9 +132,7 @@ def test_add_and_delete_non_sameness_bond():
     workspace_string.add_bond(bond)
     assert 1 == len(workspace_string.bonds)
     assert bond == workspace_string.get_bond_if_present(bond)
-    from_object.outgoing_bonds.append(bond)
-    to_object.incoming_bonds.append(bond)
-    workspace_string.break_bond(bond)
+    workspace_string.delete_bond(bond)
     assert 0 == len(workspace_string.bonds)
 
 

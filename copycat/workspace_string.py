@@ -101,16 +101,6 @@ class WorkspaceString:
             self.bonds_by_role[bond.to_object.id][bond.from_object.id] = bond
             self.bonds_by_position[bond.left_object.id][bond.right_object.id] = bond
 
-    def break_bond(self, bond):
-        self.delete_bond(bond)
-        bond.from_object.outgoing_bonds.remove(bond)
-        bond.to_object.incoming_bonds.remove(bond)
-        if bond.is_sameness_bond:
-            bond.to_object.outgoing_bonds.remove(bond)
-            bond.from_object.incoming_bonds.remove(bond)
-        bond.left_object.right_bond = None
-        bond.right_object.left_bond = None
-
     def delete_bond(self, bond):
         """Delete the only bond between two objects."""
         self.bonds_by_role[bond.from_object.id][bond.to_object.id] = None
