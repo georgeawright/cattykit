@@ -18,6 +18,7 @@ class MockLetter:
 class MockGroup:
     def __init__(self, left_position):
         self.left_position = left_position
+        self.string = SimpleNamespace()
 
 
 @pytest.mark.parametrize(
