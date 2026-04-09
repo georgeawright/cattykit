@@ -36,6 +36,13 @@ class BondStrengthTester(StrengthTester):
         if build_probability < random.random():
             self.proposed_bond.string.delete_proposed_bond(self.proposed_bond)
             return
+        self.slipnet.activate_node_from_workspace(
+            self.proposed_bond.from_object_descriptor.name
+        )
+        self.slipnet.activate_node_from_workspace(
+            self.proposed_bond.to_object_descriptor.name
+        )
+        self.slipnet.activate_node_from_workspace(self.proposed_bond.bond_facet.name)
         urgency = self.coderack.get_urgency_level_from_activation(
             self.proposed_bond.total_strength
         )

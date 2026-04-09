@@ -1,4 +1,4 @@
-from copycat.codelets import Builder
+from copycat.codelets.builder import Builder
 from copycat.workspace_structures.bond import Bond
 
 
