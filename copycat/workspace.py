@@ -135,29 +135,36 @@ class Workspace:
             obj.update_values()
 
     def add_proposed_correspondence(self, correspondence):
-        """Add to a maintained list of proposed correspondences between two nodes."""
-        from_id = correspondence.from_node.id
-        to_id = correspondence.to_node.id
+        """Add to a maintained list of proposed correspondences between two objects."""
+        from_id = correspondence.from_object.id
+        to_id = correspondence.to_object.id
         self._proposed_correspondences[from_id][to_id].append(correspondence)
 
     def delete_proposed_correspondence(self, correspondence):
-        """Delete from a maintained list of proposed correspondences between two nodes."""
-        from_id = correspondence.from_node.id
-        to_id = correspondence.to_node.id
+        """Delete from a maintained list of proposed correspondences between two objects."""
+        from_id = correspondence.from_object.id
+        to_id = correspondence.to_object.id
         self._proposed_correspondences[from_id][to_id].remove(correspondence)
 
     def add_correspondence(self, correspondence):
-        """Add the only correspondence between two nodes."""
-        self._correspondences[correspondence.from_node.id] = correspondence
+        """Add the only correspondence between two objects."""
+        self._correspondences[correspondence.from_object.id] = correspondence
+
+    def break_correspondence(self, correspondence):
+        correspondence.from_object.correspondence = None
+        correspondence.to_object.correspondence = None
+        self.delete_correspondence(correspondence)
 
     def delete_correspondence(self, correspondence):
-        """Delete the only correspondence between two nodes."""
-        self._correspondences[correspondence.from_node.id] = None
+        """Delete the only correspondence between two objects."""
+        self._correspondences[correspondence.from_object.id] = None
 
     def contains_correspondence(self, correspondence) -> bool:
         """Returns True if the workspace contains the correspondence."""
         try:
-            existing_correspondence = self._correspondences[correspondence.from_node.id]
+            existing_correspondence = self._correspondences[
+                correspondence.from_object.id
+            ]
         except KeyError:
             return False
         return existing_correspondence == correspondence
@@ -206,7 +213,7 @@ class Workspace:
         return [
             bond
             for bond in self.bonds
-            if bond.from_node.group is None or bond.to_node.group is None
+            if bond.from_object.group is None or bond.to_object.group is None
         ]
 
     @property
