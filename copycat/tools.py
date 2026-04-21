@@ -1,3 +1,6 @@
+import math
+import random
+
 TEMPERATURE_SCALER = 0.3
 TEMPERATURE_EXPONENT_FLOOR = 0.005
 
@@ -5,6 +8,11 @@ TEMPERATURE_EXPONENT_FLOOR = 0.005
 def temperature_adjust(value, temperature):
     exponent = (1 - temperature) / TEMPERATURE_SCALER + TEMPERATURE_EXPONENT_FLOOR
     return value**exponent
+
+
+def temperature_adjust_list(values, temperature):
+    exponent = (1 - temperature) / TEMPERATURE_SCALER + TEMPERATURE_EXPONENT_FLOOR
+    return [value**exponent for value in values]
 
 
 def describe_count(n):
@@ -23,3 +31,35 @@ def blur(n):
     k = random.randint(0, blur_amount)
     sign = random.choice((1, -1))
     return n + sign * k
+
+
+def structure_beats_structures(
+    proposed_structure,
+    proposed_structure_weight,
+    incompatible_structures,
+    incompatible_structure_weight,
+    temperature: float,
+):
+    for competing_structure in incompatible_structures:
+        if not structure_1_beats_structure_2(
+            proposed_structure,
+            proposed_structure_weight,
+            competing_structure,
+            incompatible_structure_weight,
+            temperature,
+        ):
+            return False
+    return True
+
+
+def structure_1_beats_structure_2(
+    structure_1, weight_1, structure_2, weight_2, temperature
+):
+    structure_1.update_strength_values()
+    structure_2.update_strength_values()
+    strength_list = [
+        structure_1.total_strength * weight_1,
+        structure_2.total_strength * weight_2,
+    ]
+    adjusted_strength_list = temperature_adjust_list(strength_list, temperature)
+    return random.choices([True, False], weights=adjusted_strength_list, k=1)[0]

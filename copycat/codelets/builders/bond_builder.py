@@ -2,6 +2,7 @@ from typing import List
 
 from copycat.concept_mapping import ConceptMapping
 from copycat.codelets.builder import Builder
+from copycat.tools import structure_beats_structures
 from copycat.workspace_structures.bond import Bond
 
 
@@ -38,25 +39,30 @@ class BondBuilder(Builder):
         self.proposed_bond.string.delete_proposed_bond(self.proposed_bond)
         incompatible_bonds = self._get_incompatible_bonds()
         if incompatible_bonds:
-            fight_result = self.fight_it_out(
-                self.proposed_bond, 1, incompatible_bonds, 1
+            fight_result = structure_beats_structures(
+                self.proposed_bond, 1, incompatible_bonds, 1, temperature=temperature
             )
             if not fight_result:
                 return
         incompatible_groups = self._get_incompatible_groups()
         if incompatible_groups:
-            fight_result = self.fight_it_out(
+            fight_result = structure_beats_structures(
                 self.proposed_bond,
                 1,
                 incompatible_groups,
                 max([g.letter_span for g in incompatible_groups]),
+                temperature=temperature,
             )
             if not fight_result:
                 return
         incompatible_correspondences = self._get_incompatible_correspondences()
         if incompatible_correspondences:
-            fight_result = self.fight_it_out(
-                self.proposed_bond, 2, incompatible_correspondences, 3
+            fight_result = structure_beats_structures(
+                self.proposed_bond,
+                2,
+                incompatible_correspondences,
+                3,
+                temperature=temperature,
             )
             if not fight_result:
                 return
@@ -67,15 +73,6 @@ class BondBuilder(Builder):
         for correspondence in incompatible_correspondences:
             self.workspace.break_correspondence(correspondence)
         self.build_bond()
-
-    def fight_it_out(
-        self,
-        proposed_bond,
-        proposed_bond_weight,
-        incompatible_structures,
-        incompatible_structure_weight,
-    ):
-        pass
 
     def build_bond(self):
         self.proposed_bond.string.add_bond(self.proposed_bond)
