@@ -8,9 +8,17 @@ class MockString:
     def __init__(self, objects):
         self.objects = objects
         self.called_delete_bond = 0
+        self.called_delete_group = 0
+        self.called_delete_proposed_bond = 0
 
     def delete_bond(self, bond):
         self.called_delete_bond += 1
+
+    def delete_group(self, group):
+        self.called_delete_group += 1
+
+    def delete_proposed_bond(self, proposed_bond):
+        self.called_delete_proposed_bond += 1
 
 
 class MockObject:
@@ -73,6 +81,40 @@ def test_break_bond():
     to_object.incoming_bonds.append(bond)
     workspace.break_bond(bond)
     assert string.called_delete_bond == 1
+
+
+def test_break_group():
+    workspace = Workspace(None, None, None, None)
+    string = MockString(objects=[])
+    left_object = MockObject(id="a", string=string)
+    right_object = MockObject(id="c", string=string)
+    group = SimpleNamespace(
+        group=None,
+        string=string,
+        left_position=0,
+        right_position=1,
+    )
+    bond = SimpleNamespace(
+        from_object=left_object,
+        to_object=group,
+        is_sameness_bond=False,
+        left_object=left_object,
+        right_object=group,
+    )
+    group.incoming_bonds = [bond]
+    group.outgoing_bonds = []
+    left_object.outgoing_bonds.append(bond)
+    proposed_bond = SimpleNamespace(
+        from_object=group,
+        to_object=right_object,
+        is_sameness_bond=False,
+        left_object=group,
+        right_object=None,
+    )
+    string.proposed_bonds = [proposed_bond]
+    workspace.break_group(group)
+    assert string.called_delete_group == 1
+    assert string.called_delete_proposed_bond == 1
 
 
 def test_letters_without_replacement():
