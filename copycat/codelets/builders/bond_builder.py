@@ -61,11 +61,11 @@ class BondBuilder(Builder):
             if not fight_result:
                 return
         for group in incompatible_groups:
-            group.break_group()
+            self.workspace.break_group(group)
         for bond in incompatible_bonds:
-            bond.break_bond()
+            self.workspace.break_bond(bond)
         for correspondence in incompatible_correspondences:
-            correspondence.break_correspondence()
+            self.workspace.break_correspondence(correspondence)
         self.proposed_bond.build_bond()
 
     def fight_it_out(
@@ -135,8 +135,11 @@ class BondBuilder(Builder):
         bond_concept_mapping = ConceptMapping(
             description_type_1=self.slipnet.direction_category,
             description_type_2=self.slipnet.direction_category,
-            value1=self.proposed_bond.direction_category,
-            value2=other_bond.direction_category,
+            descriptor_1=self.proposed_bond.direction_category,
+            descriptor_2=other_bond.direction_category,
+            label=None,
+            object_1=None,
+            object_2=None,
         )
         if bond_concept_mapping.is_incompatible_with(
             string_position_category_concept_mapping

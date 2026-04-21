@@ -179,6 +179,16 @@ class Workspace:
         bond.left_object.right_bond = None
         bond.right_object.left_bond = None
 
+    def break_group(self, group):
+        if group.group is not None:
+            self.break_group(group.group)
+        self.delete_group(group)
+        for bond in group.string.proposed_bonds:
+            if bond.left_object == group or bond.right_object == group:
+                group.string.delete_proposed_bond(bond)
+        for bond in group.incoming_bonds + group.outgoing_bonds:
+            self.break_bond(bond)
+
     def contains_slippage(self, slippage) -> bool:
         """Returns True if the workspace contains the slippage."""
         return slippage in self.slippages
