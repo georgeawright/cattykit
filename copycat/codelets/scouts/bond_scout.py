@@ -25,7 +25,9 @@ class BondScout(Scout):
         self.slipnet.activate_node_from_workspace(to_obj_descriptor.name)
         self.slipnet.activate_node_from_workspace(bond_facet.name)
         direction_category = (
-            self.slipnet["right"]
+            None
+            if bond_category.name == "sameness"
+            else self.slipnet["right"]
             if from_obj.left_position < to_obj.left_position
             else self.slipnet["left"]
         )
