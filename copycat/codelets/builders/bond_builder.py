@@ -66,7 +66,7 @@ class BondBuilder(Builder):
             self.workspace.break_bond(bond)
         for correspondence in incompatible_correspondences:
             self.workspace.break_correspondence(correspondence)
-        self.proposed_bond.build_bond()
+        self.build_bond()
 
     def fight_it_out(
         self,
@@ -76,6 +76,17 @@ class BondBuilder(Builder):
         incompatible_structure_weight,
     ):
         pass
+
+    def build_bond(self):
+        self.proposed_bond.string.add_bond(self.proposed_bond)
+        self.proposed_bond.left_object.outgoing_bonds.append(self.proposed_bond)
+        self.proposed_bond.right_object.incoming_bonds.append(self.proposed_bond)
+        if self.proposed_bond.is_sameness_bond:
+            self.proposed_bond.right_object.outgoing_bonds.append(self.proposed_bond)
+            self.proposed_bond.left_object.incoming_bonds.append(self.proposed_bond)
+        self.proposed_bond.left_object.right_bond = self.proposed_bond
+        self.proposed_bond.right_object.left_bond = self.proposed_bond
+        self.proposed_bond.bond_category.activate_from_workspace()
 
     def _get_incompatible_bonds(self) -> List[Bond]:
         incompatble_bonds = [self.proposed_bond.left_object.right_bond]
