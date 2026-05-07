@@ -13,6 +13,7 @@ class WorkspaceString:
         self.bonds_by_position = defaultdict(lambda: defaultdict(list))
         self._proposed_groups = defaultdict(lambda: defaultdict(list))
         self._groups = {}
+        self.distribution_of_bond_counts = [0]
 
     def __len__(self):
         return len(self.letters)

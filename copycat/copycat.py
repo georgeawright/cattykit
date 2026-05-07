@@ -122,6 +122,9 @@ class Copycat:
             )
             for i, char in enumerate(initial_string.strip())
         ]
+        self.workspace.initial_string.distribution_of_bond_counts = [
+            i for i in range(len(initial_string.strip()) - 1)
+        ]
         self.workspace.modified_string.letters = [
             Letter(
                 string=self.workspace.modified_string,
@@ -137,6 +140,9 @@ class Copycat:
                 string_position=i,
             )
             for i, char in enumerate(target_string.strip())
+        ]
+        self.workspace.target_string.distribution_of_bond_counts = [
+            i for i in range(len(target_string.strip()) - 1)
         ]
         self.workspace.answer_string.letters = [
             Letter(
