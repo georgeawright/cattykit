@@ -10,5 +10,11 @@ class BottomUpCorrespondenceScout(CorrespondenceScout):
     and posts a correspondence strength tester with urgency a function of the average strength
     of the distinguishing concept mappings."""
 
-    def __init__(self, urgency_bin: int):
-        self.urgency_bin = urgency_bin
+    def __init__(
+        self,
+        urgency_bin: int,
+        coderack: "Coderack",
+        workspace: "Workspace",
+        slipnet: "Slipnet",
+    ):
+        super().__init__(urgency_bin, coderack, workspace, slipnet)

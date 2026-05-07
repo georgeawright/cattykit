@@ -103,7 +103,7 @@ def test_single_run():
         l.letter_category.name for l in copycat.workspace.answer_string.letters
     ] == []
 
-    copycat._post_intial_codelets()
+    copycat._post_initial_codelets()
 
     # 3 types of codelets have been added.
     # 2 for each workspace object (initial and target string objects)

@@ -102,7 +102,7 @@ class Copycat:
         """
         self._add_letters_to_workspace(string)
         self._add_initial_descriptions_to_workspace()
-        self._post_intial_codelets()
+        self._post_initial_codelets()
         self.slipnet.update_activations()
         self.run()
 
@@ -154,14 +154,14 @@ class Copycat:
             self.workspace.target_string,
         ]:
             for letter in string.letters:
-                letter.add_description(
+                letter.descriptions.append(
                     Description(
                         letter,
                         self.slipnet["object_category"],
                         self.slipnet["letter"],
                     )
                 )
-                letter.add_description(
+                letter.descriptions.append(
                     Description(
                         letter,
                         self.slipnet["letter_category"],
@@ -169,14 +169,14 @@ class Copycat:
                     )
                 )
             if len(string) > 1:
-                string.letters[0].add_description(
+                string.letters[0].descriptions.append(
                     Description(
                         string.letters[0],
                         self.slipnet["string_position_category"],
                         self.slipnet["leftmost"],
                     )
                 )
-                string.letters[-1].add_description(
+                string.letters[-1].descriptions.append(
                     Description(
                         string.letters[-1],
                         self.slipnet["string_position_category"],
@@ -184,7 +184,7 @@ class Copycat:
                     )
                 )
             else:
-                string.letters[0].add_description(
+                string.letters[0].descriptions.append(
                     Description(
                         string.letters[0],
                         self.slipnet["string_position_category"],
@@ -192,7 +192,7 @@ class Copycat:
                     )
                 )
             if len(string) == 3:
-                string.letters[1].add_description(
+                string.letters[1].descriptions.append(
                     Description(
                         letter,
                         self.slipnet["string_position_category"],
@@ -200,18 +200,33 @@ class Copycat:
                     )
                 )
 
-    def _post_intial_codelets(self):
+    def _post_initial_codelets(self):
         for _ in range(2 * len(self.workspace.objects)):
             self.coderack.post(
-                BottomUpBondScout(urgency_bin=2),
+                BottomUpBondScout(
+                    urgency_bin=2,
+                    coderack=self.coderack,
+                    workspace=self.workspace,
+                    slipnet=self.slipnet,
+                ),
                 self.temperature,
             )
             self.coderack.post(
-                ReplacementFinder(urgency_bin=2),
+                ReplacementFinder(
+                    urgency_bin=2,
+                    coderack=self.coderack,
+                    workspace=self.workspace,
+                    slipnet=self.slipnet,
+                ),
                 self.temperature,
             )
             self.coderack.post(
-                BottomUpCorrespondenceScout(urgency_bin=2),
+                BottomUpCorrespondenceScout(
+                    urgency_bin=2,
+                    coderack=self.coderack,
+                    workspace=self.workspace,
+                    slipnet=self.slipnet,
+                ),
                 self.temperature,
             )
 
