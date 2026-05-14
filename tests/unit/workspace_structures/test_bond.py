@@ -9,6 +9,7 @@ class MockLetter:
     def __init__(self, id, left_position, string):
         self.id = id
         self.left_position = left_position
+        self.right_position = left_position
         self.string = string
 
     def distance_from(self, other):
@@ -19,6 +20,43 @@ class MockGroup:
     def __init__(self, left_position):
         self.left_position = left_position
         self.string = SimpleNamespace()
+
+
+def test_choose_neighbour():
+    class MockString(SimpleNamespace):
+        def __len__(self):
+            return 3
+
+    string = MockString()
+    object_0 = MockLetter(id="o0", left_position=0, string=string)
+    object_1 = MockLetter(id="o1", left_position=1, string=string)
+    object_2 = MockLetter(id="o2", left_position=2, string=string)
+
+    bond_0_1 = Bond(object_0, object_1, None, None, None, None, None)
+    bond_1_2 = Bond(object_1, object_2, None, None, None, None, None)
+
+    bond_0_1.salience = 1.0
+    bond_1_2.salience = 1.0
+
+    object_0.left_neighbours = []
+    object_0.right_neighbours = [object_1]
+    object_1.left_neighbours = [object_0]
+    object_1.right_neighbours = [object_2]
+    object_2.left_neighbours = [object_1]
+    object_2.right_neighbours = []
+
+    string.bonds_by_position = {
+        "o0": {"o0": None, "o1": bond_0_1, "o2": None},
+        "o1": {"o0": bond_0_1, "o1": None, "o2": bond_1_2},
+        "o2": {"o0": None, "o1": bond_1_2, "o2": None},
+    }
+
+    assert bond_0_1.choose_neighbour(direction=SimpleNamespace(name="left")) is None
+    assert (
+        bond_0_1.choose_neighbour(direction=SimpleNamespace(name="right")) == bond_1_2
+    )
+    assert bond_1_2.choose_neighbour(direction=SimpleNamespace(name="left")) == bond_0_1
+    assert bond_1_2.choose_neighbour(direction=SimpleNamespace(name="right")) is None
 
 
 @pytest.mark.parametrize(

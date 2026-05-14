@@ -1,3 +1,4 @@
+import random
 from typing import Optional
 
 from copycat.workspace_structure import WorkspaceStructure
@@ -48,9 +49,45 @@ class Bond(WorkspaceStructure):
         )
 
     def is_leftmost_in_string(self) -> bool:
-        pass
+        return self.left_object.left_position == 0
 
     def is_rightmost_in_string(self) -> bool:
+        return self.right_object.right_position == len(self.string) - 1
+
+    def choose_neighbour(self, direction: "Slipnode") -> Optional["Bond"]:
+        if direction.name == "left":
+            if self.is_leftmost_in_string():
+                return None
+            neighbours = [
+                self.string.bonds_by_position[obj.id][self.left_object.id]
+                for obj in self.left_object.left_neighbours
+                if self.string.bonds_by_position[obj.id][self.left_object.id]
+                is not None
+            ]
+        elif direction.name == "right":
+            if self.is_rightmost_in_string():
+                return None
+            neighbours = [
+                self.string.bonds_by_position[self.right_object.id][obj.id]
+                for obj in self.right_object.right_neighbours
+                if self.string.bonds_by_position[self.right_object.id][obj.id]
+                is not None
+            ]
+        else:
+            raise ValueError(f"Invalid direction: {direction}")
+        if not neighbours:
+            return None
+        return random.choices(neighbours, weights=[n.salience for n in neighbours])[0]
+
+    def get_object(self, direction: "Slipnode") -> "WorkspaceObject":
+        if direction.name == "left":
+            return self.left_object
+        elif direction.name == "right":
+            return self.right_object
+        else:
+            raise ValueError(f"Invalid direction: {direction}")
+
+    def get_flipped_version(self) -> "Bond":
         pass
 
     def calculate_internal_strength(self) -> float:
