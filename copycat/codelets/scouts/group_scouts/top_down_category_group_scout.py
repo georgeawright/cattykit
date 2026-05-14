@@ -32,7 +32,27 @@ class TopDownCategoryGroupScout(GroupScout):
             return
         direction = self._choose_direction(chosen_object)
         number_of_bonds = self._choose_number_of_bonds(workspace_string)
-        # TODO: finish
+        first_bond = self._get_first_bond(direction)
+        if first_bond is None:
+            return
+        if first_bond.direction_category != direction:
+            return
+        bond_category = first_bond.bond_category
+        bond_facet = first_bond.bond_facet
+        opposite_bond_category = bond_category.get_opposite_node()
+        opposte_direction_category = direction.get_opposite_node()
+        bonds, objects = self.get_bonds_and_objects(direction, first_bond)
+        group_category = bond_category.get_related_node("group_category")
+        self._propose_group(
+            objects=objects,
+            bonds=bonds,
+            group_category=group_category,
+            direction=direction,
+        )
+
+    def get_bonds_and_objects(self, direction, first_bond):
+        objects = [first_bond.left_object, first_bond.right_object]
+        bonds = [first_bond]
 
     def _choose_workspace_string(self, bond_category: Optional[Slipnode]):
         initial_string_relevance = (
