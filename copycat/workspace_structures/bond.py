@@ -88,7 +88,17 @@ class Bond(WorkspaceStructure):
             raise ValueError(f"Invalid direction: {direction}")
 
     def get_flipped_version(self) -> "Bond":
-        pass
+        return Bond(
+            from_object=self.to_object,
+            to_object=self.from_object,
+            bond_category=self.bond_category.get_related_node("opposite"),
+            direction_category=self.direction_category.get_related_node("opposite")
+            if self.direction_category is not None
+            else None,
+            bond_facet=self.bond_facet,
+            from_object_descriptor=self.to_object_descriptor,
+            to_object_descriptor=self.from_object_descriptor,
+        )
 
     def calculate_internal_strength(self) -> float:
         member_compatability_factor = (

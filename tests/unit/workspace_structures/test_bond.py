@@ -59,6 +59,47 @@ def test_choose_neighbour():
     assert bond_1_2.choose_neighbour(direction=SimpleNamespace(name="right")) is None
 
 
+def test_get_flipped_version():
+    object_0 = MockLetter(id="o0", left_position=0, string=None)
+    object_1 = MockLetter(id="o1", left_position=1, string=None)
+
+    bond_category = SimpleNamespace(name="bond_category")
+    opposite_bond_category = SimpleNamespace(name="opposite_bond_category")
+    bond_category.get_related_node = lambda relation: (
+        opposite_bond_category if relation == "opposite" else None
+    )
+
+    direction_category = SimpleNamespace(name="direction_category")
+    opposite_direction_category = SimpleNamespace(name="opposite_direction_category")
+    direction_category.get_related_node = lambda relation: (
+        opposite_direction_category if relation == "opposite" else None
+    )
+
+    bond_facet = SimpleNamespace(name="bond_facet")
+    from_object_descriptor = SimpleNamespace(name="from_object_descriptor")
+    to_object_descriptor = SimpleNamespace(name="to_object_descriptor")
+
+    bond = Bond(
+        object_0,
+        object_1,
+        bond_category,
+        direction_category,
+        bond_facet,
+        from_object_descriptor,
+        to_object_descriptor,
+    )
+
+    flipped_bond = bond.get_flipped_version()
+
+    assert flipped_bond.from_object == bond.to_object
+    assert flipped_bond.to_object == bond.from_object
+    assert flipped_bond.bond_category == opposite_bond_category
+    assert flipped_bond.direction_category == opposite_direction_category
+    assert flipped_bond.bond_facet == bond.bond_facet
+    assert flipped_bond.from_object_descriptor == bond.to_object_descriptor
+    assert flipped_bond.to_object_descriptor == bond.from_object_descriptor
+
+
 @pytest.mark.parametrize(
     "from_type, to_type, bond_degree_of_association, bond_facet_name, expected",
     [
