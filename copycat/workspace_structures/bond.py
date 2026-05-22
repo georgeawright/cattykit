@@ -1,3 +1,4 @@
+from __future__ import annotations
 import random
 from typing import Optional
 
@@ -54,7 +55,7 @@ class Bond(WorkspaceStructure):
     def is_rightmost_in_string(self) -> bool:
         return self.right_object.right_position == len(self.string) - 1
 
-    def choose_neighbour(self, direction: "Slipnode") -> Optional["Bond"]:
+    def choose_neighbour(self, direction: "Slipnode") -> Optional[Bond]:
         if direction.name == "left":
             if self.is_leftmost_in_string():
                 return None
@@ -87,7 +88,7 @@ class Bond(WorkspaceStructure):
         else:
             raise ValueError(f"Invalid direction: {direction}")
 
-    def get_flipped_version(self) -> "Bond":
+    def get_flipped_version(self) -> Bond:
         return Bond(
             from_object=self.to_object,
             to_object=self.from_object,
