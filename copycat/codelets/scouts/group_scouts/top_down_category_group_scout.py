@@ -24,7 +24,7 @@ class TopDownCategoryGroupScout(GroupScout):
 
     def run(self, temperature: float):
         bond_category = self.group_category.get_related_node("bond_category")
-        workspace_string = self._choose_workspace_string(bond_category)
+        workspace_string = self.choose_workspace_string(bond_category)
         chosen_object = workspace_string.choose_object(
             temperature, lambda x: x.intra_string_salience
         )
@@ -52,7 +52,7 @@ class TopDownCategoryGroupScout(GroupScout):
             direction=direction,
         )
 
-    def _choose_workspace_string(self, bond_category: Optional[Slipnode]):
+    def choose_workspace_string(self, bond_category: Optional[Slipnode]):
         initial_string_relevance = (
             self.workspace.initial_string.get_local_bond_category_relevance(
                 bond_category
@@ -63,21 +63,9 @@ class TopDownCategoryGroupScout(GroupScout):
                 bond_category
             )
         )
-        initial_string_unhappiness = (
-            self.workspace.initial_string.intra_string_unhappiness
+        return self._choose_workspace_string(
+            initial_string_relevance, target_string_relevance
         )
-        target_string_unhappiness = (
-            self.workspace.target_string.intra_string_unhappiness
-        )
-        initial_string_score = (
-            initial_string_relevance + initial_string_unhappiness
-        ) / 2
-        target_string_score = (target_string_relevance + target_string_unhappiness) / 2
-        chosen_string = random.choices(
-            [self.workspace.initial_string, self.workspace.target_string],
-            weights=[initial_string_score, target_string_score],
-        )[0]
-        return chosen_string
 
     def _choose_direction(self, chosen_object):
         if chosen_object.is_leftmost_in_string:

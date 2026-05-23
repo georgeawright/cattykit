@@ -1,3 +1,4 @@
+import random
 from typing import List
 
 from copycat.codelets.scout import Scout
@@ -41,3 +42,22 @@ class GroupScout(Scout):
                 proposed_group=proposed_group,
             )
         )
+
+    def _choose_workspace_string(
+        self, initial_string_relevance, target_string_relevance
+    ):
+        initial_string_unhappiness = (
+            self.workspace.initial_string.intra_string_unhappiness
+        )
+        target_string_unhappiness = (
+            self.workspace.target_string.intra_string_unhappiness
+        )
+        initial_string_score = (
+            initial_string_relevance + initial_string_unhappiness
+        ) / 2
+        target_string_score = (target_string_relevance + target_string_unhappiness) / 2
+        chosen_string = random.choices(
+            [self.workspace.initial_string, self.workspace.target_string],
+            weights=[initial_string_score, target_string_score],
+        )[0]
+        return chosen_string
