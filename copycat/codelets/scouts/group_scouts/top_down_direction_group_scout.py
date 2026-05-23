@@ -24,6 +24,32 @@ class TopDownDirectionGroupScout(GroupScout):
 
     def run(self, temperature: float):
         workspace_string = self.choose_workspace_string()
+        chosen_object = workspace_string.choose_object(
+            temperature, lambda x: x.intra_string_salience
+        )
+        if chosen_object.spans_whole_string():
+            return
+        direction = self._choose_direction(chosen_object)
+        number_of_bonds = self._choose_number_of_bonds(workspace_string)
+        first_bond = self._get_first_bond(direction, chosen_object)
+        if first_bond is None:
+            return
+        if first_bond.direction_category != self.direction_category:
+            return
+        bond_category = first_bond.bond_category
+        bond_facet = first_bond.bond_facet
+        opposite_bond_category = bond_category.get_related_node("opposite")
+        opposte_direction_category = direction.get_related_node("opposite")
+        group_category = bond_category.get_related_node("group_category")
+        bonds, objects = self._get_bonds_and_objects(
+            direction, first_bond, number_of_bonds
+        )
+        self.propose_group(
+            objects=objects,
+            bonds=bonds,
+            group_category=group_category,
+            direction=direction,
+        )
 
     def choose_workspace_string(self):
         initial_string_relevance = (
