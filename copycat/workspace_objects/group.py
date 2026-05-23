@@ -14,13 +14,11 @@ class Group(WorkspaceObject):
         objects: List[WorkspaceObject],
         group_category: Slipnode,
         direction_category: Slipnode,
-        bond_facet: Slipnode,
     ):
         super().__init__(string, left_position, right_position)
         self.objects = objects
         self.group_category = group_category
         self.direction_category = direction_category
-        self.bond_facet = bond_facet
         self.bond_descriptions: List["Description"] = []
 
     def __len__(self):
