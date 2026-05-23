@@ -1,4 +1,5 @@
-from copycat.codelets import StrengthTester
+from copycat.codelets.strength_tester import StrengthTester
+from copycat.workspace_objects.group import Group
 
 
 class GroupStrengthTester(StrengthTester):
@@ -6,4 +7,19 @@ class GroupStrengthTester(StrengthTester):
     It probabilistically posts a group builder with urgency a function of strength.
     """
 
-    raise NotImplementedError
+    def __init__(
+        self,
+        urgency_bin: int,
+        coderack: "Coderack",
+        slipnet: "Slipnet",
+        workspace: "Workspace",
+        proposed_group: Group,
+    ):
+        super().__init__(
+            urgency_bin=urgency_bin,
+            coderack=coderack,
+            slipnet=slipnet,
+            workspace=workspace,
+            proposed_structure=proposed_group,
+        )
+        self.proposed_group = proposed_group

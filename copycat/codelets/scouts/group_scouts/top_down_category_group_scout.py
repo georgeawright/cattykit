@@ -1,5 +1,5 @@
 import random
-from typing import Optional
+from typing import List, Optional, Tuple
 
 from copycat.codelets.scouts.group_scout import GroupScout
 from copycat.slipnode import Slipnode
@@ -32,27 +32,25 @@ class TopDownCategoryGroupScout(GroupScout):
             return
         direction = self._choose_direction(chosen_object)
         number_of_bonds = self._choose_number_of_bonds(workspace_string)
-        first_bond = self._get_first_bond(direction)
+        first_bond = self._get_first_bond(direction, chosen_object)
         if first_bond is None:
             return
         if first_bond.direction_category != direction:
             return
         bond_category = first_bond.bond_category
         bond_facet = first_bond.bond_facet
-        opposite_bond_category = bond_category.get_opposite_node()
-        opposte_direction_category = direction.get_opposite_node()
-        bonds, objects = self.get_bonds_and_objects(direction, first_bond)
+        opposite_bond_category = bond_category.get_related_node("opposite")
+        opposte_direction_category = direction.get_related_node("opposite")
         group_category = bond_category.get_related_node("group_category")
-        self._propose_group(
+        bonds, objects = self._get_bonds_and_objects(
+            direction, first_bond, number_of_bonds
+        )
+        self.propose_group(
             objects=objects,
             bonds=bonds,
             group_category=group_category,
             direction=direction,
         )
-
-    def get_bonds_and_objects(self, direction, first_bond):
-        objects = [first_bond.left_object, first_bond.right_object]
-        bonds = [first_bond]
 
     def _choose_workspace_string(self, bond_category: Optional[Slipnode]):
         initial_string_relevance = (
@@ -98,3 +96,40 @@ class TopDownCategoryGroupScout(GroupScout):
             weights=workspace_string.distribution_of_bond_counts,
         )[0]
         return number_of_bonds
+
+    def _get_first_bond(self, direction, chosen_object) -> Optional["Bond"]:
+        if direction.name == "left":
+            return chosen_object.left_bond
+        elif direction.name == "right":
+            return chosen_object.right_bond
+
+    def _get_bonds_and_objects(
+        self, direction: "Slipnode", first_bond: "Bond", number_of_bonds: int
+    ) -> Tuple[List["Bond"], List["WorkspaceObject"]]:
+        objects = [first_bond.left_object, first_bond.right_object]
+        bonds = [first_bond]
+        next_bond = first_bond
+        for i in range(2, number_of_bonds + 1):
+            next_bond = next_bond.choose_neighbour(direction)
+            if next_bond is None:
+                break
+            next_object = next_bond.get_object(direction)
+            if (
+                next_bond.bond_category == first_bond.bond_category
+                and next_bond.direction_category == first_bond.direction_category
+                and next_bond.bond_facet == first_bond.bond_facet
+            ):
+                bonds.append(next_bond)
+                objects.append(next_object)
+            elif (
+                next_bond.bond_category
+                == first_bond.bond_category.get_related_node("opposite")
+                and next_bond.direction_category
+                == first_bond.direction_category.get_related_node("opposite")
+                and next_bond.bond_facet == first_bond.bond_facet
+            ):
+                bonds.append(next_bond.get_flipped_version())
+                objects.append(next_object)
+            else:
+                break
+        return bonds, objects

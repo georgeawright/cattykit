@@ -1,2 +1,3 @@
 from .bond_strength_tester import BondStrengthTester
 from .description_strength_tester import DescriptionStrengthTester
+from .group_strength_tester import GroupStrengthTester
