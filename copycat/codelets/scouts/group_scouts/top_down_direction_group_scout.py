@@ -48,7 +48,7 @@ class TopDownDirectionGroupScout(GroupScout):
             objects=objects,
             bonds=bonds,
             group_category=group_category,
-            direction=direction,
+            direction=self.direction_category,
         )
 
     def choose_workspace_string(self):
