@@ -90,6 +90,17 @@ class Group(WorkspaceObject, WorkspaceStructure):
             or self.left_position >= other_group.right_position
         )
 
+    def get_bonds_to_be_flipped(self) -> List["Bond"]:
+        """Returns a list of bonds that need to be flipped
+        in order for this group to be built."""
+        bonds_to_be_flipped = []
+        for bond in self.bonds:
+            s = self.string
+            bond_to_flip = s.bonds_by_role[bond.from_object.id][bond.to_object.id]
+            if bond_to_flip is not None and bond == bond_to_flip.get_flipped_version():
+                bonds_to_be_flipped.append(bond_to_flip)
+        return bonds_to_be_flipped
+
     def _is_distinguished_by(self, descriptor: "Slipnode") -> bool:
         other_objects = [
             g
