@@ -1,4 +1,4 @@
-from copycat.codelets import Builder
+from copycat.codelets.builder import Builder
 
 
 class GroupBuilder(Builder):
@@ -6,4 +6,4 @@ class GroupBuilder(Builder):
     It fights with competitors if necessary.
     """
 
-    raise NotImplementedError
+    pass
