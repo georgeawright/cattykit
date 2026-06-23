@@ -3,9 +3,10 @@ from typing import List
 
 from copycat.slipnet import Slipnode
 from copycat.workspace_object import WorkspaceObject
+from copycat.workspace_structure import WorkspaceStructure
 
 
-class Group(WorkspaceObject):
+class Group(WorkspaceObject, WorkspaceStructure):
     def __init__(
         self,
         string: "WorkspaceString",
