@@ -51,6 +51,8 @@ class GroupBuilder(Builder):
         incompatible_groups = self._get_incompatible_groups()
         for incompatible_group in incompatible_groups:
             if incompatible_group.group_category == self.proposed_group.group_category:
+                # this is because shorter sameness groups are weaker than longer ones
+                # and there is no group-extender codelet
                 proposed_group_weight = len(self.proposed_group)
                 incompatible_group_weight = len(incompatible_group)
             else:
