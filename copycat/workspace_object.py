@@ -19,6 +19,7 @@ class WorkspaceObject:
         self.inter_string_salience = 0
         self.total_salience = 0
         self.descriptions: List["Description"] = []
+        self.bond_descriptions: List["Description"] = []
         self.extrinsic_descriptions: List["Description"] = []
         self.right_bond: Optional["Bond"] = None
         self.left_bond: Optional["Bond"] = None
@@ -61,6 +62,12 @@ class WorkspaceObject:
             if description.facet == facet:
                 return description.descriptor
         return None
+
+    def add_description(self, description: "Description"):
+        if description.is_bond_description():
+            self.bond_descriptions.append(description)
+        else:
+            self.descriptions.append(description)
 
     def has_recursive_group_member(self, other_object) -> bool:
         if self == other_object:

@@ -33,7 +33,4 @@ class DescriptionBuilder(Builder):
         self.slipnet.activate_node_from_workspace(facet.name)
         if argument_object.has_description(self.proposed_description):
             return
-        if self.proposed_description.is_bond_description():
-            argument_object.bond_descriptions.append(self.proposed_description)
-        else:
-            argument_object.descriptions.append(self.proposed_description)
+        argument_object.add_description(self.proposed_description)

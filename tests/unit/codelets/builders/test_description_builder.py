@@ -107,7 +107,10 @@ def test_adds_description_to_argument_object():
     proposed_description = Mock()
     proposed_description.is_bond_description.return_value = False
     argument_object = Mock()
-    argument_object.descriptions = []
+    argument_object.add_description_has_been_called = False
+    argument_object.add_description = lambda description: setattr(
+        argument_object, "add_description_has_been_called", True
+    )
     argument_object.has_description.return_value = False
     proposed_description.argument_object = argument_object
     workspace.objects.append(argument_object)
@@ -122,13 +125,16 @@ def test_adds_description_to_argument_object():
 
     builder.run(temperature=0.0)
     # If the description doesn't already exist, it should be added to the argument object
-    assert proposed_description in argument_object.descriptions
+    assert argument_object.add_description_has_been_called
     assert slipnet.activate_called == 2
 
     proposed_bond_description = Mock()
     proposed_bond_description.is_bond_description.return_value = True
     argument_object = Mock()
-    argument_object.bond_descriptions = []
+    argument_object.add_description_has_been_called = False
+    argument_object.add_description = lambda description: setattr(
+        argument_object, "add_description_has_been_called", True
+    )
     argument_object.has_description.return_value = False
     proposed_bond_description.argument_object = argument_object
     workspace.objects.append(argument_object)
@@ -143,5 +149,5 @@ def test_adds_description_to_argument_object():
 
     builder.run(temperature=0.0)
     # If the description doesn't already exist, it should be added to the argument object
-    assert proposed_bond_description in argument_object.bond_descriptions
+    assert argument_object.add_description_has_been_called
     assert slipnet.activate_called == 4

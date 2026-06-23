@@ -20,7 +20,6 @@ class Group(WorkspaceObject, WorkspaceStructure):
         self.objects = objects
         self.group_category = group_category
         self.direction_category = direction_category
-        self.bond_descriptions: List["Description"] = []
 
     def __len__(self):
         return len(self.letters)
