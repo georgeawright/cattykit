@@ -105,14 +105,11 @@ class GroupBuilder(Builder):
         return True
 
     def _get_incompatible_groups(self):
-        # TODO
-        incompatible_groups = []
-        for group in self.proposed_group.string.groups:
-            if group == self.proposed_group:
-                continue
-            if group.overlaps_with(self.proposed_group):
-                incompatible_groups.append(group)
-        return incompatible_groups
+        return [
+            obj.group
+            for obj in self.proposed_group.objects
+            if obj.group and obj.group != self.proposed_group
+        ]
 
     def _get_incompatible_correspondences(self):
         # TODO
