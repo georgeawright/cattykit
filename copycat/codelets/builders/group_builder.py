@@ -112,6 +112,15 @@ class GroupBuilder(Builder):
         ]
 
     def _get_incompatible_correspondences(self):
+        incompatible_correspondences = []
+        for obj in self.proposed_group.objects:
+            if obj.correspondence and self._is_incompatible_correspondence(
+                obj.correspondence
+            ):
+                incompatible_correspondences.append(obj.correspondence)
+        return incompatible_correspondences
+
+    def _is_incompatible_correspondence(self, correspondence):
         # TODO
         pass
 
