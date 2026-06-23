@@ -27,6 +27,7 @@ class GroupScout(Scout):
             left_position=left_object.left_position,
             right_position=right_object.right_position,
             objects=objects,
+            bonds=bonds,
             group_category=group_category,
             direction_category=direction,
         )

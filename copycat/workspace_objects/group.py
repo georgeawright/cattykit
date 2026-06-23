@@ -13,11 +13,13 @@ class Group(WorkspaceObject, WorkspaceStructure):
         left_position: int,
         right_position: int,
         objects: List[WorkspaceObject],
+        bonds: List["Bond"],
         group_category: Slipnode,
         direction_category: Slipnode,
     ):
         super().__init__(string, left_position, right_position)
         self.objects = objects
+        self.bonds = bonds
         self.group_category = group_category
         self.direction_category = direction_category
 
