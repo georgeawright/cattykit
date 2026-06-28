@@ -111,3 +111,79 @@ def test_fizzles_if_bonds_no_longer_exist():
     assert workspace.break_bond_called == 0
     assert workspace.break_group_called == 0
     assert workspace.break_correspondence_called == 0
+
+
+def test_fizzles_if_bonds_to_be_flipped_lose_fight():
+    workspace = MockWorkspace()
+    slipnet = MockSlipnet()
+    coderack = Mock()
+    proposed_group = Mock()
+    proposed_group.bonds = [Mock(), Mock()]
+    proposed_group.string = MockWorkspaceString(groups=[])
+    proposed_group.get_bonds_to_be_flipped = lambda: [Mock()]
+    proposed_group.left_object = Mock()
+    proposed_group.right_object = Mock()
+
+    # Simulate that the bonds still exist
+    proposed_group.string.get_group_if_present = lambda group: None
+
+    # Patch the structure_beats_structures function to always return False
+    original_structure_beats_structures = group_builder.structure_beats_structures
+    group_builder.structure_beats_structures = lambda *args, **kwargs: False
+
+    builder = GroupBuilder(
+        urgency_bin=0,
+        coderack=coderack,
+        workspace=workspace,
+        slipnet=slipnet,
+        proposed_group=proposed_group,
+    )
+
+    # Run the builder
+    builder.run(temperature=0.5)
+
+    assert slipnet.activate_node_from_workspace_called == 0
+    assert workspace.break_bond_called == 0
+    assert workspace.break_group_called == 0
+    assert workspace.break_correspondence_called == 0
+
+    # Restore the original function
+    group_builder.structure_beats_structures = original_structure_beats_structures
+
+
+def test_fizzles_if_incompatible_structures_win_fight():
+    workspace = MockWorkspace()
+    slipnet = MockSlipnet()
+    coderack = Mock()
+    proposed_group = Mock()
+    proposed_group.bonds = [Mock(), Mock()]
+    proposed_group.string = MockWorkspaceString(groups=[])
+    proposed_group.get_bonds_to_be_flipped = lambda: []
+    proposed_group.left_object = Mock()
+    proposed_group.right_object = Mock()
+
+    # Simulate that the bonds still exist
+    proposed_group.string.get_group_if_present = lambda group: None
+
+    # Patch the structure_beats_structures function to always return False
+    original_structure_beats_structures = group_builder.structure_beats_structures
+    group_builder.structure_beats_structures = lambda *args, **kwargs: False
+
+    builder = GroupBuilder(
+        urgency_bin=0,
+        coderack=coderack,
+        workspace=workspace,
+        slipnet=slipnet,
+        proposed_group=proposed_group,
+    )
+
+    # Run the builder
+    builder.run(temperature=0.5)
+
+    assert slipnet.activate_node_from_workspace_called == 0
+    assert workspace.break_bond_called == 0
+    assert workspace.break_group_called == 0
+    assert workspace.break_correspondence_called == 0
+
+    # Restore the original function
+    group_builder.structure_beats_structures = original_structure_beats_structures
