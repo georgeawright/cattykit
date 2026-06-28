@@ -34,14 +34,15 @@ class MockWorkspace:
 class MockWorkspaceString:
     def __init__(self, groups):
         self.groups = groups
-        self.add_bond_called = 0
+        self.add_group_called = 0
+        self.delete_proposed_group_called = 0
 
     def add_group(self, group):
         self.add_group_called += 1
         self.groups.append(group)
 
     def delete_proposed_group(self, group):
-        pass
+        self.delete_proposed_group_called += 1
 
 
 def test_transfers_descriptions_and_fizzles_if_group_exists():
@@ -78,3 +79,4 @@ def test_transfers_descriptions_and_fizzles_if_group_exists():
 
     assert slipnet.activate_node_from_workspace_called == 1
     assert existing_group.add_description_called == len(proposed_group.descriptions)
+    assert workspace_string.delete_proposed_group_called == 1
