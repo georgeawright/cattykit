@@ -17,6 +17,15 @@ class Correspondence(WorkspaceStructure):
         """Returns the number of letters spanned by the objects."""
         return len(self.from_object) + len(self.to_object)
 
+    def get_other_object(self, obj):
+        """Returns the other object in the correspondence."""
+        if obj == self.from_object:
+            return self.to_object
+        elif obj == self.to_object:
+            return self.from_object
+        else:
+            raise ValueError("Object not in correspondence.")
+
     def supports(self, other: Correspondence) -> bool:
         """Returns True if self and other are not incompatible
         and self has s concept mapping that supports other's concept mappings.
