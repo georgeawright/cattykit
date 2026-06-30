@@ -12,9 +12,9 @@ class ConceptMapping:
         description_type_2: Slipnode,
         descriptor_1: Slipnode,
         descriptor_2: Slipnode,
-        label: Optional[Slipnode],
-        object_1: Optional[WorkspaceObject],
-        object_2: Optional[WorkspaceObject],
+        label: Optional[Slipnode] = None,
+        object_1: Optional[WorkspaceObject] = None,
+        object_2: Optional[WorkspaceObject] = None,
     ):
         self.description_type_1 = description_type_1
         self.description_type_2 = description_type_2

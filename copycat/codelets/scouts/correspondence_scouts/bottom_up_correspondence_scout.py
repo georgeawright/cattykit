@@ -76,4 +76,20 @@ class BottomUpCorrespondenceScout(CorrespondenceScout):
     def _get_concept_mappings(
         self, object_1: "WorkspaceObject", object_2: "WorkspaceObject"
     ) -> List[ConceptMapping]:
-        pass
+        return [
+            ConceptMapping(
+                description_type_1=desc_1.facet,
+                description_type_2=desc_2.facet,
+                descriptor_1=desc_1.descriptor,
+                descriptor_2=desc_2.descriptor,
+                object_1=object_1,
+                object_2=object_2,
+            )
+            for desc_1 in object_1.descriptions
+            for desc_2 in object_2.descriptions
+            if desc_1.facet == desc_2.facet
+            and (
+                desc_1.descriptor == desc_2.descriptor
+                or desc_1.descriptor.is_linked_to(desc_2.descriptor)
+            )
+        ]
