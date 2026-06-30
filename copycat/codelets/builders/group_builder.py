@@ -103,7 +103,7 @@ class GroupBuilder(Builder):
         for bond in self.proposed_group.bonds:
             if (
                 bond not in workspace_string.bonds
-                or bond.get_flipped_version() not in workspace_string.bonds
+                and bond.get_flipped_version() not in workspace_string.bonds
             ):
                 return False
         return True

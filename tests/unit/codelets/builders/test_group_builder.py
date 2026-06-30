@@ -1,4 +1,5 @@
 from unittest.mock import Mock
+from types import SimpleNamespace
 
 import pytest
 
@@ -88,14 +89,17 @@ def test_fizzles_if_bonds_no_longer_exist():
     slipnet = MockSlipnet()
     coderack = Mock()
     proposed_group = Mock()
-    proposed_group.bonds = [Mock(), Mock()]
+    bond_1 = Mock()
+    bond_2 = Mock()
+    proposed_group.bonds = [bond_1, bond_2]
     proposed_group.string = MockWorkspaceString(groups=[])
+    proposed_group.string.bonds = [bond_1]
     proposed_group.get_bonds_to_be_flipped = lambda: []
     proposed_group.left_object = Mock()
     proposed_group.right_object = Mock()
 
-    # Simulate that the bonds no longer exist
     proposed_group.string.get_group_if_present = lambda group: None
+
     builder = GroupBuilder(
         urgency_bin=0,
         coderack=coderack,
@@ -118,8 +122,11 @@ def test_fizzles_if_bonds_to_be_flipped_lose_fight():
     slipnet = MockSlipnet()
     coderack = Mock()
     proposed_group = Mock()
-    proposed_group.bonds = [Mock(), Mock()]
+    proposed_group.__len__ = lambda x: 2
+    bond_1, bond_2 = Mock(), Mock()
+    proposed_group.bonds = [bond_1, bond_2]
     proposed_group.string = MockWorkspaceString(groups=[])
+    proposed_group.string.bonds = [bond_1, bond_2]
     proposed_group.get_bonds_to_be_flipped = lambda: [Mock()]
     proposed_group.left_object = Mock()
     proposed_group.right_object = Mock()
@@ -156,8 +163,12 @@ def test_fizzles_if_incompatible_structures_win_fight():
     slipnet = MockSlipnet()
     coderack = Mock()
     proposed_group = Mock()
-    proposed_group.bonds = [Mock(), Mock()]
+    proposed_group.__len__ = lambda x: 2
+    proposed_group.objects = [Mock(), Mock()]
+    bond_1, bond_2 = Mock(), Mock()
+    proposed_group.bonds = [bond_1, bond_2]
     proposed_group.string = MockWorkspaceString(groups=[])
+    proposed_group.string.bonds = [bond_1, bond_2]
     proposed_group.get_bonds_to_be_flipped = lambda: []
     proposed_group.left_object = Mock()
     proposed_group.right_object = Mock()
@@ -184,6 +195,53 @@ def test_fizzles_if_incompatible_structures_win_fight():
     assert workspace.break_bond_called == 0
     assert workspace.break_group_called == 0
     assert workspace.break_correspondence_called == 0
+
+    # Restore the original function
+    group_builder.structure_beats_structures = original_structure_beats_structures
+
+
+def test_breaks_incompatible_structures_flips_bonds_and_builds_group():
+    workspace = MockWorkspace()
+    slipnet = MockSlipnet()
+    coderack = Mock()
+    proposed_group = Mock()
+    proposed_group.__len__ = lambda x: 2
+    obj_1, obj_2 = Mock(), Mock()
+    obj_1.correspondence = None
+    obj_2.correspondence = None
+    proposed_group.objects = [obj_1, obj_2]
+    bond_1, bond_2 = Mock(), Mock()
+    proposed_group.bonds = [bond_1, bond_2]
+    proposed_group.string = MockWorkspaceString(groups=[])
+    proposed_group.string.bonds = [bond_1, bond_2]
+    proposed_group.get_bonds_to_be_flipped = lambda: []
+    proposed_group.left_object = Mock()
+    proposed_group.right_object = Mock()
+    proposed_group.descriptions = [
+        SimpleNamespace(descriptor=SimpleNamespace(name="descriptor1"))
+    ]
+
+    # Simulate that the bonds still exist
+    proposed_group.string.get_group_if_present = lambda group: None
+
+    # Patch the structure_beats_structures function to always return True
+    original_structure_beats_structures = group_builder.structure_beats_structures
+    group_builder.structure_beats_structures = lambda *args, **kwargs: True
+
+    builder = GroupBuilder(
+        urgency_bin=0,
+        coderack=coderack,
+        workspace=workspace,
+        slipnet=slipnet,
+        proposed_group=proposed_group,
+    )
+
+    # Run the builder
+    builder.run(temperature=0.5)
+
+    assert slipnet.activate_node_from_workspace_called == 1
+    assert workspace.break_group_called == 2
+    assert proposed_group.string.add_group_called == 1
 
     # Restore the original function
     group_builder.structure_beats_structures = original_structure_beats_structures
