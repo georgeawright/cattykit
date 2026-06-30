@@ -67,6 +67,9 @@ class ConceptMapping:
         )
         return descriptor_1_is_distinguishing and descriptor_2_is_distinguishing
 
+    def is_opposite(self) -> bool:
+        return self.label is not None and self.label.name == "opposite"
+
     def supports(self, other: ConceptMapping) -> bool:
         """Concept-mappings (a -> b) and (c -> d) support each other
         if a is related to c and if b is related to d
