@@ -49,6 +49,15 @@ class ConceptMapping:
             else self.degree_of_assocation * max(0.01, self.conceptual_depth**2)
         )
 
+    @property
+    def slippability(self) -> float:
+        degree_of_association = self.degree_of_assocation
+        return (
+            1.0
+            if degree_of_association == 1.0
+            else degree_of_association * max(0.01, self.conceptual_depth**2)
+        )
+
     def is_relevant(self) -> bool:
         return (
             self.description_type_1.is_active() and self.description_type_2.is_active()
