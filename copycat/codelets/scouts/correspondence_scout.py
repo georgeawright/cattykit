@@ -1,4 +1,7 @@
+from typing import List
+
 from copycat.codelets.scout import Scout
+from copycat.concept_mapping import ConceptMapping
 
 
 class CorrespondenceScout(Scout):
@@ -6,4 +9,11 @@ class CorrespondenceScout(Scout):
     If possible, it makes a proposed correspondence and posts a
     correspondence strength tester."""
 
-    pass
+    def propose_correspondence(
+        self,
+        object_1: "WorkspaceObject",
+        object_2: "WorkspaceObject",
+        concept_mappings: List[ConceptMapping],
+        object_2_flipped: bool,
+    ):
+        pass
