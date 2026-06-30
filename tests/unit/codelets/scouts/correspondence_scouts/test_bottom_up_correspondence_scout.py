@@ -77,6 +77,23 @@ def test_run():
 
     # both objects span whole string but concept mappings not possible
     object_2.spans_whole_string = lambda: True
+    description_1 = SimpleNamespace(facet=SimpleNamespace(name="bond"))
+    description_2 = SimpleNamespace(facet=SimpleNamespace(name="group"))
+    object_1.descriptions = [description_1]
+    object_2.descriptions = [description_2]
+    scout.run(temperature=0.0)
+    assert coderack.post_called == 0
+    assert slipnet.activate_called == 0
+
+    # concept mappings possible but not distinguishing
+    description_1 = SimpleNamespace(
+        facet=SimpleNamespace(name="group"), descriptor=SimpleNamespace(name="whole")
+    )
+    description_2 = SimpleNamespace(
+        facet=SimpleNamespace(name="group"), descriptor=SimpleNamespace(name="whole")
+    )
+    object_1.descriptions = [description_1]
+    object_2.descriptions = [description_2]
     scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
