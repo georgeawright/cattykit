@@ -1,4 +1,4 @@
-from copycat.codelets import StrengthTester
+from copycat.codelets.strength_tester import StrengthTester
 
 
 class CorrespondenceStrengthTester(StrengthTester):
@@ -6,4 +6,4 @@ class CorrespondenceStrengthTester(StrengthTester):
     It probabilistically posts a correspondence builder with urgency a function of strength.
     """
 
-    raise NotImplementedError
+    pass
