@@ -1,3 +1,6 @@
+from copycat.codelet_result import CodeletResult
+
+
 class Codelet:
     def __init__(
         self,
@@ -11,5 +14,5 @@ class Codelet:
         self.workspace = workspace
         self.slipnet = slipnet
 
-    def run(self, temperature: float):
+    def run(self, temperature: float) -> CodeletResult:
         raise NotImplementedError
