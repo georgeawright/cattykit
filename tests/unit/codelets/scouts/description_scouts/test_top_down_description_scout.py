@@ -2,6 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
+from copycat.codelet_result import Finish, Fizzle, FizzleReason
 from copycat.codelets.scouts.description_scouts import TopDownDescriptionScout
 from copycat.codelets.strength_testers import DescriptionStrengthTester
 
@@ -49,21 +50,26 @@ def test_run():
     )
 
     # No object to choose
-    scout.run(temperature=0.0)
+    result = scout.run(temperature=0.0)
+    assert isinstance(result, Fizzle)
+    assert result.reason == FizzleReason.NO_OBJECTS
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
     # Description type has no possible descriptors for the object
     workspace.object = Mock()
     description_type.get_possible_descriptors.return_value = []
-    scout.run(temperature=0.0)
+    result = scout.run(temperature=0.0)
+    assert isinstance(result, Fizzle)
+    assert result.reason == FizzleReason.NO_POSSIBLE_DESCRIPTORS
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
     # Description type has possible descriptors
     descriptor = Mock()
     description_type.get_possible_descriptors.return_value = [descriptor]
-    scout.run(temperature=0.0)
+    result = scout.run(temperature=0.0)
+    assert isinstance(result, Finish)
     assert coderack.post_called == 1
     assert slipnet.activate_called == 1
     assert isinstance(coderack.posted_codelets[0], DescriptionStrengthTester)

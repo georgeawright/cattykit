@@ -1,5 +1,6 @@
 import numpy as np
 
+from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.scouts import DescriptionScout
 from copycat.slipnode import Slipnode
 
@@ -26,17 +27,17 @@ class TopDownDescriptionScout(DescriptionScout):
         )
         self.description_type = description_type
 
-    def run(self, temperature: float):
+    def run(self, temperature: float) -> CodeletResult:
         chosen_object = self.workspace.choose_object(
             temperature, lambda x: x.total_salience
         )
         if chosen_object is None:
-            return
+            return Fizzle(FizzleReason.NO_OBJECTS)
         possible_descriptors = self.description_type.get_possible_descriptors(
             chosen_object
         )
         if not possible_descriptors:
-            return
+            return Fizzle(FizzleReason.NO_POSSIBLE_DESCRIPTORS)
         choice_list = np.array(
             [
                 self.slipnet.get_node_activation(descriptor.name)
@@ -49,3 +50,4 @@ class TopDownDescriptionScout(DescriptionScout):
         self.propose_description(
             chosen_object, self.description_type, chosen_descriptor
         )
+        return Finish()
