@@ -3,7 +3,9 @@ from unittest.mock import Mock
 
 import pytest
 
-from copycat.codelets.scouts.correspondence_scouts import BottomUpCorrespondenceScout
+from copycat.codelets.scouts.correspondence_scouts import (
+    ImportantObjectCorrespondenceScout,
+)
 from copycat.codelet_result import Finish, Fizzle, FizzleReason
 from copycat.codelets.strength_testers import CorrespondenceStrengthTester
 
@@ -39,6 +41,7 @@ def test_run():
             self.initial_string = initial_string
             self.target_string = target_string
             self.proposed_correspondences = 0
+            self.slippages = []
             self.object = None
 
         def choose_object(self, temperature, salience_function):
@@ -58,17 +61,39 @@ def test_run():
     slipnet = MockSlipnet()
     workspace = MockWorkspace(MockWorkspaceString([]), MockWorkspaceString([]))
 
-    scout = BottomUpCorrespondenceScout(
+    scout = ImportantObjectCorrespondenceScout(
         urgency_bin=0, coderack=coderack, slipnet=slipnet, workspace=workspace
     )
 
     object_1 = SimpleNamespace(spans_whole_string=lambda: True)
     object_2 = SimpleNamespace(spans_whole_string=lambda: True)
-    workspace.initial_string.objects = [object_1]
     workspace.target_string.objects = [object_2]
 
+    # initial string has no objects
+    workspace.initial_string.objects = []
+    result = scout.run(temperature=0.0)
+    assert isinstance(result, Fizzle)
+    assert result.reason == FizzleReason.NO_OBJECTS
+
+    # initial string has object but object has no relevant descriptions
+    workspace.initial_string.objects = [object_1]
+    object_1.choose_relevant_description_by_conceptual_depth = lambda: None
+    result = scout.run(temperature=0.0)
+    assert isinstance(result, Fizzle)
+    assert result.reason == FizzleReason.NO_RELEVANT_DESCRIPTIONS
+
+    # object 1 has relevant description but no objects in target string have that descriptor
+    description = SimpleNamespace(descriptor="descriptor")
+    object_1.choose_relevant_description_by_conceptual_depth = lambda: description
+    object_2.relevant_descriptions = []
+    result = scout.run(temperature=0.0)
+    assert isinstance(result, Fizzle)
+    assert result.reason == FizzleReason.NO_OBJECTS_WITH_DESCRIPTOR
+
     # object 1 spans string but object 2 does not
+    object_2.relevant_descriptions = [description]
     object_2.spans_whole_string = lambda: False
+    object_2.inter_string_salience = 0.5
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
