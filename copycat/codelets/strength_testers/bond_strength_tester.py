@@ -1,6 +1,7 @@
 import random
 
 from copycat.codelets.builders import BondBuilder
+from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.strength_tester import StrengthTester
 from copycat.tools import temperature_adjust
 from copycat.workspace_structures.bond import Bond
@@ -28,14 +29,14 @@ class BondStrengthTester(StrengthTester):
         )
         self.proposed_bond = proposed_bond
 
-    def run(self, temperature: float):
+    def run(self, temperature: float) -> CodeletResult:
         self.proposed_bond.update_strength_values()
         build_probability = temperature_adjust(
             self.proposed_bond.total_strength, temperature
         )
         if build_probability < random.random():
             self.proposed_bond.string.delete_proposed_bond(self.proposed_bond)
-            return
+            return Fizzle(FizzleReason.PROPOSED_STRUCTURE_TOO_WEAK)
         self.slipnet.activate_node_from_workspace(
             self.proposed_bond.from_object_descriptor.name
         )
@@ -55,3 +56,4 @@ class BondStrengthTester(StrengthTester):
                 proposed_bond=self.proposed_bond,
             )
         )
+        return Finish()

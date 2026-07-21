@@ -1,6 +1,7 @@
 from typing import List
 
 from copycat.codelets.builder import Builder
+from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.concept_mapping import ConceptMapping
 from copycat.tools import structure_beats_structures
 from copycat.workspace_objects import Group
@@ -28,17 +29,17 @@ class GroupBuilder(Builder):
         )
         self.proposed_group = proposed_group
 
-    def run(self, temperature: float):
+    def run(self, temperature: float) -> CodeletResult:
         workspace_string = self.proposed_group.string
         existing_group = workspace_string.get_group_if_present(self.proposed_group)
         if existing_group:
             self._activate_group_descriptors(existing_group)
             self._transfer_descriptions(self.proposed_group, existing_group)
             workspace_string.delete_proposed_group(self.proposed_group)
-            return
+            return Fizzle(FizzleReason.STRUCTURE_ALREADY_EXISTS)
         if not self._all_bonds_still_exist(workspace_string):
             workspace_string.delete_proposed_group(self.proposed_group)
-            return
+            return Fizzle(FizzleReason.REQUIRED_BONDS_NO_LONGER_EXIST)
         workspace_string.delete_proposed_group(self.proposed_group)
         bonds_to_be_flipped = self.proposed_group.get_bonds_to_be_flipped()
         if bonds_to_be_flipped:
@@ -50,7 +51,7 @@ class GroupBuilder(Builder):
                 temperature=temperature,
             )
             if not fight_result:
-                return
+                return Fizzle(FizzleReason.INCOMPATIBLE_STRUCTURES_WON)
         incompatible_groups = self._get_incompatible_groups()
         for incompatible_group in incompatible_groups:
             if incompatible_group.group_category == self.proposed_group.group_category:
@@ -69,7 +70,7 @@ class GroupBuilder(Builder):
                 temperature=temperature,
             )
             if not fight_result:
-                return
+                return Fizzle(FizzleReason.INCOMPATIBLE_STRUCTURES_WON)
         incompatible_correspondences = self._get_incompatible_correspondences()
         if incompatible_correspondences:
             fight_result = structure_beats_structures(
@@ -80,12 +81,13 @@ class GroupBuilder(Builder):
                 temperature=temperature,
             )
             if not fight_result:
-                return
+                return Fizzle(FizzleReason.INCOMPATIBLE_STRUCTURES_WON)
         self._break_incompatible_structures(
             incompatible_groups, incompatible_correspondences
         )
         self._flip_bonds(bonds_to_be_flipped)
         self._build_group()
+        return Finish()
 
     def _activate_group_descriptors(self, group: Group):
         for description in group.descriptions:

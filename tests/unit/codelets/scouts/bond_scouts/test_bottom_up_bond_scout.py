@@ -5,6 +5,7 @@ import pytest
 
 from copycat.codelets.scouts.bond_scouts import BottomUpBondScout
 from copycat.codelets.strength_testers import BondStrengthTester
+from copycat.codelet_result import Finish, Fizzle, FizzleReason
 
 
 def test_run():
@@ -48,7 +49,8 @@ def test_run():
     )
 
     # No object to choose
-    scout.run(temperature=0.0)
+    result = scout.run(temperature=0.0)
+    assert result == Fizzle(FizzleReason.NO_OBJECTS)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
@@ -97,7 +99,8 @@ def test_run():
     to_obj.get_descriptor.return_value = to_obj_descriptor
     link.to_node = to_obj_descriptor
     link.label = SimpleNamespace(name="successor", bond_degree_of_association=1)
-    scout.run(temperature=0.0)
+    result = scout.run(temperature=0.0)
     assert coderack.post_called == 1
+    assert result == Finish()
     assert slipnet.activate_called == 3
     assert isinstance(coderack.posted_codelets[0], BondStrengthTester)

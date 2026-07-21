@@ -5,6 +5,7 @@ import pytest
 
 from copycat.codelets.scouts.group_scouts import TopDownDirectionGroupScout
 from copycat.codelets.strength_testers import GroupStrengthTester
+from copycat.codelet_result import Finish, Fizzle, FizzleReason
 
 
 def test_run():
@@ -93,7 +94,8 @@ def test_run():
     workspace.initial_string.choose_object.return_value = SimpleNamespace(
         spans_whole_string=lambda: True
     )
-    scout.run(temperature=0.0)
+    result = scout.run(temperature=0.0)
+    assert result == Fizzle(FizzleReason.OBJECT_SPANS_WHOLE_STRING)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
@@ -175,6 +177,7 @@ def test_run():
 
     # Valid first bond
     workspace.initial_string.choose_object.return_value = a
-    scout.run(temperature=0.0)
+    result = scout.run(temperature=0.0)
     assert coderack.post_called == 1
+    assert result == Finish()
     assert isinstance(coderack.posted_codelets[0], GroupStrengthTester)

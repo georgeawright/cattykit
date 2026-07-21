@@ -5,6 +5,7 @@ import pytest
 
 from copycat.codelets.builders import group_builder
 from copycat.codelets.builders import GroupBuilder
+from copycat.codelet_result import Finish, Fizzle, FizzleReason
 
 
 class MockSlipnet:
@@ -77,7 +78,7 @@ def test_transfers_descriptions_and_fizzles_if_group_exists():
     )
 
     # Run the builder
-    builder.run(temperature=0.5)
+    result = builder.run(temperature=0.5)
 
     assert slipnet.activate_node_from_workspace_called == 1
     assert existing_group.add_description_called == len(proposed_group.descriptions)
@@ -109,7 +110,8 @@ def test_fizzles_if_bonds_no_longer_exist():
     )
 
     # Run the builder
-    builder.run(temperature=0.5)
+    result = builder.run(temperature=0.5)
+    assert result == Fizzle(FizzleReason.REQUIRED_BONDS_NO_LONGER_EXIST)
 
     assert slipnet.activate_node_from_workspace_called == 0
     assert workspace.break_bond_called == 0
@@ -147,7 +149,7 @@ def test_fizzles_if_bonds_to_be_flipped_lose_fight():
     )
 
     # Run the builder
-    builder.run(temperature=0.5)
+    result = builder.run(temperature=0.5)
 
     assert slipnet.activate_node_from_workspace_called == 0
     assert workspace.break_bond_called == 0
@@ -189,7 +191,7 @@ def test_fizzles_if_incompatible_structures_win_fight():
     )
 
     # Run the builder
-    builder.run(temperature=0.5)
+    result = builder.run(temperature=0.5)
 
     assert slipnet.activate_node_from_workspace_called == 0
     assert workspace.break_bond_called == 0
@@ -237,11 +239,12 @@ def test_breaks_incompatible_structures_flips_bonds_and_builds_group():
     )
 
     # Run the builder
-    builder.run(temperature=0.5)
+    result = builder.run(temperature=0.5)
 
     assert slipnet.activate_node_from_workspace_called == 1
     assert workspace.break_group_called == 2
     assert proposed_group.string.add_group_called == 1
+    assert result == Finish()
 
     # Restore the original function
     group_builder.structure_beats_structures = original_structure_beats_structures

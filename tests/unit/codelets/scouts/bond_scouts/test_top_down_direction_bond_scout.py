@@ -5,6 +5,7 @@ import pytest
 
 from copycat.codelets.scouts.bond_scouts import TopDownDirectionBondScout
 from copycat.codelets.strength_testers import BondStrengthTester
+from copycat.codelet_result import Finish, Fizzle, FizzleReason
 
 
 def test_run():
@@ -60,7 +61,8 @@ def test_run():
 
     # No object to choose
     workspace.initial_string.choose_object.return_value = None
-    scout.run(temperature=0.0)
+    result = scout.run(temperature=0.0)
+    assert result == Fizzle(FizzleReason.NO_OBJECTS)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
@@ -121,7 +123,8 @@ def test_run():
 
     # Object with neighbor, shared bond facet, and bond category is directed
     bond_category.is_directed.return_value = True
-    scout.run(temperature=0.0)
+    result = scout.run(temperature=0.0)
     assert coderack.post_called == 1
+    assert result == Finish()
     assert slipnet.activate_called == 3
     assert isinstance(coderack.posted_codelets[0], BondStrengthTester)

@@ -3,6 +3,7 @@ from unittest.mock import Mock
 import pytest
 
 from copycat.codelets.builders import DescriptionBuilder
+from copycat.codelet_result import Finish, Fizzle, FizzleReason
 
 
 def test_run_fizzles_if_argument_object_no_longer_exists():
@@ -20,7 +21,8 @@ def test_run_fizzles_if_argument_object_no_longer_exists():
         workspace=workspace,
         proposed_description=description,
     )
-    builder.run(temperature=0.0)
+    result = builder.run(temperature=0.0)
+    assert result == Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
     # If the argument object doesn't exist, the description shouldn't be added to it
     assert description not in description.argument_object.descriptions
 
@@ -69,7 +71,7 @@ def test_activates_slipnodes_if_description_exists():
         proposed_description=proposed_description,
     )
 
-    builder.run(temperature=0.0)
+    result = builder.run(temperature=0.0)
     # If the description already exists, the slipnodes for the descriptor and facet should be activated
     assert slipnet.activate_called == 2
 
@@ -123,7 +125,8 @@ def test_adds_description_to_argument_object():
         proposed_description=proposed_description,
     )
 
-    builder.run(temperature=0.0)
+    result = builder.run(temperature=0.0)
+    assert result == Finish()
     # If the description doesn't already exist, it should be added to the argument object
     assert argument_object.add_description_has_been_called
     assert slipnet.activate_called == 2

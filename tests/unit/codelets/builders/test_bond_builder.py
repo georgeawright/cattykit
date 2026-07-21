@@ -4,6 +4,7 @@ import pytest
 
 from copycat.codelets.builders import bond_builder
 from copycat.codelets.builders import BondBuilder
+from copycat.codelet_result import Finish, Fizzle, FizzleReason
 
 
 class MockWorkspace:
@@ -52,7 +53,8 @@ def test_run_fizzles_if_argument_objects_no_longer_exist():
         workspace=workspace,
         proposed_bond=bond,
     )
-    builder.run(temperature=0.0)
+    result = builder.run(temperature=0.0)
+    assert result == Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
     # If the from and to objects don't exist, the bond shouldn't be added to them
     assert bond.from_object.outgoing_bonds == []
     assert bond.from_object.incoming_bonds == []
@@ -225,8 +227,9 @@ def test_builds_bond_and_breaks_incompatible_structures(monkeypatch):
         bond_builder, "structure_beats_structures", lambda *_, **__: True
     )
 
-    builder.run(temperature=0.5)
+    result = builder.run(temperature=0.5)
     assert bond.string.add_bond_called == 1
+    assert result == Finish()
     assert builder.workspace.break_bond_called == 2
     assert builder.workspace.break_group_called == 2
     assert builder.workspace.break_correspondence_called == 2

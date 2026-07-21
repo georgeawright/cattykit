@@ -4,6 +4,7 @@ from unittest.mock import Mock
 import pytest
 
 from copycat.codelets.scouts.correspondence_scouts import BottomUpCorrespondenceScout
+from copycat.codelet_result import Finish, Fizzle, FizzleReason
 from copycat.codelets.strength_testers import CorrespondenceStrengthTester
 
 
@@ -68,14 +69,14 @@ def test_run():
 
     # object 1 spans string but object 2 does not
     object_2.spans_whole_string = lambda: False
-    scout.run(temperature=0.0)
+    result = scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
     # object 2 spans string but object 1 does not
     object_1.spans_whole_string = lambda: True
     object_2.spans_whole_string = lambda: False
-    scout.run(temperature=0.0)
+    result = scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
@@ -85,7 +86,7 @@ def test_run():
     description_2 = SimpleNamespace(facet=SimpleNamespace(name="group"))
     object_1.descriptions = [description_1]
     object_2.descriptions = [description_2]
-    scout.run(temperature=0.0)
+    result = scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
@@ -98,7 +99,7 @@ def test_run():
     )
     object_1.descriptions = [description_1]
     object_2.descriptions = [description_2]
-    scout.run(temperature=0.0)
+    result = scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
@@ -125,7 +126,8 @@ def test_run():
     object_2.descriptions = [description_2]
     object_1.is_distinguished_by = lambda descriptor: True
     object_2.is_distinguished_by = lambda descriptor: True
-    scout.run(temperature=0.0)
+    result = scout.run(temperature=0.0)
     assert coderack.post_called == 1
+    assert result == Finish()
     assert slipnet.activate_called == 4
     assert workspace.proposed_correspondences == 1

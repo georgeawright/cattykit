@@ -2,6 +2,7 @@ from typing import List
 
 from copycat.concept_mapping import ConceptMapping
 from copycat.codelets.builder import Builder
+from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.tools import structure_beats_structures
 from copycat.workspace_structures.bond import Bond
 
@@ -28,14 +29,14 @@ class BondBuilder(Builder):
         )
         self.proposed_bond = proposed_bond
 
-    def run(self, temperature: float):
+    def run(self, temperature: float) -> CodeletResult:
         if (
             self.proposed_bond.from_object not in self.workspace.objects
             or self.proposed_bond.to_object not in self.workspace.objects
         ):
-            return
+            return Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
         if self.proposed_bond in self.proposed_bond.string.bonds:
-            return
+            return Fizzle(FizzleReason.STRUCTURE_ALREADY_EXISTS)
         self.proposed_bond.string.delete_proposed_bond(self.proposed_bond)
         incompatible_bonds = self._get_incompatible_bonds()
         if incompatible_bonds:
@@ -43,7 +44,7 @@ class BondBuilder(Builder):
                 self.proposed_bond, 1, incompatible_bonds, 1, temperature=temperature
             )
             if not fight_result:
-                return
+                return Fizzle(FizzleReason.INCOMPATIBLE_STRUCTURES_WON)
         incompatible_groups = self._get_incompatible_groups()
         if incompatible_groups:
             fight_result = structure_beats_structures(
@@ -54,7 +55,7 @@ class BondBuilder(Builder):
                 temperature=temperature,
             )
             if not fight_result:
-                return
+                return Fizzle(FizzleReason.INCOMPATIBLE_STRUCTURES_WON)
         incompatible_correspondences = self._get_incompatible_correspondences()
         if incompatible_correspondences:
             fight_result = structure_beats_structures(
@@ -65,7 +66,7 @@ class BondBuilder(Builder):
                 temperature=temperature,
             )
             if not fight_result:
-                return
+                return Fizzle(FizzleReason.INCOMPATIBLE_STRUCTURES_WON)
         for group in incompatible_groups:
             self.workspace.break_group(group)
         for bond in incompatible_bonds:
@@ -73,6 +74,7 @@ class BondBuilder(Builder):
         for correspondence in incompatible_correspondences:
             self.workspace.break_correspondence(correspondence)
         self.build_bond()
+        return Finish()
 
     def build_bond(self):
         self.proposed_bond.string.add_bond(self.proposed_bond)

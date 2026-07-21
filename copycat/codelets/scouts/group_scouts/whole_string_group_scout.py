@@ -2,6 +2,7 @@ import random
 from typing import List, Optional, Tuple
 
 from copycat.codelets.scouts.group_scout import GroupScout
+from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.slipnode import Slipnode
 
 
@@ -20,10 +21,10 @@ class WholeStringGroupScout(GroupScout):
             slipnet=slipnet,
         )
 
-    def run(self, temperature: float):
+    def run(self, temperature: float) -> CodeletResult:
         workspace_string = self.workspace.get_random_string()
         if not workspace_string.bonds:
-            return
+            return Fizzle(FizzleReason.NO_BONDS)
         chosen_object = workspace_string.choose_from_leftmost_objects()
         first_bond = chosen_object.right_bond
         required_number_of_bonds = len(workspace_string) - 1
@@ -33,7 +34,7 @@ class WholeStringGroupScout(GroupScout):
             number_of_bonds=required_number_of_bonds,
         )
         if len(bonds) < required_number_of_bonds:
-            return
+            return Fizzle(FizzleReason.BONDS_DO_NOT_SPAN_STRING)
         chosen_bond = random.choices(bonds)[0]
         bond_category = chosen_bond.bond_category
         direction_category = chosen_bond.direction_category
@@ -45,7 +46,7 @@ class WholeStringGroupScout(GroupScout):
             bonds=bonds,
         )
         if not possible_group_bonds:
-            return
+            return Fizzle(FizzleReason.NO_COMPATIBLE_GROUP_BONDS)
         group_category = bond_category.get_related_node("group_category")
         self.propose_group(
             objects=list(objects),
@@ -53,6 +54,7 @@ class WholeStringGroupScout(GroupScout):
             group_category=group_category,
             direction=direction_category,
         )
+        return Finish()
 
     def _get_bonds_and_objects(
         self, direction: "Slipnode", first_bond: "Bond", number_of_bonds: int

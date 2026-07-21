@@ -5,6 +5,7 @@ import pytest
 
 from copycat.codelets.scouts.group_scouts import WholeStringGroupScout
 from copycat.codelets.strength_testers import GroupStrengthTester
+from copycat.codelet_result import Finish, Fizzle, FizzleReason
 
 
 def test_run():
@@ -99,7 +100,8 @@ def test_run():
     )
 
     # No bonds in the string
-    scout.run(temperature=0.0)
+    result = scout.run(temperature=0.0)
+    assert result == Fizzle(FizzleReason.NO_BONDS)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
@@ -185,6 +187,7 @@ def test_run():
 
     # bonds are compatible
     a_to_b.direction_category = slipnet.right_node
-    scout.run(temperature=0.0)
+    result = scout.run(temperature=0.0)
     assert coderack.post_called == 1
+    assert result == Finish()
     assert isinstance(coderack.posted_codelets[0], GroupStrengthTester)

@@ -1,6 +1,7 @@
 import random
 
 from copycat.codelets.builders import GroupBuilder
+from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.strength_tester import StrengthTester
 from copycat.tools import temperature_adjust
 from copycat.workspace_objects.group import Group
@@ -28,14 +29,14 @@ class GroupStrengthTester(StrengthTester):
         )
         self.proposed_group = proposed_group
 
-    def run(self, temperature: float):
+    def run(self, temperature: float) -> CodeletResult:
         self.proposed_group.update_strength_values()
         build_probability = temperature_adjust(
             self.proposed_group.total_strength, temperature
         )
         if build_probability < random.random():
             self.proposed_group.string.delete_proposed_group(self.proposed_group)
-            return
+            return Fizzle(FizzleReason.PROPOSED_STRUCTURE_TOO_WEAK)
         self.slipnet.activate_node_from_workspace(
             self.proposed_group.bond_category.name
         )
@@ -55,3 +56,4 @@ class GroupStrengthTester(StrengthTester):
                 proposed_group=self.proposed_group,
             )
         )
+        return Finish()

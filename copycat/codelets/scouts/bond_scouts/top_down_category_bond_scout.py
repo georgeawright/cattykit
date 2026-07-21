@@ -1,6 +1,7 @@
 import random
 
 from copycat.codelets.scouts.bond_scout import BondScout
+from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.slipnode import Slipnode
 
 
@@ -27,7 +28,7 @@ class TopDownCategoryBondScout(BondScout):
         )
         self.bond_category = bond_category
 
-    def run(self, temperature: float):
+    def run(self, temperature: float) -> CodeletResult:
         initial_string_relevance = (
             self.workspace.initial_string.get_local_bond_category_relevance(
                 self.bond_category
@@ -56,17 +57,17 @@ class TopDownCategoryBondScout(BondScout):
         )[0]
         object_1 = string.choose_object(temperature, lambda x: x.intra_string_salience)
         if object_1 is None:
-            return
+            return Fizzle(FizzleReason.NO_OBJECTS)
         object_2 = object_1.choose_neighbor()
         if object_2 is None:
-            return
+            return Fizzle(FizzleReason.NO_NEIGHBOR)
         bond_facet = self._choose_bond_facet(object_1, object_2)
         if bond_facet is None:
-            return
+            return Fizzle(FizzleReason.NO_COMMON_BOND_FACET)
         object_1_descriptor = object_1.get_descriptor(bond_facet)
         object_2_descriptor = object_2.get_descriptor(bond_facet)
         if object_1_descriptor is None or object_2_descriptor is None:
-            return
+            return Fizzle(FizzleReason.NO_DESCRIPTORS_FOR_BOND_FACET)
         if (
             self._get_bond_category(object_1_descriptor, object_2_descriptor)
             == self.bond_category
@@ -84,7 +85,7 @@ class TopDownCategoryBondScout(BondScout):
             from_object_descriptor = object_2_descriptor
             to_object_descriptor = object_1_descriptor
         else:
-            return
+            return Fizzle(FizzleReason.BOND_CATEGORY_DOES_NOT_MATCH)
         self.propose_bond(
             from_object,
             to_object,
@@ -93,3 +94,4 @@ class TopDownCategoryBondScout(BondScout):
             from_object_descriptor,
             to_object_descriptor,
         )
+        return Finish()

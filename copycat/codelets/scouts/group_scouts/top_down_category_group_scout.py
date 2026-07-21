@@ -1,6 +1,7 @@
 from typing import List, Optional, Tuple
 
 from copycat.codelets.scouts.group_scout import GroupScout
+from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.slipnode import Slipnode
 
 
@@ -21,21 +22,21 @@ class TopDownCategoryGroupScout(GroupScout):
         )
         self.group_category = group_category
 
-    def run(self, temperature: float):
+    def run(self, temperature: float) -> CodeletResult:
         bond_category = self.group_category.get_related_node("bond_category")
         workspace_string = self.choose_workspace_string(bond_category)
         chosen_object = workspace_string.choose_object(
             temperature, lambda x: x.intra_string_salience
         )
         if chosen_object.spans_whole_string():
-            return
+            return Fizzle(FizzleReason.OBJECT_SPANS_WHOLE_STRING)
         direction = self._choose_direction(chosen_object)
         number_of_bonds = self._choose_number_of_bonds(workspace_string)
         first_bond = self._get_first_bond(direction, chosen_object)
         if first_bond is None:
-            return
+            return Fizzle(FizzleReason.NO_FIRST_BOND)
         if first_bond.direction_category != direction:
-            return
+            return Fizzle(FizzleReason.BOND_DIRECTION_DOES_NOT_MATCH)
         bond_category = first_bond.bond_category
         bond_facet = first_bond.bond_facet
         opposite_bond_category = bond_category.get_related_node("opposite")
@@ -50,6 +51,7 @@ class TopDownCategoryGroupScout(GroupScout):
             group_category=group_category,
             direction=direction,
         )
+        return Finish()
 
     def choose_workspace_string(self, bond_category: Optional[Slipnode]):
         initial_string_relevance = (

@@ -3,6 +3,7 @@ from unittest.mock import Mock
 import pytest
 
 from copycat.codelets.strength_testers import GroupStrengthTester
+from copycat.codelet_result import Finish, Fizzle, FizzleReason
 
 
 def test_run():
@@ -43,7 +44,8 @@ def test_run():
 
     # weak group should not post a builder
     proposed_group.total_strength = 0.0
-    strength_tester.run(temperature=0.0)
+    result = strength_tester.run(temperature=0.0)
+    assert result == Fizzle(FizzleReason.PROPOSED_STRUCTURE_TOO_WEAK)
     assert slipnet.activate_called == 0
     assert coderack.post_called == 0
 
@@ -51,6 +53,7 @@ def test_run():
     slipnet.activate_called = 0
     coderack.post_called = 0
     proposed_group.total_strength = 1.0
-    strength_tester.run(temperature=0.0)
+    result = strength_tester.run(temperature=0.0)
+    assert result == Finish()
     assert slipnet.activate_called == 2
     assert coderack.post_called == 1
