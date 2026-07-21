@@ -31,6 +31,9 @@ class FizzleReason(StrEnum):
     NO_DISTINGUISHING_CONCEPT_MAPPINGS = (
         "No distinguishing concept mappings between chosen objects"
     )
+    NO_OBJECTS_WITH_DESCRIPTOR = (
+        "No objects with the chosen descriptor in the target string"
+    )
 
 
 @dataclass(frozen=True)
