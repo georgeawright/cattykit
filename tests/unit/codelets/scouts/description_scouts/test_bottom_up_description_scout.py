@@ -2,6 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
+from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.scouts.description_scouts import BottomUpDescriptionScout
 from copycat.codelets.strength_testers import DescriptionStrengthTester
 
@@ -44,14 +45,18 @@ def test_run():
     )
 
     # No object to choose
-    scout.run(temperature=0.0)
+    result = scout.run(temperature=0.0)
+    assert isinstance(result, Fizzle)
+    assert result.reason == FizzleReason.NO_OBJECTS
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
     # Object with no relevant description
     workspace.object = Mock()
     workspace.object.choose_relevant_description_by_activation.return_value = None
-    scout.run(temperature=0.0)
+    result = scout.run(temperature=0.0)
+    assert isinstance(result, Fizzle)
+    assert result.reason == FizzleReason.NO_RELEVANT_DESCRIPTIONS
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
@@ -61,7 +66,9 @@ def test_run():
     workspace.object.choose_relevant_description_by_activation.return_value = Mock(
         descriptor=descriptor
     )
-    scout.run(temperature=0.0)
+    result = scout.run(temperature=0.0)
+    assert isinstance(result, Fizzle)
+    assert result.reason == FizzleReason.NO_RELEVANT_HAS_PROPERTY_LINKS
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
@@ -70,7 +77,8 @@ def test_run():
     link.degree_of_association = 1
     link.to_node.name = "property"
     descriptor.get_similar_has_property_links.return_value = [link]
-    scout.run(temperature=0.0)
+    result = scout.run(temperature=0.0)
+    assert isinstance(result, Finish)
     assert coderack.post_called == 1
     assert slipnet.activate_called == 1
     assert isinstance(coderack.posted_codelets[0], DescriptionStrengthTester)

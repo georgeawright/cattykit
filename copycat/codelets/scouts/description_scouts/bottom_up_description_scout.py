@@ -2,6 +2,7 @@ from typing import Optional
 
 import numpy as np
 
+from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.scouts.description_scout import DescriptionScout
 from copycat.workspace_object import WorkspaceObject
 
@@ -14,21 +15,21 @@ class BottomUpDescriptionScout(DescriptionScout):
     Proposes a description based on the property and posts a description strength tester
     with urgency a function of the property's activation."""
 
-    def run(self, temperature: float):
+    def run(self, temperature: float) -> CodeletResult:
         chosen_object = self.workspace.choose_object(
             temperature, lambda x: x.total_salience
         )
         if chosen_object is None:
-            return
+            return Fizzle(FizzleReason.NO_OBJECTS)
         chosen_description = chosen_object.choose_relevant_description_by_activation()
         if chosen_description is None:
-            return
+            return Fizzle(FizzleReason.NO_RELEVANT_DESCRIPTIONS)
         chosen_descriptor = chosen_description.descriptor
         has_property_links = chosen_descriptor.get_similar_has_property_links(
             temperature
         )
         if not has_property_links:
-            return
+            return Fizzle(FizzleReason.NO_RELEVANT_HAS_PROPERTY_LINKS)
         choice_list = np.array(
             [
                 link.degree_of_association
@@ -43,3 +44,4 @@ class BottomUpDescriptionScout(DescriptionScout):
         self.propose_description(
             chosen_object, chosen_property.category, chosen_property
         )
+        return Finish()
