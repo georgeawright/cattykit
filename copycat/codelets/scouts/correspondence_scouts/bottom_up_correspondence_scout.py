@@ -48,12 +48,26 @@ class BottomUpCorrespondenceScout(CorrespondenceScout):
         ]
         if not distinguishing_concept_mappings:
             return
+
+        # COMMENT FROM ORIGINAL SOURCE CODE:
+        # If both objects span the string, and if all the distinguishing
+        # concept-mappings (except string-position-category concept-mappings),
+        # are opposites, and plato-opposite isn't active, then consider a
+        # correspondence with the target-string group flipped.
+        # E.g., suppose in the problem "abc -> abd, pqrs -> ?"
+        # that "abc" has been described as an left-to-right succgrp and
+        # "pqrs" has been described as a right-to-left predgrp.  This puts
+        # top-down pressure on the program to flip "pqrs" so that it has
+        # the same description as "abc".  Notice that this can only happen
+        # at the time that the two strings are explicitly compared by a
+        # correspondence-scout codelet.
         possible_opposite_concept_mappings = [
             mapping
             for mapping in distinguishing_concept_mappings
             if mapping.description_type_1.name
             not in ["string_position_category", "bond_facet"]
         ]
+        object_2_flipped = False
         if (
             object_1.spans_whole_string()
             and object_2.spans_whole_string()

@@ -15,7 +15,9 @@ class CorrespondenceStrengthTester(StrengthTester):
         proposed_correspondence,
         object_2_flipped=False,
     ):
-        super().__init__(urgency_bin, coderack, slipnet, workspace)
+        super().__init__(
+            urgency_bin, coderack, slipnet, workspace, proposed_correspondence
+        )
         self.proposed_correspondence = proposed_correspondence
         self.object_2_flipped = object_2_flipped
 

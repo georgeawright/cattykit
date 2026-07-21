@@ -37,10 +37,14 @@ def test_run():
         def __init__(self, initial_string, target_string):
             self.initial_string = initial_string
             self.target_string = target_string
+            self.proposed_correspondences = 0
             object = None
 
         def choose_object(self, temperature, salience_function):
             return self.object
+
+        def add_proposed_correspondence(self, proposed_correspondence):
+            self.proposed_correspondences += 1
 
     class MockWorkspaceString:
         def __init__(self, objects):
@@ -97,3 +101,31 @@ def test_run():
     scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
+
+    # distinguishing concept mappings
+    successor_node = SimpleNamespace(name="successor", conceptual_depth=0.5)
+    predecessor_node = SimpleNamespace(name="predecessor", conceptual_depth=0.5)
+    successor_node.is_linked_to = lambda other: other == predecessor_node
+    predecessor_node.is_linked_to = lambda other: other == successor_node
+    succesor_to_predecessor_link = SimpleNamespace(
+        from_node=successor_node, to_node=predecessor_node, degree_of_association=1.0
+    )
+    predecessor_to_successor_link = SimpleNamespace(
+        from_node=predecessor_node, to_node=successor_node, degree_of_association=1.0
+    )
+    successor_node.lateral_sliplinks = [succesor_to_predecessor_link]
+    predecessor_node.lateral_sliplinks = [predecessor_to_successor_link]
+    description_1 = SimpleNamespace(
+        facet=SimpleNamespace(name="group"), descriptor=successor_node
+    )
+    description_2 = SimpleNamespace(
+        facet=SimpleNamespace(name="group"), descriptor=predecessor_node
+    )
+    object_1.descriptions = [description_1]
+    object_2.descriptions = [description_2]
+    object_1.is_distinguished_by = lambda descriptor: True
+    object_2.is_distinguished_by = lambda descriptor: True
+    scout.run(temperature=0.0)
+    assert coderack.post_called == 1
+    assert slipnet.activate_called == 4
+    assert workspace.proposed_correspondences == 1
