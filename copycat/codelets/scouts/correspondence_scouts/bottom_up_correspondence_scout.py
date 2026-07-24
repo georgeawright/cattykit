@@ -16,12 +16,12 @@ class BottomUpCorrespondenceScout(CorrespondenceScout):
     of the distinguishing concept mappings."""
 
     def _get_objects_or_fizzle(self) -> Optional[CodeletResult]:
-        self.object_1 = self.workspace.initial_string.choose_object(
+        self.from_object = self.workspace.initial_string.choose_object(
             selection_method=lambda x: x.inter_string_salience
         )
-        self.object_2 = self.workspace.target_string.choose_object(
+        self.to_object = self.workspace.target_string.choose_object(
             selection_method=lambda x: x.inter_string_salience
         )
-        if self.object_1 is None or self.object_2 is None:
+        if self.from_object is None or self.to_object is None:
             return Fizzle(FizzleReason.NO_OBJECTS)
         return None

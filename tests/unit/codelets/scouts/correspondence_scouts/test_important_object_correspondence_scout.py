@@ -65,9 +65,9 @@ def test_run():
         urgency_bin=0, coderack=coderack, slipnet=slipnet, workspace=workspace
     )
 
-    object_1 = SimpleNamespace(spans_whole_string=lambda: True)
-    object_2 = SimpleNamespace(spans_whole_string=lambda: True)
-    workspace.target_string.objects = [object_2]
+    from_object = SimpleNamespace(spans_whole_string=lambda: True)
+    to_object = SimpleNamespace(spans_whole_string=lambda: True)
+    workspace.target_string.objects = [to_object]
 
     # initial string has no objects
     workspace.initial_string.objects = []
@@ -76,41 +76,41 @@ def test_run():
     assert result.reason == FizzleReason.NO_OBJECTS
 
     # initial string has object but object has no relevant descriptions
-    workspace.initial_string.objects = [object_1]
-    object_1.choose_relevant_description_by_conceptual_depth = lambda: None
+    workspace.initial_string.objects = [from_object]
+    from_object.choose_relevant_description_by_conceptual_depth = lambda: None
     result = scout.run(temperature=0.0)
     assert isinstance(result, Fizzle)
     assert result.reason == FizzleReason.NO_RELEVANT_DESCRIPTIONS
 
     # object 1 has relevant description but no objects in target string have that descriptor
     description = SimpleNamespace(descriptor="descriptor")
-    object_1.choose_relevant_description_by_conceptual_depth = lambda: description
-    object_2.relevant_descriptions = []
+    from_object.choose_relevant_description_by_conceptual_depth = lambda: description
+    to_object.relevant_descriptions = []
     result = scout.run(temperature=0.0)
     assert isinstance(result, Fizzle)
     assert result.reason == FizzleReason.NO_OBJECTS_WITH_DESCRIPTOR
 
     # object 1 spans string but object 2 does not
-    object_2.relevant_descriptions = [description]
-    object_2.spans_whole_string = lambda: False
-    object_2.inter_string_salience = 0.5
+    to_object.relevant_descriptions = [description]
+    to_object.spans_whole_string = lambda: False
+    to_object.inter_string_salience = 0.5
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
     # object 2 spans string but object 1 does not
-    object_1.spans_whole_string = lambda: True
-    object_2.spans_whole_string = lambda: False
+    from_object.spans_whole_string = lambda: True
+    to_object.spans_whole_string = lambda: False
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
     # both objects span whole string but concept mappings not possible
-    object_2.spans_whole_string = lambda: True
+    to_object.spans_whole_string = lambda: True
     description_1 = SimpleNamespace(facet=SimpleNamespace(name="bond"))
     description_2 = SimpleNamespace(facet=SimpleNamespace(name="group"))
-    object_1.descriptions = [description_1]
-    object_2.descriptions = [description_2]
+    from_object.descriptions = [description_1]
+    to_object.descriptions = [description_2]
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
@@ -122,8 +122,8 @@ def test_run():
     description_2 = SimpleNamespace(
         facet=SimpleNamespace(name="group"), descriptor=SimpleNamespace(name="whole")
     )
-    object_1.descriptions = [description_1]
-    object_2.descriptions = [description_2]
+    from_object.descriptions = [description_1]
+    to_object.descriptions = [description_2]
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
@@ -147,10 +147,10 @@ def test_run():
     description_2 = SimpleNamespace(
         facet=SimpleNamespace(name="group"), descriptor=predecessor_node
     )
-    object_1.descriptions = [description_1]
-    object_2.descriptions = [description_2]
-    object_1.is_distinguished_by = lambda descriptor: True
-    object_2.is_distinguished_by = lambda descriptor: True
+    from_object.descriptions = [description_1]
+    to_object.descriptions = [description_2]
+    from_object.is_distinguished_by = lambda descriptor: True
+    to_object.is_distinguished_by = lambda descriptor: True
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 1
     assert result == Finish()

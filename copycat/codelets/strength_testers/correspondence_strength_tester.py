@@ -18,22 +18,22 @@ class CorrespondenceStrengthTester(StrengthTester):
         slipnet,
         workspace,
         proposed_correspondence,
-        object_2_flipped=False,
+        to_object_flipped=False,
     ):
         super().__init__(
             urgency_bin, coderack, slipnet, workspace, proposed_correspondence
         )
         self.proposed_correspondence = proposed_correspondence
-        self.object_2_flipped = object_2_flipped
+        self.to_object_flipped = to_object_flipped
 
     def run(self, temperature: float) -> CodeletResult:
-        if self.proposed_correspondence.object_1 not in self.workspace.objects:
+        if self.proposed_correspondence.from_object not in self.workspace.objects:
             return Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
         if (
-            self.proposed_correspondence.object_2 not in self.workspace.objects
+            self.proposed_correspondence.to_object not in self.workspace.objects
             and not (
-                self.object_2_flipped
-                and self.proposed_correspondence.object_2.get_flipped_version()
+                self.to_object_flipped
+                and self.proposed_correspondence.to_object.get_flipped_version()
                 in self.workspace.objects
             )
         ):
@@ -59,7 +59,7 @@ class CorrespondenceStrengthTester(StrengthTester):
                 slipnet=self.slipnet,
                 workspace=self.workspace,
                 proposed_correspondence=self.proposed_correspondence,
-                object_2_flipped=self.object_2_flipped,
+                to_object_flipped=self.to_object_flipped,
             )
         )
         return Finish()

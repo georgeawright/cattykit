@@ -22,8 +22,8 @@ class CorrespondenceScout(Scout):
         slipnet: "Slipnet",
     ):
         super().__init__(urgency_bin, coderack, workspace, slipnet)
-        self.object_1 = None
-        self.object_2 = None
+        self.from_object = None
+        self.to_object = None
 
     def run(self, temperature: float) -> CodeletResult:
         objects_or_fizzle = self._get_objects_or_fizzle()
@@ -31,14 +31,14 @@ class CorrespondenceScout(Scout):
             return objects_or_fizzle
         # According to original code, this probably isn't right.
         if (
-            self.object_1.spans_whole_string()
-            and not self.object_2.spans_whole_string()
+            self.from_object.spans_whole_string()
+            and not self.to_object.spans_whole_string()
         ) or (
-            self.object_2.spans_whole_string()
-            and not self.object_1.spans_whole_string()
+            self.to_object.spans_whole_string()
+            and not self.from_object.spans_whole_string()
         ):
             return Fizzle(FizzleReason.INCOMPATIBLE_OBJECT_SPANS)
-        concept_mappings = self._get_concept_mappings(self.object_1, self.object_2)
+        concept_mappings = self._get_concept_mappings(self.from_object, self.to_object)
         concept_mappings_possible = any(
             random.random() < temperature_adjust(mapping.slippability, temperature)
             for mapping in concept_mappings
@@ -69,10 +69,10 @@ class CorrespondenceScout(Scout):
             if mapping.description_type_1.name
             not in ["string_position_category", "bond_facet"]
         ]
-        object_2_flipped = False
+        to_object_flipped = False
         if (
-            self.object_1.spans_whole_string()
-            and self.object_2.spans_whole_string()
+            self.from_object.spans_whole_string()
+            and self.to_object.spans_whole_string()
             and any(
                 mapping.description_type_1.name == "direction_category"
                 for mapping in possible_opposite_concept_mappings
@@ -82,23 +82,25 @@ class CorrespondenceScout(Scout):
             )
             and not self.slipnet.get_node("opposite").is_active()
         ):
-            self.object_2 = self.object_2.get_flipped_version()
-            concept_mappings = self._get_concept_mappings(self.object_1, self.object_2)
-            object_2_flipped = True
+            self.to_object = self.to_object.get_flipped_version()
+            concept_mappings = self._get_concept_mappings(
+                self.from_object, self.to_object
+            )
+            to_object_flipped = True
         self.propose_correspondence(
-            self.object_1, self.object_2, concept_mappings, object_2_flipped
+            self.from_object, self.to_object, concept_mappings, to_object_flipped
         )
         return Finish()
 
     def propose_correspondence(
         self,
-        object_1: "WorkspaceObject",
-        object_2: "WorkspaceObject",
+        from_object: "WorkspaceObject",
+        to_object: "WorkspaceObject",
         concept_mappings: List[ConceptMapping],
-        object_2_flipped: bool,
+        to_object_flipped: bool,
     ):
         proposed_correspondence = Correspondence(
-            self.workspace, object_1, object_2, concept_mappings
+            self.workspace, from_object, to_object, concept_mappings
         )
         proposed_correspondence.proposal_level = 1
         distinguishing_mappings = proposed_correspondence.get_distinguishing_mappings()
@@ -119,12 +121,12 @@ class CorrespondenceScout(Scout):
                 slipnet=self.slipnet,
                 workspace=self.workspace,
                 proposed_correspondence=proposed_correspondence,
-                object_2_flipped=object_2_flipped,
+                to_object_flipped=to_object_flipped,
             )
         )
 
     def _get_concept_mappings(
-        self, object_1: "WorkspaceObject", object_2: "WorkspaceObject"
+        self, from_object: "WorkspaceObject", to_object: "WorkspaceObject"
     ) -> List[ConceptMapping]:
         return [
             ConceptMapping(
@@ -132,11 +134,11 @@ class CorrespondenceScout(Scout):
                 description_type_2=desc_2.facet,
                 descriptor_1=desc_1.descriptor,
                 descriptor_2=desc_2.descriptor,
-                object_1=object_1,
-                object_2=object_2,
+                object_1=from_object,
+                object_2=to_object,
             )
-            for desc_1 in object_1.descriptions
-            for desc_2 in object_2.descriptions
+            for desc_1 in from_object.descriptions
+            for desc_2 in to_object.descriptions
             if desc_1.facet == desc_2.facet
             and (
                 desc_1.descriptor == desc_2.descriptor
