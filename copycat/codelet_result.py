@@ -34,6 +34,9 @@ class FizzleReason(StrEnum):
     NO_OBJECTS_WITH_DESCRIPTOR = (
         "No objects with the chosen descriptor in the target string"
     )
+    NOT_ALL_CONCEPT_MAPPINGS_RELEVANT = (
+        "Not all concept mappings are relevant to the proposed correspondence"
+    )
 
 
 @dataclass(frozen=True)

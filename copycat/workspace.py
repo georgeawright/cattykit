@@ -169,6 +169,18 @@ class Workspace:
             return False
         return existing_correspondence == correspondence
 
+    def get_existing_correspondence(self, correspondence) -> Optional[Correspondence]:
+        """Returns the existing correspondence between two objects if it exists."""
+        try:
+            existing_correspondence = self._correspondences[
+                correspondence.from_object.id
+            ]
+        except KeyError:
+            return None
+        if existing_correspondence == correspondence:
+            return existing_correspondence
+        return None
+
     def break_bond(self, bond):
         bond.from_object.string.delete_bond(bond)
         bond.from_object.outgoing_bonds.remove(bond)
