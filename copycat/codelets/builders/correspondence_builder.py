@@ -1,6 +1,7 @@
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.builder import Builder
 from copycat.tools import structure_beats_structures
+from copycat.workspace_objects import Group, Letter
 from copycat.workspace_structures import Correspondence
 
 
@@ -124,7 +125,7 @@ class CorrespondenceBuilder(Builder):
             )
         if incompatible_rule:
             self.workspace.break_rule(incompatible_rule)
-        self.build_correspondence()
+        self._build_correspondence()
 
     def _augment_existing_correspondence_if_exists(self):
         existing_correspondence = self.workspace.get_existing_correspondence(
@@ -145,6 +146,37 @@ class CorrespondenceBuilder(Builder):
         return False
 
     def _get_incompatible_correspondences(self):
+        incompatible_correspondences = [
+            c
+            for c in self.workspace.correspondences
+            if c.is_incompatible_with(self.proposed_correspondence)
+            or c.has_mismatching_arguments_with(self.proposed_correspondence)
+        ]
+        if (
+            self.from_object.is_string_spanning_group()
+            and self.to_object.is_string_spanning_group()
+        ):
+            direction_category_mapping = next(
+                (
+                    mapping
+                    for mapping in self.proposed_correspondence.concept_mappings
+                    if mapping.description_type_1.name == "direction-category"
+                    and mapping.description_type_2.name == "direction-category"
+                ),
+                None,
+            )
+            if direction_category_mapping:
+                incompatible_correspondences += (
+                    self._get_leftmost_and_rightmost_incompatible_correspondences(
+                        self.from_object,
+                        self.to_object,
+                        direction_category_mapping,
+                    )
+                )
+
+    def _get_leftmost_and_rightmost_incompatible_correspondences(
+        self, from_object, to_object, direction_category_mapping
+    ):
         pass
 
     def _get_incompatible_bonds_and_groups(self):
@@ -153,5 +185,5 @@ class CorrespondenceBuilder(Builder):
     def _get_incompatible_rule(self):
         pass
 
-    def build_correspondence(self):
+    def _build_correspondence(self):
         pass

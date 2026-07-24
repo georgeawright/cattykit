@@ -51,6 +51,31 @@ class Correspondence(WorkspaceStructure):
                     return True
         return False
 
+    def has_mismatching_arguments_with(self, other: Correspondence) -> bool:
+        """Returns True if self or other have the same from or to object
+        but the other object is either different or in a different group."""
+        from copycat.workspace_objects import Group, Letter
+
+        def _args_match(arg_1, arg_2):
+            # same object
+            if arg_1 == arg_2:
+                return True
+            # arg 2 is in arg 1
+            if isinstance(arg_1, Group) and arg_2 in arg_1.objects:
+                return True
+            # arg 1 is in arg 2
+            if isinstance(arg_2, Group) and arg_1 in arg_2.objects:
+                return True
+            # arg 1 and arg 2 are in the same group
+            if arg_1.group is not None and arg_1.group == arg_2.group:
+                return True
+            return False
+
+        return not (
+            _args_match(self.from_object, other.from_object)
+            and _args_match(self.to_object, other.to_object)
+        )
+
     def calculate_internal_strength(self) -> float:
         relevant_distinguishing_mappings = self.get_relevant_distinguishing_mappings()
         if not relevant_distinguishing_mappings:

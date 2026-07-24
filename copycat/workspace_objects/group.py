@@ -67,6 +67,9 @@ class Group(WorkspaceObject, WorkspaceStructure):
             if letter.right_position == self.right_position
         ][0]
 
+    def is_string_spanning_group(self) -> bool:
+        return self.spans_whole_string()
+
     def has_description(self, description: "Description") -> bool:
         return description in self.descriptions or description in self.bond_descriptions
 

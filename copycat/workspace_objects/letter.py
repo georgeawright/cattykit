@@ -19,3 +19,6 @@ class Letter(WorkspaceObject):
         for o in other_objects:
             other_descriptors += [d.descriptor for d in o.descriptions]
         return descriptor not in other_descriptors
+
+    def is_string_spanning_group(self) -> bool:
+        return False
