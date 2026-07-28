@@ -5,7 +5,7 @@ from copycat.workspace_structures import Correspondence
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.scout import Scout
 from copycat.codelets.strength_testers import CorrespondenceStrengthTester
-from copycat.concept_mapping import ConceptMapping
+from copycat.concept_mapping import ConceptMapping, get_concept_mappings
 from copycat.tools import temperature_adjust
 
 
@@ -38,7 +38,7 @@ class CorrespondenceScout(Scout):
             and not self.from_object.spans_whole_string()
         ):
             return Fizzle(FizzleReason.INCOMPATIBLE_OBJECT_SPANS)
-        concept_mappings = self._get_concept_mappings(self.from_object, self.to_object)
+        concept_mappings = get_concept_mappings(self.from_object, self.to_object)
         concept_mappings_possible = any(
             random.random() < temperature_adjust(mapping.slippability, temperature)
             for mapping in concept_mappings
@@ -124,24 +124,3 @@ class CorrespondenceScout(Scout):
                 to_object_flipped=to_object_flipped,
             )
         )
-
-    def _get_concept_mappings(
-        self, from_object: "WorkspaceObject", to_object: "WorkspaceObject"
-    ) -> List[ConceptMapping]:
-        return [
-            ConceptMapping(
-                description_type_1=desc_1.facet,
-                description_type_2=desc_2.facet,
-                descriptor_1=desc_1.descriptor,
-                descriptor_2=desc_2.descriptor,
-                object_1=from_object,
-                object_2=to_object,
-            )
-            for desc_1 in from_object.descriptions
-            for desc_2 in to_object.descriptions
-            if desc_1.facet == desc_2.facet
-            and (
-                desc_1.descriptor == desc_2.descriptor
-                or desc_1.descriptor.is_linked_to(desc_2.descriptor)
-            )
-        ]

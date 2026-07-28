@@ -1,8 +1,30 @@
 from __future__ import annotations
-from typing import Optional
+from typing import List, Optional
 
 from .slipnode import Slipnode
 from .workspace_object import WorkspaceObject
+
+
+def get_concept_mappings(
+    from_object: WorkspaceObject, to_object: WorkspaceObject
+) -> List[ConceptMapping]:
+    return [
+        ConceptMapping(
+            description_type_1=desc_1.facet,
+            description_type_2=desc_2.facet,
+            descriptor_1=desc_1.descriptor,
+            descriptor_2=desc_2.descriptor,
+            object_1=from_object,
+            object_2=to_object,
+        )
+        for desc_1 in from_object.descriptions
+        for desc_2 in to_object.descriptions
+        if desc_1.facet == desc_2.facet
+        and (
+            desc_1.descriptor == desc_2.descriptor
+            or desc_1.descriptor.is_linked_to(desc_2.descriptor)
+        )
+    ]
 
 
 class ConceptMapping:
@@ -57,6 +79,10 @@ class ConceptMapping:
             if degree_of_association == 1.0
             else degree_of_association * max(0.01, self.conceptual_depth**2)
         )
+
+    def is_slippage(self) -> bool:
+        # TODO
+        pass
 
     def is_relevant(self) -> bool:
         return (
