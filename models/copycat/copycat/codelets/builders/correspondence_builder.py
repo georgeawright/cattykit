@@ -156,11 +156,6 @@ class CorrespondenceBuilder(Builder):
             or c.is_incompatible_boundarywise_with(self.proposed_correspondence)
         ]
 
-    def _get_leftmost_and_rightmost_incompatible_correspondences(
-        self, from_object, to_object, direction_category_mapping
-    ):
-        pass
-
     def _get_incompatible_bonds_and_groups(self):
         pass
 
