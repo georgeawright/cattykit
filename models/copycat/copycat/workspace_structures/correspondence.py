@@ -153,6 +153,14 @@ class Correspondence(WorkspaceStructure):
             if m.is_relevant() and m.is_distinguishing()
         ]
 
+    def get_accessory_concept_mappings(self) -> List[ConceptMapping]:
+        # TODO
+        pass
+
+    def add_accessory_concept_mapping(self, mapping: ConceptMapping):
+        # TODO
+        pass
+
     def is_internally_coherent(self) -> bool:
         """Returns True if there is any pair of relevant-distinguishing mappings
         that support each other.

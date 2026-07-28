@@ -206,4 +206,36 @@ class CorrespondenceBuilder(Builder):
         return self.workspace.rule
 
     def _build_correspondence(self):
-        pass
+        self.proposed_correspondence.from_object.correspondence = (
+            self.proposed_correspondence
+        )
+        self.proposed_correspondence.to_object.correspondence = (
+            self.proposed_correspondence
+        )
+        self.workspace.add_correspondence(self.proposed_correspondence)
+        for mapping in (
+            self.proposed_correspondence.get_relevant_distinguishing_mappings()
+            + self.proposed_correspondence.get_accessory_concept_mappings()
+        ):
+            if not mapping.is_slippage:
+                continue
+            self.proposed_correspondence.add_accessory_concept_mapping(
+                mapping.get_symmetric_version()
+            )
+        if isinstance(self.proposed_correspondence.from_object, Group) and isinstance(
+            self.proposed_correspondence.to_object, Group
+        ):
+            for mapping in self.get_concept_mappings(
+                self.correspondence.from_object,
+                self.correspondence.to_object,
+                self.correspondence.from_object.bond_descriptions,
+                self.correspondence.to_object.bond_descriptions,
+            ):
+                self.proposed_correspondence.add_accessory_concept_mapping(mapping)
+                if mapping.is_slippage:
+                    self.proposed_correspondence.add_accessory_concept_mapping(
+                        mapping.get_symmetric_version()
+                    )
+        for mapping in self.proposed_correspondence.concept_mappings:
+            if mapping.label:
+                self.slipnet.activate_node_from_workspace(label.name)
