@@ -1,12 +1,16 @@
 [project]
-name = "cattykit"
+name = "Copycat"
 version = "0.1.0"
-description = "A framework for implementing artificial intelligence models using components from the cognitive models of the Fluid Analogies Research Group"
+description = "A Python re-implementation of Melanie Mitchell's classic model of analogy-making"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "numpy>=2.4.3",
 ]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
 
 [dependency-groups]
 dev = [
