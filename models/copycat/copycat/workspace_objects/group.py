@@ -67,6 +67,16 @@ class Group(WorkspaceObject, WorkspaceStructure):
             if letter.right_position == self.right_position
         ][0]
 
+    @property
+    def left_object(self):
+        # TODO this should be set statically on creation
+        return min(self.objects, key=lambda o: o.left_position)
+
+    @property
+    def right_object(self):
+        # TODO this should be set statically on creation
+        return max(self.objects, key=lambda o: o.right_position)
+
     def is_string_spanning_group(self) -> bool:
         return self.spans_whole_string()
 

@@ -126,6 +126,7 @@ class CorrespondenceBuilder(Builder):
         if incompatible_rule:
             self.workspace.break_rule(incompatible_rule)
         self._build_correspondence()
+        return Finish()
 
     def _augment_existing_correspondence_if_exists(self):
         existing_correspondence = self.workspace.get_existing_correspondence(
@@ -146,33 +147,14 @@ class CorrespondenceBuilder(Builder):
         return False
 
     def _get_incompatible_correspondences(self):
-        incompatible_correspondences = [
+        return [
             c
             for c in self.workspace.correspondences
-            if c.is_incompatible_with(self.proposed_correspondence)
-            or c.has_mismatching_arguments_with(self.proposed_correspondence)
+            if c.is_incompatible_argumentwise_with(self.proposed_correspondence)
+            or c.is_incompatible_structurally_with(self.proposed_correspondence)
+            or c.is_incompatible_conceptually_with(self.proposed_correspondence)
+            or c.is_incompatible_boundarywise_with(self.proposed_correspondence)
         ]
-        if (
-            self.from_object.is_string_spanning_group()
-            and self.to_object.is_string_spanning_group()
-        ):
-            direction_category_mapping = next(
-                (
-                    mapping
-                    for mapping in self.proposed_correspondence.concept_mappings
-                    if mapping.description_type_1.name == "direction-category"
-                    and mapping.description_type_2.name == "direction-category"
-                ),
-                None,
-            )
-            if direction_category_mapping:
-                incompatible_correspondences += (
-                    self._get_leftmost_and_rightmost_incompatible_correspondences(
-                        self.from_object,
-                        self.to_object,
-                        direction_category_mapping,
-                    )
-                )
 
     def _get_leftmost_and_rightmost_incompatible_correspondences(
         self, from_object, to_object, direction_category_mapping

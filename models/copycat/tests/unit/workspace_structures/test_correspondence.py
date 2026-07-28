@@ -2,10 +2,219 @@ from types import SimpleNamespace
 
 import pytest
 
+from copycat.workspace_objects import Group, Letter
 from copycat.workspace_structures import Correspondence
 
 
-def test_supports_and_is_incompatible_with():
+def test_is_incompatible_argumentwise_with():
+    correspondence_1 = Correspondence(
+        None,
+        from_object="A",
+        to_object="a",
+        concept_mappings=[],
+    )
+    correspondence_2 = Correspondence(
+        None,
+        from_object="A",
+        to_object="b",
+        concept_mappings=[],
+    )
+    correspondence_3 = Correspondence(
+        None,
+        from_object="B",
+        to_object="b",
+        concept_mappings=[],
+    )
+    assert correspondence_1.is_incompatible_argumentwise_with(correspondence_2) is True
+    assert correspondence_1.is_incompatible_argumentwise_with(correspondence_3) is False
+    assert correspondence_2.is_incompatible_argumentwise_with(correspondence_3) is True
+
+
+def test_is_incompatible_conceptually_with():
+    mapping_1 = SimpleNamespace()
+    mapping_1.is_distinguishing = lambda: True
+
+    mapping_2 = SimpleNamespace()
+    mapping_2.is_distinguishing = lambda: True
+    mapping_1.is_incompatible_with = lambda other: other != mapping_2
+
+    mapping_3 = SimpleNamespace()
+    mapping_3.is_distinguishing = lambda: True
+
+    correspondence_1 = Correspondence(
+        None,
+        from_object="A",
+        to_object="B",
+        concept_mappings=[mapping_1],
+    )
+    correspondence_2 = Correspondence(
+        None,
+        from_object="C",
+        to_object="D",
+        concept_mappings=[mapping_2],
+    )
+    correspondence_3 = Correspondence(
+        None,
+        from_object="C",
+        to_object="D",
+        concept_mappings=[mapping_3],
+    )
+    correspondence_4 = Correspondence(
+        None,
+        from_object="A",
+        to_object="B",
+        concept_mappings=[],
+    )
+
+    assert correspondence_1.is_incompatible_conceptually_with(correspondence_2) is False
+    assert correspondence_1.is_incompatible_conceptually_with(correspondence_3) is True
+    assert correspondence_1.is_incompatible_conceptually_with(correspondence_4) is False
+
+
+def test_is_incompatible_structurally_with():
+    letter_a_1 = Letter(None, None, 0)
+    letter_a_2 = Letter(None, None, 1)
+    letter_b = Letter(None, None, 2)
+    group_a_a = Group(None, 0, 1, [letter_a_1, letter_a_2], [], None, None)
+    group_a_b = Group(None, 0, 1, [letter_a_1, letter_b], [], None, None)
+    letter_i_1 = Letter(None, None, 0)
+    letter_i_2 = Letter(None, None, 1)
+    letter_j = Letter(None, None, 2)
+    group_i_i = Group(None, 0, 1, [letter_i_1, letter_i_2], [], None, None)
+    group_i_j = Group(None, 0, 1, [letter_i_1, letter_j], [], None, None)
+
+    correspondence_1 = Correspondence(
+        None, from_object=letter_a_1, to_object=letter_i_1, concept_mappings=[]
+    )
+
+    assert correspondence_1.is_incompatible_structurally_with(correspondence_1) is False
+
+    correspondence_2 = Correspondence(
+        None, from_object=letter_a_2, to_object=letter_i_2, concept_mappings=[]
+    )
+    letter_a_1.group = group_a_a
+    letter_a_2.group = group_a_a
+    letter_i_1.group = group_i_i
+    letter_i_2.group = group_i_i
+
+    assert correspondence_1.is_incompatible_structurally_with(correspondence_2) is False
+
+    correspondence_3 = Correspondence(
+        None, from_object=group_a_a, to_object=group_i_j, concept_mappings=[]
+    )
+
+    assert correspondence_1.is_incompatible_structurally_with(correspondence_3) is False
+    assert correspondence_3.is_incompatible_structurally_with(correspondence_1) is False
+
+    correspondence_4 = Correspondence(
+        None, from_object=group_a_b, to_object=group_i_i, concept_mappings=[]
+    )
+    letter_a_2.group = group_a_b
+    letter_b.group = group_a_b
+    letter_i_2.group = group_i_i
+    letter_j.group = group_i_j
+    correspondence_5 = Correspondence(
+        None, from_object=letter_a_2, to_object=letter_i_1, concept_mappings=[]
+    )
+
+    assert correspondence_4.is_incompatible_structurally_with(correspondence_5) is True
+
+
+def test_is_incompatible_boundarywise_with():
+    identity_category = SimpleNamespace(name="identity")
+    opposite_category = SimpleNamespace(name="opposite")
+    identity_mapping = SimpleNamespace(
+        label=identity_category,
+        description_type_1=SimpleNamespace(name="direction-category"),
+        description_type_2=SimpleNamespace(name="direction-category"),
+    )
+    opposite_mapping = SimpleNamespace(
+        label=opposite_category,
+        description_type_1=SimpleNamespace(name="direction-category"),
+        description_type_2=SimpleNamespace(name="direction-category"),
+    )
+
+    from_left = SimpleNamespace()
+    to_left = SimpleNamespace()
+    from_right = SimpleNamespace()
+    to_right = SimpleNamespace()
+
+    from_group = SimpleNamespace(
+        is_string_spanning_group=lambda: True,
+        left_object=from_left,
+        right_object=from_right,
+    )
+    to_group = SimpleNamespace(
+        is_string_spanning_group=lambda: True,
+        left_object=to_left,
+        right_object=to_right,
+    )
+
+    group_correspondence_identity = Correspondence(
+        None,
+        from_object=from_group,
+        to_object=to_group,
+        concept_mappings=[identity_mapping],
+    )
+
+    left_correspondence_identity = Correspondence(
+        None,
+        from_object=from_left,
+        to_object=to_left,
+        concept_mappings=[identity_mapping],
+    )
+    right_correspondence_identity = Correspondence(
+        None,
+        from_object=from_right,
+        to_object=to_right,
+        concept_mappings=[identity_mapping],
+    )
+    from_left.correspondence = left_correspondence_identity
+    from_right.correspondence = right_correspondence_identity
+
+    assert (
+        group_correspondence_identity.is_incompatible_boundarywise_with(
+            left_correspondence_identity
+        )
+        is False
+    )
+    assert (
+        group_correspondence_identity.is_incompatible_boundarywise_with(
+            right_correspondence_identity
+        )
+        is False
+    )
+
+    left_correspondence_opposite = Correspondence(
+        None,
+        from_object=from_left,
+        to_object=to_right,
+        concept_mappings=[opposite_mapping],
+    )
+    right_correspondence_opposite = Correspondence(
+        None,
+        from_object=from_right,
+        to_object=to_left,
+        concept_mappings=[identity_mapping],
+    )
+    from_left.correspondence = left_correspondence_opposite
+    from_right.correspondence = right_correspondence_opposite
+
+    assert (
+        group_correspondence_identity.is_incompatible_boundarywise_with(
+            left_correspondence_opposite
+        )
+        is False
+    )
+    assert (
+        group_correspondence_identity.is_incompatible_boundarywise_with(
+            right_correspondence_opposite
+        )
+        is False
+    )
+
+
+def test_supports():
     mapping_1 = SimpleNamespace()
     mapping_1.is_distinguishing = lambda: True
 
@@ -49,13 +258,9 @@ def test_supports_and_is_incompatible_with():
     )
 
     assert correspondence_1.supports(correspondence_2) is True
-    assert correspondence_1.is_incompatible_with(correspondence_2) is False
     assert correspondence_1.supports(correspondence_3) is False
-    assert correspondence_1.is_incompatible_with(correspondence_3) is True
     assert correspondence_1.supports(correspondence_4) is False
-    assert correspondence_1.is_incompatible_with(correspondence_4) is True
     assert correspondence_1.supports(correspondence_5) is False
-    assert correspondence_1.is_incompatible_with(correspondence_5) is True
 
 
 def test_get_relevant_distinguishing_mappings():

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List
+from typing import List, Optional
 
 from copycat.concept_mapping import ConceptMapping
 from copycat.workspace_objects import Letter
@@ -12,6 +12,18 @@ class Correspondence(WorkspaceStructure):
         self.from_object = from_object
         self.to_object = to_object
         self.concept_mappings = concept_mappings
+
+    @property
+    def direction_mapping(self) -> Optional["Slipnode"]:
+        return next(
+            (
+                mapping.label
+                for mapping in self.concept_mappings
+                if mapping.description_type_1.name == "direction-category"
+                and mapping.description_type_2.name == "direction-category"
+            ),
+            None,
+        )
 
     def __len__(self):
         """Returns the number of letters spanned by the objects."""
@@ -30,9 +42,9 @@ class Correspondence(WorkspaceStructure):
         """Returns True if self and other are not incompatible
         and self has s concept mapping that supports other's concept mappings.
         """
-        if self.from_object == other.from_object or self.to_object == other.to_object:
+        if self.is_incompatible_argumentwise_with(other):
             return False
-        if self.is_incompatible_with(other):
+        if self.is_incompatible_conceptually_with(other):
             return False
         for mapping_1 in self.get_distinguishing_mappings():
             for mapping_2 in other.get_distinguishing_mappings():
@@ -40,20 +52,22 @@ class Correspondence(WorkspaceStructure):
                     return True
         return False
 
-    def is_incompatible_with(self, other: Correspondence) -> bool:
-        """Returns True if self and other share objects
-        or if self has a concept mapping incompatible with other's concept mappings."""
-        if self.from_object == other.from_object or self.to_object == other.to_object:
-            return True
+    def is_incompatible_argumentwise_with(self, other: Correspondence) -> bool:
+        """Self and other share objects."""
+        return (
+            self.from_object == other.from_object or self.to_object == other.to_object
+        )
+
+    def is_incompatible_conceptually_with(self, other: Correspondence) -> bool:
+        """Self has a concept mapping incompatible with other's concept mappings."""
         for mapping_1 in self.get_distinguishing_mappings():
             for mapping_2 in other.get_distinguishing_mappings():
                 if mapping_1.is_incompatible_with(mapping_2):
                     return True
         return False
 
-    def has_mismatching_arguments_with(self, other: Correspondence) -> bool:
-        """Returns True if self or other have the same from or to object
-        but the other object is either different or in a different group."""
+    def is_incompatible_structurally_with(self, other: Correspondence) -> bool:
+        """Self and other connect objects in one group to objects in different groups."""
         from copycat.workspace_objects import Group, Letter
 
         def _args_match(arg_1, arg_2):
@@ -74,6 +88,39 @@ class Correspondence(WorkspaceStructure):
         return not (
             _args_match(self.from_object, other.from_object)
             and _args_match(self.to_object, other.to_object)
+        )
+
+    def is_incompatible_boundarywise_with(self, other: Correspondence) -> bool:
+        """Self is between string-spanning groups and other is between member objects
+        from the boundaries of the groups with incompatible directions."""
+        if not (
+            self.from_object.is_string_spanning_group()
+            and self.to_object.is_string_spanning_group()
+            and self.direction_mapping is not None
+            and other is not None
+        ):
+            return False
+        return not (
+            (
+                other == self.from_object.left_object.correspondence
+                and other.to_object == self.to_object.left_object
+                and self.direction_mapping.name == "identity"
+            )
+            or (
+                other == self.from_object.left_object.correspondence
+                and other.to_object == self.to_object.right_object
+                and self.direction_mapping.name == "opposite"
+            )
+            or (
+                other == self.from_object.right_object.correspondence
+                and other.to_object == self.to_object.right_object
+                and self.direction_mapping.name == "identity"
+            )
+            or (
+                other == self.from_object.right_object.correspondence
+                and other.to_object == self.to_object.left_object
+                and self.direction_mapping.name == "opposite"
+            )
         )
 
     def calculate_internal_strength(self) -> float:
