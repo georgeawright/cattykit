@@ -185,7 +185,25 @@ class CorrespondenceBuilder(Builder):
         return None
 
     def _get_incompatible_rule(self):
-        pass
+        if not self.proposed_correspondence.from_object.is_changed_letter:
+            return None
+        if not self.workspace.rule:
+            return None
+        proposed_mapping_descriptors = [
+            m.descriptor_1 for m in self.proposed_correspondence.concept_mappings
+        ]
+        if self.workspace.rule.descriptor_1 in proposed_mapping_descriptors:
+            return None
+        slippages = [
+            d.apply_slippages(self.workspace.slippages)
+            for d in [
+                d.descriptor
+                for d in self.proposed_correspondence.to_object.relevant_descriptions
+            ]
+        ]
+        if self.workspace.rule.descriptor_1 in slippages:
+            return None
+        return self.workspace.rule
 
     def _build_correspondence(self):
         pass

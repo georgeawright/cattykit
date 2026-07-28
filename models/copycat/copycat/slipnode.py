@@ -117,3 +117,9 @@ class Slipnode:
             if workspace_string.objects
             else 0
         )
+
+    def apply_slippages(self, slippages: list) -> Slipnode:
+        for slippage in slippages:
+            if slippage.descriptor_1 == self:
+                return slippage.descriptor_2
+        return self
