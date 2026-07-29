@@ -221,7 +221,7 @@ def test_fizzles_if_incompatible_correspondences_win():
     assert correspondence.target.correspondence is None
 
 
-def test_fizzles_if_incompatible_bonds_win():
+def test_fizzles_if_incompatible_bond_wins():
     slipnet = MockSlipnet()
     workspace = MockWorkspace()
 
@@ -231,7 +231,7 @@ def test_fizzles_if_incompatible_bonds_win():
     mapping_1.is_relevant.return_value = True
 
     correspondence = MagicMock()
-    correspondence.total_strength = 0
+    correspondence.total_strength = 0.1
     correspondence.__len__.return_value = 2
     correspondence.source = Mock()
     correspondence.source.correspondence = None
@@ -248,6 +248,50 @@ def test_fizzles_if_incompatible_bonds_win():
     correspondence.target.is_leftmost_in_string.return_value = True
     correspondence.target.right_bond = target_bond
     mapping_1.is_incompatible_with.return_value = True
+
+    builder = CorrespondenceBuilder(
+        urgency_bin=0,
+        coderack=Mock(),
+        slipnet=slipnet,
+        workspace=workspace,
+        proposed_correspondence=correspondence,
+    )
+    result = builder.run(temperature=0.0)
+    assert result == Fizzle(FizzleReason.INCOMPATIBLE_STRUCTURES_WON)
+    assert correspondence.source.correspondence is None
+    assert correspondence.target.correspondence is None
+
+
+def test_fizzles_if_incompatible_group_wins():
+    slipnet = MockSlipnet()
+    workspace = MockWorkspace()
+
+    mapping_1 = Mock()
+    mapping_1.is_relevant.return_value = True
+    mapping_2 = Mock()
+    mapping_1.is_relevant.return_value = True
+
+    correspondence = MagicMock()
+    correspondence.total_strength = 0.1
+    correspondence.__len__.return_value = 2
+    correspondence.source = Mock()
+    correspondence.source.correspondence = None
+    correspondence.target = Mock()
+    correspondence.target.correspondence = None
+    correspondence.concept_mappings = [mapping_1, mapping_2]
+    workspace.objects += [correspondence.source, correspondence.target]
+
+    source_bond = Mock()
+    correspondence.source.is_leftmost_in_string.return_value = True
+    correspondence.source.right_bond = source_bond
+    target_bond = Mock()
+    target_bond.total_strength = 0.1
+    correspondence.target.is_leftmost_in_string.return_value = True
+    correspondence.target.right_bond = target_bond
+    mapping_1.is_incompatible_with.return_value = True
+    incompatible_group = Mock()
+    incompatible_group.total_strength = 1
+    target_bond.group = incompatible_group
 
     builder = CorrespondenceBuilder(
         urgency_bin=0,
