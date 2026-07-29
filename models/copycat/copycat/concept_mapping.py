@@ -143,3 +143,12 @@ class ConceptMapping:
         if self.label is None or other.label is None:
             return False
         return self.label != other.label
+
+    def contradicts(self, other: ConceptMapping) -> bool:
+        return (
+            self.descriptor_1 == other.descriptor_1
+            and self.descriptor_2 != other.descriptor_2
+        ) or (
+            self.descriptor_2 == other.descriptor_2
+            and self.descriptor_1 != other.descriptor_1
+        )
