@@ -308,6 +308,39 @@ def test_fizzles_if_incompatible_group_wins():
     assert correspondence.target.correspondence is None
 
 
+def test_fizzles_if_existing_target_wins():
+    slipnet = MockSlipnet()
+    workspace = MockWorkspace()
+
+    existing_target = Mock()
+    existing_target.total_strength = 1
+
+    workspace.target_string = Mock()
+    workspace.target_string.get_group_if_present.return_value = existing_target
+
+    correspondence = MagicMock()
+    correspondence.total_strength = 0
+    correspondence.__len__.return_value = 4
+    correspondence.source = Mock()
+    workspace.objects.append(correspondence.source)
+    correspondence.source.correspondence = None
+    correspondence.target = Mock()
+    correspondence.target.correspondence = None
+
+    builder = CorrespondenceBuilder(
+        urgency_bin=0,
+        coderack=Mock(),
+        slipnet=slipnet,
+        workspace=workspace,
+        proposed_correspondence=correspondence,
+        target_flipped=True,
+    )
+    result = builder.run(temperature=0.0)
+    assert result == Fizzle(FizzleReason.INCOMPATIBLE_STRUCTURES_WON)
+    assert correspondence.source.correspondence is None
+    assert correspondence.target.correspondence is None
+
+
 def test_fizzles_if_incompatible_rule_wins():
     slipnet = MockSlipnet()
     workspace = MockWorkspace()
