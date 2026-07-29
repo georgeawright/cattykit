@@ -2,4 +2,6 @@ from copycat.workspace_structure import WorkspaceStructure
 
 
 class Replacement(WorkspaceStructure):
-    pass
+    def __init__(self, source: "WorkspaceObject", target: "WorkspaceObject"):
+        self.source = source
+        self.target = target
