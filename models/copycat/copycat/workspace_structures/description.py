@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from copycat.slipnode import Slipnode
 from copycat.workspace_structure import WorkspaceStructure
 
@@ -28,6 +30,17 @@ class Description(WorkspaceStructure):
 
     def calculate_external_strength(self) -> float:
         return (self._local_support() + self.facet.activation) / 2
+
+    def apply_slippages(self, slippages) -> Description:
+        """Returns a new description with the slippages applied."""
+        new_facet = self.facet
+        new_descriptor = self.descriptor
+        for slippage in slippages:
+            if slippage.descriptor_1 == self.facet:
+                new_facet = slippage.descriptor_2
+            if slippage.descriptor_1 == self.descriptor:
+                new_descriptor = slippage.descriptor_2
+        return Description(self.argument_object, new_facet, new_descriptor)
 
     def _local_support(self) -> float:
         """Returns a rough measure of the support for this description from

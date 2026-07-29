@@ -48,6 +48,16 @@ class WorkspaceObject:
             o for o in self.string.objects if o.left_position == self.right_position + 1
         ]
 
+    @property
+    def rule_initial_string_descriptions(self):
+        return [
+            d
+            for d in self.descriptions
+            if d.facet.is_active
+            and self.is_distinguished_by(d.descriptor)
+            and not (d.facet.name == "object_category")
+        ]
+
     def is_leftmost_in_string(self) -> bool:
         return self.left_position == 0
 

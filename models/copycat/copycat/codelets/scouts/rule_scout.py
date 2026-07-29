@@ -98,7 +98,7 @@ class RuleScout(Scout):
     def _get_initial_description(
         self, initial_object: WorkspaceObject, temperature: float
     ) -> Optional[Description]:
-        candidates = self._get_initial_descriptions()
+        candidates = self._get_initial_descriptions(initial_object)
         if not candidates:
             return None
         probabilities = temperature_adjust_list(
@@ -106,9 +106,19 @@ class RuleScout(Scout):
         )
         return random.choices(candidates, weights=probabilities, k=1)[0]
 
-    def _get_initial_descriptions(self) -> List[Description]:
-        # TODO
-        pass
+    def _get_initial_descriptions(
+        self, initial_object: WorkspaceObject
+    ) -> List[Description]:
+        if initial_object.correspondence is None:
+            return initial_object.rule_initial_string_descriptions
+        return [
+            d
+            for d in initial_object.rule_initial_string_descriptions
+            if (
+                d.apply_slippages(initial_object.correspondence.slippages)
+                in initial_object.correspondence.target.relevant_descriptions
+            )
+        ]
 
     def _get_modified_description(
         self,
