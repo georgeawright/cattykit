@@ -180,7 +180,7 @@ class CorrespondenceBuilder(Builder):
             target_bond.direction_category,
         )
         for mapping in self.proposed_correspondence.concept_mappings:
-            if bond_concept_mapping.is_incompatible_with(mapping):
+            if mapping.is_incompatible_with(bond_concept_mapping):
                 return target_bond
         return None
 
