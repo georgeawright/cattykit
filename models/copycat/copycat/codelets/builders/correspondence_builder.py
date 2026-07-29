@@ -121,7 +121,7 @@ class CorrespondenceBuilder(Builder):
         self._build_correspondence()
         return Finish()
 
-    def _augment_existing_correspondence_if_exists(self):
+    def _augment_existing_correspondence_if_exists(self) -> bool:
         existing_correspondence = self.workspace.get_existing_correspondence(
             self.proposed_correspondence
         )
@@ -129,9 +129,10 @@ class CorrespondenceBuilder(Builder):
             return False
         for mapping in self.proposed_correspondence.concept_mappings:
             self.slipnet.activate_node_from_workspace(mapping.label)
-            if mapping not in existing_correspondence.concept_mappings:
+            if mapping in existing_correspondence.concept_mappings:
                 continue
             existing_correspondence.concept_mappings.append(mapping)
+        return True
 
     def _not_all_concept_mappings_relevant(self):
         for mapping in self.proposed_correspondence.concept_mappings:
