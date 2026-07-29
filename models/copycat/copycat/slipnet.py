@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Optional
 
 import numpy as np
 
@@ -111,6 +111,17 @@ class Slipnet:
 
     def __getitem__(self, node_id):
         return self.nodes[self.node_index_lookup[node_id]]
+
+    def get_label_node(self, source: Slipnode, target: Slipnode) -> Optional[Slipnode]:
+        """Returns the node representing the label of the link from source to target.
+        Returns None if there is no such link or the link is unlabelled.
+        Assumes only one link can exist from source to target."""
+        if source == target:
+            return self["identity"]
+        for link in source.outgoing_links:
+            if link.target == target:
+                return link.label
+        return None
 
     def get_node_activation(self, node_id):
         return self.node_activations[self.node_index_lookup[node_id]]
