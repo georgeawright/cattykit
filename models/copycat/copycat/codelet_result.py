@@ -41,6 +41,7 @@ class FizzleReason(StrEnum):
     NO_INITIAL_DESCRIPTIONS = "No initial descriptions"
     NO_MODIFIED_DESCRIPTIONS = "No modified descriptions"
     LETTER_ALREADY_HAS_REPLACEMENT = "Letter already has replacement"
+    RULE_ALREADY_EXISTS = "Rule already exists"
 
 
 @dataclass(frozen=True)
