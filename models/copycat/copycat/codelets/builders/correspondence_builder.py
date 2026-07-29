@@ -36,10 +36,10 @@ class CorrespondenceBuilder(Builder):
             return Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
         if self.proposed_correspondence.target not in self.workspace.objects:
             if self.target_flipped:
-                existing_target = self.workspace.get_group_if_present(
+                existing_target = self.workspace.target_string.get_group_if_present(
                     self.proposed_correspondence.target.get_flipped_version()
                 )
-                if existing_target is None:
+                if not existing_target:
                     return Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
             else:
                 return Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
@@ -115,9 +115,7 @@ class CorrespondenceBuilder(Builder):
                 self.workspace.break_bond(bond)
             for bond in self.proposed_correspondence.target.bonds:
                 self.workspace.target_string.add_bond(bond)
-            self.workspace.target_string.add_group(
-                self.proposed_correspondence.target
-            )
+            self.workspace.target_string.add_group(self.proposed_correspondence.target)
         if incompatible_rule:
             self.workspace.break_rule(incompatible_rule)
         self._build_correspondence()
