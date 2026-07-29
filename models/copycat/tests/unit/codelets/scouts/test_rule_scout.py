@@ -156,3 +156,55 @@ def test_proposes_relation_rule_if_modified_description_is_extrinsic():
     result = rule_scout.run(temperature=0.0)
 
     assert result == Finish()
+    assert coderack.post_called == 1
+    follow_up = coderack.posted_codelets[0]
+    assert isinstance(follow_up, RuleStrengthTester)
+    proposed_rule = follow_up.proposed_rule
+    assert proposed_rule.object_category_1 is not None
+    assert proposed_rule.descriptor_1_facet is not None
+    assert proposed_rule.descriptor_1 is not None
+    assert proposed_rule.object_category_2 is not None
+    assert proposed_rule.replaced_description_type is not None
+    assert proposed_rule.relation is not None
+    assert proposed_rule.descriptor_2 is None
+
+
+def test_proposes_non_relation_rule_if_modified_description_is_not_extrinsic():
+    coderack = MockCoderack()
+    slipnet = MockSlipnet()
+
+    workspace = Mock()
+    workspace.all_replacements_found.return_value = True
+
+    initial_object = Mock()
+    initial_description = Mock()
+    initial_description.conceptual_depth = 0.5
+    initial_object.rule_initial_string_descriptions = [initial_description]
+    initial_object.correspondence = None
+    workspace.initial_string.get_changed_objects.return_value = [initial_object]
+
+    modified_object = Mock()
+    modified_description = Mock()
+    modified_description.conceptual_depth = 0.5
+    modified_object.extrinsic_descriptions = []
+    modified_object.rule_modified_string_descriptions = [modified_description]
+    initial_object.replacement.target = modified_object
+    initial_description.descriptor.get_related_node.return_value = None
+
+    rule_scout = RuleScout(
+        urgency_bin=0, coderack=coderack, workspace=workspace, slipnet=slipnet
+    )
+    result = rule_scout.run(temperature=0.0)
+
+    assert result == Finish()
+    assert coderack.post_called == 1
+    follow_up = coderack.posted_codelets[0]
+    assert isinstance(follow_up, RuleStrengthTester)
+    proposed_rule = follow_up.proposed_rule
+    assert proposed_rule.object_category_1 is not None
+    assert proposed_rule.descriptor_1_facet is not None
+    assert proposed_rule.descriptor_1 is not None
+    assert proposed_rule.object_category_2 is not None
+    assert proposed_rule.replaced_description_type is not None
+    assert proposed_rule.descriptor_2 is not None
+    assert proposed_rule.relation is None
