@@ -231,9 +231,9 @@ class CorrespondenceBuilder(Builder):
                 self.correspondence.from_object.bond_descriptions,
                 self.correspondence.to_object.bond_descriptions,
             ):
-                self.proposed_correspondence.add_accessory_concept_mapping(mapping)
+                self.proposed_correspondence.accessory_concept_mappings.append(mapping)
                 if mapping.is_slippage:
-                    self.proposed_correspondence.add_accessory_concept_mapping(
+                    self.proposed_correspondence.accessory_concept_mappings.append(
                         mapping.get_symmetric_version()
                     )
         for mapping in self.proposed_correspondence.concept_mappings:
