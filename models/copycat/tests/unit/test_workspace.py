@@ -31,17 +31,17 @@ class MockObject:
 
 
 class MockCorrespondence(NamedTuple):
-    from_object: MockObject
-    to_object: MockObject
+    source: MockObject
+    target: MockObject
 
 
 def test_add_and_delete_proposed_correspondence():
     workspace = Workspace(None, None, None, None)
     assert 0 == len(workspace.proposed_correspondences)
-    from_object = MockObject(id="a")
-    to_object = MockObject(id="b")
+    source = MockObject(id="a")
+    target = MockObject(id="b")
     proposed_correspondence = MockCorrespondence(
-        from_object=from_object, to_object=to_object
+        source=source, target=target
     )
     workspace.add_proposed_correspondence(proposed_correspondence)
     assert 1 == len(workspace.proposed_correspondences)
@@ -52,15 +52,15 @@ def test_add_and_delete_proposed_correspondence():
 def test_add_get_and_break_correspondence():
     workspace = Workspace(None, None, None, None)
     assert 0 == len(workspace.correspondences)
-    from_object = MockObject(id="a")
-    to_object = MockObject(id="b")
-    correspondence = MockCorrespondence(from_object=from_object, to_object=to_object)
+    source = MockObject(id="a")
+    target = MockObject(id="b")
+    correspondence = MockCorrespondence(source=source, target=target)
     assert False == workspace.contains_correspondence(correspondence)
     workspace.add_correspondence(correspondence)
     assert 1 == len(workspace.correspondences)
     assert True == workspace.contains_correspondence(correspondence)
-    from_object.correspondence = correspondence
-    to_object.correspondence = correspondence
+    source.correspondence = correspondence
+    target.correspondence = correspondence
     workspace.break_correspondence(correspondence)
     assert 0 == len(workspace.correspondences)
 
@@ -68,17 +68,17 @@ def test_add_get_and_break_correspondence():
 def test_break_bond():
     workspace = Workspace(None, None, None, None)
     string = MockString(objects=[])
-    from_object = MockObject(id="a", string=string)
-    to_object = MockObject(id="b", string=string)
+    source = MockObject(id="a", string=string)
+    target = MockObject(id="b", string=string)
     bond = SimpleNamespace(
-        from_object=from_object,
-        to_object=to_object,
+        source=source,
+        target=target,
         is_sameness_bond=False,
-        left_object=from_object,
-        right_object=to_object,
+        left_object=source,
+        right_object=target,
     )
-    from_object.outgoing_bonds.append(bond)
-    to_object.incoming_bonds.append(bond)
+    source.outgoing_bonds.append(bond)
+    target.incoming_bonds.append(bond)
     workspace.break_bond(bond)
     assert string.called_delete_bond == 1
 
@@ -95,8 +95,8 @@ def test_break_group():
         right_position=1,
     )
     bond = SimpleNamespace(
-        from_object=left_object,
-        to_object=group,
+        source=left_object,
+        target=group,
         is_sameness_bond=False,
         left_object=left_object,
         right_object=group,
@@ -105,8 +105,8 @@ def test_break_group():
     group.outgoing_bonds = []
     left_object.outgoing_bonds.append(bond)
     proposed_bond = SimpleNamespace(
-        from_object=group,
-        to_object=right_object,
+        source=group,
+        target=right_object,
         is_sameness_bond=False,
         left_object=group,
         right_object=None,

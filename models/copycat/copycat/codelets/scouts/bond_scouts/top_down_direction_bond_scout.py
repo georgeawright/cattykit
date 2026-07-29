@@ -55,36 +55,36 @@ class TopDownDirectionBondScout(BondScout):
             [self.workspace.initial_string, self.workspace.target_string],
             weights=[initial_string_score, target_string_score],
         )[0]
-        from_object = string.choose_object(
+        source = string.choose_object(
             temperature, lambda x: x.intra_string_salience
         )
-        if from_object is None:
+        if source is None:
             return Fizzle(FizzleReason.NO_OBJECTS)
-        to_object = (
-            from_object.choose_left_neighbor()
+        target = (
+            source.choose_left_neighbor()
             if self.direction_category.name == "left"
-            else from_object.choose_right_neighbor()
+            else source.choose_right_neighbor()
         )
-        if to_object is None:
+        if target is None:
             return Fizzle(FizzleReason.NO_NEIGHBOR)
-        bond_facet = self._choose_bond_facet(from_object, to_object)
+        bond_facet = self._choose_bond_facet(source, target)
         if bond_facet is None:
             return Fizzle(FizzleReason.NO_COMMON_BOND_FACET)
-        from_object_descriptor = from_object.get_descriptor(bond_facet)
-        to_object_descriptor = to_object.get_descriptor(bond_facet)
-        if from_object_descriptor is None or to_object_descriptor is None:
+        source_descriptor = source.get_descriptor(bond_facet)
+        target_descriptor = target.get_descriptor(bond_facet)
+        if source_descriptor is None or target_descriptor is None:
             return Fizzle(FizzleReason.NO_DESCRIPTORS_FOR_BOND_FACET)
         bond_category = self._get_bond_category(
-            from_object_descriptor, to_object_descriptor
+            source_descriptor, target_descriptor
         )
         if bond_category is None or not bond_category.is_directed():
             return Fizzle(FizzleReason.NO_DIRECTED_BOND_CATEGORY)
         self.propose_bond(
-            from_object,
-            to_object,
+            source,
+            target,
             bond_category,
             bond_facet,
-            from_object_descriptor,
-            to_object_descriptor,
+            source_descriptor,
+            target_descriptor,
         )
         return Finish()

@@ -33,14 +33,14 @@ class BottomUpDescriptionScout(DescriptionScout):
         choice_list = np.array(
             [
                 link.degree_of_association
-                * self.slipnet.get_node_activation(link.to_node.name)
+                * self.slipnet.get_node_activation(link.target.name)
                 for link in has_property_links
             ]
         )
         chosen_link = np.random.choice(
             has_property_links, p=choice_list / choice_list.sum()
         )
-        chosen_property = chosen_link.to_node
+        chosen_property = chosen_link.target
         self.propose_description(
             chosen_object, chosen_property.category, chosen_property
         )

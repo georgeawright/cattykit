@@ -72,26 +72,26 @@ class TopDownCategoryBondScout(BondScout):
             self._get_bond_category(object_1_descriptor, object_2_descriptor)
             == self.bond_category
         ):
-            from_object = object_1
-            to_object = object_2
-            from_object_descriptor = object_1_descriptor
-            to_object_descriptor = object_2_descriptor
+            source = object_1
+            target = object_2
+            source_descriptor = object_1_descriptor
+            target_descriptor = object_2_descriptor
         elif (
             self._get_bond_category(object_2_descriptor, object_1_descriptor)
             == self.bond_category
         ):
-            from_object = object_2
-            to_object = object_1
-            from_object_descriptor = object_2_descriptor
-            to_object_descriptor = object_1_descriptor
+            source = object_2
+            target = object_1
+            source_descriptor = object_2_descriptor
+            target_descriptor = object_1_descriptor
         else:
             return Fizzle(FizzleReason.BOND_CATEGORY_DOES_NOT_MATCH)
         self.propose_bond(
-            from_object,
-            to_object,
+            source,
+            target,
             self.bond_category,
             bond_facet,
-            from_object_descriptor,
-            to_object_descriptor,
+            source_descriptor,
+            target_descriptor,
         )
         return Finish()

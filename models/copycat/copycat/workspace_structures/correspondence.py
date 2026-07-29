@@ -10,13 +10,13 @@ class Correspondence(WorkspaceStructure):
     def __init__(
         self,
         workspace: "Workspace",
-        from_object: "WorkspaceObject",
-        to_object: "WorkspaceObject",
+        source: "WorkspaceObject",
+        target: "WorkspaceObject",
         concept_mappings: List[ConceptMapping],
     ):
         self.workspace = workspace
-        self.from_object = from_object
-        self.to_object = to_object
+        self.source = source
+        self.target = target
         self.concept_mappings = concept_mappings
         # accessory mappings includes:
         # - mappings symmetric to those in concept mappings
@@ -37,14 +37,14 @@ class Correspondence(WorkspaceStructure):
 
     def __len__(self):
         """Returns the number of letters spanned by the objects."""
-        return len(self.from_object) + len(self.to_object)
+        return len(self.source) + len(self.target)
 
     def get_other_object(self, obj):
         """Returns the other object in the correspondence."""
-        if obj == self.from_object:
-            return self.to_object
-        elif obj == self.to_object:
-            return self.from_object
+        if obj == self.source:
+            return self.target
+        elif obj == self.target:
+            return self.source
         else:
             raise ValueError("Object not in correspondence.")
 
@@ -65,7 +65,7 @@ class Correspondence(WorkspaceStructure):
     def is_incompatible_argumentwise_with(self, other: Correspondence) -> bool:
         """Self and other share objects."""
         return (
-            self.from_object == other.from_object or self.to_object == other.to_object
+            self.source == other.source or self.target == other.target
         )
 
     def is_incompatible_conceptually_with(self, other: Correspondence) -> bool:
@@ -96,39 +96,39 @@ class Correspondence(WorkspaceStructure):
             return False
 
         return not (
-            _args_match(self.from_object, other.from_object)
-            and _args_match(self.to_object, other.to_object)
+            _args_match(self.source, other.source)
+            and _args_match(self.target, other.target)
         )
 
     def is_incompatible_boundarywise_with(self, other: Correspondence) -> bool:
         """Self is between string-spanning groups and other is between member objects
         from the boundaries of the groups with incompatible directions."""
         if not (
-            self.from_object.is_string_spanning_group()
-            and self.to_object.is_string_spanning_group()
+            self.source.is_string_spanning_group()
+            and self.target.is_string_spanning_group()
             and self.direction_mapping is not None
             and other is not None
         ):
             return False
         return not (
             (
-                other == self.from_object.left_object.correspondence
-                and other.to_object == self.to_object.left_object
+                other == self.source.left_object.correspondence
+                and other.target == self.target.left_object
                 and self.direction_mapping.name == "identity"
             )
             or (
-                other == self.from_object.left_object.correspondence
-                and other.to_object == self.to_object.right_object
+                other == self.source.left_object.correspondence
+                and other.target == self.target.right_object
                 and self.direction_mapping.name == "opposite"
             )
             or (
-                other == self.from_object.right_object.correspondence
-                and other.to_object == self.to_object.right_object
+                other == self.source.right_object.correspondence
+                and other.target == self.target.right_object
                 and self.direction_mapping.name == "identity"
             )
             or (
-                other == self.from_object.right_object.correspondence
-                and other.to_object == self.to_object.left_object
+                other == self.source.right_object.correspondence
+                and other.target == self.target.left_object
                 and self.direction_mapping.name == "opposite"
             )
         )
@@ -186,10 +186,10 @@ class Correspondence(WorkspaceStructure):
         If one of the objects is the single letter in its string, then the support is 1.
         """
         if (
-            isinstance(self.from_object, Letter)
-            and self.from_object.spans_whole_string()
+            isinstance(self.source, Letter)
+            and self.source.spans_whole_string()
         ) or (
-            isinstance(self.to_object, Letter) and self.to_object.spans_whole_string()
+            isinstance(self.target, Letter) and self.target.spans_whole_string()
         ):
             return 1.0
         support_sum = 0.0

@@ -14,34 +14,34 @@ class BondScout(Scout):
 
     def propose_bond(
         self,
-        from_obj,
-        to_obj,
+        source,
+        target,
         bond_category,
         bond_facet,
-        from_obj_descriptor,
-        to_obj_descriptor,
+        source_descriptor,
+        target_descriptor,
     ):
-        self.slipnet.activate_node_from_workspace(from_obj_descriptor.name)
-        self.slipnet.activate_node_from_workspace(to_obj_descriptor.name)
+        self.slipnet.activate_node_from_workspace(source_descriptor.name)
+        self.slipnet.activate_node_from_workspace(target_descriptor.name)
         self.slipnet.activate_node_from_workspace(bond_facet.name)
         direction_category = (
             None
             if bond_category.name == "sameness"
             else self.slipnet["right"]
-            if from_obj.left_position < to_obj.left_position
+            if source.left_position < target.left_position
             else self.slipnet["left"]
         )
         proposed_bond = Bond(
-            from_object=from_obj,
-            to_object=to_obj,
+            source=source,
+            target=target,
             bond_category=bond_category,
             direction_category=direction_category,
             bond_facet=bond_facet,
-            from_object_descriptor=from_obj_descriptor,
-            to_object_descriptor=to_obj_descriptor,
+            source_descriptor=source_descriptor,
+            target_descriptor=target_descriptor,
         )
         proposed_bond.proposal_level = 1
-        from_obj.string.add_proposed_bond(proposed_bond)
+        source.string.add_proposed_bond(proposed_bond)
         urgency = bond_category.bond_degree_of_association
         urgency_bin = self.coderack.get_urgency_level_from_activation(urgency)
         self.coderack.post(
@@ -54,34 +54,34 @@ class BondScout(Scout):
             )
         )
 
-    def _choose_bond_facet(self, from_obj, to_obj) -> Optional[Slipnode]:
-        from_obj_bond_facets = [
+    def _choose_bond_facet(self, source, target) -> Optional[Slipnode]:
+        source_bond_facets = [
             d.facet
-            for d in from_obj.descriptions
+            for d in source.descriptions
             if d.facet.category.name == "bond_facet"
         ]
-        to_obj_bond_facets = [
+        target_bond_facets = [
             d.facet
-            for d in to_obj.descriptions
+            for d in target.descriptions
             if d.facet.category.name == "bond_facet"
         ]
         common_bond_facets = [
-            facet for facet in from_obj_bond_facets if facet in to_obj_bond_facets
+            facet for facet in source_bond_facets if facet in target_bond_facets
         ]
         if not common_bond_facets:
             return None
         supports = [
-            facet.get_total_description_type_support(from_obj.string)
+            facet.get_total_description_type_support(source.string)
             for facet in common_bond_facets
         ]
         return random.choices(common_bond_facets, weights=supports, k=1)[0]
 
     def _get_bond_category(
-        self, from_node: Slipnode, to_node: Slipnode
+        self, source: Slipnode, target: Slipnode
     ) -> Optional[Slipnode]:
-        if from_node == to_node:
+        if source == target:
             return self.slipnet.node_index_lookup["sameness"]
-        for link in from_node.outgoing_links:
-            if link.to_node == to_node:
+        for link in source.outgoing_links:
+            if link.target == target:
                 return link.label
         return None

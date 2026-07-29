@@ -6,7 +6,7 @@ from .workspace_object import WorkspaceObject
 
 
 def get_concept_mappings(
-    from_object: WorkspaceObject, to_object: WorkspaceObject
+    source: WorkspaceObject, target: WorkspaceObject
 ) -> List[ConceptMapping]:
     return [
         ConceptMapping(
@@ -14,11 +14,11 @@ def get_concept_mappings(
             description_type_2=desc_2.facet,
             descriptor_1=desc_1.descriptor,
             descriptor_2=desc_2.descriptor,
-            object_1=from_object,
-            object_2=to_object,
+            object_1=source,
+            object_2=target,
         )
-        for desc_1 in from_object.descriptions
-        for desc_2 in to_object.descriptions
+        for desc_1 in source.descriptions
+        for desc_2 in target.descriptions
         if desc_1.facet == desc_2.facet
         and (
             desc_1.descriptor == desc_2.descriptor
@@ -53,7 +53,7 @@ class ConceptMapping:
         if self.descriptor_1 == self.descriptor_2:
             return 1.0
         for link in self.descriptor_1.lateral_sliplinks:
-            if link.to_node == self.descriptor_2:
+            if link.target == self.descriptor_2:
                 return link.degree_of_association
         return 0.0
 

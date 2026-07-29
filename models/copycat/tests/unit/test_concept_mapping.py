@@ -22,7 +22,7 @@ def test_degree_of_association(
     }
     slipnodes[descriptor_1_name].lateral_sliplinks = [
         SimpleNamespace(
-            to_node=slipnodes[descriptor_2_name],
+            target=slipnodes[descriptor_2_name],
             degree_of_association=degree_of_association,
         )
     ]
@@ -93,7 +93,7 @@ def test_strength(
     }
     slipnodes[descriptor_1_name].lateral_sliplinks = [
         SimpleNamespace(
-            to_node=slipnodes[descriptor_2_name],
+            target=slipnodes[descriptor_2_name],
             degree_of_association=degree_of_association,
         )
     ]

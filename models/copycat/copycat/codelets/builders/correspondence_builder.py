@@ -19,7 +19,7 @@ class CorrespondenceBuilder(Builder):
         workspace: "Workspace",
         slipnet: "Slipnet",
         proposed_correspondence: Correspondence,
-        to_object_flipped: bool = False,
+        target_flipped: bool = False,
     ):
         super().__init__(
             urgency_bin=urgency_bin,
@@ -29,15 +29,15 @@ class CorrespondenceBuilder(Builder):
             proposed_structure=proposed_correspondence,
         )
         self.proposed_correspondence = proposed_correspondence
-        self.to_object_flipped = to_object_flipped
+        self.target_flipped = target_flipped
 
     def run(self, temperature: float) -> "CodeletResult":
-        if self.proposed_correspondence.from_object not in self.workspace.objects:
+        if self.proposed_correspondence.source not in self.workspace.objects:
             return Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
-        if self.proposed_correspondence.to_object not in self.workspace.objects:
-            if self.to_object_flipped:
+        if self.proposed_correspondence.target not in self.workspace.objects:
+            if self.target_flipped:
                 existing_target = self.workspace.get_group_if_present(
-                    self.proposed_correspondence.to_object.get_flipped_version()
+                    self.proposed_correspondence.target.get_flipped_version()
                 )
                 if existing_target is None:
                     return Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
@@ -82,7 +82,7 @@ class CorrespondenceBuilder(Builder):
             )
             if not fight_result:
                 return Fizzle(FizzleReason.INCOMPATIBLE_STRUCTURES_WON)
-        if self.to_object_flipped:
+        if self.target_flipped:
             fight_result = structure_beats_structures(
                 self.proposed_correspondence,
                 1,
@@ -109,14 +109,14 @@ class CorrespondenceBuilder(Builder):
             self.workspace.break_bond(incompatible_bond)
         for correspondence in incompatible_correspondences:
             self.workspace.break_correspondence(correspondence)
-        if self.to_object_flipped:
+        if self.target_flipped:
             self.workspace.break_group(existing_target)
             for bond in existing_target.bonds:
                 self.workspace.break_bond(bond)
-            for bond in self.proposed_correspondence.to_object.bonds:
+            for bond in self.proposed_correspondence.target.bonds:
                 self.workspace.target_string.add_bond(bond)
             self.workspace.target_string.add_group(
-                self.proposed_correspondence.to_object
+                self.proposed_correspondence.target
             )
         if incompatible_rule:
             self.workspace.break_rule(incompatible_rule)
@@ -153,17 +153,17 @@ class CorrespondenceBuilder(Builder):
 
     def _get_incompatible_bond(self) -> Optional[Bond]:
         source_bond = (
-            self.proposed_correspondence.from_object.right_bond
-            if self.proposed_correspondence.from_object.is_leftmost_in_string()
-            else self.proposed_correspondence.from_object.left_bond
-            if self.proposed_correspondence.from_object.is_rightmost_in_string()
+            self.proposed_correspondence.source.right_bond
+            if self.proposed_correspondence.source.is_leftmost_in_string()
+            else self.proposed_correspondence.source.left_bond
+            if self.proposed_correspondence.source.is_rightmost_in_string()
             else None
         )
         target_bond = (
-            self.proposed_correspondence.to_object.right_bond
-            if self.proposed_correspondence.to_object.is_leftmost_in_string()
-            else self.proposed_correspondence.to_object.left_bond
-            if self.proposed_correspondence.to_object.is_rightmost_in_string()
+            self.proposed_correspondence.target.right_bond
+            if self.proposed_correspondence.target.is_leftmost_in_string()
+            else self.proposed_correspondence.target.left_bond
+            if self.proposed_correspondence.target.is_rightmost_in_string()
             else None
         )
         if not (
@@ -185,7 +185,7 @@ class CorrespondenceBuilder(Builder):
         return None
 
     def _get_incompatible_rule(self):
-        if not self.proposed_correspondence.from_object.is_changed_letter:
+        if not self.proposed_correspondence.source.is_changed_letter:
             return None
         if not self.workspace.rule:
             return None
@@ -198,7 +198,7 @@ class CorrespondenceBuilder(Builder):
             d.apply_slippages(self.workspace.slippages)
             for d in [
                 d.descriptor
-                for d in self.proposed_correspondence.to_object.relevant_descriptions
+                for d in self.proposed_correspondence.target.relevant_descriptions
             ]
         ]
         if self.workspace.rule.descriptor_1 in slippages:
@@ -206,10 +206,10 @@ class CorrespondenceBuilder(Builder):
         return self.workspace.rule
 
     def _build_correspondence(self):
-        self.proposed_correspondence.from_object.correspondence = (
+        self.proposed_correspondence.source.correspondence = (
             self.proposed_correspondence
         )
-        self.proposed_correspondence.to_object.correspondence = (
+        self.proposed_correspondence.target.correspondence = (
             self.proposed_correspondence
         )
         self.workspace.add_correspondence(self.proposed_correspondence)
@@ -222,14 +222,14 @@ class CorrespondenceBuilder(Builder):
             self.proposed_correspondence.accessory_concept_mappings.append(
                 mapping.get_symmetric_version()
             )
-        if isinstance(self.proposed_correspondence.from_object, Group) and isinstance(
-            self.proposed_correspondence.to_object, Group
+        if isinstance(self.proposed_correspondence.source, Group) and isinstance(
+            self.proposed_correspondence.target, Group
         ):
             for mapping in self.get_concept_mappings(
-                self.correspondence.from_object,
-                self.correspondence.to_object,
-                self.correspondence.from_object.bond_descriptions,
-                self.correspondence.to_object.bond_descriptions,
+                self.correspondence.source,
+                self.correspondence.target,
+                self.correspondence.source.bond_descriptions,
+                self.correspondence.target.bond_descriptions,
             ):
                 self.proposed_correspondence.accessory_concept_mappings.append(mapping)
                 if mapping.is_slippage:

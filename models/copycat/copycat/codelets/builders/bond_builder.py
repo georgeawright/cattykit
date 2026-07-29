@@ -31,8 +31,8 @@ class BondBuilder(Builder):
 
     def run(self, temperature: float) -> CodeletResult:
         if (
-            self.proposed_bond.from_object not in self.workspace.objects
-            or self.proposed_bond.to_object not in self.workspace.objects
+            self.proposed_bond.source not in self.workspace.objects
+            or self.proposed_bond.target not in self.workspace.objects
         ):
             return Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
         if self.proposed_bond in self.proposed_bond.string.bonds:

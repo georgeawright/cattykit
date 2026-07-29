@@ -1,13 +1,13 @@
 class Sliplink:
     def __init__(
         self,
-        from_node,
-        to_node,
+        source,
+        target,
         type_node,
         fixed_length: int = None,
     ):
-        self.from_node = from_node
-        self.to_node = to_node
+        self.source = source
+        self.target = target
         self.type_node = type_node
         self.fixed_length = fixed_length
         self._intrinsic_degree_of_association = (

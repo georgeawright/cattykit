@@ -14,8 +14,8 @@ class MockObject:
 
 
 class MockBond(NamedTuple):
-    from_object: MockObject
-    to_object: MockObject
+    source: MockObject
+    target: MockObject
     left_object: MockObject
     right_object: MockObject
     is_sameness_bond: bool
@@ -81,13 +81,13 @@ def test_add_letter():
 def test_add_and_delete_proposed_bond():
     workspace_string = WorkspaceString()
     assert 0 == len(workspace_string.proposed_bonds)
-    from_object = MockObject(id="a")
-    to_object = MockObject(id="b")
+    source = MockObject(id="a")
+    target = MockObject(id="b")
     proposed_bond = MockBond(
-        from_object=from_object,
-        to_object=to_object,
-        left_object=from_object,
-        right_object=to_object,
+        source=source,
+        target=target,
+        left_object=source,
+        right_object=target,
         is_sameness_bond=True,
     )
     workspace_string.add_proposed_bond(proposed_bond)
@@ -99,13 +99,13 @@ def test_add_and_delete_proposed_bond():
 def test_add_get_and_delete_sameness_bond():
     workspace_string = WorkspaceString()
     assert 0 == len(workspace_string.bonds)
-    from_object = MockObject(id="a")
-    to_object = MockObject(id="b")
+    source = MockObject(id="a")
+    target = MockObject(id="b")
     bond = MockBond(
-        from_object=from_object,
-        to_object=to_object,
-        left_object=from_object,
-        right_object=to_object,
+        source=source,
+        target=target,
+        left_object=source,
+        right_object=target,
         is_sameness_bond=True,
     )
     assert False == workspace_string.get_bond_if_present(bond)
@@ -119,13 +119,13 @@ def test_add_get_and_delete_sameness_bond():
 def test_add_and_delete_non_sameness_bond():
     workspace_string = WorkspaceString()
     assert 0 == len(workspace_string.bonds)
-    from_object = MockObject(id="a")
-    to_object = MockObject(id="b")
+    source = MockObject(id="a")
+    target = MockObject(id="b")
     bond = MockBond(
-        from_object=from_object,
-        to_object=to_object,
-        left_object=from_object,
-        right_object=to_object,
+        source=source,
+        target=target,
+        left_object=source,
+        right_object=target,
         is_sameness_bond=False,
     )
     assert False == workspace_string.get_bond_if_present(bond)

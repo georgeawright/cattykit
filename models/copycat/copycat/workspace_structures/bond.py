@@ -8,44 +8,44 @@ from copycat.workspace_structure import WorkspaceStructure
 class Bond(WorkspaceStructure):
     def __init__(
         self,
-        from_object: "WorkspaceObject",
-        to_object: "WorkspaceObject",
+        source: "WorkspaceObject",
+        target: "WorkspaceObject",
         bond_category: "Slipnode",
         direction_category: Optional["Slipnode"],
         bond_facet: "Slipnode",
-        from_object_descriptor: "Slipnode",
-        to_object_descriptor: "Slipnode",
+        source_descriptor: "Slipnode",
+        target_descriptor: "Slipnode",
     ):
-        self.from_object = from_object
-        self.to_object = to_object
-        self.string = from_object.string
+        self.source = source
+        self.target = target
+        self.string = source.string
         (self.left_object, self.right_object) = (
-            (from_object, to_object)
-            if from_object.left_position < to_object.left_position
-            else (to_object, from_object)
+            (source, target)
+            if source.left_position < target.left_position
+            else (target, source)
         )
         self.bond_category = bond_category
         self.direction_category = direction_category
         self.bond_facet = bond_facet
-        self.from_object_descriptor = from_object_descriptor
-        self.to_object_descriptor = to_object_descriptor
+        self.source_descriptor = source_descriptor
+        self.target_descriptor = target_descriptor
         self.group = None
 
     def __len__(self):
         """Returns the number of letters spanned by the bond.
         2 if the objects are not groups,
         otherwise the sum of the lengths of the groups."""
-        return len(self.from_object) + len(self.to_object)
+        return len(self.source) + len(self.target)
 
     def __eq__(self, other):
         return (
-            self.from_object,
-            self.to_object,
+            self.source,
+            self.target,
             self.bond_category,
             self.bond_facet,
         ) == (
-            other.from_object,
-            other.to_object,
+            other.source,
+            other.target,
             other.bond_category,
             other.bond_facet,
         )
@@ -91,20 +91,20 @@ class Bond(WorkspaceStructure):
 
     def get_flipped_version(self) -> Bond:
         return Bond(
-            from_object=self.to_object,
-            to_object=self.from_object,
+            source=self.target,
+            target=self.source,
             bond_category=self.bond_category.get_related_node("opposite"),
             direction_category=self.direction_category.get_related_node("opposite")
             if self.direction_category is not None
             else None,
             bond_facet=self.bond_facet,
-            from_object_descriptor=self.to_object_descriptor,
-            to_object_descriptor=self.from_object_descriptor,
+            source_descriptor=self.target_descriptor,
+            target_descriptor=self.source_descriptor,
         )
 
     def calculate_internal_strength(self) -> float:
         member_compatability_factor = (
-            1 if type(self.from_object) is type(self.to_object) else 0.7
+            1 if type(self.source) is type(self.target) else 0.7
         )
         bond_facet_factor = 1 if self.bond_facet.name == "letter_category" else 0.7
         return min(
@@ -135,7 +135,7 @@ class Bond(WorkspaceStructure):
     def _number_of_local_supporting_bonds(self) -> int:
         supporting_bonds = [
             b
-            for b in self.from_object.string.bonds
+            for b in self.source.string.bonds
             if b != self
             and b.left_object.distance_from(self.left_object) != 0
             and b.right_object.distance_from(self.right_object) != 0

@@ -19,35 +19,35 @@ class ImportantObjectCorrespondenceScout(CorrespondenceScout):
     function of the average strength of the distinguishing concept mappings."""
 
     def _get_objects_or_fizzle(self) -> Optional[CodeletResult]:
-        self.from_object = self.workspace.initial_string.choose_object(
+        self.source = self.workspace.initial_string.choose_object(
             selection_method=lambda x: x.relative_importance
         )
-        if self.from_object is None:
+        if self.source is None:
             return Fizzle(FizzleReason.NO_OBJECTS)
-        from_object_description = (
-            self.from_object.choose_relevant_description_by_conceptual_depth()
+        source_description = (
+            self.source.choose_relevant_description_by_conceptual_depth()
         )
-        if from_object_description is None:
+        if source_description is None:
             return Fizzle(FizzleReason.NO_RELEVANT_DESCRIPTIONS)
-        from_object_descriptor = from_object_description.descriptor
-        to_object_descriptor = next(
+        source_descriptor = source_description.descriptor
+        target_descriptor = next(
             (
                 slippage.descriptor2
                 for slippage in self.workspace.slippages
-                if slippage.descriptor1 == from_object_descriptor
+                if slippage.descriptor1 == source_descriptor
             ),
-            from_object_descriptor,
+            source_descriptor,
         )
-        to_object_candidates = [
+        target_candidates = [
             obj
             for obj in self.workspace.target_string.objects
             if any(
-                d.descriptor == to_object_descriptor for d in obj.relevant_descriptions
+                d.descriptor == target_descriptor for d in obj.relevant_descriptions
             )
         ]
-        if not to_object_candidates:
+        if not target_candidates:
             return Fizzle(FizzleReason.NO_OBJECTS_WITH_DESCRIPTOR)
-        self.to_object = random.choices(
-            to_object_candidates,
-            weights=[obj.inter_string_salience for obj in to_object_candidates],
+        self.target = random.choices(
+            target_candidates,
+            weights=[obj.inter_string_salience for obj in target_candidates],
         )[0]

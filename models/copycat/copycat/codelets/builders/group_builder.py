@@ -93,13 +93,13 @@ class GroupBuilder(Builder):
         for description in group.descriptions:
             self.slipnet.activate_node_from_workspace(description.descriptor.name)
 
-    def _transfer_descriptions(self, from_group: Group, to_group: Group):
-        for description in from_group.descriptions:
-            if to_group.has_description(description):
+    def _transfer_descriptions(self, source_group: Group, target_group: Group):
+        for description in source_group.descriptions:
+            if target_group.has_description(description):
                 continue
             new_description = description.copy()
-            new_description.argument_object = to_group
-            to_group.add_description(description)
+            new_description.argument_object = target_group
+            target_group.add_description(description)
 
     def _all_bonds_still_exist(self, workspace_string: "WorkspaceString") -> bool:
         for bond in self.proposed_group.bonds:

@@ -62,30 +62,30 @@ def test_run():
         urgency_bin=0, coderack=coderack, slipnet=slipnet, workspace=workspace
     )
 
-    from_object = SimpleNamespace(spans_whole_string=lambda: True)
-    to_object = SimpleNamespace(spans_whole_string=lambda: True)
-    workspace.initial_string.objects = [from_object]
-    workspace.target_string.objects = [to_object]
+    source = SimpleNamespace(spans_whole_string=lambda: True)
+    target = SimpleNamespace(spans_whole_string=lambda: True)
+    workspace.initial_string.objects = [source]
+    workspace.target_string.objects = [target]
 
     # object 1 spans string but object 2 does not
-    to_object.spans_whole_string = lambda: False
+    target.spans_whole_string = lambda: False
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
     # object 2 spans string but object 1 does not
-    from_object.spans_whole_string = lambda: True
-    to_object.spans_whole_string = lambda: False
+    source.spans_whole_string = lambda: True
+    target.spans_whole_string = lambda: False
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
     # both objects span whole string but concept mappings not possible
-    to_object.spans_whole_string = lambda: True
+    target.spans_whole_string = lambda: True
     description_1 = SimpleNamespace(facet=SimpleNamespace(name="bond"))
     description_2 = SimpleNamespace(facet=SimpleNamespace(name="group"))
-    from_object.descriptions = [description_1]
-    to_object.descriptions = [description_2]
+    source.descriptions = [description_1]
+    target.descriptions = [description_2]
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
@@ -97,8 +97,8 @@ def test_run():
     description_2 = SimpleNamespace(
         facet=SimpleNamespace(name="group"), descriptor=SimpleNamespace(name="whole")
     )
-    from_object.descriptions = [description_1]
-    to_object.descriptions = [description_2]
+    source.descriptions = [description_1]
+    target.descriptions = [description_2]
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
@@ -109,10 +109,10 @@ def test_run():
     successor_node.is_linked_to = lambda other: other == predecessor_node
     predecessor_node.is_linked_to = lambda other: other == successor_node
     succesor_to_predecessor_link = SimpleNamespace(
-        from_node=successor_node, to_node=predecessor_node, degree_of_association=1.0
+        source=successor_node, target=predecessor_node, degree_of_association=1.0
     )
     predecessor_to_successor_link = SimpleNamespace(
-        from_node=predecessor_node, to_node=successor_node, degree_of_association=1.0
+        source=predecessor_node, target=successor_node, degree_of_association=1.0
     )
     successor_node.lateral_sliplinks = [succesor_to_predecessor_link]
     predecessor_node.lateral_sliplinks = [predecessor_to_successor_link]
@@ -122,10 +122,10 @@ def test_run():
     description_2 = SimpleNamespace(
         facet=SimpleNamespace(name="group"), descriptor=predecessor_node
     )
-    from_object.descriptions = [description_1]
-    to_object.descriptions = [description_2]
-    from_object.is_distinguished_by = lambda descriptor: True
-    to_object.is_distinguished_by = lambda descriptor: True
+    source.descriptions = [description_1]
+    target.descriptions = [description_2]
+    source.is_distinguished_by = lambda descriptor: True
+    target.is_distinguished_by = lambda descriptor: True
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 1
     assert result == Finish()

@@ -63,41 +63,41 @@ def test_run():
     assert slipnet.activate_called == 0
 
     # Object with neighbor but no shared bond facets
-    from_obj_bond_facet = SimpleNamespace(
+    source_bond_facet = SimpleNamespace(
         facet=SimpleNamespace(
-            name="from_description_facet",
+            name="source_description_facet",
             category=SimpleNamespace(name="bond_facet"),
             get_total_description_type_support=lambda x: 0.5,
         )
     )
-    to_obj_bond_facet = SimpleNamespace(
+    target_bond_facet = SimpleNamespace(
         facet=SimpleNamespace(
-            name="to_description_facet", category=SimpleNamespace(name="bond_facet")
+            name="target_description_facet", category=SimpleNamespace(name="bond_facet")
         )
     )
-    to_obj = Mock()
-    to_obj.left_position = 1
-    to_obj.descriptions = [to_obj_bond_facet]
-    workspace.object.descriptions = [from_obj_bond_facet]
-    workspace.object.choose_neighbor.return_value = to_obj
+    target = Mock()
+    target.left_position = 1
+    target.descriptions = [target_bond_facet]
+    workspace.object.descriptions = [source_bond_facet]
+    workspace.object.choose_neighbor.return_value = target
     scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
     # Object with neighbor and shared bond facet but no bond category
-    to_obj.descriptions = [from_obj_bond_facet, to_obj_bond_facet]
-    link = SimpleNamespace(to_node=Mock(), label=None)
-    from_obj_descriptor = SimpleNamespace(name="from_descriptor")
-    from_obj_descriptor.outgoing_links = [link]
-    workspace.object.get_descriptor.return_value = from_obj_descriptor
+    target.descriptions = [source_bond_facet, target_bond_facet]
+    link = SimpleNamespace(target=Mock(), label=None)
+    source_descriptor = SimpleNamespace(name="source_descriptor")
+    source_descriptor.outgoing_links = [link]
+    workspace.object.get_descriptor.return_value = source_descriptor
     scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
     # Object with neighbor, shared bond facet, and bond category
-    to_obj_descriptor = SimpleNamespace(name="to_descriptor")
-    to_obj.get_descriptor.return_value = to_obj_descriptor
-    link.to_node = to_obj_descriptor
+    target_descriptor = SimpleNamespace(name="target_descriptor")
+    target.get_descriptor.return_value = target_descriptor
+    link.target = target_descriptor
     link.label = SimpleNamespace(name="successor", bond_degree_of_association=1)
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 1

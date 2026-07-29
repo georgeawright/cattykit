@@ -76,8 +76,8 @@ def test_get_flipped_version():
     )
 
     bond_facet = SimpleNamespace(name="bond_facet")
-    from_object_descriptor = SimpleNamespace(name="from_object_descriptor")
-    to_object_descriptor = SimpleNamespace(name="to_object_descriptor")
+    source_descriptor = SimpleNamespace(name="source_descriptor")
+    target_descriptor = SimpleNamespace(name="target_descriptor")
 
     bond = Bond(
         object_0,
@@ -85,23 +85,23 @@ def test_get_flipped_version():
         bond_category,
         direction_category,
         bond_facet,
-        from_object_descriptor,
-        to_object_descriptor,
+        source_descriptor,
+        target_descriptor,
     )
 
     flipped_bond = bond.get_flipped_version()
 
-    assert flipped_bond.from_object == bond.to_object
-    assert flipped_bond.to_object == bond.from_object
+    assert flipped_bond.source == bond.target
+    assert flipped_bond.target == bond.source
     assert flipped_bond.bond_category == opposite_bond_category
     assert flipped_bond.direction_category == opposite_direction_category
     assert flipped_bond.bond_facet == bond.bond_facet
-    assert flipped_bond.from_object_descriptor == bond.to_object_descriptor
-    assert flipped_bond.to_object_descriptor == bond.from_object_descriptor
+    assert flipped_bond.source_descriptor == bond.target_descriptor
+    assert flipped_bond.target_descriptor == bond.source_descriptor
 
 
 @pytest.mark.parametrize(
-    "from_type, to_type, bond_degree_of_association, bond_facet_name, expected",
+    "source_type, target_type, bond_degree_of_association, bond_facet_name, expected",
     [
         ("letter", "letter", 1.0, "letter_category", 1.0),
         ("group", "group", 1.0, "letter_category", 1.0),
@@ -113,15 +113,15 @@ def test_get_flipped_version():
     ],
 )
 def test_calculate_internal_strength(
-    from_type, to_type, bond_degree_of_association, bond_facet_name, expected
+    source_type, target_type, bond_degree_of_association, bond_facet_name, expected
 ):
-    from_object = MockLetter(None, 1, None) if from_type == "letter" else MockGroup(1)
-    to_object = MockLetter(None, 2, None) if to_type == "letter" else MockGroup(2)
+    source = MockLetter(None, 1, None) if source_type == "letter" else MockGroup(1)
+    target = MockLetter(None, 2, None) if target_type == "letter" else MockGroup(2)
     bond_category = SimpleNamespace(
         bond_degree_of_association=bond_degree_of_association
     )
     bond_facet = SimpleNamespace(name=bond_facet_name)
-    bond = Bond(from_object, to_object, bond_category, None, bond_facet, None, None)
+    bond = Bond(source, target, bond_category, None, bond_facet, None, None)
 
     actual = bond.calculate_internal_strength()
     assert expected == pytest.approx(actual)

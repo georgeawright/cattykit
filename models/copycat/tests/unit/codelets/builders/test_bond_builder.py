@@ -40,12 +40,12 @@ class MockWorkspaceString:
 def test_run_fizzles_if_argument_objects_no_longer_exist():
     workspace = MockWorkspace()
     bond = Mock()
-    bond.from_object = Mock()
-    bond.to_object = Mock()
-    bond.from_object.outgoing_bonds = []
-    bond.from_object.incoming_bonds = []
-    bond.to_object.outgoing_bonds = []
-    bond.to_object.incoming_bonds = []
+    bond.source = Mock()
+    bond.target = Mock()
+    bond.source.outgoing_bonds = []
+    bond.source.incoming_bonds = []
+    bond.target.outgoing_bonds = []
+    bond.target.incoming_bonds = []
     builder = BondBuilder(
         urgency_bin=0,
         coderack=Mock(),
@@ -56,18 +56,18 @@ def test_run_fizzles_if_argument_objects_no_longer_exist():
     result = builder.run(temperature=0.0)
     assert result == Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
     # If the from and to objects don't exist, the bond shouldn't be added to them
-    assert bond.from_object.outgoing_bonds == []
-    assert bond.from_object.incoming_bonds == []
-    assert bond.to_object.outgoing_bonds == []
-    assert bond.to_object.incoming_bonds == []
+    assert bond.source.outgoing_bonds == []
+    assert bond.source.incoming_bonds == []
+    assert bond.target.outgoing_bonds == []
+    assert bond.target.incoming_bonds == []
 
 
 def test_run_fizzles_if_bond_has_already_been_built():
     workspace = MockWorkspace()
     bond = Mock()
-    bond.from_object = Mock()
-    bond.to_object = Mock()
-    workspace.objects.extend([bond.from_object, bond.to_object])
+    bond.source = Mock()
+    bond.target = Mock()
+    workspace.objects.extend([bond.source, bond.target])
     bond.string = MockWorkspaceString([bond])
     builder = BondBuilder(
         urgency_bin=0,
@@ -84,9 +84,9 @@ def test_run_fizzles_if_bond_has_already_been_built():
 def test_fizzles_if_incompatible_bonds_beat_proposed_bond(monkeypatch):
     workspace = MockWorkspace()
     bond = Mock()
-    bond.from_object = Mock()
-    bond.to_object = Mock()
-    workspace.objects.extend([bond.from_object, bond.to_object])
+    bond.source = Mock()
+    bond.target = Mock()
+    workspace.objects.extend([bond.source, bond.target])
     bond.string = MockWorkspaceString([])
     incompatible_bonds = [Mock(), Mock()]
     builder = BondBuilder(
@@ -109,9 +109,9 @@ def test_fizzles_if_incompatible_bonds_beat_proposed_bond(monkeypatch):
 def test_fizzles_if_incompatible_groups_beat_proposed_bond(monkeypatch):
     workspace = MockWorkspace()
     bond = Mock()
-    bond.from_object = Mock()
-    bond.to_object = Mock()
-    workspace.objects.extend([bond.from_object, bond.to_object])
+    bond.source = Mock()
+    bond.target = Mock()
+    workspace.objects.extend([bond.source, bond.target])
     bond.string = MockWorkspaceString([])
     incompatible_bonds = [Mock(), Mock()]
     incompatible_groups = [Mock(), Mock()]
@@ -153,9 +153,9 @@ def test_fizzles_if_incompatible_groups_beat_proposed_bond(monkeypatch):
 def test_fizzles_if_incompatible_correspondences_beat_proposed_bond(monkeypatch):
     workspace = MockWorkspace()
     bond = Mock()
-    bond.from_object = Mock()
-    bond.to_object = Mock()
-    workspace.objects.extend([bond.from_object, bond.to_object])
+    bond.source = Mock()
+    bond.target = Mock()
+    workspace.objects.extend([bond.source, bond.target])
     bond.string = MockWorkspaceString([])
     incompatible_bonds = [Mock(), Mock()]
     incompatible_groups = [Mock(), Mock()]
@@ -201,9 +201,9 @@ def test_fizzles_if_incompatible_correspondences_beat_proposed_bond(monkeypatch)
 def test_builds_bond_and_breaks_incompatible_structures(monkeypatch):
     workspace = MockWorkspace()
     bond = Mock()
-    bond.from_object = Mock()
-    bond.to_object = Mock()
-    workspace.objects.extend([bond.from_object, bond.to_object])
+    bond.source = Mock()
+    bond.target = Mock()
+    workspace.objects.extend([bond.source, bond.target])
     bond.string = MockWorkspaceString([])
     incompatible_bonds = [Mock(), Mock()]
     incompatible_groups = [Mock(), Mock()]

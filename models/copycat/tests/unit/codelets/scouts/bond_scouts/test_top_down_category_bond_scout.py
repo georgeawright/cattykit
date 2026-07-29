@@ -76,42 +76,42 @@ def test_run():
     assert slipnet.activate_called == 0
 
     # Object with neighbor but no shared bond facets
-    from_obj_bond_facet = SimpleNamespace(
+    source_bond_facet = SimpleNamespace(
         facet=SimpleNamespace(
-            name="from_description_facet",
+            name="source_description_facet",
             category=SimpleNamespace(name="bond_facet"),
             get_total_description_type_support=lambda x: 0.5,
         )
     )
-    to_obj_bond_facet = SimpleNamespace(
+    target_bond_facet = SimpleNamespace(
         facet=SimpleNamespace(
-            name="to_description_facet", category=SimpleNamespace(name="bond_facet")
+            name="target_description_facet", category=SimpleNamespace(name="bond_facet")
         )
     )
     object_2 = Mock()
     object_2.left_position = 1
-    object_2.descriptions = [to_obj_bond_facet]
-    object_1.descriptions = [from_obj_bond_facet]
+    object_2.descriptions = [target_bond_facet]
+    object_1.descriptions = [source_bond_facet]
     object_1.choose_neighbor.return_value = object_2
     scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
     # Object with neighbor and shared bond facet one object missing descriptor
-    object_2.descriptions = [from_obj_bond_facet, to_obj_bond_facet]
-    link = SimpleNamespace(to_node=Mock(), label=None)
-    from_obj_descriptor = SimpleNamespace(name="from_descriptor")
-    from_obj_descriptor.outgoing_links = [link]
-    object_1.get_descriptor.return_value = from_obj_descriptor
+    object_2.descriptions = [source_bond_facet, target_bond_facet]
+    link = SimpleNamespace(target=Mock(), label=None)
+    source_descriptor = SimpleNamespace(name="source_descriptor")
+    source_descriptor.outgoing_links = [link]
+    object_1.get_descriptor.return_value = source_descriptor
     object_2.get_descriptor.return_value = None
     scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
     # Object with neighbor, shared bond facet, and 1-2 bond category matches bond category
-    to_obj_descriptor = SimpleNamespace(name="to_descriptor")
-    object_2.get_descriptor.return_value = to_obj_descriptor
-    link.to_node = to_obj_descriptor
+    target_descriptor = SimpleNamespace(name="target_descriptor")
+    object_2.get_descriptor.return_value = target_descriptor
+    link.target = target_descriptor
     link.label = bond_category
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 1
@@ -124,8 +124,8 @@ def test_run():
     slipnet.activate_called = 0
     bond_category = SimpleNamespace(name="predecessor", bond_degree_of_association=0.5)
     scout.bond_category = bond_category
-    link_2 = SimpleNamespace(to_node=from_obj_descriptor, label=bond_category)
-    to_obj_descriptor.outgoing_links = [link_2]
+    link_2 = SimpleNamespace(target=source_descriptor, label=bond_category)
+    target_descriptor.outgoing_links = [link_2]
     scout.run(temperature=0.0)
     assert coderack.post_called == 1
     assert slipnet.activate_called == 3

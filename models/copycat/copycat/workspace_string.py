@@ -22,8 +22,8 @@ class WorkspaceString:
     def proposed_bonds(self):
         unique_bonds = []
         added = set()
-        for from_index, bonds in self.proposed_bonds_by_role.items():
-            for to_index, bond_list in bonds.items():
+        for source_index, bonds in self.proposed_bonds_by_role.items():
+            for target_index, bond_list in bonds.items():
                 for bond in bond_list:
                     if bond in added:
                         continue
@@ -35,8 +35,8 @@ class WorkspaceString:
     def bonds(self):
         unique_bonds = []
         added = set()
-        for from_index, bonds in self.bonds_by_role.items():
-            for to_index, bond in bonds.items():
+        for source_index, bonds in self.bonds_by_role.items():
+            for target_index, bond in bonds.items():
                 if bond is None:
                     continue
                 if bond in added:
@@ -88,31 +88,31 @@ class WorkspaceString:
 
     def add_proposed_bond(self, bond):
         """Add to a maintained list of proposed bonds between two nodes."""
-        self.proposed_bonds_by_role[bond.from_object.id][bond.to_object.id].append(bond)
+        self.proposed_bonds_by_role[bond.source.id][bond.target.id].append(bond)
 
     def delete_proposed_bond(self, bond):
         """Delete from a maintained list of proposed bonds between two objects."""
-        self.proposed_bonds_by_role[bond.from_object.id][bond.to_object.id].remove(bond)
+        self.proposed_bonds_by_role[bond.source.id][bond.target.id].remove(bond)
 
     def add_bond(self, bond):
         """Add the only bond between two objects."""
-        self.bonds_by_role[bond.from_object.id][bond.to_object.id] = bond
+        self.bonds_by_role[bond.source.id][bond.target.id] = bond
         self.bonds_by_position[bond.left_object.id][bond.right_object.id] = bond
         if bond.is_sameness_bond:
-            self.bonds_by_role[bond.to_object.id][bond.from_object.id] = bond
+            self.bonds_by_role[bond.target.id][bond.source.id] = bond
             self.bonds_by_position[bond.left_object.id][bond.right_object.id] = bond
 
     def delete_bond(self, bond):
         """Delete the only bond between two objects."""
-        self.bonds_by_role[bond.from_object.id][bond.to_object.id] = None
+        self.bonds_by_role[bond.source.id][bond.target.id] = None
         self.bonds_by_position[bond.left_object.id][bond.right_object.id] = None
         if bond.is_sameness_bond:
-            self.bonds_by_role[bond.to_object.id][bond.from_object.id] = None
+            self.bonds_by_role[bond.target.id][bond.source.id] = None
             self.bonds_by_position[bond.left_object.id][bond.right_object.id] = None
 
     def get_bond_if_present(self, bond):
         """Return the equivalent bond if it is already in the string, else False."""
-        existing_bond = self.bonds_by_role[bond.from_object.id][bond.to_object.id]
+        existing_bond = self.bonds_by_role[bond.source.id][bond.target.id]
         if existing_bond == bond:
             return existing_bond
         return False

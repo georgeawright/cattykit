@@ -75,7 +75,7 @@ def test_run():
     # Object with relevant description and has property links
     link = Mock()
     link.degree_of_association = 1
-    link.to_node.name = "property"
+    link.target.name = "property"
     descriptor.get_similar_has_property_links.return_value = [link]
     result = scout.run(temperature=0.0)
     assert isinstance(result, Finish)

@@ -50,8 +50,8 @@ class Slipnet:
         node_depth_factors = np.array([node.depth_factor for node in nodes])
         adjacency_table = np.zeros((number_of_nodes, number_of_nodes))
         for link in links:
-            i = node_index_lookup[link.from_node.name]
-            j = node_index_lookup[link.to_node.name]
+            i = node_index_lookup[link.source.name]
+            j = node_index_lookup[link.target.name]
             adjacency_table[i, j] = link.intrinsic_degree_of_association
         return cls(
             nodes,
@@ -90,8 +90,8 @@ class Slipnet:
         }
         links = [
             Sliplink(
-                from_node=nodes[link_data["from_node"]],
-                to_node=nodes[link_data["to_node"]],
+                source=nodes[link_data["source"]],
+                target=nodes[link_data["target"]],
                 type_node=nodes[link_data.get("type_node")]
                 if link_data.get("type_node") is not None
                 else None,

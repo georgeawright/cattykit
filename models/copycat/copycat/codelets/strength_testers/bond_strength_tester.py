@@ -38,10 +38,10 @@ class BondStrengthTester(StrengthTester):
             self.proposed_bond.string.delete_proposed_bond(self.proposed_bond)
             return Fizzle(FizzleReason.PROPOSED_STRUCTURE_TOO_WEAK)
         self.slipnet.activate_node_from_workspace(
-            self.proposed_bond.from_object_descriptor.name
+            self.proposed_bond.source_descriptor.name
         )
         self.slipnet.activate_node_from_workspace(
-            self.proposed_bond.to_object_descriptor.name
+            self.proposed_bond.target_descriptor.name
         )
         self.slipnet.activate_node_from_workspace(self.proposed_bond.bond_facet.name)
         urgency = self.coderack.get_urgency_level_from_activation(

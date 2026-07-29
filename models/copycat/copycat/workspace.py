@@ -92,8 +92,8 @@ class Workspace:
     def proposed_correspondences(self):
         unique_correspondences = []
         added = set()
-        for from_index, correspondences in self._proposed_correspondences.items():
-            for to_index, correspondence_list in correspondences.items():
+        for source_index, correspondences in self._proposed_correspondences.items():
+            for target_index, correspondence_list in correspondences.items():
                 for correspondence in correspondence_list:
                     if correspondence in added:
                         continue
@@ -136,34 +136,34 @@ class Workspace:
 
     def add_proposed_correspondence(self, correspondence):
         """Add to a maintained list of proposed correspondences between two objects."""
-        from_id = correspondence.from_object.id
-        to_id = correspondence.to_object.id
-        self._proposed_correspondences[from_id][to_id].append(correspondence)
+        source_id = correspondence.source.id
+        target_id = correspondence.target.id
+        self._proposed_correspondences[source_id][target_id].append(correspondence)
 
     def delete_proposed_correspondence(self, correspondence):
         """Delete from a maintained list of proposed correspondences between two objects."""
-        from_id = correspondence.from_object.id
-        to_id = correspondence.to_object.id
-        self._proposed_correspondences[from_id][to_id].remove(correspondence)
+        source_id = correspondence.source.id
+        target_id = correspondence.target.id
+        self._proposed_correspondences[source_id][target_id].remove(correspondence)
 
     def add_correspondence(self, correspondence):
         """Add the only correspondence between two objects."""
-        self._correspondences[correspondence.from_object.id] = correspondence
+        self._correspondences[correspondence.source.id] = correspondence
 
     def break_correspondence(self, correspondence):
-        correspondence.from_object.correspondence = None
-        correspondence.to_object.correspondence = None
+        correspondence.source.correspondence = None
+        correspondence.target.correspondence = None
         self.delete_correspondence(correspondence)
 
     def delete_correspondence(self, correspondence):
         """Delete the only correspondence between two objects."""
-        self._correspondences[correspondence.from_object.id] = None
+        self._correspondences[correspondence.source.id] = None
 
     def contains_correspondence(self, correspondence) -> bool:
         """Returns True if the workspace contains the correspondence."""
         try:
             existing_correspondence = self._correspondences[
-                correspondence.from_object.id
+                correspondence.source.id
             ]
         except KeyError:
             return False
@@ -173,7 +173,7 @@ class Workspace:
         """Returns the existing correspondence between two objects if it exists."""
         try:
             existing_correspondence = self._correspondences[
-                correspondence.from_object.id
+                correspondence.source.id
             ]
         except KeyError:
             return None
@@ -182,12 +182,12 @@ class Workspace:
         return None
 
     def break_bond(self, bond):
-        bond.from_object.string.delete_bond(bond)
-        bond.from_object.outgoing_bonds.remove(bond)
-        bond.to_object.incoming_bonds.remove(bond)
+        bond.source.string.delete_bond(bond)
+        bond.source.outgoing_bonds.remove(bond)
+        bond.target.incoming_bonds.remove(bond)
         if bond.is_sameness_bond:
-            bond.to_object.outgoing_bonds.remove(bond)
-            bond.from_object.incoming_bonds.remove(bond)
+            bond.target.outgoing_bonds.remove(bond)
+            bond.source.incoming_bonds.remove(bond)
         bond.left_object.right_bond = None
         bond.right_object.left_bond = None
 
@@ -245,7 +245,7 @@ class Workspace:
         return [
             bond
             for bond in self.bonds
-            if bond.from_object.group is None or bond.to_object.group is None
+            if bond.source.group is None or bond.target.group is None
         ]
 
     @property

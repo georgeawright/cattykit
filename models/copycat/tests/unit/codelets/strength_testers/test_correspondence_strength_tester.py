@@ -39,13 +39,13 @@ def test_run():
     workspace = MockWorkspace()
 
     proposed_correspondence = Mock()
-    from_object = Mock()
-    to_object = Mock()
-    to_object_flipped = Mock()
-    proposed_correspondence.from_object = from_object
-    proposed_correspondence.to_object = to_object
-    proposed_correspondence.to_object.get_flipped_version.return_value = (
-        to_object_flipped
+    source = Mock()
+    target = Mock()
+    target_flipped = Mock()
+    proposed_correspondence.source = source
+    proposed_correspondence.target = target
+    proposed_correspondence.target.get_flipped_version.return_value = (
+        target_flipped
     )
     proposed_correspondence.concept_mappings = [Mock()]
 
@@ -55,7 +55,7 @@ def test_run():
         slipnet=slipnet,
         workspace=workspace,
         proposed_correspondence=proposed_correspondence,
-        to_object_flipped=False,
+        target_flipped=False,
     )
 
     # if object 1 no longer exists, should fizzle
@@ -65,23 +65,23 @@ def test_run():
     assert coderack.post_called == 0
 
     # if object 2 no longer exists (and is not flipped), should fizzle
-    workspace.objects.append(proposed_correspondence.from_object)
+    workspace.objects.append(proposed_correspondence.source)
     result = strength_tester.run(temperature=0.0)
     assert result == Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
     assert slipnet.activate_called == 0
     assert coderack.post_called == 0
 
     # if object 2 and flipped object 2 no longer exists, should fizzle
-    strength_tester.to_object_flipped = True
+    strength_tester.target_flipped = True
     result = strength_tester.run(temperature=0.0)
     assert result == Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
     assert slipnet.activate_called == 0
     assert coderack.post_called == 0
 
     # weak correspondence should not post a builder
-    workspace.objects.append(proposed_correspondence.to_object)
+    workspace.objects.append(proposed_correspondence.target)
     proposed_correspondence.total_strength = 0.0
-    strength_tester.to_object_flipped = False
+    strength_tester.target_flipped = False
     result = strength_tester.run(temperature=0.0)
     assert result == Fizzle(FizzleReason.PROPOSED_STRUCTURE_TOO_WEAK)
     assert slipnet.activate_called == 0
@@ -100,8 +100,8 @@ def test_run():
     # works when object 2 is flipped
     slipnet.activate_called = 0
     coderack.post_called = 0
-    workspace.objects.append(to_object_flipped)
-    strength_tester.to_object_flipped = True
+    workspace.objects.append(target_flipped)
+    strength_tester.target_flipped = True
     result = strength_tester.run(temperature=0.0)
     assert result == Finish()
     assert slipnet.activate_called == 4

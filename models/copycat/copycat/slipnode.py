@@ -52,7 +52,7 @@ class Slipnode:
         """Assumes at most one category link per node."""
         if not self.category_links:
             return None
-        return self.category_links[0].to_node
+        return self.category_links[0].target
 
     def is_active(self) -> bool:
         return self.activation >= 1.0
@@ -62,7 +62,7 @@ class Slipnode:
             return self
         for link in self.outgoing_links:
             if link.type_node.name == relationship_name:
-                return link.to_node
+                return link.target
         return None
 
     def is_related_to(self, other: Slipnode) -> bool:
@@ -70,7 +70,7 @@ class Slipnode:
 
     def is_linked_to(self, other: Slipnode) -> bool:
         for link in self.outgoing_links:
-            if link.to_node == other:
+            if link.target == other:
                 return True
         return False
 
@@ -94,9 +94,9 @@ class Slipnode:
         self, workspace_object: "WorkspaceObject"
     ) -> List[Slipnode]:
         return [
-            link.to_node
+            link.target
             for link in self.instance_links
-            if link.to_node.description_tester(workspace_object)
+            if link.target.description_tester(workspace_object)
         ]
 
     def total_description_type_support(

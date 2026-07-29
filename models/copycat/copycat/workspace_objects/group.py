@@ -109,7 +109,7 @@ class Group(WorkspaceObject, WorkspaceStructure):
         bonds_to_be_flipped = []
         for bond in self.bonds:
             s = self.string
-            bond_to_flip = s.bonds_by_role[bond.from_object.id][bond.to_object.id]
+            bond_to_flip = s.bonds_by_role[bond.source.id][bond.target.id]
             if bond_to_flip is not None and bond == bond_to_flip.get_flipped_version():
                 bonds_to_be_flipped.append(bond_to_flip)
         return bonds_to_be_flipped

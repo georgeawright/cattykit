@@ -15,30 +15,30 @@ class BottomUpBondScout(BondScout):
     of bonds of the bond category."""
 
     def run(self, temperature: float) -> CodeletResult:
-        from_obj = self.workspace.choose_object(
+        source = self.workspace.choose_object(
             temperature, lambda x: x.intra_string_salience
         )
-        if from_obj is None:
+        if source is None:
             return Fizzle(FizzleReason.NO_OBJECTS)
-        to_obj = from_obj.choose_neighbor(temperature)
-        if to_obj is None:
+        target = source.choose_neighbor(temperature)
+        if target is None:
             return Fizzle(FizzleReason.NO_NEIGHBOR)
-        bond_facet = self._choose_bond_facet(from_obj, to_obj)
+        bond_facet = self._choose_bond_facet(source, target)
         if bond_facet is None:
             return Fizzle(FizzleReason.NO_COMMON_BOND_FACET)
-        from_obj_descriptor = from_obj.get_descriptor(bond_facet)
-        to_obj_descriptor = to_obj.get_descriptor(bond_facet)
-        if from_obj_descriptor is None or to_obj_descriptor is None:
+        source_descriptor = source.get_descriptor(bond_facet)
+        target_descriptor = target.get_descriptor(bond_facet)
+        if source_descriptor is None or target_descriptor is None:
             return Fizzle(FizzleReason.NO_DESCRIPTORS_FOR_BOND_FACET)
-        bond_category = self._get_bond_category(from_obj_descriptor, to_obj_descriptor)
+        bond_category = self._get_bond_category(source_descriptor, target_descriptor)
         if bond_category is None:
             return Fizzle(FizzleReason.NO_BOND_CATEGORY)
         self.propose_bond(
-            from_obj,
-            to_obj,
+            source,
+            target,
             bond_category,
             bond_facet,
-            from_obj_descriptor,
-            to_obj_descriptor,
+            source_descriptor,
+            target_descriptor,
         )
         return Finish()

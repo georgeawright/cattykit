@@ -94,14 +94,14 @@ def test_update_activations_no_jumping(
     is_a_node = SimpleNamespace(name="is-a", depth_factor=depth_factor)
 
     cat_is_a_animal = SimpleNamespace(
-        from_node=cat_node,
-        to_node=animal_node,
+        source=cat_node,
+        target=animal_node,
         type_node=is_a_node,
         intrinsic_degree_of_association=cat_is_a_animal_degree_of_association,
     )
     dog_is_a_animal = SimpleNamespace(
-        from_node=dog_node,
-        to_node=animal_node,
+        source=dog_node,
+        target=animal_node,
         type_node=is_a_node,
         intrinsic_degree_of_association=dog_is_a_animal_degree_of_association,
     )
