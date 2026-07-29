@@ -117,6 +117,13 @@ class Workspace:
             structures.append(self.rule)
         return structures
 
+    def all_replacements_found(self) -> bool:
+        """True if all letters in the initial string have a replacement."""
+        for letter in self.initial_string.letters:
+            if letter.replacement is None:
+                return False
+        return True
+
     def update(self):
         """Update values for structures and objects."""
         self._update_strength_values()

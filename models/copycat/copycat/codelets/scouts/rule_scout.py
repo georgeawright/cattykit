@@ -15,7 +15,7 @@ class RuleScout(Scout):
     with urgency a function of the conceptual depth of the descriptions."""
 
     def run(self, temperature: float) -> CodeletResult:
-        if self.workspace.null_replacement:
+        if not self.workspace.all_replacements_found():
             return Fizzle(FizzleReason.NOT_ALL_REPLACEMENTS_FOUND)
         changed_objects = self.workspace.initial_string.get_changed_objects()
         if len(changed_objects) > 1:
