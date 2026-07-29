@@ -35,6 +35,15 @@ class Correspondence(WorkspaceStructure):
             None,
         )
 
+    @property
+    def slippages(self) -> List[ConceptMapping]:
+        """Slippages are non-identity concept mappings."""
+        return [
+            mapping
+            for mapping in self.concept_mappings + self.accessory_concept_mappings
+            if mapping.is_slippage
+        ]
+
     def __len__(self):
         """Returns the number of letters spanned by the objects."""
         return len(self.source) + len(self.target)
@@ -64,9 +73,7 @@ class Correspondence(WorkspaceStructure):
 
     def is_incompatible_argumentwise_with(self, other: Correspondence) -> bool:
         """Self and other share objects."""
-        return (
-            self.source == other.source or self.target == other.target
-        )
+        return self.source == other.source or self.target == other.target
 
     def is_incompatible_conceptually_with(self, other: Correspondence) -> bool:
         """Self has a concept mapping incompatible with other's concept mappings."""
@@ -185,10 +192,7 @@ class Correspondence(WorkspaceStructure):
         This returns the sum of the strengths of supporting correspondences up to 1.
         If one of the objects is the single letter in its string, then the support is 1.
         """
-        if (
-            isinstance(self.source, Letter)
-            and self.source.spans_whole_string()
-        ) or (
+        if (isinstance(self.source, Letter) and self.source.spans_whole_string()) or (
             isinstance(self.target, Letter) and self.target.spans_whole_string()
         ):
             return 1.0

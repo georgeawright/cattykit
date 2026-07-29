@@ -81,8 +81,7 @@ class ConceptMapping:
         )
 
     def is_slippage(self) -> bool:
-        # TODO
-        pass
+        self.label.name != "identity"
 
     def is_relevant(self) -> bool:
         return (
