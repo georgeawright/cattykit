@@ -1,5 +1,6 @@
 from collections import defaultdict
 import random
+from typing import List
 
 from .tools import temperature_adjust
 

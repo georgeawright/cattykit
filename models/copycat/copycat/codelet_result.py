@@ -40,6 +40,7 @@ class FizzleReason(StrEnum):
     NOT_ALL_REPLACEMENTS_FOUND = "Not all replacements have been found"
     NO_INTIAL_DESCRIPTIONS = "No initial descriptions"
     NO_MODIFIED_DESCRIPTIONS = "No modified descriptions"
+    LETTER_ALREADY_HAS_REPLACEMENT = "Letter already has replacement"
 
 
 @dataclass(frozen=True)
