@@ -32,16 +32,16 @@ class CorrespondenceBuilder(Builder):
         self.target_flipped = target_flipped
 
     def run(self, temperature: float) -> "CodeletResult":
+        if self.target_flipped:
+            existing_target = self.workspace.target_string.get_group_if_present(
+                self.proposed_correspondence.target.get_flipped_version()
+            )
         if self.proposed_correspondence.source not in self.workspace.objects:
             return Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
         if self.proposed_correspondence.target not in self.workspace.objects:
-            if self.target_flipped:
-                existing_target = self.workspace.target_string.get_group_if_present(
-                    self.proposed_correspondence.target.get_flipped_version()
-                )
-                if not existing_target:
-                    return Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
-            else:
+            if self.target_flipped and not existing_target:
+                return Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
+            if not self.target_flipped:
                 return Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
         self.workspace.delete_proposed_correspondence(self.proposed_correspondence)
         if self._augment_existing_correspondence_if_exists():
@@ -238,4 +238,4 @@ class CorrespondenceBuilder(Builder):
                     )
         for mapping in self.proposed_correspondence.concept_mappings:
             if mapping.label:
-                self.slipnet.activate_node_from_workspace(label.name)
+                self.slipnet.activate_node_from_workspace(mapping.label.name)
