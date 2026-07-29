@@ -39,8 +39,8 @@ class RuleBuilder(Builder):
             )
             if not fight_result:
                 return Fizzle(FizzleReason.INCOMPATIBLE_STRUCTURES_WON)
-        self._break_old_rule()
-        self._build_new_rule()
+        self.workspace.rule = self.proposed_rule
+        self._activate_rule_description_nodes()
         return Finish()
 
     def _activate_rule_description_nodes(self):
@@ -50,9 +50,3 @@ class RuleBuilder(Builder):
             self.slipnet.activate_node_from_workspace(self.proposed_rule.relation)
         if self.proposed_rule.descriptor_2 is not None:
             self.slipnet.activate_node_from_workspace(self.proposed_rule.descriptor_2)
-
-    def _break_old_rule(self):
-        pass
-
-    def _build_new_rule(self):
-        pass
