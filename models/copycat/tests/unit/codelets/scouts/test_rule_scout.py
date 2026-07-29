@@ -78,7 +78,7 @@ def test_proposes_null_rule_if_there_are_no_changed_letters():
     assert proposed_rule.relation is None
 
 
-def test_fizzles_if_there_is_no_initial_description():
+def test_fizzles_if_there_is_no_initial_object_description():
     coderack = MockCoderack()
     slipnet = MockSlipnet()
 
@@ -95,3 +95,30 @@ def test_fizzles_if_there_is_no_initial_description():
     result = rule_scout.run(temperature=0.0)
 
     assert result == Fizzle(FizzleReason.NO_INITIAL_DESCRIPTIONS)
+
+
+def test_fizzles_if_there_is_no_modified_object_description():
+    coderack = MockCoderack()
+    slipnet = MockSlipnet()
+
+    workspace = Mock()
+    workspace.all_replacements_found.return_value = True
+
+    initial_object = Mock()
+    initial_description = Mock()
+    initial_description.conceptual_depth = 0.5
+    initial_object.rule_initial_string_descriptions = [initial_description]
+    initial_object.correspondence = None
+    workspace.initial_string.get_changed_objects.return_value = [initial_object]
+
+    modified_object = Mock()
+    modified_object.extrinsic_descriptions = []
+    modified_object.rule_modified_string_descriptions = []
+    initial_object.replacement.target = modified_object
+
+    rule_scout = RuleScout(
+        urgency_bin=0, coderack=coderack, workspace=workspace, slipnet=slipnet
+    )
+    result = rule_scout.run(temperature=0.0)
+
+    assert result == Fizzle(FizzleReason.NO_MODIFIED_DESCRIPTIONS)

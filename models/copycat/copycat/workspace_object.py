@@ -53,9 +53,20 @@ class WorkspaceObject:
         return [
             d
             for d in self.descriptions
-            if d.facet.is_active
+            if d.facet.is_active()
             and self.is_distinguished_by(d.descriptor)
             and not (d.facet.name == "object_category")
+        ]
+
+    @property
+    def rule_modified_string_descriptions(self):
+        return [
+            d
+            for d in self.descriptions
+            if d.facet.is_active()
+            and self.is_distinguished_by(d.descriptor)
+            and d.facet.name != "string_position_category"
+            and d.facet.name != "object_category"
         ]
 
     def is_leftmost_in_string(self) -> bool:

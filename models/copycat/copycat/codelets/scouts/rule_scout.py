@@ -130,6 +130,8 @@ class RuleScout(Scout):
             modified_object.extrinsic_descriptions
             + modified_object.rule_modified_string_descriptions
         )
+        if not candidates:
+            return None
         probabilities = temperature_adjust_list(
             [c.conceptual_depth for c in candidates], temperature
         )
