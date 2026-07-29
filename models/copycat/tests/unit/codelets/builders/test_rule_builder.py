@@ -45,3 +45,30 @@ def test_fizzles_if_existing_rule_wins(monkeypatch):
 
     assert result == Fizzle(FizzleReason.INCOMPATIBLE_STRUCTURES_WON)
     assert slipnet.activate_called == 0
+
+
+def test_replaces_rule_if_existing_rule_loses(monkeypatch):
+    slipnet = MockSlipnet()
+    workspace = MockWorkspace()
+    workspace.rule = Mock()
+    rule = Mock()
+    builder = RuleBuilder(Mock(), Mock(), workspace, slipnet, rule)
+    monkeypatch.setattr(
+        rule_builder, "structure_beats_structures", lambda *_, **__: True
+    )
+    result = builder.run(temperature=0.0)
+
+    assert result == Finish()
+    assert slipnet.activate_called == 3
+
+
+def succeeds_if_there_is_no_existing_rule(monkeypatch):
+    slipnet = MockSlipnet()
+    workspace = MockWorkspace()
+    workspace.rule = None
+    rule = Mock()
+    builder = RuleBuilder(Mock(), Mock(), workspace, slipnet, rule)
+    result = builder.run(temperature=0.0)
+
+    assert result == Finish()
+    assert slipnet.activate_called == 3
