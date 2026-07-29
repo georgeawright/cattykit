@@ -37,6 +37,9 @@ class FizzleReason(StrEnum):
     NOT_ALL_CONCEPT_MAPPINGS_RELEVANT = (
         "Not all concept mappings are relevant to the proposed correspondence"
     )
+    NOT_ALL_REPLACEMENTS_FOUND = "Not all replacements have been found"
+    NO_INTIAL_DESCRIPTIONS = "No initial descriptions"
+    NO_MODIFIED_DESCRIPTIONS = "No modified descriptions"
 
 
 @dataclass(frozen=True)

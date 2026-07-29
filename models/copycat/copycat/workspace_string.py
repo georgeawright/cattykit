@@ -186,3 +186,6 @@ class WorkspaceString:
             and obj.right_bond.direction_category == direction_category
         )
         return bond_count / (len(self.non_string_spanning_objects) - 1)
+
+    def get_changed_objects(self) -> List["WorkspaceObject"]:
+        return [l for l in self.letters if l.is_changed_letter]
