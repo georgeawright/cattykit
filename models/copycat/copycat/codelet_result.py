@@ -42,6 +42,9 @@ class FizzleReason(StrEnum):
     NO_MODIFIED_DESCRIPTIONS = "No modified descriptions"
     LETTER_ALREADY_HAS_REPLACEMENT = "Letter already has replacement"
     RULE_ALREADY_EXISTS = "Rule already exists"
+    NO_RULE_IN_WORKSPACE = "There is no rule in the workspace"
+    TEMPERATURE_TOO_HIGH = "The temperature is too high"
+    NO_CHANGED_OBJECT = "No changed object"
 
 
 @dataclass(frozen=True)
