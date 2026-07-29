@@ -1,8 +1,7 @@
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 
-from copycat.codelets.builders import correspondence_builder
 from copycat.codelets.builders import CorrespondenceBuilder
 from copycat.codelet_result import Finish, Fizzle, FizzleReason
 
@@ -177,5 +176,43 @@ def test_fizzles_if_not_all_concept_mappings_relevant():
     )
     result = builder.run(temperature=0.0)
     assert result == Fizzle(FizzleReason.NOT_ALL_CONCEPT_MAPPINGS_RELEVANT)
+    assert correspondence.source.correspondence is None
+    assert correspondence.target.correspondence is None
+
+
+def test_fizzles_if_incompatible_correspondences_win():
+    slipnet = MockSlipnet()
+    workspace = MockWorkspace()
+
+    mapping_1 = Mock()
+    mapping_1.is_relevant.return_value = True
+    mapping_2 = Mock()
+    mapping_1.is_relevant.return_value = True
+
+    correspondence = MagicMock()
+    correspondence.total_strength = 0
+    correspondence.__len__.return_value = 2
+    correspondence.source = Mock()
+    correspondence.source.correspondence = None
+    correspondence.target = Mock()
+    correspondence.target.correspondence = None
+    correspondence.concept_mappings = [mapping_1, mapping_2]
+    workspace.objects += [correspondence.source, correspondence.target]
+
+    incompatible_correspondence = MagicMock()
+    incompatible_correspondence.is_incompatible_argumentwise_with.return_value = True
+    incompatible_correspondence.total_strength = 1
+    incompatible_correspondence.__len__.return_value = 10
+    workspace.correspondences.append(incompatible_correspondence)
+
+    builder = CorrespondenceBuilder(
+        urgency_bin=0,
+        coderack=Mock(),
+        slipnet=slipnet,
+        workspace=workspace,
+        proposed_correspondence=correspondence,
+    )
+    result = builder.run(temperature=0.0)
+    assert result == Fizzle(FizzleReason.INCOMPATIBLE_STRUCTURES_WON)
     assert correspondence.source.correspondence is None
     assert correspondence.target.correspondence is None

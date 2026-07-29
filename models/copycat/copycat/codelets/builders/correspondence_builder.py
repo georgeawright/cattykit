@@ -50,7 +50,8 @@ class CorrespondenceBuilder(Builder):
             return Fizzle(FizzleReason.NOT_ALL_CONCEPT_MAPPINGS_RELEVANT)
         incompatible_correspondences = self._get_incompatible_correspondences()
         for incompatible_correspondence in incompatible_correspondences:
-            # larger groups should be preferred over smaller groups and letters
+            # correspondences between large groups preferred over
+            # correspondences between small groups or letters
             fight_result = structure_beats_structures(
                 self.proposed_correspondence,
                 len(self.proposed_correspondence),
