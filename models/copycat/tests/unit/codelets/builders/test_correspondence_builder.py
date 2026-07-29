@@ -149,3 +149,33 @@ def test_deletes_proposal_augments_existing_correspondence_and_fizzles():
     assert result == Fizzle(FizzleReason.STRUCTURE_ALREADY_EXISTS)
     assert correspondence.source.correspondence is None
     assert correspondence.target.correspondence is None
+
+
+def test_fizzles_if_not_all_concept_mappings_relevant():
+    slipnet = MockSlipnet()
+    workspace = MockWorkspace()
+
+    mapping_1 = Mock()
+    mapping_1.is_relevant.return_value = True
+    mapping_2 = Mock()
+    mapping_1.is_relevant.return_value = False
+
+    correspondence = Mock()
+    correspondence.source = Mock()
+    correspondence.source.correspondence = None
+    correspondence.target = Mock()
+    correspondence.target.correspondence = None
+    correspondence.concept_mappings = [mapping_1, mapping_2]
+    workspace.objects += [correspondence.source, correspondence.target]
+
+    builder = CorrespondenceBuilder(
+        urgency_bin=0,
+        coderack=Mock(),
+        slipnet=slipnet,
+        workspace=workspace,
+        proposed_correspondence=correspondence,
+    )
+    result = builder.run(temperature=0.0)
+    assert result == Fizzle(FizzleReason.NOT_ALL_CONCEPT_MAPPINGS_RELEVANT)
+    assert correspondence.source.correspondence is None
+    assert correspondence.target.correspondence is None
