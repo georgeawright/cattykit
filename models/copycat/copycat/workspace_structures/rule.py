@@ -1,5 +1,7 @@
-from typing import Optional
+from __future__ import annotations
+from typing import List, Optional
 
+from copycat.concept_mapping import ConceptMapping
 from copycat.slipnode import Slipnode
 from copycat.workspace_structure import WorkspaceStructure
 
@@ -47,3 +49,17 @@ class Rule(WorkspaceStructure):
 
     def specifies_change(self) -> bool:
         return self.descriptor_1 is not None
+
+    def apply_slippages(self, slippages: List[ConceptMapping]) -> Rule:
+        def _slip(slipnode):
+            return None if slipnode is None else slipnode.apply_slippages(slippages)
+
+        return Rule(
+            _slip(self.object_category_1),
+            _slip(self.descriptor_1_facet),
+            _slip(self.descriptor_1),
+            _slip(self.object_category_2),
+            _slip(self.descriptor_2),
+            _slip(self.replaced_description_type),
+            _slip(self.relation),
+        )
