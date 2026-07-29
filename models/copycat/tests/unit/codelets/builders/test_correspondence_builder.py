@@ -17,6 +17,8 @@ class MockWorkspace:
         self.break_correspondence_called = 0
         self.break_rule_called = 0
         self.existing_correspondence = None
+        self.rule = None
+        self.slippages = [Mock(), Mock()]
 
     def get_existing_correspondence(self, correspondence):
         return self.existing_correspondence
@@ -292,6 +294,48 @@ def test_fizzles_if_incompatible_group_wins():
     incompatible_group = Mock()
     incompatible_group.total_strength = 1
     target_bond.group = incompatible_group
+
+    builder = CorrespondenceBuilder(
+        urgency_bin=0,
+        coderack=Mock(),
+        slipnet=slipnet,
+        workspace=workspace,
+        proposed_correspondence=correspondence,
+    )
+    result = builder.run(temperature=0.0)
+    assert result == Fizzle(FizzleReason.INCOMPATIBLE_STRUCTURES_WON)
+    assert correspondence.source.correspondence is None
+    assert correspondence.target.correspondence is None
+
+
+def test_fizzles_if_incompatible_rule_wins():
+    slipnet = MockSlipnet()
+    workspace = MockWorkspace()
+
+    mapping_1 = Mock()
+    mapping_1.is_relevant.return_value = True
+    mapping_2 = Mock()
+    mapping_1.is_relevant.return_value = True
+
+    correspondence = MagicMock()
+    correspondence.total_strength = 0.1
+    correspondence.__len__.return_value = 2
+    correspondence.source = Mock()
+    correspondence.source.is_changed_letter = True
+    correspondence.source.correspondence = None
+    correspondence.target = Mock()
+    correspondence.target.correspondence = None
+    correspondence.target.relevant_descriptions = [Mock()]
+    correspondence.concept_mappings = [mapping_1, mapping_2]
+    workspace.objects += [correspondence.source, correspondence.target]
+
+    correspondence.source.is_leftmost_in_string.return_value = False
+    correspondence.source.is_rightmost_in_string.return_value = False
+    correspondence.target.is_leftmost_in_string.return_value = False
+    correspondence.target.is_rightmost_in_string.return_value = False
+
+    workspace.rule = Mock()
+    workspace.rule.total_strength = 1
 
     builder = CorrespondenceBuilder(
         urgency_bin=0,
