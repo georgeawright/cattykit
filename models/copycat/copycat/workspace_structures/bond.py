@@ -29,6 +29,7 @@ class Bond(WorkspaceStructure):
         self.bond_facet = bond_facet
         self.from_object_descriptor = from_object_descriptor
         self.to_object_descriptor = to_object_descriptor
+        self.group = None
 
     def __len__(self):
         """Returns the number of letters spanned by the bond.
