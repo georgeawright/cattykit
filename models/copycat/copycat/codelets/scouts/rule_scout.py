@@ -43,6 +43,7 @@ class RuleScout(Scout):
         self._propose_rule(
             initial_object, initial_description, modified_object, modified_description
         )
+        return Finish()
 
     def _propose_rule(
         self,
@@ -136,7 +137,7 @@ class RuleScout(Scout):
             [c.conceptual_depth for c in candidates], temperature
         )
         choice = random.choices(candidates, weights=probabilities, k=1)[0]
-        if choice.is_extrinsic_description:
+        if isinstance(choice, ExtrinsicDescription):
             related_descriptor = initial_description.descriptor.get_related_node(
                 choice.relation
             )

@@ -5,6 +5,7 @@ import pytest
 from copycat.codelet_result import Finish, Fizzle, FizzleReason
 from copycat.codelets.scouts import RuleScout
 from copycat.codelets.strength_testers import RuleStrengthTester
+from copycat.workspace_structures import ExtrinsicDescription
 
 
 class MockCoderack:
@@ -122,3 +123,36 @@ def test_fizzles_if_there_is_no_modified_object_description():
     result = rule_scout.run(temperature=0.0)
 
     assert result == Fizzle(FizzleReason.NO_MODIFIED_DESCRIPTIONS)
+
+
+def test_proposes_relation_rule_if_modified_description_is_extrinsic():
+    coderack = MockCoderack()
+    slipnet = MockSlipnet()
+
+    workspace = Mock()
+    workspace.all_replacements_found.return_value = True
+
+    initial_object = Mock()
+    initial_description = Mock()
+    initial_description.conceptual_depth = 0.5
+    initial_object.rule_initial_string_descriptions = [initial_description]
+    initial_object.correspondence = None
+    workspace.initial_string.get_changed_objects.return_value = [initial_object]
+
+    modified_object = Mock()
+    extrinsic_description_relation = Mock()
+    extrinsic_description_relation.conceptual_depth = 0.5
+    modified_description = ExtrinsicDescription(
+        extrinsic_description_relation, Mock(), Mock()
+    )
+    modified_object.extrinsic_descriptions = [modified_description]
+    modified_object.rule_modified_string_descriptions = []
+    initial_object.replacement.target = modified_object
+    initial_description.descriptor.get_related_node.return_value = None
+
+    rule_scout = RuleScout(
+        urgency_bin=0, coderack=coderack, workspace=workspace, slipnet=slipnet
+    )
+    result = rule_scout.run(temperature=0.0)
+
+    assert result == Finish()
