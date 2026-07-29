@@ -1,17 +1,20 @@
+from typing import Optional
+
+from copycat.slipnode import Slipnode
 from copycat.workspace_structure import WorkspaceStructure
 
 
 class Rule(WorkspaceStructure):
     def __init__(
         self,
-        object_category_1,
-        descriptor_1_facet,
-        descriptor_1,
-        object_category_2,
-        descriptor_2,
-        replaced_description_type,
-        relation,
-        structure_category,
+        object_category_1: Optional[Slipnode] = None,
+        descriptor_1_facet: Optional[Slipnode] = None,
+        descriptor_1: Optional[Slipnode] = None,
+        object_category_2: Optional[Slipnode] = None,
+        descriptor_2: Optional[Slipnode] = None,
+        replaced_description_type: Optional[Slipnode] = None,
+        relation: Optional[Slipnode] = None,
+        structure_category: Optional[Slipnode] = None,
     ):
         self.object_category_1 = object_category_1
         self.descriptor_1_facet = descriptor_1_facet
@@ -40,3 +43,9 @@ class Rule(WorkspaceStructure):
             other.replaced_description_type,
             other.relation,
         )
+
+    def expresses_relation(self) -> bool:
+        return self.relation is not None
+
+    def specifies_change(self) -> bool:
+        return self.descriptor_1 is not None
