@@ -5,7 +5,7 @@ from copycat.codelets.builder import Builder
 from copycat.concept_mapping import ConceptMapping
 from copycat.tools import structure_beats_structures
 from copycat.workspace_objects import Group, Letter
-from copycat.workspace_structures import Correspondence
+from copycat.workspace_structures import Bond, Correspondence
 
 
 class CorrespondenceBuilder(Builder):
@@ -151,7 +151,7 @@ class CorrespondenceBuilder(Builder):
             or c.is_incompatible_boundarywise_with(self.proposed_correspondence)
         ]
 
-    def _get_incompatible_bond(self) -> Optional["Bond"]:
+    def _get_incompatible_bond(self) -> Optional[Bond]:
         source_bond = (
             self.proposed_correspondence.from_object.right_bond
             if self.proposed_correspondence.from_object.is_leftmost_in_string()
@@ -215,11 +215,11 @@ class CorrespondenceBuilder(Builder):
         self.workspace.add_correspondence(self.proposed_correspondence)
         for mapping in (
             self.proposed_correspondence.get_relevant_distinguishing_mappings()
-            + self.proposed_correspondence.get_accessory_concept_mappings()
+            + self.proposed_correspondence.accessory_concept_mappings
         ):
             if not mapping.is_slippage:
                 continue
-            self.proposed_correspondence.add_accessory_concept_mapping(
+            self.proposed_correspondence.accessory_concept_mappings.append(
                 mapping.get_symmetric_version()
             )
         if isinstance(self.proposed_correspondence.from_object, Group) and isinstance(

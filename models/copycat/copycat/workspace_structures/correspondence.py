@@ -7,11 +7,21 @@ from copycat.workspace_structure import WorkspaceStructure
 
 
 class Correspondence(WorkspaceStructure):
-    def __init__(self, workspace, from_object, to_object, concept_mappings):
+    def __init__(
+        self,
+        workspace: "Workspace",
+        from_object: "WorkspaceObject",
+        to_object: "WorkspaceObject",
+        concept_mappings: List[ConceptMapping],
+    ):
         self.workspace = workspace
         self.from_object = from_object
         self.to_object = to_object
         self.concept_mappings = concept_mappings
+        # accessory mappings includes:
+        # - mappings symmetric to those in concept mappings
+        # - bond category and bond facet equivalents to group concept mappings
+        self.accessory_concept_mappings: List[ConceptMapping] = []
 
     @property
     def direction_mapping(self) -> Optional["Slipnode"]:
@@ -152,14 +162,6 @@ class Correspondence(WorkspaceStructure):
             for m in self.concept_mappings
             if m.is_relevant() and m.is_distinguishing()
         ]
-
-    def get_accessory_concept_mappings(self) -> List[ConceptMapping]:
-        # TODO
-        pass
-
-    def add_accessory_concept_mapping(self, mapping: ConceptMapping):
-        # TODO
-        pass
 
     def is_internally_coherent(self) -> bool:
         """Returns True if there is any pair of relevant-distinguishing mappings
