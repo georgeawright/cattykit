@@ -26,7 +26,7 @@ class RuleBuilder(Builder):
         )
         self.proposed_rule = proposed_rule
 
-    def rule(self, temperature: float) -> CodeletResult:
+    def run(self, temperature: float) -> CodeletResult:
         if (
             self.workspace.rule is not None
             and self.workspace.rule == self.proposed_rule
