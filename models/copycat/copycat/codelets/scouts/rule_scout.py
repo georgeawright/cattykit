@@ -1,11 +1,13 @@
+from math import sqrt
 import random
 from typing import List, Optional
 
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.scout import Scout
+from copycat.codelets.strength_testers import RuleStrengthTester
 from copycat.tools import temperature_adjust_list
 from copycat.workspace_object import WorkspaceObject
-from copycat.workspace_structures import Description
+from copycat.workspace_structures import Description, ExtrinsicDescription, Rule
 
 
 class RuleScout(Scout):
@@ -49,8 +51,49 @@ class RuleScout(Scout):
         modified_object: Optional[WorkspaceObject],
         modified_description: Optional[Description],
     ):
-        # TODO
-        pass
+        object_category_node = self.slipnet["object_category"]
+        if (
+            initial_object is None
+            and initial_description is None
+            and modified_object is None
+            and modified_description is None
+        ):
+            proposed_rule = Rule()
+        elif isinstance(modified_description, ExtrinsicDescription):
+            proposed_rule = Rule(
+                object_category_1=initial_object.get_descriptor(object_category_node),
+                descriptor_1_facet=initial_description.facet,
+                descriptor_1=initial_description,
+                object_category_2=modified_object.get_descriptor(object_category_node),
+                replaced_description_type=modified_description.description_type_related,
+                relation=modified_description.relation,
+            )
+        else:
+            proposed_rule = Rule(
+                object_category_1=initial_object.get_descriptor(object_category_node),
+                descriptor_1_facet=initial_description.facet,
+                descriptor_1=initial_description,
+                object_category_2=modified_object.get_descriptor(object_category_node),
+                replaced_description_type=modified_description.facet,
+                descriptor_2=modified_description.descriptor,
+            )
+        if initial_description is None:
+            urgency = 1.0
+        else:
+            urgency = sqrt(
+                initial_description.conceptual_depth / 2
+                + modified_description.conceptual_depth / 2
+            )  # square root prevents overly low urgencies for low conceptual depths
+        urgency_level = self.coderack.get_urgency_level_from_activation(urgency)
+        self.coderack.post(
+            RuleStrengthTester(
+                urgency_bin=urgency_level,
+                coderack=self.coderack,
+                slipnet=self.slipnet,
+                workspace=self.workspace,
+                proposed_rule=proposed_rule,
+            ),
+        )
 
     def _get_initial_description(
         self, initial_object: WorkspaceObject, temperature: float

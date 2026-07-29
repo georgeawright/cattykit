@@ -14,7 +14,6 @@ class Rule(WorkspaceStructure):
         descriptor_2: Optional[Slipnode] = None,
         replaced_description_type: Optional[Slipnode] = None,
         relation: Optional[Slipnode] = None,
-        structure_category: Optional[Slipnode] = None,
     ):
         self.object_category_1 = object_category_1
         self.descriptor_1_facet = descriptor_1_facet
@@ -23,7 +22,6 @@ class Rule(WorkspaceStructure):
         self.descriptor_2 = descriptor_2
         self.replaced_description_type = replaced_description_type
         self.relation = relation
-        self.structure_category = structure_category
 
     def __eq__(self, other):
         return (
