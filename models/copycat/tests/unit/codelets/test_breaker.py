@@ -33,3 +33,15 @@ def test_fizzles_if_structure_too_strong():
     result = breaker.run(temperature=1.0)
 
     assert result == Fizzle(FizzleReason.STRUCTURE_TOO_STRONG)
+
+
+def test_succeeds_if_structure_weak():
+    structure = Mock()
+    structure.total_weakness = 1.0
+    workspace = Mock()
+    workspace.structures = [structure]
+
+    breaker = Breaker(Mock(), Mock(), workspace, Mock())
+    result = breaker.run(temperature=1.0)
+
+    assert result == Finish()
