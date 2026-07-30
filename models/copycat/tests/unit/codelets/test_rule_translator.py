@@ -72,3 +72,23 @@ def test_fizzles_if_there_is_no_changed_object(monkeypatch):
 
     assert result == Fizzle(FizzleReason.NO_CHANGED_OBJECT)
     assert workspace.translated_rule is None
+
+
+def test_sets_translated_rule(monkeypatch):
+    workspace = Mock()
+    changed_object = Mock(correspondence=None)
+    workspace.initial_string.changed_objects = [changed_object]
+    rule = Mock()
+    rule.specifies_change.return_value = True
+    workspace.rule = rule
+    workspace.translated_rule = None
+
+    monkeypatch.setattr(
+        RuleTranslator, "_get_answer_temperature_threshold", lambda *_, **__: 0.5
+    )
+
+    translator = RuleTranslator(Mock(), Mock(), workspace, Mock())
+    result = translator.run(temperature=0.0)
+
+    assert result == Finish()
+    assert workspace.translated_rule is not None
