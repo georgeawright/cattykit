@@ -22,7 +22,7 @@ class RuleTranslator(Codelet):
     def run(self, temperature: float) -> CodeletResult:
         if self.workspace.rule is None:
             return Fizzle(FizzleReason.NO_RULE_IN_WORKSPACE)
-        if self.workspace.rule.no_change:
+        if not self.workspace.rule.specifies_change():
             self.workspace.translated_rule = Rule()
             return Finish()
         answer_temperature_threshold = self._get_answer_temperature_threshold()
