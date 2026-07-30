@@ -45,6 +45,9 @@ class FizzleReason(StrEnum):
     NO_RULE_IN_WORKSPACE = "There is no rule in the workspace"
     TEMPERATURE_TOO_HIGH = "The temperature is too high"
     NO_CHANGED_OBJECT = "No changed object"
+    TEMPERATURE_TOO_LOW = "The temperature is too low"
+    NO_STRUCTURES = "No structures to choose from"
+    STRUCTURE_TOO_STRONG = "Structure too strong"
 
 
 @dataclass(frozen=True)
