@@ -19,7 +19,7 @@ from copycat import Copycat
 )
 def test_update_temperature(rule_strength, workspace_unhappiness, expected):
     workspace = SimpleNamespace(total_unhappiness=workspace_unhappiness)
-    copycat = Copycat(None, None, workspace, None, None, None)
+    copycat = Copycat(None, None, workspace, None, None, None, None)
     copycat.translated_rule = SimpleNamespace(total_strength=rule_strength)
     copycat._update_temperature()
     assert copycat.temperature == pytest.approx(expected)
