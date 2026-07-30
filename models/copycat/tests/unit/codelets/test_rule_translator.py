@@ -35,3 +35,21 @@ def test_makes_translated_rule_null_rule_if_rule_has_no_change():
     assert workspace.translated_rule.descriptor_2 is None
     assert workspace.translated_rule.replaced_description_type is None
     assert workspace.translated_rule.relation is None
+
+
+def fizzles_if_temperature_is_too_high(monkeypatch):
+    workspace = Mock()
+    rule = Mock()
+    rule.specifies_change.return_value = True
+    workspace.rule = rule
+    workspace.translated_rule = None
+
+    monkeypatch.setattr(
+        RuleBuilder, "_get_answer_temperature_threshold", lambda *_, **__: 0.5
+    )
+
+    translator = RuleTranslator(Mock(), Mock(), workspace, Mock())
+    result = translator.run(temperature=0.6)
+
+    assert result == Fizzle(FizzleReason.TEMPERATURE_TOO_HIGH)
+    assert workspace.translated_rule is None
