@@ -54,7 +54,8 @@ class Workspace:
         self.unreplaced_objects: List[WorkspaceObject] = []
         self.replacements: List[Replacement] = []
         self.rule: Optional[Rule] = None
-        self.snag_structure_list: List[WorkspaceStructure] = []
+        self.translated_rule: Optional[Rule] = None
+        self.snag_objects: List[WorkspaceObject] = []
 
     @classmethod
     def setup(cls):
@@ -169,9 +170,7 @@ class Workspace:
     def contains_correspondence(self, correspondence) -> bool:
         """Returns True if the workspace contains the correspondence."""
         try:
-            existing_correspondence = self._correspondences[
-                correspondence.source.id
-            ]
+            existing_correspondence = self._correspondences[correspondence.source.id]
         except KeyError:
             return False
         return existing_correspondence == correspondence
@@ -179,9 +178,7 @@ class Workspace:
     def get_existing_correspondence(self, correspondence) -> Optional[Correspondence]:
         """Returns the existing correspondence between two objects if it exists."""
         try:
-            existing_correspondence = self._correspondences[
-                correspondence.source.id
-            ]
+            existing_correspondence = self._correspondences[correspondence.source.id]
         except KeyError:
             return None
         if existing_correspondence == correspondence:

@@ -2,7 +2,7 @@ import json
 import random
 from typing import List
 
-from .build_answer import build_answer
+from .answer_builder import AnswerBuilder
 from .codelets import (
     BottomUpBondScout,
     BottomUpCorrespondenceScout,
@@ -11,6 +11,7 @@ from .codelets import (
 from .coderack import Coderack
 from .coderack_bin import CoderackBin
 from .slipnet import Slipnet
+from .snag_exception import SnagException
 from .workspace import Workspace
 from .workspace_objects import Group, Letter
 from .workspace_string import WorkspaceString
@@ -49,6 +50,7 @@ class Copycat:
         slipnet: Slipnet,
         coderack: Coderack,
         workspace: Workspace,
+        answer_builder: AnswerBuilder,
         time_step_length: int,
         initially_clamped_nodes: List[str],
         initial_slipnode_clamp_time: int,
@@ -56,6 +58,7 @@ class Copycat:
         self.slipnet = slipnet
         self.coderack = coderack
         self.workspace = workspace
+        self.answer_builder = answer_builder
         self.temperature = 1.0
         self.time_step_length = time_step_length
         self.initially_clamped_nodes = initially_clamped_nodes
@@ -87,10 +90,12 @@ class Copycat:
             coderack_json = json.load(f)
         coderack = Coderack.from_json(coderack_json)
         workspace = Workspace.setup()
+        answer_builder = AnswerBuilder(slipnet, workspace)
         return cls(
             slipnet,
             coderack=coderack,
             workspace=workspace,
+            answer_builder=answer_builder,
             time_step_length=hyperparameters["time_step_length"],
             initially_clamped_nodes=hyperparameters["initially_clamped_nodes"],
             initial_slipnode_clamp_time=hyperparameters["initial_slipnode_clamp_time"],
@@ -244,11 +249,14 @@ class Copycat:
                 self._clamp_initially_clamped_nodes()
                 self._post_intial_codelets()
             self.step()
-            if self.translated_rule:
-                self.found_answer = self.build_answer()
-                if self.found_answer:
-                    print(self.answer)
-                    break
+            if self.translated_rule is None:
+                continue
+            try:
+                self.found_answer = self.answer_builder.build()
+                print(self.answer)
+                break
+            except SnagException:
+                self.handle_snag()
 
     def update(self):
         """Update values of workspace structures and slipnet activations."""
