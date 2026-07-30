@@ -26,7 +26,7 @@ class RuleTranslator(Codelet):
             self.workspace.translated_rule = Rule()
             return Finish()
         answer_temperature_threshold = self._get_answer_temperature_threshold()
-        if self.workspace.temperature > answer_temperature_threshold:
+        if temperature > answer_temperature_threshold:
             return Fizzle(FizzleReason.TEMPERATURE_TOO_HIGH)
         try:
             changed_object = self.workspace.initial_string.changed_objects[0]
