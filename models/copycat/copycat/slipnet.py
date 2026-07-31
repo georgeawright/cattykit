@@ -33,13 +33,6 @@ class Slipnet:
         self.node_depth_factors = node_depth_factors
         self.full_activation_threshold = full_activation_threshold
         self.full_activation_probability_exponent = full_activation_probability_exponent
-        self.numbers = [
-            self["one"],
-            self["two"],
-            self["three"],
-            self["four"],
-            self["five"],
-        ]
 
     @classmethod
     def create(
@@ -118,6 +111,10 @@ class Slipnet:
 
     def __getitem__(self, node_id):
         return self.nodes[self.node_index_lookup[node_id]]
+
+    @property
+    def numbers(self) -> List[Slipnode]:
+        return [self["one"], self["two"], self["three"], self["four"], self["five"]]
 
     def get_label_node(self, source: Slipnode, target: Slipnode) -> Optional[Slipnode]:
         """Returns the node representing the label of the link from source to target.
