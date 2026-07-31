@@ -166,7 +166,15 @@ class AnswerBuilder:
     def _get_unmodified_letters(
         self, objects_to_change: List[WorkspaceObject]
     ) -> List[Letter]:
-        raise NotImplementedError
+        return [
+            Letter(
+                self.workspace.answer_string,
+                letter.get_descriptor("letter_category"),
+                letter.left_position,
+            )
+            for letter in self.workspace.target_string.letters
+            if not [obj for obj in objects_to_change if letter in obj.letters]
+        ]
 
     def _adjust_letter_positions(self, answer_letters: List[Letter]) -> List[Letter]:
         raise NotImplementedError
