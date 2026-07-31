@@ -172,6 +172,11 @@ class AnswerBuilder:
         raise NotImplementedError
 
     def _get_new_descriptor(
-        self, obj: WorkspaceObject, descriptor: Slipnode
+        self, obj: WorkspaceObject, description_type: Slipnode
     ) -> Slipnode:
-        raise NotImplementedError
+        old_descriptor = obj.get_descriptor(description_type)
+        if old_descriptor is None:
+            return None
+        if not self.workspace.translated_rule.expresses_relation():
+            return self.workspace.translated_rule.descriptor_2
+        return old_descriptor.get_related_node(self.workspace.translated_rule.relation)
