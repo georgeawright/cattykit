@@ -5,7 +5,7 @@ from copycat.slipnode import Slipnode
 from copycat.snag_exception import SnagException
 from copycat.workspace import Workspace
 from copycat.workspace_object import WorkspaceObject
-from copycat.workspace_objects import Letter
+from copycat.workspace_objects import Group, Letter
 from copycat.workspace_structures import Description
 
 
@@ -70,6 +70,43 @@ class AnswerBuilder:
     def _get_modified_letters(
         self, obj: WorkspaceObject, description_type: Slipnode
     ) -> List[Letter]:
+        if isinstance(obj, Letter):
+            return self._get_modified_letters_from_letter(obj, description_type)
+        return self._get_modified_letters_from_group(obj, description_type)
+
+    def _get_modified_letters_from_letter(
+        self, letter: Letter, description_type: Slipnode
+    ) -> List[Letter]:
+        modified_letters = []
+        new_descriptor = self._get_new_descriptor(letter, description_type)
+        if new_descriptor is None:
+            self.workspace.snag_objects.append(letter)
+            raise SnagException
+        if description_type == self.slipnet["letter_category"]:
+            new_letter = Letter(
+                self.workspace.answer_string, new_descriptor, letter.left_position
+            )
+            modified_letters.append(new_letter)
+        else:
+            self.workspace.snag_objects.append(letter)
+            raise SnagException
+        return modified_letters
+
+    def _get_modified_letters_from_group(
+        self, group: Group, description_type: Slipnode
+    ) -> List[Letter]:
+        """If letter category is directed, modify all letters.
+        If length is directed, add or subtract letters."""
+        modified_letters = []
+        if description_type == self.slipnet["letter_category"]:
+            return self._get_modified_letters_from_letter_group(group)
+        return self._get_modified_letters_from_length_group(group)
+
+    def _get_modified_letters_from_letter_group(self, group: Group) -> List[Letter]:
+        pass
+
+    def _get_modified_letters_from_length_group(self, group: Group) -> List[Letter]:
+        """Original source notes this may not work if group contains groups."""
         pass
 
     def _get_unmodified_letters(
