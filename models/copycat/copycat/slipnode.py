@@ -33,6 +33,12 @@ class Slipnode:
         self.incoming_links: List["Sliplink"] = []
         self.codelets: List["Codelet"] = []
 
+    def __int__(self):
+        try:
+            return {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5}[self.name]
+        except KeyError:
+            raise ValueError("Slipnode does not represent an integer category")
+
     @property
     def depth_factor(self) -> float:
         return 1 / self.conceptual_depth if self.conceptual_depth > 0 else 0

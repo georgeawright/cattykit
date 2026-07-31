@@ -33,6 +33,13 @@ class Slipnet:
         self.node_depth_factors = node_depth_factors
         self.full_activation_threshold = full_activation_threshold
         self.full_activation_probability_exponent = full_activation_probability_exponent
+        self.numbers = [
+            self["one"],
+            self["two"],
+            self["three"],
+            self["four"],
+            self["five"],
+        ]
 
     @classmethod
     def create(
