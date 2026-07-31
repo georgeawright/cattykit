@@ -13,6 +13,8 @@ class AnswerBuilder:
     def __init__(self, slipnet: Slipnet, workspace: Workspace):
         self.slipnet = slipnet
         self.workspace = workspace
+        self.changed_length_group: Optional[Group] = None
+        self.amount_length_changed = 0
 
     def build(self):
         objects_to_change = self._get_objects_to_change()
@@ -22,7 +24,7 @@ class AnswerBuilder:
             for obj in self.workspace.target_string.objects
             if obj in objects_to_change
         ] + self._get_unmodified_letters(objects_to_change)
-        if self.workspace.changed_length_group:
+        if self.changed_length_group:
             answer_letters = self._adjust_letter_positions(answer_letters)
         self.workspace.answer_string.letters = answer_letters
 
@@ -97,22 +99,79 @@ class AnswerBuilder:
     ) -> List[Letter]:
         """If letter category is directed, modify all letters.
         If length is directed, add or subtract letters."""
-        modified_letters = []
         if description_type == self.slipnet["letter_category"]:
             return self._get_modified_letters_from_letter_group(group)
         return self._get_modified_letters_from_length_group(group)
 
     def _get_modified_letters_from_letter_group(self, group: Group) -> List[Letter]:
-        pass
+        modified_letters = []
+        for letter in group.letters:
+            new_descriptor = self._get_new_descriptor(
+                letter, self.slipnet["letter_category"]
+            )
+            if new_descriptor is None:
+                self.workspace.snag_objects.append(letter)
+                raise SnagException
+            new_letter = Letter(
+                self.workspace.answer_string, new_descriptor, letter.left_position
+            )
+            modified_letters.append(new_letter)
+        return modified_letters
 
     def _get_modified_letters_from_length_group(self, group: Group) -> List[Letter]:
         """Original source notes this may not work if group contains groups."""
-        pass
+        modified_letters = []
+        self.changed_length_group = group
+        new_descriptor = self._get_new_descriptor(group, self.slipnet["length"])
+        if new_descriptor not in self.slipnet.numbers or any(
+            [isinstance(member, Group) for member in group.objects]
+            # snags due to probably not working with nested groups
+        ):
+            self.workspace.snag_objects.append(group)
+            raise SnagException
+        self.amount_length_changed = int(new_descriptor) - int(
+            group.get_descriptor(self.slipnet["length"])
+        )
+        rightwards = (
+            group.direction_category is None
+            or group.direction_category == self.slipnet["right"]
+        )
+        if rightwards:
+            first_letter = group.string.letters[group.left_position]
+            new_position = first_letter.left_position
+        else:
+            first_letter = group.string.letters[group.right_position]
+            new_position = first_letter.left_position + self.amount_length_changed
+        new_letter = Letter(
+            self.workspace.answer_string,
+            first_letter.get_descriptor("letter_category"),
+            new_position,
+        )
+        modified_letters.append(new_letter)
+        new_position = new_letter.left_position
+        for i in range(1, 1 - int(new_descriptor)):
+            new_position = new_position + (1 if rightwards else -1)
+            new_letter_category = group.group_category.iterator(
+                new_letter.get_descriptor("letter_category")
+            )
+            if new_letter_category is None:
+                self.workspace.snag_objects.append(new_letter)
+                raise SnagException
+            new_letter = Letter(
+                self.workspace.answer_string, new_letter_category, new_position
+            )
+            modified_letters.append(new_letter)
+        return modified_letters
 
     def _get_unmodified_letters(
         self, objects_to_change: List[WorkspaceObject]
     ) -> List[Letter]:
-        pass
+        raise NotImplementedError
 
     def _adjust_letter_positions(self, answer_letters: List[Letter]) -> List[Letter]:
-        pass
+        raise NotImplementedError
+
+    def _get_new_descriptor(
+        self, obj: WorkspaceObject, descriptor: Slipnode
+    ) -> Slipnode:
+        raise NotImplementedError
