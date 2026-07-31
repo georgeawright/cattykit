@@ -19,13 +19,19 @@ class AnswerBuilder:
     def build(self):
         objects_to_change = self._get_objects_to_change()
         description_type = self.workspace.translated_rule.replaced_description_type
-        answer_letters = [
+        modified_letters = [
             self._get_modified_letters(obj, description_type)
             for obj in self.workspace.target_string.objects
             if obj in objects_to_change
-        ] + self._get_unmodified_letters(objects_to_change)
-        if self.changed_length_group:
-            answer_letters = self._adjust_letter_positions(answer_letters)
+        ]
+        unmodified_letters = self._get_unmodified_letters(objects_to_change)
+        answer_letters = (
+            modified_letters + unmodified_letters
+            if not self.changed_length_group
+            else self._letters_with_adjusted_positions(
+                modified_letters, unmodified_letters
+            )
+        )
         self.workspace.answer_string.letters = answer_letters
 
     def _get_objects_to_change(self) -> List[WorkspaceObject]:
@@ -176,8 +182,18 @@ class AnswerBuilder:
             if not [obj for obj in objects_to_change if letter in obj.letters]
         ]
 
-    def _adjust_letter_positions(self, answer_letters: List[Letter]) -> List[Letter]:
-        raise NotImplementedError
+    def _letters_with_adjusted_positions(
+        self, modified_letters: List[Letter], unmodified_letters: List[Letter]
+    ) -> List[Letter]:
+        for letter in modified_letters + unmodified_letters:
+            if not (
+                letter in modified_letters
+                and letter.left_position > self.changed_length_group.right_position
+            ):
+                continue
+            letter.left_position += self.amount_length_changed
+            letter.right_position = letter.left_position + self.amount_length_changed
+        return modified_letters + unmodified_letters
 
     def _get_new_descriptor(
         self, obj: WorkspaceObject, description_type: Slipnode
