@@ -19,7 +19,7 @@ class WorkspaceStructure:
         raise NotImplementedError("Subclasses must implement this method")
 
     def calculate_total_strength(self):
-        (
+        return (
             self.internal_strength * self.internal_strength
             + self.external_strength * (1 - self.internal_strength)
         )
