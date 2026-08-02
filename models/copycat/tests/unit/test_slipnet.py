@@ -15,7 +15,7 @@ def test_get_node_activation():
     node_index_lookup = {node.name: index for index, node in enumerate(nodes)}
     node_activations = np.array([node.activation for node in nodes])
     slipnet = Slipnet(
-        nodes, None, node_index_lookup, node_activations, None, None, None, 0.55, 3
+        nodes, None, node_index_lookup, node_activations, None, None, None, 1.0, 0.5, 3
     )
 
     assert 1.0 == slipnet.get_node_activation("cat")
@@ -148,10 +148,11 @@ def test_activate_node_from_workspace():
         node_activation_buffers,
         None,
         None,
-        0.55,
+        1.0,
+        0.5,
         3,
     )
-    slipnet.activate_node_from_workspace("cat", 1.0)
+    slipnet.activate_node_from_workspace("cat")
 
     assert 0.0 == node_activations[0]
     assert 1.0 == node_activation_buffers[0]

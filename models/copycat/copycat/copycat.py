@@ -78,6 +78,7 @@ class Copycat:
         slipnet = Slipnet.from_json(
             slipnet_json,
             DESCRIPTION_TESTERS,
+            workspace_activation=hyperparameters["workspace_activation"],
             full_activation_threshold=hyperparameters["full_activation_threshold"],
             full_activation_probability_exponent=hyperparameters[
                 "full_activation_probability_exponent"

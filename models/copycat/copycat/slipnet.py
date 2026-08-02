@@ -18,6 +18,8 @@ class Slipnet:
         activation_buffers: np.ndarray,  # buffers for pending updates
         clamped_nodes: np.ndarray,  # nodes which should be clamped at full activation
         node_depth_factors: np.ndarray,  # the reciprocal of nodes' conceptual depth
+        # the amount of activation to add to nodes from the workspace
+        workspace_activation: float,
         # nodes with activation above threshold probabilistically jump to full activation
         full_activation_threshold: float,
         # probability(jumping to full activation) = activation ** exponent
@@ -31,6 +33,7 @@ class Slipnet:
         self.activation_buffers = activation_buffers
         self.clamped_nodes = clamped_nodes
         self.node_depth_factors = node_depth_factors
+        self.workspace_activation = workspace_activation
         self.full_activation_threshold = full_activation_threshold
         self.full_activation_probability_exponent = full_activation_probability_exponent
 
@@ -39,7 +42,8 @@ class Slipnet:
         cls,
         nodes: List[Slipnode],
         links: List[Sliplink],
-        full_activation_threshold: float = 0.55,
+        workspace_activation: float = 1.0,
+        full_activation_threshold: float = 0.50,
         full_activation_probability_exponent: int = 3,
     ):
         number_of_nodes = len(nodes)
@@ -61,6 +65,7 @@ class Slipnet:
             activation_buffers,
             clamped_nodes,
             node_depth_factors,
+            workspace_activation,
             full_activation_threshold,
             full_activation_probability_exponent,
         )
@@ -70,6 +75,7 @@ class Slipnet:
         cls,
         json_data: dict,
         description_testers: Dict[str, Callable],
+        workspace_activation: float,
         full_activation_threshold: float,
         full_activation_probability_exponent: int,
         initially_clamped_nodes: List[str],
@@ -102,6 +108,7 @@ class Slipnet:
         slipnet = cls.create(
             list(nodes.values()),
             links,
+            workspace_activation,
             full_activation_threshold,
             full_activation_probability_exponent,
         )
@@ -160,9 +167,9 @@ class Slipnet:
         index = self.node_index_lookup[node_id]
         self.clamped_nodes[index] = False
 
-    def activate_node_from_workspace(self, node_id: str, activation_boost: float):
+    def activate_node_from_workspace(self, node_id: str):
         index = self.node_index_lookup[node_id]
-        self.activation_buffers[index] += activation_boost
+        self.activation_buffers[index] += self.workspace_activation
 
     def get_top_down_codelets(self) -> List["Codelet"]:
         top_down_codelets = []
