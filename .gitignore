@@ -3,5 +3,6 @@
 .envrc
 .venv
 __pycache__
+.DS_store
 
 notes/
