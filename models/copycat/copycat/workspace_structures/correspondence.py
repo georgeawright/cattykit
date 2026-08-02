@@ -1,4 +1,5 @@
 from __future__ import annotations
+import itertools
 from typing import List, Optional
 
 from copycat.concept_mapping import ConceptMapping
@@ -7,6 +8,8 @@ from copycat.workspace_structure import WorkspaceStructure
 
 
 class Correspondence(WorkspaceStructure):
+    _next_id = itertools.count(1)
+
     def __init__(
         self,
         workspace: "Workspace",
@@ -22,6 +25,7 @@ class Correspondence(WorkspaceStructure):
         # - mappings symmetric to those in concept mappings
         # - bond category and bond facet equivalents to group concept mappings
         self.accessory_concept_mappings: List[ConceptMapping] = []
+        self.hash_id = next(Correspondence._next_id)
 
     @property
     def direction_mapping(self) -> Optional["Slipnode"]:

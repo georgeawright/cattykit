@@ -1,11 +1,14 @@
 from __future__ import annotations
 import random
+import itertools
 from typing import Optional
 
 from copycat.workspace_structure import WorkspaceStructure
 
 
 class Bond(WorkspaceStructure):
+    _next_id = itertools.count(1)
+
     def __init__(
         self,
         source: "WorkspaceObject",
@@ -30,6 +33,7 @@ class Bond(WorkspaceStructure):
         self.source_descriptor = source_descriptor
         self.target_descriptor = target_descriptor
         self.group = None
+        self.hash_id = next(Bond._next_id)
 
     def __len__(self):
         """Returns the number of letters spanned by the bond.
@@ -37,7 +41,7 @@ class Bond(WorkspaceStructure):
         otherwise the sum of the lengths of the groups."""
         return len(self.source) + len(self.target)
 
-    def __eq__(self, other):
+    def equates_to(self, other) -> bool:
         return (
             self.source,
             self.target,

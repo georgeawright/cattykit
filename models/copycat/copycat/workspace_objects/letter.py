@@ -1,10 +1,15 @@
+import itertools
+
 from copycat.workspace_object import WorkspaceObject
 
 
 class Letter(WorkspaceObject):
+    _next_id = itertools.count(1)
+
     def __init__(self, string, letter_category, string_position):
         super().__init__(string, string_position, string_position)
         self.letter_category = letter_category
+        self.hash_id = next(Letter._next_id)
 
     def __len__(self):
         return 1

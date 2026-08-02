@@ -1,4 +1,5 @@
 from __future__ import annotations
+import itertools
 from typing import List
 
 from copycat.slipnet import Slipnode
@@ -7,6 +8,8 @@ from copycat.workspace_structure import WorkspaceStructure
 
 
 class Group(WorkspaceObject, WorkspaceStructure):
+    _next_id = itertools.count(1)
+
     def __init__(
         self,
         string: "WorkspaceString",
@@ -22,11 +25,12 @@ class Group(WorkspaceObject, WorkspaceStructure):
         self.bonds = bonds
         self.group_category = group_category
         self.direction_category = direction_category
+        self.hash_id = next(Group._next_id)
 
     def __len__(self):
         return len(self.letters)
 
-    def __eq__(self, other):
+    def equates_to(self, other) -> bool:
         if not isinstance(other, Group):
             return False
         return (

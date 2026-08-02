@@ -34,8 +34,9 @@ def test_left_and_right_neighbours():
     g1 = WorkspaceObject(string=string, left_position=0, right_position=1)
     g2 = WorkspaceObject(string=string, left_position=2, right_position=3)
     string.objects = [l1, l2, l3, l4, g1, g2]
-    for o in string.objects:
+    for i, o in enumerate(string.objects):
         o.intra_string_salience = 1
+        o.hash_id = i
 
     assert set(l1.left_neighbours) == set()
     assert l1.choose_left_neighbor() is None

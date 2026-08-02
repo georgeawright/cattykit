@@ -1,18 +1,22 @@
 from __future__ import annotations
+import itertools
 
 from copycat.slipnode import Slipnode
 from copycat.workspace_structure import WorkspaceStructure
 
 
 class Description(WorkspaceStructure):
+    _next_id = itertools.count(1)
+
     def __init__(
         self, argument_object: "WorkspaceObject", facet: Slipnode, descriptor: Slipnode
     ):
         self.argument_object = argument_object
         self.facet = facet
         self.descriptor = descriptor
+        self.hash_id = next(Description._next_id)
 
-    def __eq__(self, other):
+    def equates_to(self, other) -> bool:
         return (self.argument_object, self.facet, self.descriptor) == (
             other.argument_object,
             other.facet,

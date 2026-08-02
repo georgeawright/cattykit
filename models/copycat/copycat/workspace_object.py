@@ -32,6 +32,9 @@ class WorkspaceObject:
         self.is_new_answer_letter = False
         self.salience_is_clamped = False
 
+    def __hash__(self):
+        return self.hash_id
+
     @property
     def neighbours(self):
         return self.left_neighbours + self.right_neighbours

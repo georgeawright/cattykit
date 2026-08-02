@@ -1,4 +1,5 @@
 from __future__ import annotations
+import itertools
 from typing import List, Optional
 
 from copycat.concept_mapping import ConceptMapping
@@ -7,6 +8,8 @@ from copycat.workspace_structure import WorkspaceStructure
 
 
 class Rule(WorkspaceStructure):
+    _next_id = itertools.count(1)
+
     def __init__(
         self,
         object_category_1: Optional[Slipnode] = None,
@@ -24,8 +27,9 @@ class Rule(WorkspaceStructure):
         self.descriptor_2 = descriptor_2
         self.replaced_description_type = replaced_description_type
         self.relation = relation
+        self.hash_id = next(Rule._next_id)
 
-    def __eq__(self, other):
+    def equates_to(self, other) -> bool:
         return (
             self.object_category_1,
             self.descriptor_1_facet,

@@ -4,6 +4,9 @@ class WorkspaceStructure:
         self.external_strength = 0
         self.total_strength = 0
 
+    def __hash__(self):
+        return self.hash_id
+
     def update_strength_values(self):
         self.internal_strength = self.calculate_internal_strength()
         self.external_strength = self.calculate_external_strength()
