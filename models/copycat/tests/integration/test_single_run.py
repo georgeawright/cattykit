@@ -13,7 +13,12 @@ from copycat.codelets import (
     RuleTranslator,
     WholeStringGroupScout,
 )
-from copycat.codelets.builders import BondBuilder, CorrespondenceBuilder, GroupBuilder, RuleBuilder
+from copycat.codelets.builders import (
+    BondBuilder,
+    CorrespondenceBuilder,
+    GroupBuilder,
+    RuleBuilder,
+)
 from copycat.codelets.strength_testers import (
     BondStrengthTester,
     CorrespondenceStrengthTester,
@@ -140,12 +145,15 @@ def test_single_run(monkeypatch):
         "copycat.codelets.replacement_finder.random.choice",
         lambda _: copycat.workspace.initial_string.letters[2],
     )
-    assert ReplacementFinder(
-        urgency_bin=2,
-        coderack=copycat.coderack,
-        workspace=copycat.workspace,
-        slipnet=copycat.slipnet,
-    ).run(temperature=1.0) == Finish()
+    assert (
+        ReplacementFinder(
+            urgency_bin=2,
+            coderack=copycat.coderack,
+            workspace=copycat.workspace,
+            slipnet=copycat.slipnet,
+        ).run(temperature=1.0)
+        == Finish()
+    )
     changed_letter = copycat.workspace.initial_string.letters[2]
     assert changed_letter.is_changed_letter
     assert changed_letter.replacement.target.letter_category.name == "d"
@@ -206,15 +214,25 @@ def test_single_run(monkeypatch):
     codelet = BottomUpBondScout(2, copycat.coderack, copycat.workspace, copycat.slipnet)
     monkeypatch.setattr(copycat.workspace, "choose_object", lambda *_: a)
     monkeypatch.setattr(a, "choose_neighbor", lambda _: b, raising=False)
-    monkeypatch.setattr(codelet, "_choose_bond_facet", lambda *_: copycat.slipnet["letter_category"])
-    monkeypatch.setattr(codelet, "_get_bond_category", lambda *_: copycat.slipnet["successor"])
+    monkeypatch.setattr(
+        codelet, "_choose_bond_facet", lambda *_: copycat.slipnet["letter_category"]
+    )
+    monkeypatch.setattr(
+        codelet, "_get_bond_category", lambda *_: copycat.slipnet["successor"]
+    )
     assert codelet.run(temperature=0.0) == Finish()
     codelets_run += 1
     assert len(copycat.workspace.initial_string.proposed_bonds) == 1
-    assert copycat.slipnet.activation_buffers[
-        copycat.slipnet.node_index_lookup["a"]
-    ] > 0
-    codelet = next(c for c in copycat.coderack.codelets if isinstance(c, BondStrengthTester))
+    assert (
+        copycat.slipnet.activation_buffers[copycat.slipnet.node_index_lookup["a"]] > 0
+    )
+    codelet = next(
+        c for c in copycat.coderack.codelets if isinstance(c, BondStrengthTester)
+    )
+    monkeypatch.setattr(
+        "copycat.codelets.strength_testers.bond_strength_tester.random.random",
+        lambda: 0.0,
+    )
     assert codelet.run(temperature=0.0) == Finish()
     codelets_run += 1
     assert any(isinstance(c, BondBuilder) for c in copycat.coderack.codelets)
@@ -223,20 +241,29 @@ def test_single_run(monkeypatch):
     codelets_run += 1
     assert len(copycat.workspace.initial_string.bonds) == 1
     assert a.right_bond is b.left_bond
-    assert copycat.slipnet.activation_buffers[
-        copycat.slipnet.node_index_lookup["successor"]
-    ] > 0
+    assert (
+        copycat.slipnet.activation_buffers[
+            copycat.slipnet.node_index_lookup["successor"]
+        ]
+        > 0
+    )
 
     # b-c successor bond: scout, strength tester, builder.
     codelet = BottomUpBondScout(2, copycat.coderack, copycat.workspace, copycat.slipnet)
     monkeypatch.setattr(copycat.workspace, "choose_object", lambda *_: b)
     monkeypatch.setattr(b, "choose_neighbor", lambda _: changed_letter, raising=False)
-    monkeypatch.setattr(codelet, "_choose_bond_facet", lambda *_: copycat.slipnet["letter_category"])
-    monkeypatch.setattr(codelet, "_get_bond_category", lambda *_: copycat.slipnet["successor"])
+    monkeypatch.setattr(
+        codelet, "_choose_bond_facet", lambda *_: copycat.slipnet["letter_category"]
+    )
+    monkeypatch.setattr(
+        codelet, "_get_bond_category", lambda *_: copycat.slipnet["successor"]
+    )
     assert codelet.run(temperature=0.0) == Finish()
     codelets_run += 1
     assert len(copycat.workspace.initial_string.proposed_bonds) == 1
-    codelet = [c for c in copycat.coderack.codelets if isinstance(c, BondStrengthTester)][-1]
+    codelet = [
+        c for c in copycat.coderack.codelets if isinstance(c, BondStrengthTester)
+    ][-1]
     assert codelet.run(temperature=0.0) == Finish()
     codelets_run += 1
     assert isinstance(copycat.coderack.codelets[-1], BondBuilder)
@@ -251,12 +278,18 @@ def test_single_run(monkeypatch):
     codelet = BottomUpBondScout(2, copycat.coderack, copycat.workspace, copycat.slipnet)
     monkeypatch.setattr(copycat.workspace, "choose_object", lambda *_: i)
     monkeypatch.setattr(i, "choose_neighbor", lambda _: j, raising=False)
-    monkeypatch.setattr(codelet, "_choose_bond_facet", lambda *_: copycat.slipnet["letter_category"])
-    monkeypatch.setattr(codelet, "_get_bond_category", lambda *_: copycat.slipnet["successor"])
+    monkeypatch.setattr(
+        codelet, "_choose_bond_facet", lambda *_: copycat.slipnet["letter_category"]
+    )
+    monkeypatch.setattr(
+        codelet, "_get_bond_category", lambda *_: copycat.slipnet["successor"]
+    )
     assert codelet.run(temperature=0.0) == Finish()
     codelets_run += 1
     assert len(copycat.workspace.target_string.proposed_bonds) == 1
-    codelet = [c for c in copycat.coderack.codelets if isinstance(c, BondStrengthTester)][-1]
+    codelet = [
+        c for c in copycat.coderack.codelets if isinstance(c, BondStrengthTester)
+    ][-1]
     assert codelet.run(temperature=0.0) == Finish()
     codelets_run += 1
     assert isinstance(copycat.coderack.codelets[-1], BondBuilder)
@@ -270,12 +303,18 @@ def test_single_run(monkeypatch):
     codelet = BottomUpBondScout(2, copycat.coderack, copycat.workspace, copycat.slipnet)
     monkeypatch.setattr(copycat.workspace, "choose_object", lambda *_: j)
     monkeypatch.setattr(j, "choose_neighbor", lambda _: k, raising=False)
-    monkeypatch.setattr(codelet, "_choose_bond_facet", lambda *_: copycat.slipnet["letter_category"])
-    monkeypatch.setattr(codelet, "_get_bond_category", lambda *_: copycat.slipnet["successor"])
+    monkeypatch.setattr(
+        codelet, "_choose_bond_facet", lambda *_: copycat.slipnet["letter_category"]
+    )
+    monkeypatch.setattr(
+        codelet, "_get_bond_category", lambda *_: copycat.slipnet["successor"]
+    )
     assert codelet.run(temperature=0.0) == Finish()
     codelets_run += 1
     assert len(copycat.workspace.target_string.proposed_bonds) == 1
-    codelet = [c for c in copycat.coderack.codelets if isinstance(c, BondStrengthTester)][-1]
+    codelet = [
+        c for c in copycat.coderack.codelets if isinstance(c, BondStrengthTester)
+    ][-1]
     assert codelet.run(temperature=0.0) == Finish()
     codelets_run += 1
     assert isinstance(copycat.coderack.codelets[-1], BondBuilder)
@@ -286,12 +325,18 @@ def test_single_run(monkeypatch):
     assert j.right_bond is k.left_bond
 
     # Build the initial-string successor group using three codelets.
-    monkeypatch.setattr(copycat.workspace, "get_random_string", lambda: copycat.workspace.initial_string)
-    codelet = WholeStringGroupScout(2, copycat.coderack, copycat.slipnet, copycat.workspace)
+    monkeypatch.setattr(
+        copycat.workspace, "get_random_string", lambda: copycat.workspace.initial_string
+    )
+    codelet = WholeStringGroupScout(
+        2, copycat.coderack, copycat.slipnet, copycat.workspace
+    )
     assert codelet.run(temperature=0.0) == Finish()
     codelets_run += 1
     assert len(copycat.workspace.initial_string.proposed_groups) == 1
-    codelet = [c for c in copycat.coderack.codelets if isinstance(c, GroupStrengthTester)][-1]
+    codelet = [
+        c for c in copycat.coderack.codelets if isinstance(c, GroupStrengthTester)
+    ][-1]
     assert codelet.run(temperature=0.0) == Finish()
     codelets_run += 1
     codelet = [c for c in copycat.coderack.codelets if isinstance(c, GroupBuilder)][-1]
@@ -301,12 +346,18 @@ def test_single_run(monkeypatch):
     assert initial_group.spans_whole_string()
 
     # Build the target-string successor group using three codelets.
-    monkeypatch.setattr(copycat.workspace, "get_random_string", lambda: copycat.workspace.target_string)
-    codelet = WholeStringGroupScout(2, copycat.coderack, copycat.slipnet, copycat.workspace)
+    monkeypatch.setattr(
+        copycat.workspace, "get_random_string", lambda: copycat.workspace.target_string
+    )
+    codelet = WholeStringGroupScout(
+        2, copycat.coderack, copycat.slipnet, copycat.workspace
+    )
     assert codelet.run(temperature=0.0) == Finish()
     codelets_run += 1
     assert len(copycat.workspace.target_string.proposed_groups) == 1
-    codelet = [c for c in copycat.coderack.codelets if isinstance(c, GroupStrengthTester)][-1]
+    codelet = [
+        c for c in copycat.coderack.codelets if isinstance(c, GroupStrengthTester)
+    ][-1]
     assert codelet.run(temperature=0.0) == Finish()
     codelets_run += 1
     codelet = [c for c in copycat.coderack.codelets if isinstance(c, GroupBuilder)][-1]
@@ -316,27 +367,43 @@ def test_single_run(monkeypatch):
     assert target_group.spans_whole_string()
 
     # Propose, test, and build the group-to-group correspondence.
-    monkeypatch.setattr(copycat.workspace.initial_string, "choose_object", lambda **_: initial_group)
-    monkeypatch.setattr(copycat.workspace.target_string, "choose_object", lambda **_: target_group)
-    codelet = BottomUpCorrespondenceScout(2, copycat.coderack, copycat.workspace, copycat.slipnet)
+    monkeypatch.setattr(
+        copycat.workspace.initial_string, "choose_object", lambda **_: initial_group
+    )
+    monkeypatch.setattr(
+        copycat.workspace.target_string, "choose_object", lambda **_: target_group
+    )
+    codelet = BottomUpCorrespondenceScout(
+        2, copycat.coderack, copycat.workspace, copycat.slipnet
+    )
     assert codelet.run(temperature=0.0) == Finish()
     codelets_run += 1
     assert len(copycat.workspace.proposed_correspondences) == 1
-    codelet = [c for c in copycat.coderack.codelets if isinstance(c, CorrespondenceStrengthTester)][-1]
+    codelet = [
+        c
+        for c in copycat.coderack.codelets
+        if isinstance(c, CorrespondenceStrengthTester)
+    ][-1]
     assert codelet.run(temperature=0.0) == Finish()
     codelets_run += 1
-    codelet = [c for c in copycat.coderack.codelets if isinstance(c, CorrespondenceBuilder)][-1]
+    codelet = [
+        c for c in copycat.coderack.codelets if isinstance(c, CorrespondenceBuilder)
+    ][-1]
     assert codelet.run(temperature=0.0) == Finish()
     codelets_run += 1
     assert initial_group.correspondence is target_group.correspondence
 
     # Finish the unchanged replacements with two selected replacement finders.
-    monkeypatch.setattr("copycat.codelets.replacement_finder.random.choice", lambda _: a)
+    monkeypatch.setattr(
+        "copycat.codelets.replacement_finder.random.choice", lambda _: a
+    )
     codelet = ReplacementFinder(2, copycat.coderack, copycat.workspace, copycat.slipnet)
     assert codelet.run(temperature=0.0) == Finish()
     codelets_run += 1
     assert a.replacement.target.letter_category.name == "a"
-    monkeypatch.setattr("copycat.codelets.replacement_finder.random.choice", lambda _: b)
+    monkeypatch.setattr(
+        "copycat.codelets.replacement_finder.random.choice", lambda _: b
+    )
     codelet = ReplacementFinder(2, copycat.coderack, copycat.workspace, copycat.slipnet)
     assert codelet.run(temperature=0.0) == Finish()
     codelets_run += 1
@@ -345,13 +412,21 @@ def test_single_run(monkeypatch):
 
     # Rule scout, strength tester, and builder.
     codelet = RuleScout(2, copycat.coderack, copycat.workspace, copycat.slipnet)
-    monkeypatch.setattr(codelet, "_get_initial_description", lambda *_: next(
-        d for d in changed_letter.descriptions if d.descriptor is copycat.slipnet["rightmost"]
-    ))
+    monkeypatch.setattr(
+        codelet,
+        "_get_initial_description",
+        lambda *_: next(
+            d
+            for d in changed_letter.descriptions
+            if d.descriptor is copycat.slipnet["rightmost"]
+        ),
+    )
     assert codelet.run(temperature=0.0) == Finish()
     codelets_run += 1
     assert any(isinstance(c, RuleStrengthTester) for c in copycat.coderack.codelets)
-    codelet = [c for c in copycat.coderack.codelets if isinstance(c, RuleStrengthTester)][-1]
+    codelet = [
+        c for c in copycat.coderack.codelets if isinstance(c, RuleStrengthTester)
+    ][-1]
     assert codelet.run(temperature=0.0) == Finish()
     codelets_run += 1
     codelet = [c for c in copycat.coderack.codelets if isinstance(c, RuleBuilder)][-1]
@@ -365,5 +440,8 @@ def test_single_run(monkeypatch):
     codelets_run += 1
     assert copycat.workspace.translated_rule.relation is copycat.slipnet["successor"]
     assert AnswerBuilder(copycat.slipnet, copycat.workspace).build() is None
-    assert [letter.letter_category.name for letter in copycat.workspace.answer_string.letters] == ["i", "j", "l"]
+    assert [
+        letter.letter_category.name
+        for letter in copycat.workspace.answer_string.letters
+    ] == ["i", "j", "l"]
     assert codelets_run >= 100
