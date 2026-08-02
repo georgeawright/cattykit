@@ -40,5 +40,6 @@ class BottomUpBondScout(BondScout):
             bond_facet,
             source_descriptor,
             target_descriptor,
+            temperature=temperature,
         )
         return Finish()

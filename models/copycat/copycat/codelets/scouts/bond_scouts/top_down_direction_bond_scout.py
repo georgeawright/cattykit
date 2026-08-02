@@ -55,9 +55,7 @@ class TopDownDirectionBondScout(BondScout):
             [self.workspace.initial_string, self.workspace.target_string],
             weights=[initial_string_score, target_string_score],
         )[0]
-        source = string.choose_object(
-            temperature, lambda x: x.intra_string_salience
-        )
+        source = string.choose_object(temperature, lambda x: x.intra_string_salience)
         if source is None:
             return Fizzle(FizzleReason.NO_OBJECTS)
         target = (
@@ -74,9 +72,7 @@ class TopDownDirectionBondScout(BondScout):
         target_descriptor = target.get_descriptor(bond_facet)
         if source_descriptor is None or target_descriptor is None:
             return Fizzle(FizzleReason.NO_DESCRIPTORS_FOR_BOND_FACET)
-        bond_category = self._get_bond_category(
-            source_descriptor, target_descriptor
-        )
+        bond_category = self._get_bond_category(source_descriptor, target_descriptor)
         if bond_category is None or not bond_category.is_directed():
             return Fizzle(FizzleReason.NO_DIRECTED_BOND_CATEGORY)
         self.propose_bond(
@@ -86,5 +82,6 @@ class TopDownDirectionBondScout(BondScout):
             bond_facet,
             source_descriptor,
             target_descriptor,
+            temperature=temperature,
         )
         return Finish()

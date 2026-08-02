@@ -20,6 +20,7 @@ class BondScout(Scout):
         bond_facet,
         source_descriptor,
         target_descriptor,
+        temperature,
     ):
         self.slipnet.activate_node_from_workspace(source_descriptor.name)
         self.slipnet.activate_node_from_workspace(target_descriptor.name)
@@ -51,7 +52,8 @@ class BondScout(Scout):
                 slipnet=self.slipnet,
                 workspace=self.workspace,
                 proposed_bond=proposed_bond,
-            )
+            ),
+            temperature=temperature,
         )
 
     def _choose_bond_facet(self, source, target) -> Optional[Slipnode]:
