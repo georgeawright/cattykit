@@ -1,3 +1,4 @@
+from unittest.mock import Mock
 from types import SimpleNamespace
 from typing import NamedTuple
 
@@ -174,10 +175,10 @@ def test_add_get_and_delete_group():
 
 def test_choose_from_leftmost_objects():
     workspace_string = WorkspaceString()
-    a = SimpleNamespace(id="a", is_leftmost=True, relative_importance=0.1)
-    b = SimpleNamespace(id="b", is_leftmost=False, relative_importance=0.1)
-    c = SimpleNamespace(id="c", is_leftmost=False, relative_importance=0.1)
-    abc = SimpleNamespace(
+    a = Mock(id="a", is_leftmost=True, relative_importance=0.1)
+    b = Mock(id="b", is_leftmost=False, relative_importance=0.1)
+    c = Mock(id="c", is_leftmost=False, relative_importance=0.1)
+    abc = Mock(
         left_object=a,
         left_position=0,
         right_position=2,
