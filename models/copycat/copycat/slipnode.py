@@ -1,4 +1,5 @@
 from __future__ import annotations
+from math import sqrt
 import random
 from typing import Callable, List, Optional
 
@@ -42,6 +43,20 @@ class Slipnode:
     @property
     def depth_factor(self) -> float:
         return 1 / self.conceptual_depth if self.conceptual_depth > 0 else 0
+
+    @property
+    def degree_of_assocation(self) -> float:
+        """The degree of association encoded in the links this node labels."""
+        return (
+            1 - self.shrunk_link_length
+            if self.is_active()
+            else 1 - self.intrinsic_link_length
+        )
+
+    @property
+    def bond_degree_of_association(self) -> float:
+        """The degree of association bonds of this category have."""
+        return min(1, sqrt(self.degree_of_assocation) * 1.1)
 
     @property
     def outgoing_links(self) -> List["Sliplink"]:
