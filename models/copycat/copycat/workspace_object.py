@@ -72,6 +72,17 @@ class WorkspaceObject:
             and d.facet.name != "object_category"
         ]
 
+    def distance_from(self, other_object) -> int:
+        """Returns the number of letters between this object and another object."""
+        if self.string != other_object.string:
+            raise ValueError("Objects are not in the same string.")
+        if self.right_position < other_object.left_position:
+            return other_object.left_position - self.right_position
+        elif other_object.right_position < self.left_position:
+            return self.left_position - other_object.right_position
+        else:
+            return 0
+
     def is_leftmost_in_string(self) -> bool:
         return self.left_position == 0
 
