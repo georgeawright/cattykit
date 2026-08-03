@@ -40,6 +40,8 @@ class BondBuilder(Builder):
         self.proposed_bond.string.delete_proposed_bond(self.proposed_bond)
         incompatible_bonds = self._get_incompatible_bonds()
         if incompatible_bonds:
+            print(self.proposed_bond)
+            print(incompatible_bonds)
             fight_result = structure_beats_structures(
                 self.proposed_bond, 1, incompatible_bonds, 1, temperature=temperature
             )
@@ -88,9 +90,12 @@ class BondBuilder(Builder):
         self.slipnet.activate_node_from_workspace(self.proposed_bond.bond_category.name)
 
     def _get_incompatible_bonds(self) -> List[Bond]:
-        incompatble_bonds = [self.proposed_bond.left_object.right_bond]
+        incompatble_bonds = []
+        if self.proposed_bond.left_object.right_bond is not None:
+            incompatble_bonds.append(self.proposed_bond.left_object.right_bond)
         if (
-            self.proposed_bond.right_object.left_bond
+            self.proposed_bond.right_object.left_bond is not None
+            and self.proposed_bond.right_object.left_bond
             != self.proposed_bond.left_object.right_bond
         ):
             incompatble_bonds.append(self.proposed_bond.right_object.left_bond)
