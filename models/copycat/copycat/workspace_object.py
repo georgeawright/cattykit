@@ -141,7 +141,7 @@ class WorkspaceObject:
 
     def choose_left_neighbor(self) -> Union[WorkspaceObject, None]:
         """Returns a left-neighbor probabilistically, based on intra-string-salience."""
-        saliences = [o.intra_string_salience for o in self.left_neighbours]
+        saliences = [o.intra_string_salience + 1e-5 for o in self.left_neighbours]
         try:
             return random.choices(self.left_neighbours, weights=saliences, k=1)[0]
         except IndexError:
