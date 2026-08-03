@@ -46,6 +46,7 @@ class RuleStrengthTester(StrengthTester):
                 slipnet=self.slipnet,
                 workspace=self.workspace,
                 proposed_rule=self.proposed_rule,
-            )
+            ),
+            temperature=temperature,
         )
         return Finish()

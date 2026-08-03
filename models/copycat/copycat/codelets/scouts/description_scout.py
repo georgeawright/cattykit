@@ -15,6 +15,7 @@ class DescriptionScout(Scout):
         chosen_object: WorkspaceObject,
         description_type: Slipnode,
         descriptor: Slipnode,
+        temperature: float,
     ):
         proposed_description = Description(chosen_object, description_type, descriptor)
         self.slipnet.activate_node_from_workspace(descriptor.name)
@@ -29,4 +30,5 @@ class DescriptionScout(Scout):
                 workspace=self.workspace,
                 proposed_description=proposed_description,
             ),
+            temperature=temperature,
         )

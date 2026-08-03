@@ -54,6 +54,7 @@ class BondStrengthTester(StrengthTester):
                 slipnet=self.slipnet,
                 workspace=self.workspace,
                 proposed_bond=self.proposed_bond,
-            )
+            ),
+            temperature=temperature,
         )
         return Finish()

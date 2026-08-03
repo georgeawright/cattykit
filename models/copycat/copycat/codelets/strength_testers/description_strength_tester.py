@@ -49,6 +49,7 @@ class DescriptionStrengthTester(StrengthTester):
                 slipnet=self.slipnet,
                 workspace=self.workspace,
                 proposed_description=self.proposed_description,
-            )
+            ),
+            temperature=temperature,
         )
         return Finish()

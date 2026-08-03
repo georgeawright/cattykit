@@ -17,6 +17,7 @@ class GroupScout(Scout):
         bonds: List["Bond"],
         group_category: "Slipnode",
         direction: "Slipnode",
+        temperature: float,
     ):
         string = objects[0].string
         left_object = min(objects, key=lambda o: o.left_position)
@@ -41,7 +42,8 @@ class GroupScout(Scout):
                 slipnet=self.slipnet,
                 workspace=self.workspace,
                 proposed_group=proposed_group,
-            )
+            ),
+            temperature=temperature,
         )
 
     def _choose_workspace_string(

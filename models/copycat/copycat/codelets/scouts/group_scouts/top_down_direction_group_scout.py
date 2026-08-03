@@ -49,6 +49,7 @@ class TopDownDirectionGroupScout(GroupScout):
             bonds=bonds,
             group_category=group_category,
             direction=self.direction_category,
+            temperature=temperature,
         )
         return Finish()
 

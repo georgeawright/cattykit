@@ -54,6 +54,7 @@ class GroupStrengthTester(StrengthTester):
                 slipnet=self.slipnet,
                 workspace=self.workspace,
                 proposed_group=self.proposed_group,
-            )
+            ),
+            temperature=temperature,
         )
         return Finish()

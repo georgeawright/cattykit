@@ -16,7 +16,7 @@ def test_run():
             self.posted_codelets = []
             self.post_called = 0
 
-        def post(self, codelet):
+        def post(self, codelet, temperature):
             self.post_called += 1
             self.posted_codelets.append(codelet)
 

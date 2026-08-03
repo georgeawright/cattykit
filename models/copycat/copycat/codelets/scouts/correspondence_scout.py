@@ -31,11 +31,9 @@ class CorrespondenceScout(Scout):
             return objects_or_fizzle
         # According to original code, this probably isn't right.
         if (
-            self.source.spans_whole_string()
-            and not self.target.spans_whole_string()
+            self.source.spans_whole_string() and not self.target.spans_whole_string()
         ) or (
-            self.target.spans_whole_string()
-            and not self.source.spans_whole_string()
+            self.target.spans_whole_string() and not self.source.spans_whole_string()
         ):
             return Fizzle(FizzleReason.INCOMPATIBLE_OBJECT_SPANS)
         concept_mappings = get_concept_mappings(self.source, self.target)
@@ -83,12 +81,14 @@ class CorrespondenceScout(Scout):
             and not self.slipnet.get_node("opposite").is_active()
         ):
             self.target = self.target.get_flipped_version()
-            concept_mappings = self._get_concept_mappings(
-                self.source, self.target
-            )
+            concept_mappings = self._get_concept_mappings(self.source, self.target)
             target_flipped = True
         self.propose_correspondence(
-            self.source, self.target, concept_mappings, target_flipped
+            self.source,
+            self.target,
+            concept_mappings,
+            target_flipped,
+            temperature=temperature,
         )
         return Finish()
 
@@ -98,6 +98,7 @@ class CorrespondenceScout(Scout):
         target: "WorkspaceObject",
         concept_mappings: List[ConceptMapping],
         target_flipped: bool,
+        temperature: float,
     ):
         proposed_correspondence = Correspondence(
             self.workspace, source, target, concept_mappings
@@ -122,5 +123,6 @@ class CorrespondenceScout(Scout):
                 workspace=self.workspace,
                 proposed_correspondence=proposed_correspondence,
                 target_flipped=target_flipped,
-            )
+            ),
+            temperature=temperature,
         )

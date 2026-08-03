@@ -23,7 +23,7 @@ class RuleScout(Scout):
         if len(changed_objects) > 1:
             raise Exception("Cannot solve problems with more than one changed letter.")
         if not changed_objects:
-            self._propose_rule(None, None, None, None)
+            self._propose_rule(None, None, None, None, temperature=temperature)
             return Finish()
         initial_object = changed_objects[0]
         initial_description = self._get_initial_description(
@@ -41,7 +41,11 @@ class RuleScout(Scout):
         if modified_description is None:
             return Fizzle(FizzleReason.NO_MODIFIED_DESCRIPTIONS)
         self._propose_rule(
-            initial_object, initial_description, modified_object, modified_description
+            initial_object,
+            initial_description,
+            modified_object,
+            modified_description,
+            temperature=temperature,
         )
         return Finish()
 
@@ -51,6 +55,7 @@ class RuleScout(Scout):
         initial_description: Optional[Description],
         modified_object: Optional[WorkspaceObject],
         modified_description: Optional[Description],
+        temperature: float,
     ):
         object_category_node = self.slipnet["object_category"]
         if (
@@ -94,6 +99,7 @@ class RuleScout(Scout):
                 workspace=self.workspace,
                 proposed_rule=proposed_rule,
             ),
+            temperature=temperature,
         )
 
     def _get_initial_description(

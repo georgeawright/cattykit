@@ -48,6 +48,9 @@ class TopDownDescriptionScout(DescriptionScout):
             np.array(possible_descriptors), p=choice_list / choice_list.sum()
         )
         self.propose_description(
-            chosen_object, self.description_type, chosen_descriptor
+            chosen_object,
+            self.description_type,
+            chosen_descriptor,
+            temperature=temperature,
         )
         return Finish()

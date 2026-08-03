@@ -60,6 +60,7 @@ class CorrespondenceStrengthTester(StrengthTester):
                 workspace=self.workspace,
                 proposed_correspondence=self.proposed_correspondence,
                 target_flipped=self.target_flipped,
-            )
+            ),
+            temperature=temperature,
         )
         return Finish()

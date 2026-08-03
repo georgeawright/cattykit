@@ -12,7 +12,7 @@ def test_propose_description():
             self.posted_codelets = []
             self.post_called = 0
 
-        def post(self, codelet):
+        def post(self, codelet, temperature):
             self.post_called += 1
             self.posted_codelets.append(codelet)
 
@@ -37,7 +37,10 @@ def test_propose_description():
         urgency_bin=0, coderack=coderack, slipnet=slipnet, workspace=workspace
     )
     scout.propose_description(
-        chosen_object=Mock(), description_type=Mock(), descriptor=Mock()
+        chosen_object=Mock(),
+        description_type=Mock(),
+        descriptor=Mock(),
+        temperature=0.0,
     )
 
     assert coderack.post_called == 1
