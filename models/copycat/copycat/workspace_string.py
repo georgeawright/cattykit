@@ -99,7 +99,7 @@ class WorkspaceString:
         """Add the only bond between two objects."""
         self.bonds_by_role[bond.source][bond.target] = bond
         self.bonds_by_position[bond.left_object][bond.right_object] = bond
-        if bond.is_sameness_bond:
+        if bond.bond_category.name == "sameness":
             self.bonds_by_role[bond.target][bond.source] = bond
             self.bonds_by_position[bond.left_object][bond.right_object] = bond
 
@@ -107,7 +107,7 @@ class WorkspaceString:
         """Delete the only bond between two objects."""
         self.bonds_by_role[bond.source][bond.target] = None
         self.bonds_by_position[bond.left_object][bond.right_object] = None
-        if bond.is_sameness_bond:
+        if bond.bond_category.name == "sameness":
             self.bonds_by_role[bond.target][bond.source] = None
             self.bonds_by_position[bond.left_object][bond.right_object] = None
 

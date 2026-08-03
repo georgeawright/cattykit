@@ -7,6 +7,17 @@ from copycat.codelets.builders import BondBuilder
 from copycat.codelet_result import Finish, Fizzle, FizzleReason
 
 
+class MockSlipnet:
+    def __init__(self):
+        self.nodes = {"sameness": Mock(), "successor": Mock(), "predecessor": Mock()}
+
+    def __getitem__(self, key):
+        return self.nodes[key]
+
+    def activate_node_from_workspace(self, node_name):
+        pass
+
+
 class MockWorkspace:
     def __init__(self):
         self.objects = []
@@ -49,7 +60,7 @@ def test_run_fizzles_if_argument_objects_no_longer_exist():
     builder = BondBuilder(
         urgency_bin=0,
         coderack=Mock(),
-        slipnet=Mock(),
+        slipnet=MockSlipnet(),
         workspace=workspace,
         proposed_bond=bond,
     )
@@ -72,7 +83,7 @@ def test_run_fizzles_if_bond_has_already_been_built():
     builder = BondBuilder(
         urgency_bin=0,
         coderack=Mock(),
-        slipnet=Mock(),
+        slipnet=MockSlipnet(),
         workspace=workspace,
         proposed_bond=bond,
     )
@@ -92,7 +103,7 @@ def test_fizzles_if_incompatible_bonds_beat_proposed_bond(monkeypatch):
     builder = BondBuilder(
         urgency_bin=0,
         coderack=Mock(),
-        slipnet=Mock(),
+        slipnet=MockSlipnet(),
         workspace=workspace,
         proposed_bond=bond,
     )
@@ -120,7 +131,7 @@ def test_fizzles_if_incompatible_groups_beat_proposed_bond(monkeypatch):
     builder = BondBuilder(
         urgency_bin=0,
         coderack=Mock(),
-        slipnet=Mock(),
+        slipnet=MockSlipnet(),
         workspace=workspace,
         proposed_bond=bond,
     )
@@ -165,7 +176,7 @@ def test_fizzles_if_incompatible_correspondences_beat_proposed_bond(monkeypatch)
     builder = BondBuilder(
         urgency_bin=0,
         coderack=Mock(),
-        slipnet=Mock(),
+        slipnet=MockSlipnet(),
         workspace=workspace,
         proposed_bond=bond,
     )
@@ -214,7 +225,7 @@ def test_builds_bond_and_breaks_incompatible_structures(monkeypatch):
     builder = BondBuilder(
         urgency_bin=0,
         coderack=Mock(),
-        slipnet=Mock(),
+        slipnet=MockSlipnet(),
         workspace=workspace,
         proposed_bond=bond,
     )

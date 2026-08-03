@@ -14,12 +14,13 @@ class MockObject:
         self.incoming_bonds = []
 
 
-class MockBond(NamedTuple):
-    source: MockObject
-    target: MockObject
-    left_object: MockObject
-    right_object: MockObject
-    is_sameness_bond: bool
+class MockBond:
+    def __init__(self, source, target, left_object, right_object, is_sameness_bond):
+        self.source = source
+        self.target = target
+        self.left_object = left_object
+        self.right_object = right_object
+        self.bond_category = Mock(name="sameness" if is_sameness_bond else "successor")
 
 
 class MockGroup(NamedTuple):
