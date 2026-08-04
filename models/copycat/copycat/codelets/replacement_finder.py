@@ -45,7 +45,9 @@ class ReplacementFinder(Codelet):
             )
             if change_relation is not None:
                 modified_letter.extrinsic_descriptions.append(
-                    change_relation, self.slipnet["letter_category"], initial_letter
+                    ExtrinsicDescription(
+                        change_relation, self.slipnet["letter_category"], initial_letter
+                    )
                 )
         replacement = Replacement(initial_letter, modified_letter)
         self.workspace.replacements.append(replacement)
