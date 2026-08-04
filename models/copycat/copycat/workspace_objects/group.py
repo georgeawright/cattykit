@@ -28,7 +28,7 @@ class Group(WorkspaceObject, WorkspaceStructure):
         self.hash_id = next(Group._next_id)
 
     def __repr__(self):
-        letters = [l.letter_category.name for l in self.letters]
+        letters = "".join([letter.letter_category.name for letter in self.letters])
         group_category = self.group_category.name if self.group_category else ""
         direction_category = (
             self.direction_category.name if self.direction_category else ""
