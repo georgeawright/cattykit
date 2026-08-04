@@ -160,12 +160,13 @@ class Slipnet:
         - activation decay according to nodes' conceptual depth
         - probabilistic jumping of node activations
         - clamped nodes remain active."""
-        # TODO: activation buffers need to be added
         self.node_activations = (
             self.node_activations
             + self._spread_activations()
             + self._decay_activations()
+            + self.activation_buffers
         ).clip(0, 1)
+        self.activation_buffers.fill(0)  # reset buffers after applying them
         # here "clamp" is copycat terminology meaning to keep activation held at 1
         self.node_activations[self.clamped_nodes] = 1.0
         self._probabilistically_activate_nodes()
