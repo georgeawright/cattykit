@@ -31,7 +31,10 @@ class AnswerBuilder:
                 modified_letters, unmodified_letters
             )
         )
-        self.workspace.answer_string.letters = answer_letters
+        answer_letters_ordered = [None] * len(answer_letters)
+        for letter in answer_letters:
+            answer_letters_ordered[letter.left_position] = letter
+        self.workspace.answer_string.letters = answer_letters_ordered
 
     def _get_objects_to_change(self) -> List[WorkspaceObject]:
         if not self.workspace.translated_rule.specifies_change():
