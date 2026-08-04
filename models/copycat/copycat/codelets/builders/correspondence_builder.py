@@ -225,11 +225,11 @@ class CorrespondenceBuilder(Builder):
         if isinstance(self.proposed_correspondence.source, Group) and isinstance(
             self.proposed_correspondence.target, Group
         ):
-            for mapping in self.get_concept_mappings(
-                self.correspondence.source,
-                self.correspondence.target,
-                self.correspondence.source.bond_descriptions,
-                self.correspondence.target.bond_descriptions,
+            for mapping in self._get_concept_mappings(
+                self.proposed_correspondence.source,
+                self.proposed_correspondence.target,
+                self.proposed_correspondence.source.bond_descriptions,
+                self.proposed_correspondence.target.bond_descriptions,
             ):
                 self.proposed_correspondence.accessory_concept_mappings.append(mapping)
                 if mapping.is_slippage:
@@ -239,3 +239,24 @@ class CorrespondenceBuilder(Builder):
         for mapping in self.proposed_correspondence.concept_mappings:
             if mapping.label:
                 self.slipnet.activate_node_from_workspace(mapping.label.name)
+
+    def _get_concept_mappings(
+        self, source, target, source_descriptions, target_descriptions
+    ):
+        return [
+            ConceptMapping(
+                description_type_1=desc_1.facet,
+                description_type_2=desc_2.facet,
+                descriptor_1=desc_1.descriptor,
+                descriptor_2=desc_2.descriptor,
+                object_1=source,
+                object_2=target,
+            )
+            for desc_1 in source_descriptions
+            for desc_2 in target_descriptions
+            if desc_1.facet == desc_2.facet
+            and (
+                desc_1.descriptor == desc_2.descriptor
+                or desc_1.descriptor.is_sliplinked_to(desc_2.descriptor)
+            )
+        ]
