@@ -176,9 +176,9 @@ def test_add_get_and_delete_group():
 
 def test_choose_from_leftmost_objects():
     workspace_string = WorkspaceString()
-    a = Mock(id="a", is_leftmost=True, relative_importance=0.1)
-    b = Mock(id="b", is_leftmost=False, relative_importance=0.1)
-    c = Mock(id="c", is_leftmost=False, relative_importance=0.1)
+    a = Mock(id="a", is_leftmost_in_string=lambda: True, relative_importance=0.1)
+    b = Mock(id="b", is_leftmost_in_string=lambda: False, relative_importance=0.1)
+    c = Mock(id="c", is_leftmost_in_string=lambda: False, relative_importance=0.1)
     abc = Mock(
         left_object=a,
         left_position=0,
