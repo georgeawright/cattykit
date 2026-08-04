@@ -29,6 +29,16 @@ class Rule(WorkspaceStructure):
         self.relation = relation
         self.hash_id = next(Rule._next_id)
 
+    def __repr__(self):
+        return (
+            f"Replace "
+            f"{self.descriptor_1_facet}({self.object_category_1})"
+            f"={self.descriptor_1}"
+            f" with "
+            f"{self.replaced_description_type}({self.object_category_2})"
+            f"={self.descriptor_2}"
+        )
+
     def equates_to(self, other) -> bool:
         return (
             self.object_category_1,
