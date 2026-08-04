@@ -29,13 +29,10 @@ class CorrespondenceStrengthTester(StrengthTester):
     def run(self, temperature: float) -> CodeletResult:
         if self.proposed_correspondence.source not in self.workspace.objects:
             return Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
-        if (
-            self.proposed_correspondence.target not in self.workspace.objects
-            and not (
-                self.target_flipped
-                and self.proposed_correspondence.target.get_flipped_version()
-                in self.workspace.objects
-            )
+        if self.proposed_correspondence.target not in self.workspace.objects and not (
+            self.target_flipped
+            and self.proposed_correspondence.target.get_flipped_version()
+            in self.workspace.objects
         ):
             return Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
         self.proposed_correspondence.update_strength_values()
@@ -46,10 +43,10 @@ class CorrespondenceStrengthTester(StrengthTester):
             self.workspace.delete_proposed_correspondence(self.proposed_correspondence)
             return Fizzle(FizzleReason.PROPOSED_STRUCTURE_TOO_WEAK)
         for mapping in self.proposed_correspondence.concept_mappings:
-            self.slipnet.activate_node_from_workspace(mapping.description_type_1)
-            self.slipnet.activate_node_from_workspace(mapping.descriptor_1)
-            self.slipnet.activate_node_from_workspace(mapping.description_type_2)
-            self.slipnet.activate_node_from_workspace(mapping.descriptor_2)
+            self.slipnet.activate_node_from_workspace(mapping.description_type_1.name)
+            self.slipnet.activate_node_from_workspace(mapping.descriptor_1.name)
+            self.slipnet.activate_node_from_workspace(mapping.description_type_2.name)
+            self.slipnet.activate_node_from_workspace(mapping.descriptor_2.name)
         urgency = self.proposed_correspondence.total_strength
         urgency_bin = self.coderack.get_urgency_level_from_activation(urgency)
         self.coderack.post(
