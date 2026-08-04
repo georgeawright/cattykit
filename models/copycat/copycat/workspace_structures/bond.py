@@ -38,7 +38,7 @@ class Bond(WorkspaceStructure):
     def __repr__(self):
         return (
             f"{self.source} -- "
-            f"{self.bond_facet.name} {self.bond_category.name} {self.direction_category.name}"
+            f"{self.bond_facet} {self.bond_category} {self.direction_category}"
             f" --> {self.target}"
         )
 

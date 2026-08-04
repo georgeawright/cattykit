@@ -54,6 +54,17 @@ class Slipnet:
         node_depth_factors = np.array([node.depth_factor for node in nodes])
         adjacency_table = np.zeros((number_of_nodes, number_of_nodes))
         for link in links:
+            link.target.incoming_links.append(link)
+            if link.is_category_link:
+                link.source.category_links.append(link)
+            if link.is_instance_link:
+                link.source.instance_links.append(link)
+            if link.is_has_property_link:
+                link.source.has_property_links.append(link)
+            if link.is_lateral_sliplink:
+                link.source.lateral_sliplinks.append(link)
+            if link.is_lateral_non_sliplink:
+                link.source.lateral_non_sliplinks.append(link)
             i = node_index_lookup[link.source.name]
             j = node_index_lookup[link.target.name]
             adjacency_table[i, j] = link.intrinsic_degree_of_association
@@ -98,10 +109,15 @@ class Slipnet:
             Sliplink(
                 source=nodes[link_data["source"]],
                 target=nodes[link_data["target"]],
-                type_node=nodes[link_data.get("type_node")]
-                if link_data.get("type_node") is not None
+                label=nodes[link_data.get("label")]
+                if link_data.get("label") is not None
                 else None,
                 fixed_length=link_data.get("fixed_length"),
+                is_category_link=link_data.get("is_category_link", False),
+                is_instance_link=link_data.get("is_instance_link", False),
+                is_has_property_link=link_data.get("is_has_property_link", False),
+                is_lateral_sliplink=link_data.get("is_lateral_sliplink", False),
+                is_lateral_non_sliplink=link_data.get("is_lateral_non_sliplink", False),
             )
             for link_data in json_data["links"]
         ]

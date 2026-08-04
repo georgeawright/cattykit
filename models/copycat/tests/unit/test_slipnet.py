@@ -88,22 +88,40 @@ def test_update_activations_no_jumping(
     dog_is_a_animal_degree_of_association,
     expected_end_state,
 ):
-    cat_node = SimpleNamespace(name="cat", depth_factor=depth_factor)
-    dog_node = SimpleNamespace(name="dog", depth_factor=depth_factor)
-    animal_node = SimpleNamespace(name="animal", depth_factor=depth_factor)
-    is_a_node = SimpleNamespace(name="is-a", depth_factor=depth_factor)
+    cat_node = SimpleNamespace(
+        name="cat", depth_factor=depth_factor, incoming_links=[], category_links=[]
+    )
+    dog_node = SimpleNamespace(
+        name="dog", depth_factor=depth_factor, incoming_links=[], category_links=[]
+    )
+    animal_node = SimpleNamespace(
+        name="animal", depth_factor=depth_factor, incoming_links=[]
+    )
+    is_a_node = SimpleNamespace(
+        name="is-a", depth_factor=depth_factor, incoming_links=[]
+    )
 
     cat_is_a_animal = SimpleNamespace(
         source=cat_node,
         target=animal_node,
         type_node=is_a_node,
         intrinsic_degree_of_association=cat_is_a_animal_degree_of_association,
+        is_category_link=True,
+        is_instance_link=False,
+        is_has_property_link=False,
+        is_lateral_sliplink=False,
+        is_lateral_non_sliplink=False,
     )
     dog_is_a_animal = SimpleNamespace(
         source=dog_node,
         target=animal_node,
         type_node=is_a_node,
         intrinsic_degree_of_association=dog_is_a_animal_degree_of_association,
+        is_category_link=True,
+        is_instance_link=False,
+        is_has_property_link=False,
+        is_lateral_sliplink=False,
+        is_lateral_non_sliplink=False,
     )
 
     nodes = [cat_node, dog_node, animal_node, is_a_node]

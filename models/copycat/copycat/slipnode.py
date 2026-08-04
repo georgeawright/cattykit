@@ -34,6 +34,9 @@ class Slipnode:
         self.incoming_links: List["Sliplink"] = []
         self.codelets: List["Codelet"] = []
 
+    def __repr__(self):
+        return self.name.upper()
+
     def __int__(self):
         try:
             return {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5}[self.name]
