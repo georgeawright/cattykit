@@ -203,4 +203,6 @@ class AnswerBuilder:
             return None
         if not self.workspace.translated_rule.expresses_relation():
             return self.workspace.translated_rule.descriptor_2
-        return old_descriptor.get_related_node(self.workspace.translated_rule.relation)
+        return old_descriptor.get_related_node(
+            self.workspace.translated_rule.relation.name
+        )
