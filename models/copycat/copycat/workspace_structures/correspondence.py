@@ -55,6 +55,17 @@ class Correspondence(WorkspaceStructure):
         """Returns the number of letters spanned by the objects."""
         return len(self.source) + len(self.target)
 
+    def equates_to(self, other) -> bool:
+        return (
+            self.source,
+            self.target,
+            self.concept_mappings,
+        ) == (
+            other.source,
+            other.target,
+            other.concept_mappings,
+        )
+
     def get_other_object(self, obj):
         """Returns the other object in the correspondence."""
         if obj == self.source:

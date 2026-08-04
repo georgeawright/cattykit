@@ -48,9 +48,10 @@ class Workspace:
         self.target_string = target_string
         self.answer_string = answer_string
         self._proposed_correspondences: Dict[
-            str, Dict[str, List[Correspondence]]
+            WorkspaceObject,
+            Dict[WorkspaceObject, List[Optional[Correspondence]]],
         ] = defaultdict(lambda: defaultdict(list))
-        self._correspondences: Dict[str, Correspondence] = {}
+        self._correspondences: Dict[WorkspaceObject, Optional[Correspondence]] = {}
         self.unreplaced_objects: List[WorkspaceObject] = []
         self.replacements: List[Replacement] = []
         self.rule: Optional[Rule] = None
@@ -142,46 +143,44 @@ class Workspace:
         for obj in self.objects:
             obj.update_values()
 
-    def add_proposed_correspondence(self, correspondence):
+    def add_proposed_correspondence(self, c: Correspondence):
         """Add to a maintained list of proposed correspondences between two objects."""
-        source_id = correspondence.source.id
-        target_id = correspondence.target.id
-        self._proposed_correspondences[source_id][target_id].append(correspondence)
+        self._proposed_correspondences[c.source][c.target].append(c)
 
-    def delete_proposed_correspondence(self, correspondence):
+    def delete_proposed_correspondence(self, c: Correspondence):
         """Delete from a maintained list of proposed correspondences between two objects."""
-        source_id = correspondence.source.id
-        target_id = correspondence.target.id
-        self._proposed_correspondences[source_id][target_id].remove(correspondence)
+        self._proposed_correspondences[c.source][c.target].remove(c)
 
-    def add_correspondence(self, correspondence):
+    def add_correspondence(self, c: Correspondence):
         """Add the only correspondence between two objects."""
-        self._correspondences[correspondence.source.id] = correspondence
+        self._correspondences[c.source] = c
 
-    def break_correspondence(self, correspondence):
-        correspondence.source.correspondence = None
-        correspondence.target.correspondence = None
-        self.delete_correspondence(correspondence)
+    def break_correspondence(self, c: Correspondence):
+        c.source.correspondence = None
+        c.target.correspondence = None
+        self.delete_correspondence(c)
 
-    def delete_correspondence(self, correspondence):
+    def delete_correspondence(self, c: Correspondence):
         """Delete the only correspondence between two objects."""
-        self._correspondences[correspondence.source.id] = None
+        self._correspondences[c.source] = None
 
-    def contains_correspondence(self, correspondence) -> bool:
+    def contains_correspondence(self, c: Correspondence) -> bool:
         """Returns True if the workspace contains the correspondence."""
         try:
-            existing_correspondence = self._correspondences[correspondence.source.id]
+            existing_correspondence = self._correspondences[c.source]
         except KeyError:
             return False
-        return existing_correspondence == correspondence
+        return existing_correspondence.equates_to(c)
 
-    def get_existing_correspondence(self, correspondence) -> Optional[Correspondence]:
+    def get_existing_correspondence(
+        self, c: Correspondence
+    ) -> Optional[Correspondence]:
         """Returns the existing correspondence between two objects if it exists."""
         try:
-            existing_correspondence = self._correspondences[correspondence.source.id]
+            existing_correspondence = self._correspondences[c.source]
         except KeyError:
             return None
-        if existing_correspondence == correspondence:
+        if existing_correspondence.equates_to(c):
             return existing_correspondence
         return None
 

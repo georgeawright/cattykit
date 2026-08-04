@@ -22,8 +22,7 @@ class MockString:
 
 
 class MockObject:
-    def __init__(self, id, string=None):
-        self.id = id
+    def __init__(self, string=None):
         self.string = string
         self.correspondence = None
         self.outgoing_bonds = []
@@ -34,15 +33,16 @@ class MockCorrespondence(NamedTuple):
     source: MockObject
     target: MockObject
 
+    def equates_to(self, other):
+        return self.source == other.source and self.target == other.target
+
 
 def test_add_and_delete_proposed_correspondence():
     workspace = Workspace(None, None, None, None)
     assert 0 == len(workspace.proposed_correspondences)
-    source = MockObject(id="a")
-    target = MockObject(id="b")
-    proposed_correspondence = MockCorrespondence(
-        source=source, target=target
-    )
+    source = MockObject()
+    target = MockObject()
+    proposed_correspondence = MockCorrespondence(source=source, target=target)
     workspace.add_proposed_correspondence(proposed_correspondence)
     assert 1 == len(workspace.proposed_correspondences)
     workspace.delete_proposed_correspondence(proposed_correspondence)
@@ -52,8 +52,8 @@ def test_add_and_delete_proposed_correspondence():
 def test_add_get_and_break_correspondence():
     workspace = Workspace(None, None, None, None)
     assert 0 == len(workspace.correspondences)
-    source = MockObject(id="a")
-    target = MockObject(id="b")
+    source = MockObject()
+    target = MockObject()
     correspondence = MockCorrespondence(source=source, target=target)
     assert False == workspace.contains_correspondence(correspondence)
     workspace.add_correspondence(correspondence)
@@ -68,8 +68,8 @@ def test_add_get_and_break_correspondence():
 def test_break_bond():
     workspace = Workspace(None, None, None, None)
     string = MockString(objects=[])
-    source = MockObject(id="a", string=string)
-    target = MockObject(id="b", string=string)
+    source = MockObject(string=string)
+    target = MockObject(string=string)
     bond = SimpleNamespace(
         source=source,
         target=target,
@@ -86,8 +86,8 @@ def test_break_bond():
 def test_break_group():
     workspace = Workspace(None, None, None, None)
     string = MockString(objects=[])
-    left_object = MockObject(id="a", string=string)
-    right_object = MockObject(id="c", string=string)
+    left_object = MockObject(string=string)
+    right_object = MockObject(string=string)
     group = SimpleNamespace(
         group=None,
         string=string,
