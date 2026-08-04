@@ -6,8 +6,7 @@ from copycat.workspace_structures import Bond
 
 
 class MockLetter:
-    def __init__(self, id, left_position, string):
-        self.id = id
+    def __init__(self, left_position, string):
         self.left_position = left_position
         self.right_position = left_position
         self.string = string
@@ -28,9 +27,9 @@ def test_choose_neighbour():
             return 3
 
     string = MockString()
-    object_0 = MockLetter(id="o0", left_position=0, string=string)
-    object_1 = MockLetter(id="o1", left_position=1, string=string)
-    object_2 = MockLetter(id="o2", left_position=2, string=string)
+    object_0 = MockLetter(left_position=0, string=string)
+    object_1 = MockLetter(left_position=1, string=string)
+    object_2 = MockLetter(left_position=2, string=string)
 
     bond_0_1 = Bond(object_0, object_1, None, None, None, None, None)
     bond_1_2 = Bond(object_1, object_2, None, None, None, None, None)
@@ -46,9 +45,9 @@ def test_choose_neighbour():
     object_2.right_neighbours = []
 
     string.bonds_by_position = {
-        "o0": {"o0": None, "o1": bond_0_1, "o2": None},
-        "o1": {"o0": bond_0_1, "o1": None, "o2": bond_1_2},
-        "o2": {"o0": None, "o1": bond_1_2, "o2": None},
+        object_0: {object_0: None, object_1: bond_0_1, object_2: None},
+        object_1: {object_0: bond_0_1, object_1: None, object_2: bond_1_2},
+        object_2: {object_0: None, object_1: bond_1_2, object_2: None},
     }
 
     assert bond_0_1.choose_neighbour(direction=SimpleNamespace(name="left")) is None
@@ -60,8 +59,8 @@ def test_choose_neighbour():
 
 
 def test_get_flipped_version():
-    object_0 = MockLetter(id="o0", left_position=0, string=None)
-    object_1 = MockLetter(id="o1", left_position=1, string=None)
+    object_0 = MockLetter(left_position=0, string=None)
+    object_1 = MockLetter(left_position=1, string=None)
 
     bond_category = SimpleNamespace(name="bond_category")
     opposite_bond_category = SimpleNamespace(name="opposite_bond_category")
@@ -115,8 +114,8 @@ def test_get_flipped_version():
 def test_calculate_internal_strength(
     source_type, target_type, bond_degree_of_association, bond_facet_name, expected
 ):
-    source = MockLetter(None, 1, None) if source_type == "letter" else MockGroup(1)
-    target = MockLetter(None, 2, None) if target_type == "letter" else MockGroup(2)
+    source = MockLetter(1, None) if source_type == "letter" else MockGroup(1)
+    target = MockLetter(2, None) if target_type == "letter" else MockGroup(2)
     bond_category = SimpleNamespace(
         bond_degree_of_association=bond_degree_of_association
     )
@@ -134,10 +133,10 @@ def test_calculate_external_strength():
 
     string = SimpleNamespace()
 
-    object_0 = MockLetter(id="o0", left_position=0, string=string)
-    object_1 = MockLetter(id="o1", left_position=1, string=string)
-    object_2 = MockLetter(id="o2", left_position=2, string=string)
-    object_3 = MockLetter(id="o3", left_position=3, string=string)
+    object_0 = MockLetter(left_position=0, string=string)
+    object_1 = MockLetter(left_position=1, string=string)
+    object_2 = MockLetter(left_position=2, string=string)
+    object_3 = MockLetter(left_position=3, string=string)
 
     object_0.choose_left_neighbor = lambda: None
     object_1.choose_left_neighbor = lambda: object_0
@@ -161,10 +160,10 @@ def test_calculate_external_strength():
 
     string.bonds = [bond_0_1, bond_1_2, bond_2_3]
     string.bonds_by_position = {
-        "o0": {"o0": None, "o1": bond_0_1, "o2": None, "o3": None},
-        "o1": {"o0": None, "o1": None, "o2": bond_1_2, "o3": None},
-        "o2": {"o0": None, "o1": None, "o2": None, "o3": bond_2_3},
-        "o3": {"o0": None, "o1": None, "o2": None, "o3": None},
+        object_0: {object_0: None, object_1: bond_0_1, object_2: None, object_3: None},
+        object_1: {object_0: None, object_1: None, object_2: bond_1_2, object_3: None},
+        object_2: {object_0: None, object_1: None, object_2: None, object_3: bond_2_3},
+        object_3: {object_0: None, object_1: None, object_2: None, object_3: None},
     }
 
     assert bond_0_1._number_of_local_supporting_bonds() == 1

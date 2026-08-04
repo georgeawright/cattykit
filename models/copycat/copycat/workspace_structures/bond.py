@@ -65,19 +65,17 @@ class Bond(WorkspaceStructure):
             if self.is_leftmost_in_string():
                 return None
             neighbours = [
-                self.string.bonds_by_position[obj.id][self.left_object.id]
+                self.string.bonds_by_position[obj][self.left_object]
                 for obj in self.left_object.left_neighbours
-                if self.string.bonds_by_position[obj.id][self.left_object.id]
-                is not None
+                if self.string.bonds_by_position[obj][self.left_object] is not None
             ]
         elif direction.name == "right":
             if self.is_rightmost_in_string():
                 return None
             neighbours = [
-                self.string.bonds_by_position[self.right_object.id][obj.id]
+                self.string.bonds_by_position[self.right_object][obj]
                 for obj in self.right_object.right_neighbours
-                if self.string.bonds_by_position[self.right_object.id][obj.id]
-                is not None
+                if self.string.bonds_by_position[self.right_object][obj] is not None
             ]
         else:
             raise ValueError(f"Invalid direction: {direction}")
@@ -157,7 +155,7 @@ class Bond(WorkspaceStructure):
         left_object = self.left_object.choose_left_neighbor()
         while left_object is not None:
             slot_sum += 1
-            next_bond = bonds_by_position[left_object.id][right_object.id]
+            next_bond = bonds_by_position[left_object][right_object]
             if (
                 next_bond is not None
                 and next_bond.bond_category == self.bond_category
@@ -171,7 +169,7 @@ class Bond(WorkspaceStructure):
         right_object = self.right_object.choose_right_neighbor()
         while right_object is not None:
             slot_sum += 1
-            next_bond = bonds_by_position[left_object.id][right_object.id]
+            next_bond = bonds_by_position[left_object][right_object]
             if (
                 next_bond is not None
                 and next_bond.bond_category == self.bond_category
