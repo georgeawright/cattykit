@@ -19,6 +19,10 @@ class Description(WorkspaceStructure):
     def __repr__(self):
         return f"{self.facet}({self.argument_object})={self.descriptor}"
 
+    @property
+    def conceptual_depth(self):
+        return self.descriptor.conceptual_depth
+
     def equates_to(self, other) -> bool:
         return (self.argument_object, self.facet, self.descriptor) == (
             other.argument_object,
