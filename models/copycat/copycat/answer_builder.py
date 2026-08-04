@@ -57,16 +57,16 @@ class AnswerBuilder:
             and len(objects_to_change) <= 1
         ):
             return objects_to_change
-        changed_object_correspondence = next(
-            obj for obj in self.workspace.initial_string.objects if obj.is_changed
-        ).correspondence
+        changed_object_correspondence = (
+            self.workspace.initial_string.get_changed_objects()[0].correspondence
+        )
         if (
             changed_object_correspondence is not None
             and changed_object_correspondence.target in objects_to_change
         ):
             return [changed_object_correspondence.target]
         return next(
-            obj
+            [obj]
             for obj in objects_to_change
             if (
                 obj.group is None
