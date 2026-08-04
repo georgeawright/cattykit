@@ -662,6 +662,16 @@ def test_single_run(monkeypatch):
             if d.descriptor is copycat.slipnet["rightmost"]
         ),
     )
+    monkeypatch.setattr(
+        selected_codelet[0],
+        "_get_modified_description",
+        lambda modified_object, *_: next(
+            d
+            for d in modified_object.extrinsic_descriptions
+            if d.description_type_related is copycat.slipnet["letter_category"]
+            and d.relation is copycat.slipnet["successor"]
+        ),
+    )
     copycat.coderack.post(selected_codelet[0], temperature=0.0)
     assert selected_codelet[0].birth_time == 105
     codelet = copycat.coderack.choose(temperature=0.0)
@@ -674,6 +684,19 @@ def test_single_run(monkeypatch):
         for c in copycat.coderack.codelets
         if isinstance(c, RuleStrengthTester) and c.birth_time == 106
     )
+    assert (
+        selected_codelet[0].proposed_rule.descriptor_1_facet
+        is copycat.slipnet["string_position_category"]
+    )
+    assert (
+        selected_codelet[0].proposed_rule.descriptor_1
+        is copycat.slipnet["rightmost"]
+    )
+    assert (
+        selected_codelet[0].proposed_rule.replaced_description_type
+        is copycat.slipnet["letter_category"]
+    )
+    assert selected_codelet[0].proposed_rule.relation is copycat.slipnet["successor"]
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
@@ -687,7 +710,21 @@ def test_single_run(monkeypatch):
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
     assert copycat.coderack.number_of_codelets_run == 108
+    # RIGHTMOST locates the letter to change; LETTER_CATEGORY is what changes.
+    assert (
+        copycat.workspace.rule.descriptor_1_facet
+        is copycat.slipnet["string_position_category"]
+    )
+    assert copycat.workspace.rule.descriptor_1 is copycat.slipnet["rightmost"]
+    assert (
+        copycat.workspace.rule.replaced_description_type
+        is copycat.slipnet["letter_category"]
+    )
     assert copycat.workspace.rule.relation is copycat.slipnet["successor"]
+    assert (
+        repr(copycat.workspace.rule)
+        == "Replace LETTER_CATEGORY of RIGHTMOST LETTER by SUCCESSOR"
+    )
 
     # Translate the rule and let the answer builder apply it.
     selected_codelet[0] = RuleTranslator(

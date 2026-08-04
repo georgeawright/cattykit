@@ -37,7 +37,8 @@ class Rule(WorkspaceStructure):
         rule_second_half = self.relation if self.relation else self.descriptor_2
         return (
             f"Replace "
-            f"{self.descriptor_1_facet} of {self.descriptor_1} {self.object_category_1}"
+            f"{self.replaced_description_type} of "
+            f"{self.descriptor_1} {self.object_category_1}"
             f" by {rule_second_half}"
         )
 
@@ -71,6 +72,7 @@ class Rule(WorkspaceStructure):
             return None if slipnode is None else slipnode.apply_slippages(slippages)
 
         return Rule(
+            self.workspace,
             _slip(self.object_category_1),
             _slip(self.descriptor_1_facet),
             _slip(self.descriptor_1),
