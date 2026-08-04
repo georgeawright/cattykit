@@ -2,6 +2,8 @@ from __future__ import annotations
 import itertools
 from typing import List, Optional
 
+import numpy as np
+
 from copycat.concept_mapping import ConceptMapping
 from copycat.slipnode import Slipnode
 from copycat.workspace_structure import WorkspaceStructure
@@ -12,6 +14,7 @@ class Rule(WorkspaceStructure):
 
     def __init__(
         self,
+        workspace: "Workspace",
         object_category_1: Optional[Slipnode] = None,
         descriptor_1_facet: Optional[Slipnode] = None,
         descriptor_1: Optional[Slipnode] = None,
@@ -20,6 +23,7 @@ class Rule(WorkspaceStructure):
         replaced_description_type: Optional[Slipnode] = None,
         relation: Optional[Slipnode] = None,
     ):
+        self.workspace = workspace
         self.object_category_1 = object_category_1
         self.descriptor_1_facet = descriptor_1_facet
         self.descriptor_1 = descriptor_1
@@ -77,3 +81,44 @@ class Rule(WorkspaceStructure):
             _slip(self.replaced_description_type),
             _slip(self.relation),
         )
+
+    def calculate_internal_strength(self) -> float:
+        if not self.specifies_change():
+            return 1.0
+        source_depth = self.descriptor_1.conceptual_depth
+        target_depth = (
+            self.relation.conceptual_depth
+            if self.expresses_relation()
+            else self.descriptor_2.conceptual_depth
+        )
+        source_changed_object = next(
+            obj
+            for obj in self.workspace.initial_string.objects
+            if obj.is_changed_letter
+        )
+        source_correspondee = source_changed_object.get_correspondee()
+        if source_correspondee is None:
+            shared_descriptor_term = 0
+        else:
+            slipped_descriptors = [
+                d.apply_slippages(
+                    source_correspondee, self.workspace.slippages
+                ).descriptor
+                for d in source_correspondee.get_relevant_descriptions()
+            ]
+            shared_descriptor_term = (
+                1.0 if self.descriptor_1 in slipped_descriptors else 0.0
+            )
+        shared_descriptor_weight = 1 - self.descriptor_1.conceptual_depth**1.4
+        depth_diff = abs(source_depth - target_depth)
+        depth_mean = (source_depth + target_depth) / 2
+        depth_term = depth_mean**1.1
+        diff_term = 1 - depth_diff
+        rule_strength = np.average(
+            [depth_term, diff_term, shared_descriptor_term],
+            weights=[0.18, 0.12, shared_descriptor_weight],
+        )
+        return min(rule_strength, 1.0)
+
+    def calculate_external_strength(self) -> float:
+        return self.internal_strength

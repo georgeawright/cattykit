@@ -173,6 +173,12 @@ class WorkspaceObject:
         ]
         return random.choices(relevant_descriptions, weights=conceptual_depths, k=1)[0]
 
+    def get_correspondee(self) -> Optional[WorkspaceObject]:
+        """Returns the object in the other string that corresponds to this one, if any."""
+        if self.correspondence is None:
+            return None
+        return self.correspondence.get_other_object(self)
+
     def calculate_raw_importance(self) -> float:
         """Returns raw (not relative) importance of the object.
         A function of the number and activation of relevant descriptions.

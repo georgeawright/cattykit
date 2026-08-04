@@ -64,9 +64,10 @@ class RuleScout(Scout):
             and modified_object is None
             and modified_description is None
         ):
-            proposed_rule = Rule()
+            proposed_rule = Rule(self.workspace)
         elif isinstance(modified_description, ExtrinsicDescription):
             proposed_rule = Rule(
+                self.workspace,
                 object_category_1=initial_object.get_descriptor(object_category_node),
                 descriptor_1_facet=initial_description.facet,
                 descriptor_1=initial_description,
@@ -76,6 +77,7 @@ class RuleScout(Scout):
             )
         else:
             proposed_rule = Rule(
+                self.workspace,
                 object_category_1=initial_object.get_descriptor(object_category_node),
                 descriptor_1_facet=initial_description.facet,
                 descriptor_1=initial_description,
