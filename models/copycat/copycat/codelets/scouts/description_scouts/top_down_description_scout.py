@@ -38,14 +38,16 @@ class TopDownDescriptionScout(DescriptionScout):
         )
         if not possible_descriptors:
             return Fizzle(FizzleReason.NO_POSSIBLE_DESCRIPTORS)
-        choice_list = np.array(
+        descriptor_activations = np.array(
             [
                 self.slipnet.get_node_activation(descriptor.name)
                 for descriptor in possible_descriptors
             ]
         )
+        total = descriptor_activations.sum()
+        probabilities = None if total <= 0 else descriptor_activations / total
         chosen_descriptor = np.random.choice(
-            np.array(possible_descriptors), p=choice_list / choice_list.sum()
+            np.array(possible_descriptors), p=probabilities
         )
         self.propose_description(
             chosen_object,
