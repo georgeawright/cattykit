@@ -75,13 +75,13 @@ def test_is_incompatible_structurally_with():
     letter_a_1 = Letter(None, None, 0)
     letter_a_2 = Letter(None, None, 1)
     letter_b = Letter(None, None, 2)
-    group_a_a = Group(None, 0, 1, [letter_a_1, letter_a_2], [], None, None)
-    group_a_b = Group(None, 0, 1, [letter_a_1, letter_b], [], None, None)
+    group_a_a = Group(None, 0, 1, [letter_a_1, letter_a_2], [], None, None, None)
+    group_a_b = Group(None, 0, 1, [letter_a_1, letter_b], [], None, None, None)
     letter_i_1 = Letter(None, None, 0)
     letter_i_2 = Letter(None, None, 1)
     letter_j = Letter(None, None, 2)
-    group_i_i = Group(None, 0, 1, [letter_i_1, letter_i_2], [], None, None)
-    group_i_j = Group(None, 0, 1, [letter_i_1, letter_j], [], None, None)
+    group_i_i = Group(None, 0, 1, [letter_i_1, letter_i_2], [], None, None, None)
+    group_i_j = Group(None, 0, 1, [letter_i_1, letter_j], [], None, None, None)
 
     correspondence_1 = Correspondence(
         None, source=letter_a_1, target=letter_i_1, concept_mappings=[]

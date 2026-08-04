@@ -24,10 +24,12 @@ def test_has_recursive_group_member():
     right_category = SimpleNamespace()
     object1 = WorkspaceObject(string, 0, 1)
     object2 = WorkspaceObject(string, 2, 3)
-    group3 = Group(string, 1, 2, [object2], [], predecessor_category, left_category)
-    group2 = Group(string, 2, 3, [object2], [], succesor_category, right_category)
+    group3 = Group(
+        string, 1, 2, [object2], [], predecessor_category, left_category, None
+    )
+    group2 = Group(string, 2, 3, [object2], [], succesor_category, right_category, None)
     group1 = Group(
-        string, 0, 2, [object1, group3], [], predecessor_category, left_category
+        string, 0, 2, [object1, group3], [], predecessor_category, left_category, None
     )
 
     assert group1.has_recursive_group_member(group1)
@@ -40,7 +42,7 @@ def test_has_recursive_group_member():
 
 
 def test_has_description():
-    group = Group(None, None, None, [], [], None, None)
+    group = Group(None, None, None, [], [], None, None, None)
     description = SimpleNamespace(
         facet=SimpleNamespace(name="test_facet"),
         descriptor=SimpleNamespace(name="test_descriptor"),
@@ -131,17 +133,17 @@ def test_is_distinguished_by(
         )
     }
 
-    sub_group = Group(string, 0, 1, [], [], None, None)
+    sub_group = Group(string, 0, 1, [], [], None, None, None)
     for d in sub_group_descriptors:
         sub_group.descriptions.append(SimpleNamespace(descriptor=slipnodes[d]))
-    group = Group(string, 0, 2, [sub_group], [], None, None)
+    group = Group(string, 0, 2, [sub_group], [], None, None, None)
     sub_group.group = group
     group.descriptions.append(SimpleNamespace(descriptor=slipnodes[descriptor]))
-    super_group = Group(string, 0, 3, [group], [], None, None)
+    super_group = Group(string, 0, 3, [group], [], None, None, None)
     group.group = super_group
     for d in super_group_descriptors:
         super_group.descriptions.append(SimpleNamespace(descriptor=slipnodes[d]))
-    other_group = Group(string, 4, 5, [], [], None, None)
+    other_group = Group(string, 4, 5, [], [], None, None, None)
     for d in other_group_descriptors:
         other_group.descriptions.append(SimpleNamespace(descriptor=slipnodes[d]))
 
@@ -173,7 +175,7 @@ def test_calculate_internal_strength(
     letters = [SimpleNamespace() for _ in range(length)]
     for letter in letters:
         letter.letters = [letter]
-    group = Group(None, 0, 1, letters, [], group_category, None)
+    group = Group(None, 0, 1, letters, [], group_category, None, None)
 
     assert group.calculate_internal_strength() == pytest.approx(expected)
 
@@ -192,7 +194,7 @@ def test_external_strength_is_one_if_spans_whole_string_else_local_support(
     letters = [SimpleNamespace() for _ in range(group_length)]
     for letter in letters:
         letter.letters = [letter]
-    group = Group(string, 0, 1, letters, [], None, None)
+    group = Group(string, 0, 1, letters, [], None, None, None)
 
     assert spans == group.spans_whole_string()
     if spans:
@@ -239,6 +241,7 @@ def test_calculate_external_strength():
         [],
         predecessor_category,
         right_category,
+        None,
     )
     letter_0.group = group_0_1
     letter_1.group = group_0_1
@@ -250,17 +253,12 @@ def test_calculate_external_strength():
         [],
         predecessor_category,
         right_category,
+        None,
     )
     letter_2.group = group_2_3
     letter_3.group = group_2_3
     group_4_5 = Group(
-        string,
-        4,
-        5,
-        [letter_4, letter_5],
-        [],
-        successor_category,
-        left_category,
+        string, 4, 5, [letter_4, letter_5], [], successor_category, left_category, None
     )
     letter_4.group = group_4_5
     letter_5.group = group_4_5
@@ -315,7 +313,7 @@ def test_intra_string_happiness_and_unhappiness():
     letter_3 = MockLetter(id="l3", string_position=2, string=string)
     string.letters = [letter_1, letter_2, letter_3]
 
-    group_1 = Group(string, 0, 3, [letter_1, letter_2, letter_3], [], None, None)
+    group_1 = Group(string, 0, 3, [letter_1, letter_2, letter_3], [], None, None, None)
     string.groups = [group_1]
 
     # group spans whole string so is maximally happy and not unhappy
@@ -323,7 +321,7 @@ def test_intra_string_happiness_and_unhappiness():
     assert group_1.calculate_intra_string_unhappiness() == 0
 
     # no group, no bonds
-    group_2 = Group(string, 0, 2, [letter_1, letter_2], [], None, None)
+    group_2 = Group(string, 0, 2, [letter_1, letter_2], [], None, None, None)
     assert group_2.calculate_intra_string_happiness() == 0
     assert group_2.calculate_intra_string_unhappiness() == 1
 

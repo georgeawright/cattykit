@@ -50,6 +50,7 @@ class TopDownCategoryGroupScout(GroupScout):
             bonds=bonds,
             group_category=group_category,
             direction=direction,
+            bond_category=bond_category,
             temperature=temperature,
         )
         return Finish()

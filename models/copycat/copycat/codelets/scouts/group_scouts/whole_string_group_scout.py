@@ -53,6 +53,7 @@ class WholeStringGroupScout(GroupScout):
             bonds=list(bonds),
             group_category=group_category,
             direction=direction_category,
+            bond_category=bond_category,
             temperature=temperature,
         )
         return Finish()

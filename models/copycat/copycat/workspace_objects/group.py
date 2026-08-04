@@ -19,12 +19,16 @@ class Group(WorkspaceObject, WorkspaceStructure):
         bonds: List["Bond"],
         group_category: Slipnode,
         direction_category: Slipnode,
+        bond_category: Slipnode,
+        bond_facet: Optional[Slipnode] = None,
     ):
         super().__init__(string, left_position, right_position)
         self.objects = objects
         self.bonds = bonds
         self.group_category = group_category
         self.direction_category = direction_category
+        self.bond_category = bond_category
+        self.bond_facet = bond_facet
         self.hash_id = next(Group._next_id)
 
     def __repr__(self):

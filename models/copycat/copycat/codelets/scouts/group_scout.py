@@ -17,12 +17,12 @@ class GroupScout(Scout):
         bonds: List["Bond"],
         group_category: "Slipnode",
         direction: "Slipnode",
+        bond_category: "Slipnode",
         temperature: float,
     ):
         string = objects[0].string
         left_object = min(objects, key=lambda o: o.left_position)
         right_object = max(objects, key=lambda o: o.right_position)
-        bond_category = group_category.get_related_node("bond_category")
         proposed_group = Group(
             string=string,
             left_position=left_object.left_position,
@@ -31,6 +31,7 @@ class GroupScout(Scout):
             bonds=bonds,
             group_category=group_category,
             direction_category=direction,
+            bond_category=bond_category,
         )
         string.add_proposed_group(proposed_group)
         urgency = bond_category.bond_degree_of_association
