@@ -1,3 +1,13 @@
+"""
+This test approximates the run of Copycat described on pages 84-95
+of Mitchell 1993 'Analogy Making as Perception'
+where Copycat responds to the problem
+abc -> abd ==> ijk -> ?
+with the answer
+ijl
+In this test, codelets are selected deterministically in order to
+test interactions between codelets and workspace work correctly
+"""
 import numpy as np
 import pytest
 from random import choice as random_choice
@@ -689,8 +699,7 @@ def test_single_run(monkeypatch):
         is copycat.slipnet["string_position_category"]
     )
     assert (
-        selected_codelet[0].proposed_rule.descriptor_1
-        is copycat.slipnet["rightmost"]
+        selected_codelet[0].proposed_rule.descriptor_1 is copycat.slipnet["rightmost"]
     )
     assert (
         selected_codelet[0].proposed_rule.replaced_description_type
