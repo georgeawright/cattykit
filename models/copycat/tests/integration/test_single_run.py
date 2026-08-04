@@ -304,10 +304,14 @@ def test_single_run(monkeypatch):
     monkeypatch.setattr(copycat.workspace, "choose_object", lambda *_: b)
     monkeypatch.setattr(b, "choose_neighbor", lambda _: changed_letter, raising=False)
     monkeypatch.setattr(
-        selected_codelet[0], "_choose_bond_facet", lambda *_: copycat.slipnet["letter_category"]
+        selected_codelet[0],
+        "_choose_bond_facet",
+        lambda *_: copycat.slipnet["letter_category"],
     )
     monkeypatch.setattr(
-        selected_codelet[0], "_get_bond_category", lambda *_: copycat.slipnet["successor"]
+        selected_codelet[0],
+        "_get_bond_category",
+        lambda *_: copycat.slipnet["successor"],
     )
     copycat.coderack.post(selected_codelet[0], temperature=0.0)
     assert selected_codelet[0].birth_time == 79
@@ -345,10 +349,14 @@ def test_single_run(monkeypatch):
     monkeypatch.setattr(copycat.workspace, "choose_object", lambda *_: i)
     monkeypatch.setattr(i, "choose_neighbor", lambda _: j, raising=False)
     monkeypatch.setattr(
-        selected_codelet[0], "_choose_bond_facet", lambda *_: copycat.slipnet["letter_category"]
+        selected_codelet[0],
+        "_choose_bond_facet",
+        lambda *_: copycat.slipnet["letter_category"],
     )
     monkeypatch.setattr(
-        selected_codelet[0], "_get_bond_category", lambda *_: copycat.slipnet["successor"]
+        selected_codelet[0],
+        "_get_bond_category",
+        lambda *_: copycat.slipnet["successor"],
     )
     copycat.coderack.post(selected_codelet[0], temperature=0.0)
     assert selected_codelet[0].birth_time == 82
@@ -385,10 +393,14 @@ def test_single_run(monkeypatch):
     monkeypatch.setattr(copycat.workspace, "choose_object", lambda *_: j)
     monkeypatch.setattr(j, "choose_neighbor", lambda _: k, raising=False)
     monkeypatch.setattr(
-        selected_codelet[0], "_choose_bond_facet", lambda *_: copycat.slipnet["letter_category"]
+        selected_codelet[0],
+        "_choose_bond_facet",
+        lambda *_: copycat.slipnet["letter_category"],
     )
     monkeypatch.setattr(
-        selected_codelet[0], "_get_bond_category", lambda *_: copycat.slipnet["successor"]
+        selected_codelet[0],
+        "_get_bond_category",
+        lambda *_: copycat.slipnet["successor"],
     )
     copycat.coderack.post(selected_codelet[0], temperature=0.0)
     assert selected_codelet[0].birth_time == 85
@@ -496,9 +508,10 @@ def test_single_run(monkeypatch):
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
     assert copycat.coderack.number_of_codelets_run == 94
-    assert initial_group.get_descriptor(copycat.slipnet["group_category"]) is copycat.slipnet[
-        "successor_group"
-    ]
+    assert (
+        initial_group.get_descriptor(copycat.slipnet["group_category"])
+        is copycat.slipnet["successor_group"]
+    )
 
     # Build the target-string successor group using three codelets.
     monkeypatch.setattr(
@@ -568,9 +581,10 @@ def test_single_run(monkeypatch):
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
     assert copycat.coderack.number_of_codelets_run == 100
-    assert target_group.get_descriptor(copycat.slipnet["group_category"]) is copycat.slipnet[
-        "successor_group"
-    ]
+    assert (
+        target_group.get_descriptor(copycat.slipnet["group_category"])
+        is copycat.slipnet["successor_group"]
+    )
 
     # Propose, test, and build the group-to-group correspondence.
     monkeypatch.setattr(
@@ -598,6 +612,7 @@ def test_single_run(monkeypatch):
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
     assert copycat.coderack.number_of_codelets_run == 102
+    copycat.slipnet.update_activations()
     selected_codelet[0] = [
         c
         for c in copycat.coderack.codelets
