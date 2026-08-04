@@ -15,15 +15,18 @@ from copycat.codelets import (
     RuleTranslator,
     WholeStringGroupScout,
 )
+from copycat.codelets.scouts.description_scouts import TopDownDescriptionScout
 from copycat.codelets.builders import (
     BondBuilder,
     CorrespondenceBuilder,
+    DescriptionBuilder,
     GroupBuilder,
     RuleBuilder,
 )
 from copycat.codelets.strength_testers import (
     BondStrengthTester,
     CorrespondenceStrengthTester,
+    DescriptionStrengthTester,
     GroupStrengthTester,
     RuleStrengthTester,
 )
@@ -450,6 +453,53 @@ def test_single_run(monkeypatch):
     initial_group = copycat.workspace.initial_string.groups[0]
     assert initial_group.spans_whole_string()
 
+    # Give the initial group its successor-group description before attempting
+    # any group correspondence.
+    monkeypatch.setattr(copycat.workspace, "choose_object", lambda *_: initial_group)
+    monkeypatch.setattr(
+        copycat.slipnet["group_category"],
+        "get_possible_descriptors",
+        lambda _: [copycat.slipnet["successor_group"]],
+    )
+    monkeypatch.setattr(
+        "copycat.codelets.scouts.description_scouts.top_down_description_scout.np.random.choice",
+        lambda *_args, **_kwargs: copycat.slipnet["successor_group"],
+    )
+    selected_codelet[0] = TopDownDescriptionScout(
+        urgency_bin=2,
+        coderack=copycat.coderack,
+        slipnet=copycat.slipnet,
+        workspace=copycat.workspace,
+        description_type=copycat.slipnet["group_category"],
+    )
+    copycat.coderack.post(selected_codelet[0], temperature=0.0)
+    assert selected_codelet[0].birth_time == 91
+    codelet = copycat.coderack.choose(temperature=0.0)
+    assert codelet is selected_codelet[0]
+    assert codelet.run(temperature=0.0) == Finish()
+    assert copycat.coderack.number_of_codelets_run == 92
+    selected_codelet[0] = next(
+        c
+        for c in copycat.coderack.codelets
+        if isinstance(c, DescriptionStrengthTester) and c.birth_time == 92
+    )
+    codelet = copycat.coderack.choose(temperature=0.0)
+    assert codelet is selected_codelet[0]
+    assert codelet.run(temperature=0.0) == Finish()
+    assert copycat.coderack.number_of_codelets_run == 93
+    selected_codelet[0] = next(
+        c
+        for c in copycat.coderack.codelets
+        if isinstance(c, DescriptionBuilder) and c.birth_time == 93
+    )
+    codelet = copycat.coderack.choose(temperature=0.0)
+    assert codelet is selected_codelet[0]
+    assert codelet.run(temperature=0.0) == Finish()
+    assert copycat.coderack.number_of_codelets_run == 94
+    assert initial_group.get_descriptor(copycat.slipnet["group_category"]) is copycat.slipnet[
+        "successor_group"
+    ]
+
     # Build the target-string successor group using three codelets.
     monkeypatch.setattr(
         copycat.workspace, "get_random_string", lambda: copycat.workspace.target_string
@@ -458,32 +508,69 @@ def test_single_run(monkeypatch):
         2, copycat.coderack, copycat.slipnet, copycat.workspace
     )
     copycat.coderack.post(selected_codelet[0], temperature=0.0)
-    assert selected_codelet[0].birth_time == 91
+    assert selected_codelet[0].birth_time == 94
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 92
+    assert copycat.coderack.number_of_codelets_run == 95
     assert len(copycat.workspace.target_string.proposed_groups) == 1
     selected_codelet[0] = [
         c
         for c in copycat.coderack.codelets
-        if isinstance(c, GroupStrengthTester) and c.birth_time == 92
+        if isinstance(c, GroupStrengthTester) and c.birth_time == 95
     ][-1]
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 93
+    assert copycat.coderack.number_of_codelets_run == 96
     selected_codelet[0] = [
         c
         for c in copycat.coderack.codelets
-        if isinstance(c, GroupBuilder) and c.birth_time == 93
+        if isinstance(c, GroupBuilder) and c.birth_time == 96
     ][-1]
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 94
+    assert copycat.coderack.number_of_codelets_run == 97
     target_group = copycat.workspace.target_string.groups[0]
     assert target_group.spans_whole_string()
+
+    # Give the target group the matching successor-group description.
+    monkeypatch.setattr(copycat.workspace, "choose_object", lambda *_: target_group)
+    selected_codelet[0] = TopDownDescriptionScout(
+        urgency_bin=2,
+        coderack=copycat.coderack,
+        slipnet=copycat.slipnet,
+        workspace=copycat.workspace,
+        description_type=copycat.slipnet["group_category"],
+    )
+    copycat.coderack.post(selected_codelet[0], temperature=0.0)
+    assert selected_codelet[0].birth_time == 97
+    codelet = copycat.coderack.choose(temperature=0.0)
+    assert codelet is selected_codelet[0]
+    assert codelet.run(temperature=0.0) == Finish()
+    assert copycat.coderack.number_of_codelets_run == 98
+    selected_codelet[0] = next(
+        c
+        for c in copycat.coderack.codelets
+        if isinstance(c, DescriptionStrengthTester) and c.birth_time == 98
+    )
+    codelet = copycat.coderack.choose(temperature=0.0)
+    assert codelet is selected_codelet[0]
+    assert codelet.run(temperature=0.0) == Finish()
+    assert copycat.coderack.number_of_codelets_run == 99
+    selected_codelet[0] = next(
+        c
+        for c in copycat.coderack.codelets
+        if isinstance(c, DescriptionBuilder) and c.birth_time == 99
+    )
+    codelet = copycat.coderack.choose(temperature=0.0)
+    assert codelet is selected_codelet[0]
+    assert codelet.run(temperature=0.0) == Finish()
+    assert copycat.coderack.number_of_codelets_run == 100
+    assert target_group.get_descriptor(copycat.slipnet["group_category"]) is copycat.slipnet[
+        "successor_group"
+    ]
 
     # Propose, test, and build the group-to-group correspondence.
     monkeypatch.setattr(
@@ -496,30 +583,30 @@ def test_single_run(monkeypatch):
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
     copycat.coderack.post(selected_codelet[0], temperature=0.0)
-    assert selected_codelet[0].birth_time == 94
+    assert selected_codelet[0].birth_time == 100
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 95
+    assert copycat.coderack.number_of_codelets_run == 101
     assert len(copycat.workspace.proposed_correspondences) == 1
     selected_codelet[0] = [
         c
         for c in copycat.coderack.codelets
-        if isinstance(c, CorrespondenceStrengthTester) and c.birth_time == 95
+        if isinstance(c, CorrespondenceStrengthTester) and c.birth_time == 101
     ][-1]
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 96
+    assert copycat.coderack.number_of_codelets_run == 102
     selected_codelet[0] = [
         c
         for c in copycat.coderack.codelets
-        if isinstance(c, CorrespondenceBuilder) and c.birth_time == 96
+        if isinstance(c, CorrespondenceBuilder) and c.birth_time == 102
     ][-1]
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 97
+    assert copycat.coderack.number_of_codelets_run == 103
     assert initial_group.correspondence is target_group.correspondence
 
     # Finish the unchanged replacements with two selected replacement finders.
@@ -528,22 +615,22 @@ def test_single_run(monkeypatch):
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
     copycat.coderack.post(selected_codelet[0], temperature=0.0)
-    assert selected_codelet[0].birth_time == 97
+    assert selected_codelet[0].birth_time == 103
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 98
+    assert copycat.coderack.number_of_codelets_run == 104
     assert a.replacement.target.letter_category.name == "a"
     chosen_object[0] = b
     selected_codelet[0] = ReplacementFinder(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
     copycat.coderack.post(selected_codelet[0], temperature=0.0)
-    assert selected_codelet[0].birth_time == 98
+    assert selected_codelet[0].birth_time == 104
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 99
+    assert copycat.coderack.number_of_codelets_run == 105
     assert b.replacement.target.letter_category.name == "b"
     chosen_object[0] = None
 
@@ -561,30 +648,30 @@ def test_single_run(monkeypatch):
         ),
     )
     copycat.coderack.post(selected_codelet[0], temperature=0.0)
-    assert selected_codelet[0].birth_time == 99
+    assert selected_codelet[0].birth_time == 105
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 100
+    assert copycat.coderack.number_of_codelets_run == 106
     assert any(isinstance(c, RuleStrengthTester) for c in copycat.coderack.codelets)
     selected_codelet[0] = next(
         c
         for c in copycat.coderack.codelets
-        if isinstance(c, RuleStrengthTester) and c.birth_time == 100
+        if isinstance(c, RuleStrengthTester) and c.birth_time == 106
     )
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 101
+    assert copycat.coderack.number_of_codelets_run == 107
     selected_codelet[0] = next(
         c
         for c in copycat.coderack.codelets
-        if isinstance(c, RuleBuilder) and c.birth_time == 101
+        if isinstance(c, RuleBuilder) and c.birth_time == 107
     )
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 102
+    assert copycat.coderack.number_of_codelets_run == 108
     assert copycat.workspace.rule.relation is copycat.slipnet["successor"]
 
     # Translate the rule and let the answer builder apply it.
@@ -592,15 +679,15 @@ def test_single_run(monkeypatch):
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
     copycat.coderack.post(selected_codelet[0], temperature=0.0)
-    assert selected_codelet[0].birth_time == 102
+    assert selected_codelet[0].birth_time == 108
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 103
+    assert copycat.coderack.number_of_codelets_run == 109
     assert copycat.workspace.translated_rule.relation is copycat.slipnet["successor"]
     assert AnswerBuilder(copycat.slipnet, copycat.workspace).build() is None
     assert [
         letter.letter_category.name
         for letter in copycat.workspace.answer_string.letters
     ] == ["i", "j", "l"]
-    assert copycat.coderack.number_of_codelets_run == 103
+    assert copycat.coderack.number_of_codelets_run == 109
