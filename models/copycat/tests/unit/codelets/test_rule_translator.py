@@ -57,7 +57,7 @@ def test_fizzles_if_temperature_is_too_high(monkeypatch):
 
 def test_fizzles_if_there_is_no_changed_object(monkeypatch):
     workspace = Mock()
-    workspace.initial_string.changed_objects = []
+    workspace.initial_string.get_changed_objects.return_value = []
     rule = Mock()
     rule.specifies_change.return_value = True
     workspace.rule = rule
@@ -77,7 +77,7 @@ def test_fizzles_if_there_is_no_changed_object(monkeypatch):
 def test_sets_translated_rule(monkeypatch):
     workspace = Mock()
     changed_object = Mock(correspondence=None)
-    workspace.initial_string.changed_objects = [changed_object]
+    workspace.initial_string.get_changed_objects.return_value = [changed_object]
     rule = Mock()
     rule.specifies_change.return_value = True
     workspace.rule = rule

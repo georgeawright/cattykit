@@ -29,7 +29,7 @@ class RuleTranslator(Codelet):
         if temperature > answer_temperature_threshold:
             return Fizzle(FizzleReason.TEMPERATURE_TOO_HIGH)
         try:
-            changed_object = self.workspace.initial_string.changed_objects[0]
+            changed_object = self.workspace.initial_string.get_changed_objects()[0]
         except IndexError:
             return Fizzle(FizzleReason.NO_CHANGED_OBJECT)
         if changed_object.correspondence is None:
