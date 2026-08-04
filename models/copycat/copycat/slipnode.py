@@ -85,7 +85,7 @@ class Slipnode:
         if relationship_name == "identity":
             return self
         for link in self.outgoing_links:
-            if link.label.name == relationship_name:
+            if link.label is not None and link.label.name == relationship_name:
                 return link.target
         return None
 
