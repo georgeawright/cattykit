@@ -29,7 +29,7 @@ class WholeStringGroupScout(GroupScout):
         first_bond = chosen_object.right_bond
         required_number_of_bonds = len(workspace_string) - 1
         bonds, objects = self._get_bonds_and_objects(
-            direction=self.slipnet.get_node("right"),
+            direction=self.slipnet["right"],
             first_bond=first_bond,
             number_of_bonds=required_number_of_bonds,
         )
