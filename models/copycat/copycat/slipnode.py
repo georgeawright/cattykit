@@ -48,7 +48,7 @@ class Slipnode:
         return 1 / self.conceptual_depth if self.conceptual_depth > 0 else 0
 
     @property
-    def degree_of_assocation(self) -> float:
+    def degree_of_association(self) -> float:
         """The degree of association encoded in the links this node labels."""
         return (
             1 - self.shrunk_link_length
@@ -59,7 +59,7 @@ class Slipnode:
     @property
     def bond_degree_of_association(self) -> float:
         """The degree of association bonds of this category have."""
-        return min(1, sqrt(self.degree_of_assocation) * 1.1)
+        return min(1, sqrt(self.degree_of_association) * 1.1)
 
     @property
     def outgoing_links(self) -> List["Sliplink"]:
