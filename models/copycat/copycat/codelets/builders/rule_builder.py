@@ -45,8 +45,12 @@ class RuleBuilder(Builder):
 
     def _activate_rule_description_nodes(self):
         if self.proposed_rule.descriptor_1 is not None:
-            self.slipnet.activate_node_from_workspace(self.proposed_rule.descriptor_1)
+            self.slipnet.activate_node_from_workspace(
+                self.proposed_rule.descriptor_1.name
+            )
         if self.proposed_rule.relation is not None:
-            self.slipnet.activate_node_from_workspace(self.proposed_rule.relation)
+            self.slipnet.activate_node_from_workspace(self.proposed_rule.relation.name)
         if self.proposed_rule.descriptor_2 is not None:
-            self.slipnet.activate_node_from_workspace(self.proposed_rule.descriptor_2)
+            self.slipnet.activate_node_from_workspace(
+                self.proposed_rule.descriptor_2.name
+            )
