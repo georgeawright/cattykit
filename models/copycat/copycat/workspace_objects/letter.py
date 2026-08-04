@@ -11,6 +11,9 @@ class Letter(WorkspaceObject):
         self.letter_category = letter_category
         self.hash_id = next(Letter._next_id)
 
+    def __repr__(self):
+        return f"{self.letter_category.name}@{self.left_position}"
+
     def __len__(self):
         return 1
 

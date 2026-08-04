@@ -27,6 +27,17 @@ class Group(WorkspaceObject, WorkspaceStructure):
         self.direction_category = direction_category
         self.hash_id = next(Group._next_id)
 
+    def __repr__(self):
+        letters = [l.letter_category.name for l in self.letters]
+        group_category = self.group_category.name if self.group_category else ""
+        direction_category = (
+            self.direction_category.name if self.direction_category else ""
+        )
+        return (
+            f"{group_category}-{direction_category}({letters})"
+            f"@{self.left_position}-{self.right_position}"
+        )
+
     def __len__(self):
         return len(self.letters)
 

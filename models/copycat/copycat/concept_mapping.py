@@ -46,6 +46,9 @@ class ConceptMapping:
         self.object_1 = object_1
         self.object_2 = object_2
 
+    def __repr__(self):
+        return f"{self.description_type_1.name}++>{self.description_type_2.name}"
+
     @property
     def degree_of_assocation(self) -> float:
         """assumes both descriptors in the mapping are connected in the slipnet

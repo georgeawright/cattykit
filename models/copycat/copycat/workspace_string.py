@@ -19,6 +19,9 @@ class WorkspaceString:
     def __len__(self):
         return len(self.letters)
 
+    def __repr__(self):
+        return f"WorkspaceString({self.letters})"
+
     @property
     def proposed_bonds(self):
         unique_bonds = []
