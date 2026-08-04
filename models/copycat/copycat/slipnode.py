@@ -98,6 +98,12 @@ class Slipnode:
                 return True
         return False
 
+    def is_sliplinked_to(self, other: Slipnode) -> bool:
+        for link in self.lateral_sliplinks:
+            if link.target == other:
+                return True
+        return False
+
     def is_directed(self) -> bool:
         return self.name in (
             "predecessor",
