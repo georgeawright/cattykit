@@ -16,6 +16,9 @@ class Description(WorkspaceStructure):
         self.descriptor = descriptor
         self.hash_id = next(Description._next_id)
 
+    def __repr__(self):
+        return f"{self.facet}({self.argument_object})={self.descriptor}"
+
     def equates_to(self, other) -> bool:
         return (self.argument_object, self.facet, self.descriptor) == (
             other.argument_object,
