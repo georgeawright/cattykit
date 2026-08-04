@@ -155,3 +155,16 @@ class ConceptMapping:
             self.descriptor_2 == other.descriptor_2
             and self.descriptor_1 != other.descriptor_1
         )
+
+    def get_symmetric_version(self) -> ConceptMapping:
+        if self.label is not None and self.label.name == "identity":
+            return self
+        return ConceptMapping(
+            description_type_1=self.description_type_2,
+            description_type_2=self.description_type_1,
+            descriptor_1=self.descriptor_2,
+            descriptor_2=self.descriptor_1,
+            label=self.label,
+            object_1=self.object_2,
+            object_2=self.object_1,
+        )
