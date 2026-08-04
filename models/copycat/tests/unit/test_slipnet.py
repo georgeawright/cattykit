@@ -104,7 +104,7 @@ def test_update_activations_no_jumping(
     cat_is_a_animal = SimpleNamespace(
         source=cat_node,
         target=animal_node,
-        type_node=is_a_node,
+        label=is_a_node,
         intrinsic_degree_of_association=cat_is_a_animal_degree_of_association,
         is_category_link=True,
         is_instance_link=False,
@@ -115,7 +115,7 @@ def test_update_activations_no_jumping(
     dog_is_a_animal = SimpleNamespace(
         source=dog_node,
         target=animal_node,
-        type_node=is_a_node,
+        label=is_a_node,
         intrinsic_degree_of_association=dog_is_a_animal_degree_of_association,
         is_category_link=True,
         is_instance_link=False,

@@ -48,12 +48,12 @@ def test_is_related_to_and_is_linked_to():
 def test_get_similar_has_property_links():
     node = Slipnode("node", 1)
     link1 = SimpleNamespace(
-        type_node=SimpleNamespace(name="has_property"),
+        label=SimpleNamespace(name="has_property"),
         target=SimpleNamespace(name="property1"),
         degree_of_association=1.0,
     )
     link2 = SimpleNamespace(
-        type_node=SimpleNamespace(name="has_property"),
+        label=SimpleNamespace(name="has_property"),
         target=SimpleNamespace(name="property2"),
         degree_of_association=0.0,
     )
