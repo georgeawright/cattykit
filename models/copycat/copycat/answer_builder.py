@@ -19,11 +19,10 @@ class AnswerBuilder:
     def build(self):
         objects_to_change = self._get_objects_to_change()
         description_type = self.workspace.translated_rule.replaced_description_type
-        modified_letters = [
-            self._get_modified_letters(obj, description_type)
-            for obj in self.workspace.target_string.objects
-            if obj in objects_to_change
-        ]
+        modified_letters = []
+        for obj in self.workspace.target_string.objects:
+            if obj in objects_to_change:
+                modified_letters += self._get_modified_letters(obj, description_type)
         unmodified_letters = self._get_unmodified_letters(objects_to_change)
         answer_letters = (
             modified_letters + unmodified_letters
@@ -150,7 +149,7 @@ class AnswerBuilder:
             new_position = first_letter.left_position + self.amount_length_changed
         new_letter = Letter(
             self.workspace.answer_string,
-            first_letter.get_descriptor("letter_category"),
+            first_letter.get_descriptor(self.slipnet["letter_category"]),
             new_position,
         )
         modified_letters.append(new_letter)
@@ -158,7 +157,7 @@ class AnswerBuilder:
         for i in range(1, 1 - int(new_descriptor)):
             new_position = new_position + (1 if rightwards else -1)
             new_letter_category = group.group_category.iterator(
-                new_letter.get_descriptor("letter_category")
+                new_letter.get_descriptor(self.slipnet["letter_category"])
             )
             if new_letter_category is None:
                 self.workspace.snag_objects.append(new_letter)
@@ -175,7 +174,7 @@ class AnswerBuilder:
         return [
             Letter(
                 self.workspace.answer_string,
-                letter.get_descriptor("letter_category"),
+                letter.get_descriptor(self.slipnet["letter_category"]),
                 letter.left_position,
             )
             for letter in self.workspace.target_string.letters
