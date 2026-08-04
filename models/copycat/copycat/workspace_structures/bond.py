@@ -54,6 +54,22 @@ class Bond(WorkspaceStructure):
             other.bond_facet,
         )
 
+    @property
+    def importance(self) -> float:
+        return 1.0 if self.bond_category.name == "sameness" else 0.5
+
+    @property
+    def happiness(self) -> float:
+        return self.group.total_strength if self.group is not None else 0.0
+
+    @property
+    def unhappiness(self) -> float:
+        return 1.0 - self.happiness
+
+    @property
+    def salience(self) -> float:
+        return (self.importance + self.unhappiness) / 2
+
     def is_leftmost_in_string(self) -> bool:
         return self.left_object.left_position == 0
 

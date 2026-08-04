@@ -31,11 +31,12 @@ def test_choose_neighbour():
     object_1 = MockLetter(left_position=1, string=string)
     object_2 = MockLetter(left_position=2, string=string)
 
-    bond_0_1 = Bond(object_0, object_1, None, None, None, None, None)
-    bond_1_2 = Bond(object_1, object_2, None, None, None, None, None)
-
-    bond_0_1.salience = 1.0
-    bond_1_2.salience = 1.0
+    bond_0_1 = Bond(
+        object_0, object_1, SimpleNamespace(name="sameness"), None, None, None, None
+    )
+    bond_1_2 = Bond(
+        object_1, object_2, SimpleNamespace(name="sameness"), None, None, None, None
+    )
 
     object_0.left_neighbours = []
     object_0.right_neighbours = [object_1]
