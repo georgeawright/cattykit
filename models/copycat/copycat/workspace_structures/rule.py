@@ -34,13 +34,11 @@ class Rule(WorkspaceStructure):
         self.hash_id = next(Rule._next_id)
 
     def __repr__(self):
+        rule_second_half = self.relation if self.relation else self.descriptor_2
         return (
             f"Replace "
-            f"{self.descriptor_1_facet}({self.object_category_1})"
-            f"={self.descriptor_1}"
-            f" with "
-            f"{self.replaced_description_type}({self.object_category_2})"
-            f"={self.descriptor_2}"
+            f"{self.descriptor_1_facet} of {self.descriptor_1} {self.object_category_1}"
+            f" by {rule_second_half}"
         )
 
     def equates_to(self, other) -> bool:
