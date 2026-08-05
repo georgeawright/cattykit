@@ -37,9 +37,6 @@ class TopDownDirectionGroupScout(GroupScout):
         if first_bond.direction_category != self.direction_category:
             return Fizzle(FizzleReason.BOND_DIRECTION_DOES_NOT_MATCH)
         bond_category = first_bond.bond_category
-        bond_facet = first_bond.bond_facet
-        opposite_bond_category = bond_category.get_related_node("opposite")
-        opposte_direction_category = direction.get_related_node("opposite")
         group_category = bond_category.get_related_node("group_category")
         bonds, objects = self._get_bonds_and_objects(
             direction, first_bond, number_of_bonds

@@ -29,6 +29,10 @@ def test_run():
             self.activate_called = 0
 
         def __getitem__(self, name):
+            if name == "right":
+                return self.right_node
+            elif name == "left":
+                return self.left_node
             return SimpleNamespace(name=name)
 
         def activate_node_from_workspace(self, name):
@@ -36,15 +40,6 @@ def test_run():
 
         def get_node_activation(self, name):
             return 0.5
-
-        def get_node(self, name):
-            return (
-                self.right_node
-                if name == "right"
-                else self.left_node
-                if name == "left"
-                else None
-            )
 
     class MockWorkspace:
         initial_string = Mock()
