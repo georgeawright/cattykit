@@ -74,7 +74,7 @@ class GroupScout(Scout):
         left = self.slipnet["left"]
         right = self.slipnet["right"]
         return random.choices(
-            [left, right], weights=[left.activation, right.activation]
+            [left, right], weights=[left.activation + 1e-5, right.activation + 1e-5]
         )[0]
 
     def _choose_number_of_bonds(self, workspace_string):
