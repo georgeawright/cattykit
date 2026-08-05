@@ -67,12 +67,12 @@ class GroupScout(Scout):
         return chosen_string
 
     def _choose_direction(self, chosen_object):
-        if chosen_object.is_leftmost_in_string:
-            return self.slipnet.get_node("right")
-        elif chosen_object.is_rightmost_in_string:
-            return self.slipnet.get_node("left")
-        left = self.slipnet.get_node("left")
-        right = self.slipnet.get_node("right")
+        if chosen_object.is_leftmost_in_string():
+            return self.slipnet["right"]
+        elif chosen_object.is_rightmost_in_string():
+            return self.slipnet["left"]
+        left = self.slipnet["left"]
+        right = self.slipnet["right"]
         return random.choices(
             [left, right], weights=[left.activation, right.activation]
         )[0]
