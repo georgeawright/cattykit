@@ -11,6 +11,31 @@ from copycat.codelet_result import Finish, Fizzle, FizzleReason
 class MockSlipnet:
     def __init__(self):
         self.activate_node_from_workspace_called = 0
+        self._nodes = {
+            name: SimpleNamespace(name=name, activation=0.0)
+            for name in (
+                "bond_category",
+                "bond_facet",
+                "direction_category",
+                "group",
+                "group_category",
+                "i",
+                "leftmost",
+                "length",
+                "letter_category",
+                "middle",
+                "object_category",
+                "rightmost",
+                "sameness",
+                "sameness_group",
+                "string_position_category",
+                "whole",
+            )
+        }
+        self.numbers = []
+
+    def __getitem__(self, name):
+        return self._nodes[name]
 
     def activate_node_from_workspace(self, name):
         self.activate_node_from_workspace_called += 1
@@ -219,9 +244,26 @@ def test_breaks_incompatible_structures_flips_bonds_and_builds_group():
     proposed_group.get_bonds_to_be_flipped = lambda: []
     proposed_group.left_object = Mock()
     proposed_group.right_object = Mock()
+    proposed_group.left_object.get_descriptor.return_value = slipnet["i"]
+    proposed_group.spans_whole_string.return_value = False
+    proposed_group.is_leftmost_in_string.return_value = True
+    proposed_group.group_category = slipnet["sameness_group"]
+    proposed_group.direction_category = None
+    proposed_group.bond_category = slipnet["sameness"]
     proposed_group.descriptions = [
         SimpleNamespace(descriptor=SimpleNamespace(name="descriptor1"))
     ]
+    proposed_group.bond_descriptions = []
+    bond_1.bond_facet = slipnet["letter_category"]
+    bond_2.bond_facet = slipnet["letter_category"]
+
+    def add_description(description):
+        if description.is_bond_description():
+            proposed_group.bond_descriptions.append(description)
+        else:
+            proposed_group.descriptions.append(description)
+
+    proposed_group.add_description.side_effect = add_description
 
     # Simulate that the bonds still exist
     proposed_group.string.get_group_if_present = lambda group: None
@@ -241,9 +283,25 @@ def test_breaks_incompatible_structures_flips_bonds_and_builds_group():
     # Run the builder
     result = builder.run(temperature=0.5)
 
-    assert slipnet.activate_node_from_workspace_called == 1
+    assert slipnet.activate_node_from_workspace_called == 5
     assert workspace.break_group_called == 2
     assert proposed_group.string.add_group_called == 1
+    assert [
+        (description.facet.name, description.descriptor.name)
+        for description in proposed_group.descriptions[1:]
+    ] == [
+        ("object_category", "group"),
+        ("string_position_category", "leftmost"),
+        ("letter_category", "i"),
+        ("group_category", "sameness_group"),
+    ]
+    assert [
+        (description.facet.name, description.descriptor.name)
+        for description in proposed_group.bond_descriptions
+    ] == [
+        ("bond_facet", "letter_category"),
+        ("bond_category", "sameness"),
+    ]
     assert result == Finish()
 
     # Restore the original function
