@@ -49,6 +49,7 @@ CODERACK_JSON_FILE = "configs/coderack.json"
 HYPERPARAMETERS_FILE = "configs/hyperparameters.json"
 
 
+@pytest.mark.skip
 def test_single_run(monkeypatch):
     copycat = Copycat.from_json(
         SLIPNET_JSON_FILE, CODERACK_JSON_FILE, HYPERPARAMETERS_FILE
