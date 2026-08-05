@@ -133,10 +133,10 @@ class Slipnode:
         self, workspace_string: "WorkspaceString"
     ) -> float:
         return (
-            self.local_description_type_support(workspace_string) + self.activation
+            self.get_local_description_type_support(workspace_string) + self.activation
         ) / 2
 
-    def local_description_type_support(
+    def get_local_description_type_support(
         self, workspace_string: "WorkspaceString"
     ) -> float:
         description_type_count = sum(
