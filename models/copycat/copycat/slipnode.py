@@ -126,7 +126,8 @@ class Slipnode:
         return [
             link.target
             for link in self.instance_links
-            if link.target.description_tester(workspace_object)
+            if link.target.description_tester
+            and link.target.description_tester(workspace_object)
         ]
 
     def get_total_description_type_support(
