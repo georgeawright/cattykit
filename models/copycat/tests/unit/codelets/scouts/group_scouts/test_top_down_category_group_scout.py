@@ -100,7 +100,7 @@ def test_run():
 
     # First bond is None
     workspace.initial_string.choose_object.return_value = SimpleNamespace(
-        is_leftmost_in_string=True,
+        is_leftmost_in_string=lambda: True,
         right_bond=None,
         spans_whole_string=lambda: False,
     )
@@ -112,7 +112,7 @@ def test_run():
     # First bond has wrong direction
     first_bond = SimpleNamespace(direction_category=SimpleNamespace(name="left"))
     workspace.initial_string.choose_object.return_value = SimpleNamespace(
-        is_leftmost_in_string=True,
+        is_leftmost_in_string=lambda: True,
         right_bond=first_bond,
         spans_whole_string=lambda: False,
     )
@@ -125,7 +125,7 @@ def test_run():
         string=workspace.initial_string,
         left_position=0,
         right_position=0,
-        is_leftmost_in_string=True,
+        is_leftmost_in_string=lambda: True,
         is_rightmost_in_string=False,
         spans_whole_string=lambda: False,
     )
