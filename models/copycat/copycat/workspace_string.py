@@ -15,6 +15,7 @@ class WorkspaceString:
         self._proposed_groups = defaultdict(lambda: defaultdict(list))
         self._groups = {}
         self.distribution_of_bond_counts = [0]
+        self.intra_string_unhappiness = 0
 
     def __len__(self):
         return len(self.letters)
@@ -151,10 +152,10 @@ class WorkspaceString:
             return existing_group
         return False
 
-    def choose_object(self, temperature, method):
+    def choose_object(self, temperature, method) -> "WorkspaceObject":
         """Return an object probabilistically according to temperature and method."""
         weights = [temperature_adjust(method(obj), temperature) for obj in self.objects]
-        return random.choices(self.objects, weights=weights, k=1)
+        return random.choices(self.objects, weights=weights, k=1)[0]
 
     def choose_from_leftmost_objects(self):
         """Returns one of the leftmost objects probabilistically."""
