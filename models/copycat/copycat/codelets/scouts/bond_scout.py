@@ -73,7 +73,7 @@ class BondScout(Scout):
         if not common_bond_facets:
             return None
         supports = [
-            facet.get_total_description_type_support(source.string)
+            facet.get_total_description_type_support(source.string) + 1e-5
             for facet in common_bond_facets
         ]
         return random.choices(common_bond_facets, weights=supports, k=1)[0]
