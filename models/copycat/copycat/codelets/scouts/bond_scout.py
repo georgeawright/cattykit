@@ -60,12 +60,12 @@ class BondScout(Scout):
         source_bond_facets = [
             d.facet
             for d in source.descriptions
-            if d.facet.category.name == "bond_facet"
+            if d.facet.category == self.slipnet["bond_facet"]
         ]
         target_bond_facets = [
             d.facet
             for d in target.descriptions
-            if d.facet.category.name == "bond_facet"
+            if d.facet.category == self.slipnet["bond_facet"]
         ]
         common_bond_facets = [
             facet for facet in source_bond_facets if facet in target_bond_facets
