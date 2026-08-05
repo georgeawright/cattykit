@@ -112,4 +112,4 @@ def test_support(supporting_objects, non_supporting_objects, activation, expecte
         obj = SimpleNamespace(name="object")
         obj.has_description_type = lambda x: False
         workspace_string.objects.append(obj)
-    assert node.total_description_type_support(workspace_string) == expected
+    assert node.get_total_description_type_support(workspace_string) == expected

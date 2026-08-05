@@ -129,7 +129,7 @@ class Slipnode:
             if link.target.description_tester(workspace_object)
         ]
 
-    def total_description_type_support(
+    def get_total_description_type_support(
         self, workspace_string: "WorkspaceString"
     ) -> float:
         return (
