@@ -33,14 +33,14 @@ class Group(WorkspaceObject, WorkspaceStructure):
 
     def __repr__(self):
         letters = "".join([letter.letter_category.name for letter in self.letters])
-        group_category = self.group_category.name if self.group_category else ""
+        group_category = self.group_category.name if self.group_category else None
         direction_category = (
-            self.direction_category.name if self.direction_category else ""
+            self.direction_category.name if self.direction_category else None
         )
-        return (
-            f"{group_category}-{direction_category}({letters})"
-            f"@{self.left_position}-{self.right_position}"
+        group_type = "-".join(
+            [c for c in [group_category, direction_category] if c is not None]
         )
+        return f"{group_type}({letters})@{self.left_position}-{self.right_position}"
 
     def __len__(self):
         return len(self.letters)
