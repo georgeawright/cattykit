@@ -13,6 +13,7 @@ from random import choice as random_choice
 from random import choices as random_choices
 
 import pytest
+from numpy.random import choice as numpy_random_choice
 
 from copycat import Copycat
 from copycat.answer_builder import AnswerBuilder
@@ -49,7 +50,6 @@ CODERACK_JSON_FILE = "configs/coderack.json"
 HYPERPARAMETERS_FILE = "configs/hyperparameters.json"
 
 
-@pytest.mark.skip
 def test_single_run(monkeypatch):
     copycat = Copycat.from_json(
         SLIPNET_JSON_FILE, CODERACK_JSON_FILE, HYPERPARAMETERS_FILE
@@ -59,15 +59,14 @@ def test_single_run(monkeypatch):
     copycat._post_initial_codelets()
 
     selected_codelet = [None]
-    chosen_object = [None]
-    chosen_structure = [None]
+    chosen_items = []
     monkeypatch.setattr(
         "copycat.coderack.random.choice",
         lambda population: (
             selected_codelet[0]
             if selected_codelet[0] in population
-            else chosen_object[0]
-            if chosen_object[0] in population
+            else next(item for item in chosen_items if item in population)
+            if any(item in population for item in chosen_items)
             else random_choice(population)
         ),
     )
@@ -76,6 +75,8 @@ def test_single_run(monkeypatch):
         lambda population, weights=None, k=1: (
             [copycat.coderack.get_urgency_bin(selected_codelet[0].urgency_bin)]
             if population is copycat.coderack._urgency_bins
+            else [next(item for item in chosen_items if item in population)]
+            if any(item in population for item in chosen_items)
             else random_choices(population, weights=weights, k=k)
         ),
     )
@@ -84,41 +85,17 @@ def test_single_run(monkeypatch):
         lambda: 0.0,
     )
     monkeypatch.setattr(
-        "copycat.codelets.strength_testers.group_strength_tester.random.random",
-        lambda: 0.0,
-    )
-    monkeypatch.setattr(
-        "copycat.codelets.strength_testers.correspondence_strength_tester.random.random",
-        lambda: 0.0,
-    )
-    monkeypatch.setattr(
-        "copycat.codelets.strength_testers.rule_strength_tester.random.random",
-        lambda: 0.0,
-    )
-    monkeypatch.setattr(
-        "copycat.codelets.strength_testers.description_strength_tester.random.random",
-        lambda: 0.0,
-    )
-    monkeypatch.setattr(
-        "copycat.codelets.breaker.random.random",
-        lambda: 0.0,
-    )
-    monkeypatch.setattr(
-        "copycat.codelets.breaker.random.choice",
-        lambda population: (
-            chosen_structure[0]
-            if chosen_structure[0] in population
-            else selected_codelet[0]
-            if selected_codelet[0] in population
-            else chosen_object[0]
-            if chosen_object[0] in population
-            else random_choice(population)
+        "copycat.codelets.scouts.description_scouts.top_down_description_scout.np.random.choice",
+        lambda population, p=None: (
+            next(item for item in chosen_items if item in population)
+            if any(item in population for item in chosen_items)
+            else numpy_random_choice(population, p=p)
         ),
     )
 
     a, b, c = copycat.workspace.initial_string.letters
     x, y, z = copycat.workspace.target_string.letters
-    chosen_object[0] = c
+    chosen_items[:] = [c]
     selected_codelet[0] = next(
         codelet
         for codelet in copycat.coderack.codelets
@@ -143,7 +120,7 @@ def test_single_run(monkeypatch):
         )
         assert copycat.coderack.number_of_codelets_run == codelet_index + 2
         assert copycat.coderack.population == coderack_population
-    chosen_object[0] = None
+    chosen_items.clear()
     for codelet_index in range(25):
         selected_codelet[0] = WholeStringGroupScout(
             2, copycat.coderack, copycat.slipnet, copycat.workspace
@@ -171,27 +148,7 @@ def test_single_run(monkeypatch):
         selected_codelet[0] = BottomUpBondScout(
             2, copycat.coderack, copycat.workspace, copycat.slipnet
         )
-        monkeypatch.setattr(
-            copycat.workspace,
-            "choose_object",
-            lambda *_, source=source: source,
-        )
-        monkeypatch.setattr(
-            source,
-            "choose_neighbor",
-            lambda *_, target=target: target,
-            raising=False,
-        )
-        monkeypatch.setattr(
-            selected_codelet[0],
-            "_choose_bond_facet",
-            lambda *_: copycat.slipnet["letter_category"],
-        )
-        monkeypatch.setattr(
-            selected_codelet[0],
-            "_get_bond_category",
-            lambda *_: copycat.slipnet["successor"],
-        )
+        chosen_items[:] = [source, target, copycat.slipnet["letter_category"]]
         copycat.coderack.post(selected_codelet[0], temperature=0.0)
         codelet = copycat.coderack.choose(temperature=0.0)
         assert codelet is selected_codelet[0]
@@ -241,11 +198,7 @@ def test_single_run(monkeypatch):
     for codelet_index, workspace_string in enumerate(
         (copycat.workspace.initial_string, copycat.workspace.target_string)
     ):
-        monkeypatch.setattr(
-            copycat.workspace,
-            "get_random_string",
-            lambda workspace_string=workspace_string: workspace_string,
-        )
+        chosen_items[:] = [workspace_string]
         selected_codelet[0] = WholeStringGroupScout(
             2, copycat.coderack, copycat.slipnet, copycat.workspace
         )
@@ -308,14 +261,7 @@ def test_single_run(monkeypatch):
     ):
         description_type = copycat.slipnet[description_type_name]
         descriptor = copycat.slipnet[descriptor_name]
-        monkeypatch.setattr(
-            copycat.workspace, "choose_object", lambda *_, group=group: group
-        )
-        monkeypatch.setattr(
-            description_type,
-            "get_possible_descriptors",
-            lambda *_, descriptor=descriptor: [descriptor],
-        )
+        chosen_items[:] = [group, descriptor]
         selected_codelet[0] = TopDownDescriptionScout(
             2,
             copycat.coderack,
@@ -369,14 +315,7 @@ def test_single_run(monkeypatch):
             assert group.get_descriptor(description_type) is descriptor
 
     # Build the first whole-string group correspondence.
-    monkeypatch.setattr(
-        copycat.workspace.initial_string, "choose_object", lambda **_: initial_group
-    )
-    monkeypatch.setattr(
-        copycat.workspace.target_string,
-        "choose_object",
-        lambda **_: first_target_group,
-    )
+    chosen_items[:] = [initial_group, first_target_group]
     selected_codelet[0] = BottomUpCorrespondenceScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
@@ -422,7 +361,7 @@ def test_single_run(monkeypatch):
 
     # Find the unchanged replacements before building the ordinary rule.
     for codelet_index, letter in enumerate((a, b)):
-        chosen_object[0] = letter
+        chosen_items[:] = [letter]
         selected_codelet[0] = ReplacementFinder(
             2, copycat.coderack, copycat.workspace, copycat.slipnet
         )
@@ -436,26 +375,18 @@ def test_single_run(monkeypatch):
     selected_codelet[0] = RuleScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
-    monkeypatch.setattr(
-        selected_codelet[0],
-        "_get_initial_description",
-        lambda *_: next(
-            description
-            for description in c.descriptions
-            if description.descriptor is copycat.slipnet["rightmost"]
-        ),
+    initial_description = next(
+        description
+        for description in selected_codelet[0]._get_initial_descriptions(c)
+        if description.descriptor is copycat.slipnet["rightmost"]
     )
-    monkeypatch.setattr(
-        selected_codelet[0],
-        "_get_modified_description",
-        lambda modified_object, *_: next(
-            description
-            for description in modified_object.extrinsic_descriptions
-            if description.description_type_related
-            is copycat.slipnet["letter_category"]
-            and description.relation is copycat.slipnet["successor"]
-        ),
+    modified_description = next(
+        description
+        for description in c.replacement.target.extrinsic_descriptions
+        if description.description_type_related is copycat.slipnet["letter_category"]
+        and description.relation is copycat.slipnet["successor"]
     )
+    chosen_items[:] = [initial_description, modified_description]
     copycat.coderack.post(selected_codelet[0], temperature=0.0)
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
@@ -519,7 +450,7 @@ def test_single_run(monkeypatch):
             first_target_group,
         )
     ):
-        chosen_structure[0] = structure
+        chosen_items[:] = [structure]
         selected_codelet[0] = Breaker(
             2, copycat.coderack, copycat.workspace, copycat.slipnet
         )
@@ -533,7 +464,7 @@ def test_single_run(monkeypatch):
     assert initial_group.correspondence is None
     assert first_target_group not in copycat.workspace.target_string.groups
     assert all(letter.group is None for letter in (x, y, z))
-    chosen_structure[0] = None
+    chosen_items.clear()
 
     # Pages 136-138: the target is rebuilt in the opposite direction.  Spatially
     # left-going predecessor bonds are proposed from y to x and from z to y.
@@ -541,27 +472,7 @@ def test_single_run(monkeypatch):
         selected_codelet[0] = BottomUpBondScout(
             2, copycat.coderack, copycat.workspace, copycat.slipnet
         )
-        monkeypatch.setattr(
-            copycat.workspace,
-            "choose_object",
-            lambda *_, source=source: source,
-        )
-        monkeypatch.setattr(
-            source,
-            "choose_neighbor",
-            lambda *_, target=target: target,
-            raising=False,
-        )
-        monkeypatch.setattr(
-            selected_codelet[0],
-            "_choose_bond_facet",
-            lambda *_: copycat.slipnet["letter_category"],
-        )
-        monkeypatch.setattr(
-            selected_codelet[0],
-            "_get_bond_category",
-            lambda *_: copycat.slipnet["predecessor"],
-        )
+        chosen_items[:] = [source, target, copycat.slipnet["letter_category"]]
         copycat.coderack.post(selected_codelet[0], temperature=0.0)
         codelet = copycat.coderack.choose(temperature=0.0)
         assert codelet is selected_codelet[0]
@@ -608,9 +519,7 @@ def test_single_run(monkeypatch):
     ] == ["predecessor", "predecessor"]
 
     # Rebuild xyz as the left-going predecessor group from the new bonds.
-    monkeypatch.setattr(
-        copycat.workspace, "get_random_string", lambda: copycat.workspace.target_string
-    )
+    chosen_items[:] = [copycat.workspace.target_string, x]
     selected_codelet[0] = WholeStringGroupScout(
         2, copycat.coderack, copycat.slipnet, copycat.workspace
     )
@@ -663,12 +572,7 @@ def test_single_run(monkeypatch):
     ):
         description_type = copycat.slipnet[description_type_name]
         descriptor = copycat.slipnet[descriptor_name]
-        monkeypatch.setattr(copycat.workspace, "choose_object", lambda *_: target_group)
-        monkeypatch.setattr(
-            description_type,
-            "get_possible_descriptors",
-            lambda *_, descriptor=descriptor: [descriptor],
-        )
+        chosen_items[:] = [target_group, descriptor]
         selected_codelet[0] = TopDownDescriptionScout(
             2,
             copycat.coderack,
@@ -723,10 +627,7 @@ def test_single_run(monkeypatch):
 
     # Build the diagonal c-x correspondence that supplies the deep
     # rightmost -> leftmost mapping shown in frames 18-21.
-    monkeypatch.setattr(
-        copycat.workspace.initial_string, "choose_object", lambda **_: c
-    )
-    monkeypatch.setattr(copycat.workspace.target_string, "choose_object", lambda **_: x)
+    chosen_items[:] = [c, x]
     selected_codelet[0] = BottomUpCorrespondenceScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
@@ -771,12 +672,7 @@ def test_single_run(monkeypatch):
     }
 
     # Build the final whole-string group correspondence.
-    monkeypatch.setattr(
-        copycat.workspace.initial_string, "choose_object", lambda **_: initial_group
-    )
-    monkeypatch.setattr(
-        copycat.workspace.target_string, "choose_object", lambda **_: target_group
-    )
+    chosen_items[:] = [initial_group, target_group]
     selected_codelet[0] = BottomUpCorrespondenceScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
@@ -829,26 +725,18 @@ def test_single_run(monkeypatch):
     selected_codelet[0] = RuleScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
-    monkeypatch.setattr(
-        selected_codelet[0],
-        "_get_initial_description",
-        lambda *_: next(
-            description
-            for description in c.descriptions
-            if description.descriptor is copycat.slipnet["rightmost"]
-        ),
+    initial_description = next(
+        description
+        for description in selected_codelet[0]._get_initial_descriptions(c)
+        if description.descriptor is copycat.slipnet["rightmost"]
     )
-    monkeypatch.setattr(
-        selected_codelet[0],
-        "_get_modified_description",
-        lambda modified_object, *_: next(
-            description
-            for description in modified_object.extrinsic_descriptions
-            if description.description_type_related
-            is copycat.slipnet["letter_category"]
-            and description.relation is copycat.slipnet["successor"]
-        ),
+    modified_description = next(
+        description
+        for description in c.replacement.target.extrinsic_descriptions
+        if description.description_type_related is copycat.slipnet["letter_category"]
+        and description.relation is copycat.slipnet["successor"]
     )
+    chosen_items[:] = [initial_description, modified_description]
     copycat.coderack.post(selected_codelet[0], temperature=0.0)
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]

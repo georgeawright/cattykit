@@ -55,14 +55,14 @@ def test_single_run(monkeypatch):
     copycat._post_initial_codelets()
 
     selected_codelet = [None]
-    chosen_object = [None]
+    chosen_items = []
     monkeypatch.setattr(
         "copycat.coderack.random.choice",
         lambda population: (
             selected_codelet[0]
             if selected_codelet[0] in population
-            else chosen_object[0]
-            if chosen_object[0] in population
+            else next(item for item in chosen_items if item in population)
+            if any(item in population for item in chosen_items)
             else random_choice(population)
         ),
     )
@@ -71,6 +71,8 @@ def test_single_run(monkeypatch):
         lambda population, weights=None, k=1: (
             [copycat.coderack.get_urgency_bin(selected_codelet[0].urgency_bin)]
             if population is copycat.coderack._urgency_bins
+            else [next(item for item in chosen_items if item in population)]
+            if any(item in population for item in chosen_items)
             else random_choices(population, weights=weights, k=k)
         ),
     )
@@ -81,7 +83,7 @@ def test_single_run(monkeypatch):
 
     # The changed rightmost letter supplies the successor relation in abc -> abd.
     a, b, c = copycat.workspace.initial_string.letters
-    chosen_object[0] = c
+    chosen_items[:] = [c]
     selected_codelet[0] = next(
         codelet
         for codelet in copycat.coderack.codelets
@@ -96,7 +98,7 @@ def test_single_run(monkeypatch):
     # As in the book's representative run, these exploratory codelets occur
     # before the first durable structures are built.
     coderack_population = copycat.coderack.population
-    chosen_object[0] = c
+    chosen_items[:] = [c]
     for codelet_index in range(25):
         selected_codelet[0] = ReplacementFinder(
             2, copycat.coderack, copycat.workspace, copycat.slipnet
@@ -110,7 +112,7 @@ def test_single_run(monkeypatch):
         assert copycat.coderack.number_of_codelets_run == codelet_index + 2
         assert copycat.coderack.population == coderack_population
 
-    chosen_object[0] = None
+    chosen_items.clear()
     for codelet_index in range(25):
         selected_codelet[0] = WholeStringGroupScout(
             2, copycat.coderack, copycat.slipnet, copycat.workspace
@@ -137,18 +139,7 @@ def test_single_run(monkeypatch):
     selected_codelet[0] = BottomUpBondScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
-    monkeypatch.setattr(copycat.workspace, "choose_object", lambda *_: a)
-    monkeypatch.setattr(a, "choose_neighbor", lambda *_: b, raising=False)
-    monkeypatch.setattr(
-        selected_codelet[0],
-        "_choose_bond_facet",
-        lambda *_: copycat.slipnet["letter_category"],
-    )
-    monkeypatch.setattr(
-        selected_codelet[0],
-        "_get_bond_category",
-        lambda *_: copycat.slipnet["successor"],
-    )
+    chosen_items[:] = [a, b, copycat.slipnet["letter_category"]]
     copycat.coderack.post(selected_codelet[0], temperature=0.0)
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
@@ -179,18 +170,7 @@ def test_single_run(monkeypatch):
     selected_codelet[0] = BottomUpBondScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
-    monkeypatch.setattr(copycat.workspace, "choose_object", lambda *_: b)
-    monkeypatch.setattr(b, "choose_neighbor", lambda *_: c, raising=False)
-    monkeypatch.setattr(
-        selected_codelet[0],
-        "_choose_bond_facet",
-        lambda *_: copycat.slipnet["letter_category"],
-    )
-    monkeypatch.setattr(
-        selected_codelet[0],
-        "_get_bond_category",
-        lambda *_: copycat.slipnet["successor"],
-    )
+    chosen_items[:] = [b, c, copycat.slipnet["letter_category"]]
     copycat.coderack.post(selected_codelet[0], temperature=0.0)
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
@@ -221,18 +201,7 @@ def test_single_run(monkeypatch):
     selected_codelet[0] = BottomUpBondScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
-    monkeypatch.setattr(copycat.workspace, "choose_object", lambda *_: i_1)
-    monkeypatch.setattr(i_1, "choose_neighbor", lambda *_: i_2, raising=False)
-    monkeypatch.setattr(
-        selected_codelet[0],
-        "_choose_bond_facet",
-        lambda *_: copycat.slipnet["letter_category"],
-    )
-    monkeypatch.setattr(
-        selected_codelet[0],
-        "_get_bond_category",
-        lambda *_: copycat.slipnet["sameness"],
-    )
+    chosen_items[:] = [i_1, i_2, copycat.slipnet["letter_category"]]
     copycat.coderack.post(selected_codelet[0], temperature=0.0)
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
@@ -263,18 +232,7 @@ def test_single_run(monkeypatch):
     selected_codelet[0] = BottomUpBondScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
-    monkeypatch.setattr(copycat.workspace, "choose_object", lambda *_: j_1)
-    monkeypatch.setattr(j_1, "choose_neighbor", lambda *_: j_2, raising=False)
-    monkeypatch.setattr(
-        selected_codelet[0],
-        "_choose_bond_facet",
-        lambda *_: copycat.slipnet["letter_category"],
-    )
-    monkeypatch.setattr(
-        selected_codelet[0],
-        "_get_bond_category",
-        lambda *_: copycat.slipnet["sameness"],
-    )
+    chosen_items[:] = [j_1, j_2, copycat.slipnet["letter_category"]]
     copycat.coderack.post(selected_codelet[0], temperature=0.0)
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
@@ -305,18 +263,7 @@ def test_single_run(monkeypatch):
     selected_codelet[0] = BottomUpBondScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
-    monkeypatch.setattr(copycat.workspace, "choose_object", lambda *_: k_1)
-    monkeypatch.setattr(k_1, "choose_neighbor", lambda *_: k_2, raising=False)
-    monkeypatch.setattr(
-        selected_codelet[0],
-        "_choose_bond_facet",
-        lambda *_: copycat.slipnet["letter_category"],
-    )
-    monkeypatch.setattr(
-        selected_codelet[0],
-        "_get_bond_category",
-        lambda *_: copycat.slipnet["sameness"],
-    )
+    chosen_items[:] = [k_1, k_2, copycat.slipnet["letter_category"]]
     copycat.coderack.post(selected_codelet[0], temperature=0.0)
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
@@ -352,19 +299,7 @@ def test_single_run(monkeypatch):
         copycat.workspace,
         copycat.slipnet["sameness_group"],
     )
-    monkeypatch.setattr(
-        selected_codelet[0],
-        "choose_workspace_string",
-        lambda *_: copycat.workspace.target_string,
-    )
-    monkeypatch.setattr(
-        copycat.workspace.target_string, "choose_object", lambda *_: i_1
-    )
-    monkeypatch.setattr(selected_codelet[0], "_choose_direction", lambda *_: None)
-    monkeypatch.setattr(selected_codelet[0], "_choose_number_of_bonds", lambda *_: 1)
-    monkeypatch.setattr(
-        selected_codelet[0], "_get_first_bond", lambda *_: i_1.right_bond
-    )
+    chosen_items[:] = [copycat.workspace.target_string, i_1, 1]
     copycat.coderack.post(selected_codelet[0], temperature=0.0)
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
@@ -380,21 +315,7 @@ def test_single_run(monkeypatch):
             copycat.workspace,
             copycat.slipnet["sameness_group"],
         )
-        monkeypatch.setattr(
-            selected_codelet[0],
-            "choose_workspace_string",
-            lambda *_: copycat.workspace.target_string,
-        )
-        monkeypatch.setattr(
-            copycat.workspace.target_string, "choose_object", lambda *_: letter
-        )
-        monkeypatch.setattr(selected_codelet[0], "_choose_direction", lambda *_: None)
-        monkeypatch.setattr(
-            selected_codelet[0], "_choose_number_of_bonds", lambda *_: 1
-        )
-        monkeypatch.setattr(
-            selected_codelet[0], "_get_first_bond", lambda *_: letter.right_bond
-        )
+        chosen_items[:] = [copycat.workspace.target_string, letter, 1]
         copycat.coderack.post(selected_codelet[0], temperature=0.0)
         codelet = copycat.coderack.choose(temperature=0.0)
         assert codelet is selected_codelet[0]
@@ -430,18 +351,7 @@ def test_single_run(monkeypatch):
     selected_codelet[0] = BottomUpBondScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
-    monkeypatch.setattr(copycat.workspace, "choose_object", lambda *_: i_group)
-    monkeypatch.setattr(i_group, "choose_neighbor", lambda *_: j_group, raising=False)
-    monkeypatch.setattr(
-        selected_codelet[0],
-        "_choose_bond_facet",
-        lambda *_: copycat.slipnet["group_category"],
-    )
-    monkeypatch.setattr(
-        selected_codelet[0],
-        "_get_bond_category",
-        lambda *_: copycat.slipnet["successor"],
-    )
+    chosen_items[:] = [i_group, j_group, copycat.slipnet["group_category"]]
     copycat.coderack.post(selected_codelet[0], temperature=0.0)
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
@@ -466,18 +376,7 @@ def test_single_run(monkeypatch):
     selected_codelet[0] = BottomUpBondScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
-    monkeypatch.setattr(copycat.workspace, "choose_object", lambda *_: j_group)
-    monkeypatch.setattr(j_group, "choose_neighbor", lambda *_: k_group, raising=False)
-    monkeypatch.setattr(
-        selected_codelet[0],
-        "_choose_bond_facet",
-        lambda *_: copycat.slipnet["group_category"],
-    )
-    monkeypatch.setattr(
-        selected_codelet[0],
-        "_get_bond_category",
-        lambda *_: copycat.slipnet["successor"],
-    )
+    chosen_items[:] = [j_group, k_group, copycat.slipnet["group_category"]]
     copycat.coderack.post(selected_codelet[0], temperature=0.0)
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
@@ -499,9 +398,7 @@ def test_single_run(monkeypatch):
     assert copycat.coderack.number_of_codelets_run == 107
 
     # Whole target-string successor group: scout, strength tester, builder.
-    monkeypatch.setattr(
-        copycat.workspace, "get_random_string", lambda: copycat.workspace.target_string
-    )
+    chosen_items[:] = [copycat.workspace.target_string, i_group]
     selected_codelet[0] = WholeStringGroupScout(
         2, copycat.coderack, copycat.slipnet, copycat.workspace
     )
@@ -528,9 +425,7 @@ def test_single_run(monkeypatch):
     assert target_group.spans_whole_string()
 
     # Whole initial-string successor group: scout, strength tester, builder.
-    monkeypatch.setattr(
-        copycat.workspace, "get_random_string", lambda: copycat.workspace.initial_string
-    )
+    chosen_items[:] = [copycat.workspace.initial_string, a]
     selected_codelet[0] = WholeStringGroupScout(
         2, copycat.coderack, copycat.slipnet, copycat.workspace
     )
@@ -556,12 +451,7 @@ def test_single_run(monkeypatch):
     initial_group = copycat.workspace.initial_string.groups[-1]
 
     # Whole-string correspondence: scout, strength tester, builder.
-    monkeypatch.setattr(
-        copycat.workspace.initial_string, "choose_object", lambda **_: initial_group
-    )
-    monkeypatch.setattr(
-        copycat.workspace.target_string, "choose_object", lambda **_: target_group
-    )
+    chosen_items[:] = [initial_group, target_group]
     selected_codelet[0] = BottomUpCorrespondenceScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
@@ -588,7 +478,7 @@ def test_single_run(monkeypatch):
     assert copycat.coderack.number_of_codelets_run == 116
 
     # Find the unchanged replacements, induce the rule, translate it, and build the answer.
-    chosen_object[0] = a
+    chosen_items[:] = [a]
     selected_codelet[0] = ReplacementFinder(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
@@ -597,7 +487,7 @@ def test_single_run(monkeypatch):
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
     assert copycat.coderack.number_of_codelets_run == 117
-    chosen_object[0] = b
+    chosen_items[:] = [b]
     selected_codelet[0] = ReplacementFinder(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
@@ -609,6 +499,18 @@ def test_single_run(monkeypatch):
     selected_codelet[0] = RuleScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
+    initial_description = next(
+        description
+        for description in selected_codelet[0]._get_initial_descriptions(c)
+        if description.descriptor is copycat.slipnet["rightmost"]
+    )
+    modified_description = next(
+        description
+        for description in c.replacement.target.extrinsic_descriptions
+        if description.description_type_related is copycat.slipnet["letter_category"]
+        and description.relation is copycat.slipnet["successor"]
+    )
+    chosen_items[:] = [initial_description, modified_description]
     copycat.coderack.post(selected_codelet[0], temperature=0.0)
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
