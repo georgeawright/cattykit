@@ -55,8 +55,6 @@ class TopDownCategoryGroupScout(GroupScout):
                 possible_single_letter_group_direction = random.choices(
                     directions, weights=supports, k=1
                 )[0]
-            for o in objects:
-                print(o)
             left_object = min(objects, key=lambda o: o.left_position)
             right_object = max(objects, key=lambda o: o.right_position)
             possible_group = Group(
