@@ -10,8 +10,8 @@ class WorkspaceString:
         self.letters = []
         self.object_positions = defaultdict(list)
         self.proposed_bonds_by_role = defaultdict(lambda: defaultdict(list))
-        self.bonds_by_role = defaultdict(lambda: defaultdict(list))
-        self.bonds_by_position = defaultdict(lambda: defaultdict(list))
+        self.bonds_by_role = defaultdict(lambda: defaultdict(lambda: None))
+        self.bonds_by_position = defaultdict(lambda: defaultdict(lambda: None))
         self._proposed_groups = defaultdict(lambda: defaultdict(list))
         self._groups = {}
         self.distribution_of_bond_counts = [0]
