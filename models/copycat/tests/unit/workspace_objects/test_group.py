@@ -220,18 +220,18 @@ def test_calculate_external_strength():
     letter_3 = MockLetter(id="l3", string_position=3, string=string)
     letter_4 = MockLetter(id="l4", string_position=4, string=string)
     letter_5 = MockLetter(id="l5", string_position=5, string=string)
-    letter_0.choose_left_neighbor = lambda: None
-    letter_0.choose_right_neighbor = lambda: letter_1
-    letter_1.choose_left_neighbor = lambda: letter_0
-    letter_1.choose_right_neighbor = lambda: letter_2
-    letter_2.choose_left_neighbor = lambda: letter_1
-    letter_2.choose_right_neighbor = lambda: letter_3
-    letter_3.choose_left_neighbor = lambda: letter_2
-    letter_3.choose_right_neighbor = lambda: letter_4
-    letter_4.choose_left_neighbor = lambda: letter_3
-    letter_4.choose_right_neighbor = lambda: letter_5
-    letter_5.choose_left_neighbor = lambda: letter_4
-    letter_5.choose_right_neighbor = lambda: None
+    letter_0.choose_left_neighbour = lambda: None
+    letter_0.choose_right_neighbour = lambda: letter_1
+    letter_1.choose_left_neighbour = lambda: letter_0
+    letter_1.choose_right_neighbour = lambda: letter_2
+    letter_2.choose_left_neighbour = lambda: letter_1
+    letter_2.choose_right_neighbour = lambda: letter_3
+    letter_3.choose_left_neighbour = lambda: letter_2
+    letter_3.choose_right_neighbour = lambda: letter_4
+    letter_4.choose_left_neighbour = lambda: letter_3
+    letter_4.choose_right_neighbour = lambda: letter_5
+    letter_5.choose_left_neighbour = lambda: letter_4
+    letter_5.choose_right_neighbour = lambda: None
 
     group_0_1 = Group(
         string,

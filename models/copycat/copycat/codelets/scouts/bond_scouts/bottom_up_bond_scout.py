@@ -20,9 +20,9 @@ class BottomUpBondScout(BondScout):
         )
         if source is None:
             return Fizzle(FizzleReason.NO_OBJECTS)
-        target = source.choose_neighbor(temperature)
+        target = source.choose_neighbour(temperature)
         if target is None:
-            return Fizzle(FizzleReason.NO_NEIGHBOR)
+            return Fizzle(FizzleReason.NO_NEIGHBOUR)
         bond_facet = self._choose_bond_facet(source, target)
         if bond_facet is None:
             return Fizzle(FizzleReason.NO_COMMON_BOND_FACET)

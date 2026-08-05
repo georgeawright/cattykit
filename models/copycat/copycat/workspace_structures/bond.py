@@ -175,7 +175,7 @@ class Bond(WorkspaceStructure):
         bonds_by_position = self.left_object.string.bonds_by_position
         # Loop leftwards looking for bonds.
         right_object = self.left_object
-        left_object = self.left_object.choose_left_neighbor()
+        left_object = self.left_object.choose_left_neighbour()
         while left_object is not None:
             slot_sum += 1
             next_bond = bonds_by_position[left_object][right_object]
@@ -186,10 +186,10 @@ class Bond(WorkspaceStructure):
             ):
                 support_sum += 1
             right_object = left_object
-            left_object = right_object.choose_left_neighbor()
+            left_object = right_object.choose_left_neighbour()
         # Loop rightwards looking for bonds.
         left_object = self.right_object
-        right_object = self.right_object.choose_right_neighbor()
+        right_object = self.right_object.choose_right_neighbour()
         while right_object is not None:
             slot_sum += 1
             next_bond = bonds_by_position[left_object][right_object]
@@ -200,5 +200,5 @@ class Bond(WorkspaceStructure):
             ):
                 support_sum += 1
             left_object = right_object
-            right_object = right_object.choose_right_neighbor()
+            right_object = right_object.choose_right_neighbour()
         return 0.0 if slot_sum == 0 else support_sum / slot_sum

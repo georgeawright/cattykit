@@ -54,15 +54,15 @@ def test_run():
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
-    # Object with no neighbor
+    # Object with no neighbour
     workspace.object = Mock()
     workspace.object.left_position = 0
-    workspace.object.choose_neighbor.return_value = None
+    workspace.object.choose_neighbour.return_value = None
     scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
-    # Object with neighbor but no shared bond facets
+    # Object with neighbour but no shared bond facets
     source_bond_facet = SimpleNamespace(
         facet=SimpleNamespace(
             name="source_description_facet",
@@ -79,12 +79,12 @@ def test_run():
     target.left_position = 1
     target.descriptions = [target_bond_facet]
     workspace.object.descriptions = [source_bond_facet]
-    workspace.object.choose_neighbor.return_value = target
+    workspace.object.choose_neighbour.return_value = target
     scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
-    # Object with neighbor and shared bond facet but no bond category
+    # Object with neighbour and shared bond facet but no bond category
     target.descriptions = [source_bond_facet, target_bond_facet]
     link = SimpleNamespace(target=Mock(), label=None)
     source_descriptor = SimpleNamespace(name="source_descriptor")
@@ -94,7 +94,7 @@ def test_run():
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
-    # Object with neighbor, shared bond facet, and bond category
+    # Object with neighbour, shared bond facet, and bond category
     target_descriptor = SimpleNamespace(name="target_descriptor")
     target.get_descriptor.return_value = target_descriptor
     link.target = target_descriptor

@@ -139,15 +139,15 @@ def test_calculate_external_strength():
     object_2 = MockLetter(left_position=2, string=string)
     object_3 = MockLetter(left_position=3, string=string)
 
-    object_0.choose_left_neighbor = lambda: None
-    object_1.choose_left_neighbor = lambda: object_0
-    object_2.choose_left_neighbor = lambda: object_1
-    object_3.choose_left_neighbor = lambda: object_2
+    object_0.choose_left_neighbour = lambda: None
+    object_1.choose_left_neighbour = lambda: object_0
+    object_2.choose_left_neighbour = lambda: object_1
+    object_3.choose_left_neighbour = lambda: object_2
 
-    object_0.choose_right_neighbor = lambda: object_1
-    object_1.choose_right_neighbor = lambda: object_2
-    object_2.choose_right_neighbor = lambda: object_3
-    object_3.choose_right_neighbor = lambda: None
+    object_0.choose_right_neighbour = lambda: object_1
+    object_1.choose_right_neighbour = lambda: object_2
+    object_2.choose_right_neighbour = lambda: object_3
+    object_3.choose_right_neighbour = lambda: None
 
     bond_0_1 = Bond(
         object_0, object_1, successor_category, None, letter_category, None, None

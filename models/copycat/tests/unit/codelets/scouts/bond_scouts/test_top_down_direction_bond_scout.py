@@ -66,16 +66,16 @@ def test_run():
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
-    # Object with no neighbor
+    # Object with no neighbour
     object_1 = Mock()
     workspace.initial_string.choose_object.return_value = object_1
     object_1.left_position = 0
-    object_1.choose_left_neighbor.return_value = None
+    object_1.choose_left_neighbour.return_value = None
     scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
-    # Object with neighbor but no shared bond facets
+    # Object with neighbour but no shared bond facets
     source_bond_facet = SimpleNamespace(
         facet=SimpleNamespace(
             name="source_description_facet",
@@ -92,12 +92,12 @@ def test_run():
     object_2.left_position = 1
     object_2.descriptions = [target_bond_facet]
     object_1.descriptions = [source_bond_facet]
-    object_1.choose_left_neighbor.return_value = object_2
+    object_1.choose_left_neighbour.return_value = object_2
     scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
-    # Object with neighbor and shared bond facet one object missing descriptor
+    # Object with neighbour and shared bond facet one object missing descriptor
     object_2.descriptions = [source_bond_facet, target_bond_facet]
     link = SimpleNamespace(target=Mock(), label=None)
     source_descriptor = SimpleNamespace(name="source_descriptor")
@@ -108,7 +108,7 @@ def test_run():
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
-    # Object with neighbor, shared bond facet, but bond category is not directed
+    # Object with neighbour, shared bond facet, but bond category is not directed
     target_descriptor = SimpleNamespace(name="target_descriptor")
     object_2.get_descriptor.return_value = target_descriptor
     link.target = target_descriptor
@@ -121,7 +121,7 @@ def test_run():
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
-    # Object with neighbor, shared bond facet, and bond category is directed
+    # Object with neighbour, shared bond facet, and bond category is directed
     bond_category.is_directed.return_value = True
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 1

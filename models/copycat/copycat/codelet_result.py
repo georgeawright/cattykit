@@ -14,7 +14,7 @@ class FizzleReason(StrEnum):
     REQUIRED_BONDS_NO_LONGER_EXIST = "Required bonds no longer exist"
     INCOMPATIBLE_STRUCTURES_WON = "Incompatible structures won the fight"
     PROPOSED_STRUCTURE_TOO_WEAK = "Proposed structure was not strong enough"
-    NO_NEIGHBOR = "No neighboring object for chosen object"
+    NO_NEIGHBOUR = "No neighbouring object for chosen object"
     NO_COMMON_BOND_FACET = "No common bond facet between chosen objects"
     NO_DESCRIPTORS_FOR_BOND_FACET = "Chosen objects lack descriptors for bond facet"
     NO_BOND_CATEGORY = "No bond category between chosen descriptors"

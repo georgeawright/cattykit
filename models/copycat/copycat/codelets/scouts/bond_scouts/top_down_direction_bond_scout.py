@@ -59,12 +59,12 @@ class TopDownDirectionBondScout(BondScout):
         if source is None:
             return Fizzle(FizzleReason.NO_OBJECTS)
         target = (
-            source.choose_left_neighbor()
+            source.choose_left_neighbour()
             if self.direction_category.name == "left"
-            else source.choose_right_neighbor()
+            else source.choose_right_neighbour()
         )
         if target is None:
-            return Fizzle(FizzleReason.NO_NEIGHBOR)
+            return Fizzle(FizzleReason.NO_NEIGHBOUR)
         bond_facet = self._choose_bond_facet(source, target)
         if bond_facet is None:
             return Fizzle(FizzleReason.NO_COMMON_BOND_FACET)

@@ -192,12 +192,12 @@ class Group(WorkspaceObject, WorkspaceStructure):
     def _local_density(self) -> float:
         """Rough measure of the density in the string of groups
         of the same group-category and direction-category as this group.
-        Probabilistic as it depends on which neighbors are chosen."""
+        Probabilistic as it depends on which neighbours are chosen."""
         slot_sum = 0
         support_sum = 0
         # Loop leftwards looking for groups.
         right_object = self.leftmost_letter
-        left_object = right_object.choose_left_neighbor()
+        left_object = right_object.choose_left_neighbour()
         # might need to be fixed
         left_object = (
             left_object
@@ -216,10 +216,10 @@ class Group(WorkspaceObject, WorkspaceStructure):
             ):
                 support_sum += 1
             right_object = left_object
-            left_object = right_object.choose_left_neighbor()
+            left_object = right_object.choose_left_neighbour()
         # Loop rightwards looking for groups.
         left_object = self.rightmost_letter
-        right_object = left_object.choose_right_neighbor()
+        right_object = left_object.choose_right_neighbour()
         right_object = (
             right_object
             if right_object is None or isinstance(right_object, Group)
@@ -238,5 +238,5 @@ class Group(WorkspaceObject, WorkspaceStructure):
             ):
                 support_sum += 1
             left_object = right_object
-            right_object = left_object.choose_right_neighbor()
+            right_object = left_object.choose_right_neighbour()
         return support_sum / slot_sum if slot_sum > 0 else 1.0

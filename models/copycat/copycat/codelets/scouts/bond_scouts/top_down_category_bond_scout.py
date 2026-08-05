@@ -60,7 +60,7 @@ class TopDownCategoryBondScout(BondScout):
             return Fizzle(FizzleReason.NO_OBJECTS)
         object_2 = object_1.choose_neighbor()
         if object_2 is None:
-            return Fizzle(FizzleReason.NO_NEIGHBOR)
+            return Fizzle(FizzleReason.NO_NEIGHBOUR)
         bond_facet = self._choose_bond_facet(object_1, object_2)
         if bond_facet is None:
             return Fizzle(FizzleReason.NO_COMMON_BOND_FACET)

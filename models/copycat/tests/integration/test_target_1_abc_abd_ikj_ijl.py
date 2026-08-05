@@ -255,7 +255,7 @@ def test_single_run(monkeypatch):
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
     monkeypatch.setattr(copycat.workspace, "choose_object", lambda *_: a)
-    monkeypatch.setattr(a, "choose_neighbor", lambda _: b, raising=False)
+    monkeypatch.setattr(a, "choose_neighbour", lambda _: b, raising=False)
     monkeypatch.setattr(
         selected_codelet[0],
         "_choose_bond_facet",
@@ -313,7 +313,7 @@ def test_single_run(monkeypatch):
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
     monkeypatch.setattr(copycat.workspace, "choose_object", lambda *_: b)
-    monkeypatch.setattr(b, "choose_neighbor", lambda _: changed_letter, raising=False)
+    monkeypatch.setattr(b, "choose_neighbour", lambda _: changed_letter, raising=False)
     monkeypatch.setattr(
         selected_codelet[0],
         "_choose_bond_facet",
@@ -358,7 +358,7 @@ def test_single_run(monkeypatch):
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
     monkeypatch.setattr(copycat.workspace, "choose_object", lambda *_: i)
-    monkeypatch.setattr(i, "choose_neighbor", lambda _: j, raising=False)
+    monkeypatch.setattr(i, "choose_neighbour", lambda _: j, raising=False)
     monkeypatch.setattr(
         selected_codelet[0],
         "_choose_bond_facet",
@@ -402,7 +402,7 @@ def test_single_run(monkeypatch):
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
     monkeypatch.setattr(copycat.workspace, "choose_object", lambda *_: j)
-    monkeypatch.setattr(j, "choose_neighbor", lambda _: k, raising=False)
+    monkeypatch.setattr(j, "choose_neighbour", lambda _: k, raising=False)
     monkeypatch.setattr(
         selected_codelet[0],
         "_choose_bond_facet",
