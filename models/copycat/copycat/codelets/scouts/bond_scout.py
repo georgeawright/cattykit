@@ -82,7 +82,7 @@ class BondScout(Scout):
         self, source: Slipnode, target: Slipnode
     ) -> Optional[Slipnode]:
         if source == target:
-            return self.slipnet.node_index_lookup["sameness"]
+            return self.slipnet["sameness"]
         for link in source.outgoing_links:
             if link.target == target:
                 return link.label
