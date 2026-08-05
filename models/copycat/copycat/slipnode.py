@@ -148,6 +148,19 @@ class Slipnode:
             else 0
         )
 
+    def get_descriptor_support(
+        self, workspace_string: "WorkspaceString", object_category: Slipnode
+    ) -> float:
+        relevant_objects = (
+            workspace_string.letters
+            if object_category.name == "letter"
+            else workspace_string.groups
+        )
+        descriptor_count = sum(
+            1 for obj in relevant_objects if obj.has_description(self)
+        )
+        return descriptor_count / len(relevant_objects) if relevant_objects else 0
+
     def apply_slippages(self, slippages: list) -> Slipnode:
         for slippage in slippages:
             if slippage.descriptor_1 == self:

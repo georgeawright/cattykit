@@ -40,8 +40,6 @@ class BondBuilder(Builder):
         self.proposed_bond.string.delete_proposed_bond(self.proposed_bond)
         incompatible_bonds = self._get_incompatible_bonds()
         if incompatible_bonds:
-            print(self.proposed_bond)
-            print(incompatible_bonds)
             fight_result = structure_beats_structures(
                 self.proposed_bond, 1, incompatible_bonds, 1, temperature=temperature
             )

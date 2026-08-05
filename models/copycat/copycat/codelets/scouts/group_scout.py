@@ -95,6 +95,12 @@ class GroupScout(Scout):
     ) -> Tuple[List["Bond"], List["WorkspaceObject"]]:
         objects = [first_bond.left_object, first_bond.right_object]
         bonds = [first_bond]
+        opposite_bond_category = first_bond.bond_category.get_related_node("opposite")
+        opposite_direction_category = (
+            first_bond.direction_category.get_related_node("opposite")
+            if first_bond.direction_category is not None
+            else None
+        )
         next_bond = first_bond
         for i in range(2, number_of_bonds + 1):
             next_bond = next_bond.choose_neighbour(direction)
@@ -109,10 +115,8 @@ class GroupScout(Scout):
                 bonds.append(next_bond)
                 objects.append(next_object)
             elif (
-                next_bond.bond_category
-                == first_bond.bond_category.get_related_node("opposite")
-                and next_bond.direction_category
-                == first_bond.direction_category.get_related_node("opposite")
+                next_bond.bond_category == opposite_bond_category
+                and next_bond.direction_category == opposite_direction_category
                 and next_bond.bond_facet == first_bond.bond_facet
             ):
                 bonds.append(next_bond.get_flipped_version())

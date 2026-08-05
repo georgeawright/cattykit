@@ -17,6 +17,7 @@ class FizzleReason(StrEnum):
     NO_NEIGHBOUR = "No neighbouring object for chosen object"
     NO_COMMON_BOND_FACET = "No common bond facet between chosen objects"
     NO_DESCRIPTORS_FOR_BOND_FACET = "Chosen objects lack descriptors for bond facet"
+    CANNOT_MAKE_GROUP_FROM_SINGLE_GROUP = "Cannot make a group from a single group"
     NO_BOND_CATEGORY = "No bond category between chosen descriptors"
     NO_DIRECTED_BOND_CATEGORY = "No directed bond category between chosen descriptors"
     BOND_CATEGORY_DOES_NOT_MATCH = "Bond category does not match requested category"
@@ -24,6 +25,9 @@ class FizzleReason(StrEnum):
     OBJECT_SPANS_WHOLE_STRING = "Chosen object already spans the whole string"
     NO_FIRST_BOND = "No bond in chosen direction"
     BOND_DIRECTION_DOES_NOT_MATCH = "Bond direction does not match requested direction"
+    NOT_ENOUGH_SUPPORT_FOR_SINGLE_LETTER_GROUP = (
+        "Not enough support for single-letter group"
+    )
     BONDS_DO_NOT_SPAN_STRING = "Bonds do not span the whole string"
     NO_COMPATIBLE_GROUP_BONDS = "No compatible bonds for a group"
     INCOMPATIBLE_OBJECT_SPANS = "Only one chosen object spans its whole string"

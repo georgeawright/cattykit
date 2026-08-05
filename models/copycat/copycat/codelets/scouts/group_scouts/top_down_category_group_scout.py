@@ -1,8 +1,11 @@
+import random
 from typing import List, Optional, Tuple
 
 from copycat.codelets.scouts.group_scout import GroupScout
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.slipnode import Slipnode
+from copycat.tools import temperature_adjust
+from copycat.workspace_objects import Group
 
 
 class TopDownCategoryGroupScout(GroupScout):
@@ -30,23 +33,67 @@ class TopDownCategoryGroupScout(GroupScout):
         )
         if chosen_object.spans_whole_string():
             return Fizzle(FizzleReason.OBJECT_SPANS_WHOLE_STRING)
-        direction = self._choose_direction(chosen_object)
+        direction_to_scan = self._choose_direction(chosen_object)
         number_of_bonds = self._choose_number_of_bonds(workspace_string)
-        first_bond = self._get_first_bond(direction, chosen_object)
-        if first_bond is None:
-            return Fizzle(FizzleReason.NO_FIRST_BOND)
-        if first_bond.direction_category != direction:
-            return Fizzle(FizzleReason.BOND_DIRECTION_DOES_NOT_MATCH)
-        bond_category = first_bond.bond_category
-        group_category = bond_category.get_related_node("group_category")
+        first_bond = self._get_first_bond(direction_to_scan, chosen_object)
+        if first_bond is None or first_bond.bond_category != bond_category:
+            if isinstance(chosen_object, Group):
+                return Fizzle(FizzleReason.CANNOT_MAKE_GROUP_FROM_SINGLE_GROUP)
+            objects = [chosen_object]
+            bonds = []
+            if self.group_category == self.slipnet["sameness_group"]:
+                possible_single_letter_group_direction = None
+            else:
+                directions = [self.slipnet["left"], self.slipnet["right"]]
+                supports = [
+                    d.get_local_descriptor_support(
+                        workspace_string, self.slipnet["group"]
+                    )
+                    + 1e-5
+                    for d in directions
+                ]
+                possible_single_letter_group_direction = random.choices(
+                    directions, weights=supports, k=1
+                )[0]
+            for o in objects:
+                print(o)
+            left_object = min(objects, key=lambda o: o.left_position)
+            right_object = max(objects, key=lambda o: o.right_position)
+            possible_group = Group(
+                string=workspace_string,
+                left_position=left_object.left_position,
+                right_position=right_object.right_position,
+                objects=objects,
+                bonds=bonds,
+                group_category=self.group_category,
+                direction_category=possible_single_letter_group_direction,
+                bond_category=bond_category,
+            )
+            single_letter_group_probability = (
+                self._calculate_single_letter_group_probability(
+                    possible_group, temperature
+                )
+            )
+            if random.random() > single_letter_group_probability:
+                return Fizzle(FizzleReason.NOT_ENOUGH_SUPPORT_FOR_SINGLE_LETTER_GROUP)
+            self.propose_group(
+                objects=objects,
+                bonds=bonds,
+                group_category=self.group_category,
+                direction=possible_single_letter_group_direction,
+                bond_category=bond_category,
+                temperature=temperature,
+            )
+            return Finish()
+        direction_category = first_bond.direction_category
         bonds, objects = self._get_bonds_and_objects(
-            direction, first_bond, number_of_bonds
+            direction_to_scan, first_bond, number_of_bonds
         )
         self.propose_group(
             objects=objects,
             bonds=bonds,
-            group_category=group_category,
-            direction=direction,
+            group_category=self.group_category,
+            direction=direction_category,
             bond_category=bond_category,
             temperature=temperature,
         )
@@ -66,3 +113,14 @@ class TopDownCategoryGroupScout(GroupScout):
         return self._choose_workspace_string(
             initial_string_relevance, target_string_relevance
         )
+
+    def _calculate_single_letter_group_probability(
+        self, group: Group, temperature: float
+    ) -> float:
+        exponent = {
+            1: 4,
+            2: 2,
+        }.get(group._number_of_local_supporting_groups(), 1)
+        probability = group._local_support() * self.slipnet["length"].activation
+        probability **= exponent
+        return temperature_adjust(probability, temperature)

@@ -1,6 +1,6 @@
 from __future__ import annotations
 import itertools
-from typing import List
+from typing import List, Optional
 
 from copycat.slipnet import Slipnode
 from copycat.workspace_object import WorkspaceObject
@@ -18,7 +18,7 @@ class Group(WorkspaceObject, WorkspaceStructure):
         objects: List[WorkspaceObject],
         bonds: List["Bond"],
         group_category: Slipnode,
-        direction_category: Slipnode,
+        direction_category: Optional[Slipnode],
         bond_category: Slipnode,
         bond_facet: Optional[Slipnode] = None,
     ):
