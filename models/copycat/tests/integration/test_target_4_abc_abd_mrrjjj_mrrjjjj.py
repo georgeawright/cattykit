@@ -556,12 +556,11 @@ def test_single_run(monkeypatch):
     assert {
         (mapping.descriptor_1.name, mapping.descriptor_2.name)
         for mapping in initial_group.correspondence.concept_mappings
-    }.issuperset(
-        {
-            ("three", "three"),
-            ("successor", "successor"),
-        }
-    )
+    }.issuperset({("three", "three")})
+    assert ("successor", "successor") in {
+        (mapping.descriptor_1.name, mapping.descriptor_2.name)
+        for mapping in initial_group.correspondence.accessory_concept_mappings
+    }
 
     # Find the two unchanged replacements before proposing the rule.
     for codelet_index, letter in enumerate((a, b)):
