@@ -13,7 +13,6 @@ from random import choice as random_choice
 from random import choices as random_choices
 
 from numpy.random import choice as numpy_random_choice
-import pytest
 
 from copycat import Copycat
 from copycat.answer_builder import AnswerBuilder
@@ -49,7 +48,6 @@ CODERACK_JSON_FILE = "configs/coderack.json"
 HYPERPARAMETERS_FILE = "configs/hyperparameters.json"
 
 
-@pytest.mark.skip
 def test_single_run(monkeypatch):
     copycat = Copycat.from_json(
         SLIPNET_JSON_FILE, CODERACK_JSON_FILE, HYPERPARAMETERS_FILE
