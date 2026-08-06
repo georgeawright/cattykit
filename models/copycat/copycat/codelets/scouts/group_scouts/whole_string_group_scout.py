@@ -27,13 +27,12 @@ class WholeStringGroupScout(GroupScout):
             return Fizzle(FizzleReason.NO_BONDS)
         chosen_object = workspace_string.choose_from_leftmost_objects()
         first_bond = chosen_object.right_bond
-        required_number_of_bonds = len(workspace_string) - 1
         bonds, objects = self._get_bonds_and_objects(
-            direction=self.slipnet["right"],
-            first_bond=first_bond,
-            number_of_bonds=required_number_of_bonds,
+            direction=self.slipnet["right"], first_bond=first_bond
         )
-        if len(bonds) < required_number_of_bonds:
+        if not (
+            objects[0].is_leftmost_in_string() and objects[-1].is_rightmost_in_string()
+        ):
             return Fizzle(FizzleReason.BONDS_DO_NOT_SPAN_STRING)
         chosen_bond = random.choices(bonds)[0]
         bond_category = chosen_bond.bond_category
@@ -59,18 +58,17 @@ class WholeStringGroupScout(GroupScout):
         return Finish()
 
     def _get_bonds_and_objects(
-        self, direction: "Slipnode", first_bond: "Bond", number_of_bonds: int
+        self, direction: "Slipnode", first_bond: "Bond"
     ) -> Tuple[List["Bond"], List["WorkspaceObject"]]:
-        objects = [first_bond.left_object, first_bond.right_object]
-        bonds = [first_bond]
+        objects = [first_bond.left_object]
+        bonds = []
         next_bond = first_bond
-        for i in range(2, number_of_bonds + 1):
-            next_bond = next_bond.choose_neighbour(direction)
-            if next_bond is None:
-                break
+        next_object = first_bond.get_object(direction)
+        while next_bond is not None:
             next_object = next_bond.get_object(direction)
             bonds.append(next_bond)
             objects.append(next_object)
+            next_bond = next_bond.choose_neighbour(direction)
         return bonds, objects
 
     def _get_possible_group_bonds(

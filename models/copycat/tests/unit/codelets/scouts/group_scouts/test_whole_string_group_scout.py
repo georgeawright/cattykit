@@ -111,8 +111,8 @@ def test_run():
         string=workspace.initial_string,
         left_position=0,
         right_position=0,
-        is_leftmost_in_string=True,
-        is_rightmost_in_string=False,
+        is_leftmost_in_string=lambda: True,
+        is_rightmost_in_string=lambda: False,
         spans_whole_string=lambda: False,
     )
     b = SimpleNamespace(
@@ -120,8 +120,8 @@ def test_run():
         string=workspace.initial_string,
         left_position=1,
         right_position=1,
-        is_leftmost_in_string=False,
-        is_rightmost_in_string=False,
+        is_leftmost_in_string=lambda: False,
+        is_rightmost_in_string=lambda: False,
         spans_whole_string=lambda: False,
     )
     c = SimpleNamespace(
@@ -129,8 +129,8 @@ def test_run():
         string=workspace.initial_string,
         left_position=2,
         right_position=2,
-        is_leftmost_in_string=False,
-        is_rightmost_in_string=True,
+        is_leftmost_in_string=lambda: False,
+        is_rightmost_in_string=lambda: True,
         spans_whole_string=lambda: False,
     )
     a_to_b = SimpleNamespace(
