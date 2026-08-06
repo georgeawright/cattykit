@@ -51,7 +51,7 @@ def test_run():
         def __init__(self, objects):
             self.objects = objects
 
-        def choose_object(self, selection_method):
+        def choose_object(self, temperature, method):
             return self.objects[0] if self.objects else None
 
     coderack = MockCoderack()

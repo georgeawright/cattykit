@@ -26,7 +26,7 @@ class CorrespondenceScout(Scout):
         self.target = None
 
     def run(self, temperature: float) -> CodeletResult:
-        objects_or_fizzle = self._get_objects_or_fizzle()
+        objects_or_fizzle = self._get_objects_or_fizzle(temperature)
         if isinstance(objects_or_fizzle, Fizzle):
             return objects_or_fizzle
         # According to original code, this probably isn't right.

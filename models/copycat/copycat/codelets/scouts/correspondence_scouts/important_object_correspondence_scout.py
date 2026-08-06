@@ -18,9 +18,9 @@ class ImportantObjectCorrespondenceScout(CorrespondenceScout):
     concept mappings and posts a correspondence strength tester with urgency a
     function of the average strength of the distinguishing concept mappings."""
 
-    def _get_objects_or_fizzle(self) -> Optional[CodeletResult]:
+    def _get_objects_or_fizzle(self, temperature: float) -> Optional[CodeletResult]:
         self.source = self.workspace.initial_string.choose_object(
-            selection_method=lambda x: x.relative_importance
+            temperature=temperature, method=lambda x: x.relative_importance
         )
         if self.source is None:
             return Fizzle(FizzleReason.NO_OBJECTS)
@@ -41,9 +41,7 @@ class ImportantObjectCorrespondenceScout(CorrespondenceScout):
         target_candidates = [
             obj
             for obj in self.workspace.target_string.objects
-            if any(
-                d.descriptor == target_descriptor for d in obj.relevant_descriptions
-            )
+            if any(d.descriptor == target_descriptor for d in obj.relevant_descriptions)
         ]
         if not target_candidates:
             return Fizzle(FizzleReason.NO_OBJECTS_WITH_DESCRIPTOR)

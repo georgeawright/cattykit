@@ -15,12 +15,12 @@ class BottomUpCorrespondenceScout(CorrespondenceScout):
     and posts a correspondence strength tester with urgency a function of the average strength
     of the distinguishing concept mappings."""
 
-    def _get_objects_or_fizzle(self) -> Optional[CodeletResult]:
+    def _get_objects_or_fizzle(self, temperature: float) -> Optional[CodeletResult]:
         self.source = self.workspace.initial_string.choose_object(
-            selection_method=lambda x: x.inter_string_salience
+            temperature=temperature, method=lambda x: x.inter_string_salience
         )
         self.target = self.workspace.target_string.choose_object(
-            selection_method=lambda x: x.inter_string_salience
+            temperature=temperature, method=lambda x: x.inter_string_salience
         )
         if self.source is None or self.target is None:
             return Fizzle(FizzleReason.NO_OBJECTS)
