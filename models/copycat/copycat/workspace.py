@@ -338,38 +338,103 @@ class Workspace:
             / 2,
         )
 
-    def get_bottom_up_codelets(self, temperature: float) -> List["Codelet"]:
-        codelets = []
+    def get_bottom_up_codelets(
+        self, slipnet: "Slipnet", coderack: "Coderack", temperature: float
+    ) -> List["Codelet"]:
+        codelets: List["Codelet"] = []
         if self._post_codelet_probability("description", temperature) > random.random():
             for i in range(self._number_of_codelets_to_post("description")):
-                codelets.append(BottomUpDescriptionScout(urgency_bin=2))
+                codelets.append(
+                    BottomUpDescriptionScout(
+                        urgency_bin=2,
+                        coderack=coderack,
+                        slipnet=slipnet,
+                        workspace=self,
+                    )
+                )
         if self._post_codelet_probability("bond", temperature) > random.random():
             for _ in range(self._number_of_codelets_to_post("bond")):
-                codelets.append(BottomUpBondScout(urgency_bin=2))
+                codelets.append(
+                    BottomUpBondScout(
+                        urgency_bin=2,
+                        coderack=coderack,
+                        slipnet=slipnet,
+                        workspace=self,
+                    )
+                )
         if self._post_codelet_probability("group", temperature) > random.random():
             for _ in range(self._number_of_codelets_to_post("group")):
-                codelets.append(WholeStringGroupScout(urgency_bin=2))
+                codelets.append(
+                    WholeStringGroupScout(
+                        urgency_bin=2,
+                        coderack=coderack,
+                        slipnet=slipnet,
+                        workspace=self,
+                    )
+                )
         if self._post_codelet_probability("replacement", temperature) > random.random():
             for _ in range(self._number_of_codelets_to_post("replacement")):
-                codelets.append(ReplacementFinder(urgency_bin=2))
+                codelets.append(
+                    ReplacementFinder(
+                        urgency_bin=2,
+                        coderack=coderack,
+                        slipnet=slipnet,
+                        workspace=self,
+                    )
+                )
         if (
             self._post_codelet_probability("correspondence", temperature)
             > random.random()
         ):
             for _ in range(self._number_of_codelets_to_post("correspondence")):
-                codelets.append(BottomUpCorrespondenceScout(urgency_bin=2))
-                codelets.append(ImportantObjectCorrespondenceScout(urgency_bin=2))
+                codelets.append(
+                    BottomUpCorrespondenceScout(
+                        urgency_bin=2,
+                        coderack=coderack,
+                        slipnet=slipnet,
+                        workspace=self,
+                    )
+                )
+                codelets.append(
+                    ImportantObjectCorrespondenceScout(
+                        urgency_bin=2,
+                        coderack=coderack,
+                        slipnet=slipnet,
+                        workspace=self,
+                    )
+                )
         if self._post_codelet_probability("rule", temperature) > random.random():
             for _ in range(self._number_of_codelets_to_post("rule")):
-                codelets.append(RuleScout(urgency_bin=2))
+                codelets.append(
+                    RuleScout(
+                        urgency_bin=2,
+                        coderack=coderack,
+                        slipnet=slipnet,
+                        workspace=self,
+                    )
+                )
         if (
             self._post_codelet_probability("translated-rule", temperature)
             > random.random()
         ):
             for _ in range(self._number_of_codelets_to_post("translated-rule")):
-                urgency_bin = 2 if self.temperature > 25 else 7
-                codelets.append(RuleTranslator(urgency_bin=urgency_bin))
-        codelets.append(Breaker(urgency_bin=0))
+                urgency_bin = 2 if temperature > 25 else 7
+                codelets.append(
+                    RuleTranslator(
+                        urgency_bin=urgency_bin,
+                        coderack=coderack,
+                        slipnet=slipnet,
+                        workspace=self,
+                    )
+                )
+        codelets.append(
+            Breaker(
+                urgency_bin=0,
+                coderack=coderack,
+                slipnet=slipnet,
+                workspace=self,
+            )
+        )
         return codelets
 
     def _post_codelet_probability(

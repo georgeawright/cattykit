@@ -269,7 +269,9 @@ class Copycat:
             self._probabilistically_unsnag()
         if self.coderack.number_of_codelets_run > 0:
             self._update_temperature()
-            codelets_to_post += self.workspace.get_bottom_up_codelets(self.temperature)
+            codelets_to_post += self.workspace.get_bottom_up_codelets(
+                self.slipnet, self.coderack, self.temperature
+            )
             codelets_to_post += self.slipnet.get_top_down_codelets()
             self.slipnet.update_activations()
         if codelets_to_post:
