@@ -190,8 +190,15 @@ def test_fizzles_if_incompatible_structures_win_fight():
     slipnet = MockSlipnet()
     coderack = Mock()
     proposed_group = Mock()
+    obj_1, obj_2 = Mock(), Mock()
+    obj_1.correspondence = None
+    obj_2.correspondence = None
+    obj_1.group = Mock()
+    obj_2.group = Mock()
+    obj_1.group.equates_to.return_value = False
+    obj_2.group.equates_to.return_value = False
+    proposed_group.objects = [obj_1, obj_2]
     proposed_group.__len__ = lambda x: 2
-    proposed_group.objects = [Mock(), Mock()]
     bond_1, bond_2 = Mock(), Mock()
     proposed_group.bonds = [bond_1, bond_2]
     proposed_group.string = MockWorkspaceString(groups=[])
@@ -236,6 +243,10 @@ def test_breaks_incompatible_structures_flips_bonds_and_builds_group():
     obj_1, obj_2 = Mock(), Mock()
     obj_1.correspondence = None
     obj_2.correspondence = None
+    obj_1.group = Mock()
+    obj_2.group = Mock()
+    obj_1.group.equates_to.return_value = False
+    obj_2.group.equates_to.return_value = False
     proposed_group.objects = [obj_1, obj_2]
     bond_1, bond_2 = Mock(), Mock()
     proposed_group.bonds = [bond_1, bond_2]

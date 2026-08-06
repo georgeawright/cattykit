@@ -116,7 +116,7 @@ class GroupBuilder(Builder):
         return [
             obj.group
             for obj in self.proposed_group.objects
-            if obj.group and obj.group != self.proposed_group
+            if obj.group and not obj.group.equates_to(self.proposed_group)
         ]
 
     def _get_incompatible_correspondences(self):
@@ -232,12 +232,8 @@ class GroupBuilder(Builder):
 
         if group.bonds:
             group.bond_facet = group.bonds[0].bond_facet
-            self._add_description(
-                group, self.slipnet["bond_facet"], group.bond_facet
-            )
-        self._add_description(
-            group, self.slipnet["bond_category"], group.bond_category
-        )
+            self._add_description(group, self.slipnet["bond_facet"], group.bond_facet)
+        self._add_description(group, self.slipnet["bond_category"], group.bond_category)
 
         group_length = len(group.objects)
         if 1 <= group_length <= len(self.slipnet.numbers):
