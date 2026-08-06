@@ -103,8 +103,8 @@ class BondBuilder(Builder):
         return [
             group
             for group in self.proposed_bond.string.groups
-            if group.has_recursive_member(self.proposed_bond.left_object)
-            and group.has_recursive_member(self.proposed_bond.right_object)
+            if group.has_recursive_group_member(self.proposed_bond.left_object)
+            and group.has_recursive_group_member(self.proposed_bond.right_object)
         ]
 
     def _get_incompatible_correspondences(self) -> List["Correspondence"]:
