@@ -3,6 +3,7 @@ class WorkspaceStructure:
         self.internal_strength = 0
         self.external_strength = 0
         self.total_strength = 0
+        self.total_weakness = 1
 
     def __hash__(self):
         return self.hash_id
@@ -11,6 +12,7 @@ class WorkspaceStructure:
         self.internal_strength = self.calculate_internal_strength()
         self.external_strength = self.calculate_external_strength()
         self.total_strength = self.calculate_total_strength()
+        self.total_weakness = 1 - self.total_strength
 
     def calculate_internal_strength(self):
         raise NotImplementedError("Subclasses must implement this method")
