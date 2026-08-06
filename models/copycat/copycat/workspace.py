@@ -170,6 +170,8 @@ class Workspace:
             existing_correspondence = self._correspondences[c.source]
         except KeyError:
             return False
+        if not existing_correspondence:
+            return False
         return existing_correspondence.equates_to(c)
 
     def get_existing_correspondence(
@@ -180,7 +182,7 @@ class Workspace:
             existing_correspondence = self._correspondences[c.source]
         except KeyError:
             return None
-        if existing_correspondence.equates_to(c):
+        if existing_correspondence and existing_correspondence.equates_to(c):
             return existing_correspondence
         return None
 
