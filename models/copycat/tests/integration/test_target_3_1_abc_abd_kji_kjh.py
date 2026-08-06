@@ -304,9 +304,12 @@ def test_single_run(monkeypatch):
         {
             ("predecessor_group", "successor_group"),
             ("left", "left"),
-            ("predecessor", "successor"),
         }
     )
+    assert ("predecessor", "successor") in {
+        (mapping.descriptor_1.name, mapping.descriptor_2.name)
+        for mapping in initial_group.correspondence.accessory_concept_mappings
+    }
 
     for codelet_index, letter in enumerate((a, b)):
         chosen_items[:] = [letter]
@@ -339,7 +342,7 @@ def test_single_run(monkeypatch):
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 136
+    assert copycat.coderack.number_of_codelets_run == 100
     assert any(
         isinstance(posted, RuleStrengthTester)
         and posted.birth_time == copycat.coderack.number_of_codelets_run
@@ -354,7 +357,7 @@ def test_single_run(monkeypatch):
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 137
+    assert copycat.coderack.number_of_codelets_run == 101
     assert any(
         isinstance(posted, RuleBuilder)
         and posted.birth_time == copycat.coderack.number_of_codelets_run
@@ -369,7 +372,7 @@ def test_single_run(monkeypatch):
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 138
+    assert copycat.coderack.number_of_codelets_run == 102
     assert copycat.workspace.rule.descriptor_1 is copycat.slipnet["rightmost"]
     assert (
         copycat.workspace.rule.replaced_description_type
@@ -383,7 +386,7 @@ def test_single_run(monkeypatch):
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 139
+    assert copycat.coderack.number_of_codelets_run == 103
     assert (
         copycat.workspace.translated_rule.descriptor_1 is copycat.slipnet["rightmost"]
     )
@@ -393,4 +396,3 @@ def test_single_run(monkeypatch):
         letter.letter_category.name
         for letter in copycat.workspace.answer_string.letters
     ] == ["k", "j", "h"]
-    assert copycat.coderack.number_of_codelets_run == 139
