@@ -124,8 +124,10 @@ class RuleScout(Scout):
             d
             for d in initial_object.rule_initial_string_descriptions
             if (
-                d.apply_slippages(initial_object.correspondence.slippages)
-                in initial_object.correspondence.target.relevant_descriptions
+                d.apply_slippages(
+                    initial_object, initial_object.correspondence.slippages
+                )
+                in initial_object.correspondence.target.get_relevant_descriptions()
             )
         ]
 
