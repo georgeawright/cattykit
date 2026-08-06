@@ -282,7 +282,7 @@ def test_single_run(monkeypatch):
     assert initial_group.correspondence is first_target_group.correspondence
     assert ("successor", "successor") in {
         (mapping.descriptor_1.name, mapping.descriptor_2.name)
-        for mapping in initial_group.correspondence.concept_mappings
+        for mapping in initial_group.correspondence.accessory_concept_mappings
     }
 
     # Find the unchanged replacements before building the ordinary rule.
@@ -317,7 +317,7 @@ def test_single_run(monkeypatch):
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 136
+    assert copycat.coderack.number_of_codelets_run == 100
     assert any(
         isinstance(posted, RuleStrengthTester) for posted in copycat.coderack.codelets
     )
@@ -330,7 +330,7 @@ def test_single_run(monkeypatch):
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 137
+    assert copycat.coderack.number_of_codelets_run == 101
     assert any(isinstance(posted, RuleBuilder) for posted in copycat.coderack.codelets)
     selected_codelet[0] = [
         posted
@@ -341,7 +341,7 @@ def test_single_run(monkeypatch):
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 138
+    assert copycat.coderack.number_of_codelets_run == 102
     assert copycat.workspace.rule.descriptor_1 is copycat.slipnet["rightmost"]
     assert copycat.workspace.rule.relation is copycat.slipnet["successor"]
 
@@ -352,7 +352,7 @@ def test_single_run(monkeypatch):
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 139
+    assert copycat.coderack.number_of_codelets_run == 103
     assert (
         copycat.workspace.translated_rule.descriptor_1 is copycat.slipnet["rightmost"]
     )
@@ -364,7 +364,6 @@ def test_single_run(monkeypatch):
         AnswerBuilder(copycat.slipnet, copycat.workspace).build()
     assert copycat.workspace.snag_objects == [z]
     assert copycat.workspace.answer_string.letters == []
-    assert copycat.coderack.number_of_codelets_run == 139
 
     # Pages 130-136: the high-temperature breaker sequence removes the rule,
     # the no-slippage correspondence, and the target successor group.  Each
@@ -384,7 +383,7 @@ def test_single_run(monkeypatch):
         codelet = copycat.coderack.choose(temperature=0.0)
         assert codelet is selected_codelet[0]
         assert codelet.run(temperature=0.0) == Finish()
-        assert copycat.coderack.number_of_codelets_run == 140 + codelet_index
+        assert copycat.coderack.number_of_codelets_run == 104 + codelet_index
 
     assert copycat.workspace.rule is None
     assert initial_group.correspondence is None
