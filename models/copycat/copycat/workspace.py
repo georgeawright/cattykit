@@ -322,6 +322,7 @@ class Workspace:
             / 2,
         )
 
+    @property
     def total_unhappiness(self):
         """Returns average of the total unhappiness of objects in the workspace
         weighted by the relative importance of each object in its string."""
