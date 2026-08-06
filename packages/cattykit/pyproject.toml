@@ -1,0 +1,15 @@
+[project]
+name = "cattykit"
+version = "0.1.0"
+description = "A framework for implementing artificial intelligence models using components from the cognitive models of the Fluid Analogies Research Group"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "numpy>=2.4.3",
+]
+
+[dependency-groups]
+dev = [
+    "ipython>=9.11.0",
+    "pytest>=9.0.2",
+]
