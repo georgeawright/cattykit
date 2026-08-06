@@ -20,7 +20,13 @@ class Slipnode:
         self.intrinsic_degree_of_association = (
             1 - intrinsic_link_length if intrinsic_link_length is not None else None
         )
-        self.shrunk_link_length = shrunk_link_length
+        self.shrunk_link_length = (
+            shrunk_link_length
+            if shrunk_link_length is not None
+            else intrinsic_link_length * 0.4
+            if intrinsic_link_length is not None
+            else None
+        )
         self.conceptual_depth = conceptual_depth
         self.description_tester = description_tester
         self.activation = 0
