@@ -18,7 +18,7 @@ class Description(WorkspaceStructure):
         self.hash_id = next(Description._next_id)
 
     def __repr__(self):
-        return f"{self.facet}({self.argument_object})={self.descriptor}"
+        return f"{self.facet} of {self.argument_object} is {self.descriptor}"
 
     @property
     def conceptual_depth(self):
