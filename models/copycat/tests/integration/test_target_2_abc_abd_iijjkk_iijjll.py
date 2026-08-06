@@ -315,7 +315,12 @@ def test_single_run(monkeypatch):
             copycat.workspace,
             copycat.slipnet["sameness_group"],
         )
-        chosen_items[:] = [copycat.workspace.target_string, letter, 1]
+        chosen_items[:] = [
+            copycat.workspace.target_string,
+            letter,
+            copycat.slipnet["right"],
+            1,
+        ]
         copycat.coderack.post(selected_codelet[0], temperature=0.0)
         codelet = copycat.coderack.choose(temperature=0.0)
         assert codelet is selected_codelet[0]
@@ -351,7 +356,7 @@ def test_single_run(monkeypatch):
     selected_codelet[0] = BottomUpBondScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
-    chosen_items[:] = [i_group, j_group, copycat.slipnet["group_category"]]
+    chosen_items[:] = [i_group, j_group, copycat.slipnet["letter_category"]]
     copycat.coderack.post(selected_codelet[0], temperature=0.0)
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
@@ -376,7 +381,7 @@ def test_single_run(monkeypatch):
     selected_codelet[0] = BottomUpBondScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
-    chosen_items[:] = [j_group, k_group, copycat.slipnet["group_category"]]
+    chosen_items[:] = [j_group, k_group, copycat.slipnet["letter_category"]]
     copycat.coderack.post(selected_codelet[0], temperature=0.0)
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
