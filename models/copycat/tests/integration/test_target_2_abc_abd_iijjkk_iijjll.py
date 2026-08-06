@@ -579,7 +579,7 @@ def test_single_run(monkeypatch):
     )
     initial_description = next(
         description
-        for description in selected_codelet[0]._get_initial_descriptions(c)
+        for description in c.rule_initial_string_descriptions
         if description.descriptor is copycat.slipnet["rightmost"]
     )
     modified_description = next(
