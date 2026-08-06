@@ -28,10 +28,14 @@ DESCRIPTION_TESTERS = {
     "is_leftmost": lambda x: not x.spans_whole_string and x.leftmost_in_string,
     "is_rightmost": lambda x: not x.spans_whole_string and x.rightmost_in_string,
     "is_middle": lambda x: (
-        x.ungrouped_left_neighbor is not None
-        and x.ungrouped_right_neighbor is not None
-        and x.ungrouped_left_neighbor.leftmost_in_string
-        and x.ungrouped_right_neighbor.rightmost_in_string
+        any(
+            neighbour.group is None and neighbour.is_leftmost_in_string()
+            for neighbour in x.left_neighbours
+        )
+        and any(
+            neighbour.group is None and neighbour.is_rightmost_in_string()
+            for neighbour in x.right_neighbours
+        )
     ),
     "is_single": lambda x: isinstance(x, Letter) and x.spans_whole_string,
     "is_whole": lambda x: isinstance(x, Group) and x.spans_whole_string,
