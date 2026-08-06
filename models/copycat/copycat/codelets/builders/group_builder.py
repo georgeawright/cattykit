@@ -149,8 +149,8 @@ class GroupBuilder(Builder):
         if other_bond is None or other_bond.direction_category is None:
             return False
         group_concept_mapping = ConceptMapping(
-            description_type_1=self.slipnet.direction_category,
-            description_type_2=self.slipnet.direction_category,
+            description_type_1=self.slipnet["direction_category"],
+            description_type_2=self.slipnet["direction_category"],
             descriptor_1=self.proposed_group.direction_category,
             descriptor_2=other_bond.direction_category,
             label=None,
