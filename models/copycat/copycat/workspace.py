@@ -349,7 +349,7 @@ class Workspace:
             > random.random()
         ):
             for i in range(
-                coderack.number_of_codelets_to_post("description"), workspace=self
+                coderack.number_of_codelets_to_post("description", workspace=self)
             ):
                 codelets.append(
                     BottomUpDescriptionScout(
