@@ -30,6 +30,14 @@ class Sliplink:
         return f"{self.source} ~~ {self.label} ~~> {self.target})"
 
     @property
+    def degree_of_association(self):
+        return (
+            1 - self.fixed_length
+            if self.fixed_length is not None
+            else self.label.degree_of_association
+        )
+
+    @property
     def intrinsic_degree_of_association(self):
         return (
             self._intrinsic_degree_of_association
