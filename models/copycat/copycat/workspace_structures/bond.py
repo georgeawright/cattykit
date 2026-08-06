@@ -75,6 +75,10 @@ class Bond(WorkspaceStructure):
         return 1.0 - self.happiness
 
     @property
+    def is_sameness_bond(self) -> bool:
+        return self.bond_category.name == "sameness"
+
+    @property
     def salience(self) -> float:
         return (self.importance + self.unhappiness) / 2
 
