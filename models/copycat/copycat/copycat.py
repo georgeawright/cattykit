@@ -278,7 +278,7 @@ class Copycat:
     def step(self):
         """Run a single codelet."""
         codelet = self.coderack.choose(self.temperature)
-        codelet.run()
+        codelet.run(self.temperature)
 
     def _update_temperature(self):
         if self.clamp_temperature:
