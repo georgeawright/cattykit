@@ -26,8 +26,8 @@ class Sliplink:
 
     def __repr__(self):
         if self.label is None:
-            return f"{self.source} ~~~~> {self.target})"
-        return f"{self.source} ~~ {self.label} ~~> {self.target})"
+            return f"{self.source} ~~~~> {self.target}"
+        return f"{self.source} ~~ {self.label} ~~> {self.target}"
 
     @property
     def degree_of_association(self):
