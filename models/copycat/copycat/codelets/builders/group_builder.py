@@ -157,8 +157,8 @@ class GroupBuilder(Builder):
             object_1=None,
             object_2=None,
         )
-        return self.workspace.incompatible_concept_mappings(
-            group_concept_mapping, string_position_category_concept_mapping
+        return group_concept_mapping.is_incompatible_with(
+            string_position_category_concept_mapping
         )
 
     def _break_incompatible_structures(
