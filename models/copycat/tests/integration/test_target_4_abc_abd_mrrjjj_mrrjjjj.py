@@ -13,7 +13,6 @@ from random import choice as random_choice
 from random import choices as random_choices
 
 from numpy.random import choice as numpy_random_choice
-import pytest
 
 from copycat import Copycat
 from copycat.answer_builder import AnswerBuilder
@@ -52,7 +51,6 @@ CODERACK_JSON_FILE = "configs/coderack.json"
 HYPERPARAMETERS_FILE = "configs/hyperparameters.json"
 
 
-@pytest.mark.skip
 def test_single_run(monkeypatch):
     copycat = Copycat.from_json(
         SLIPNET_JSON_FILE, CODERACK_JSON_FILE, HYPERPARAMETERS_FILE
@@ -85,6 +83,10 @@ def test_single_run(monkeypatch):
     )
     monkeypatch.setattr(
         "copycat.codelets.strength_testers.bond_strength_tester.random.random",
+        lambda: 0.0,
+    )
+    monkeypatch.setattr(
+        "copycat.codelets.strength_testers.group_strength_tester.random.random",
         lambda: 0.0,
     )
     monkeypatch.setattr(
@@ -222,6 +224,7 @@ def test_single_run(monkeypatch):
             copycat.workspace.target_string,
             first_letter,
             number_of_bonds,
+            copycat.slipnet["right"],
         ]
         copycat.coderack.post(selected_codelet[0], temperature=0.0)
         codelet = copycat.coderack.choose(temperature=0.0)
