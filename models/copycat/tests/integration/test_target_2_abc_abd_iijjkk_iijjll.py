@@ -489,6 +489,7 @@ def test_single_run(monkeypatch):
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
     assert copycat.coderack.number_of_codelets_run == 115
+    copycat.slipnet.update_activations()
     selected_codelet[0] = [
         c for c in copycat.coderack.codelets if isinstance(c, CorrespondenceBuilder)
     ][-1]
