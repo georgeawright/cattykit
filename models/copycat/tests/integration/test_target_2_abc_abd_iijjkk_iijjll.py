@@ -326,11 +326,13 @@ def test_single_run(monkeypatch):
         assert codelet is selected_codelet[0]
         assert codelet.run(temperature=0.0) == Finish()
         assert copycat.coderack.number_of_codelets_run == 93 + codelet_index * 3
+        proposed_group = copycat.workspace.target_string.proposed_groups[-1]
         selected_codelet[0] = [
             codelet
             for codelet in copycat.coderack.codelets
             if isinstance(codelet, GroupStrengthTester)
-        ][-1]
+            and codelet.proposed_group is proposed_group
+        ][0]
         codelet = copycat.coderack.choose(temperature=0.0)
         assert codelet is selected_codelet[0]
         assert codelet.run(temperature=0.0) == Finish()
@@ -339,7 +341,8 @@ def test_single_run(monkeypatch):
             codelet
             for codelet in copycat.coderack.codelets
             if isinstance(codelet, GroupBuilder)
-        ][-1]
+            and codelet.proposed_group is proposed_group
+        ][0]
         codelet = copycat.coderack.choose(temperature=0.0)
         assert codelet is selected_codelet[0]
         assert codelet.run(temperature=0.0) == Finish()
@@ -412,16 +415,22 @@ def test_single_run(monkeypatch):
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
     assert copycat.coderack.number_of_codelets_run == 108
+    proposed_target_group = copycat.workspace.target_string.proposed_groups[-1]
     selected_codelet[0] = [
-        c for c in copycat.coderack.codelets if isinstance(c, GroupStrengthTester)
-    ][-1]
+        c
+        for c in copycat.coderack.codelets
+        if isinstance(c, GroupStrengthTester)
+        and c.proposed_group is proposed_target_group
+    ][0]
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
     assert copycat.coderack.number_of_codelets_run == 109
     selected_codelet[0] = [
-        c for c in copycat.coderack.codelets if isinstance(c, GroupBuilder)
-    ][-1]
+        c
+        for c in copycat.coderack.codelets
+        if isinstance(c, GroupBuilder) and c.proposed_group is proposed_target_group
+    ][0]
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
@@ -439,16 +448,22 @@ def test_single_run(monkeypatch):
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
     assert copycat.coderack.number_of_codelets_run == 111
+    proposed_initial_group = copycat.workspace.initial_string.proposed_groups[-1]
     selected_codelet[0] = [
-        c for c in copycat.coderack.codelets if isinstance(c, GroupStrengthTester)
-    ][-1]
+        c
+        for c in copycat.coderack.codelets
+        if isinstance(c, GroupStrengthTester)
+        and c.proposed_group is proposed_initial_group
+    ][0]
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
     assert copycat.coderack.number_of_codelets_run == 112
     selected_codelet[0] = [
-        c for c in copycat.coderack.codelets if isinstance(c, GroupBuilder)
-    ][-1]
+        c
+        for c in copycat.coderack.codelets
+        if isinstance(c, GroupBuilder) and c.proposed_group is proposed_initial_group
+    ][0]
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
