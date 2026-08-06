@@ -148,7 +148,12 @@ def test_single_run(monkeypatch):
         selected_codelet[0] = BottomUpBondScout(
             2, copycat.coderack, copycat.workspace, copycat.slipnet
         )
-        chosen_items[:] = [source, target, copycat.slipnet["letter_category"]]
+        chosen_items[:] = [
+            source,
+            target,
+            copycat.slipnet["letter_category"],
+            True,
+        ]
         copycat.coderack.post(selected_codelet[0], temperature=0.0)
         codelet = copycat.coderack.choose(temperature=0.0)
         assert codelet is selected_codelet[0]
@@ -388,7 +393,9 @@ def test_single_run(monkeypatch):
     assert copycat.workspace.rule is None
     assert initial_group.correspondence is None
     assert first_target_group not in copycat.workspace.target_string.groups
-    assert all(letter.group is None for letter in (x, y, z))
+    assert x.group is None
+    assert y.group is None
+    assert z.group is None
     chosen_items.clear()
 
     # Pages 136-138: the target is rebuilt in the opposite direction.  Spatially
@@ -397,12 +404,17 @@ def test_single_run(monkeypatch):
         selected_codelet[0] = BottomUpBondScout(
             2, copycat.coderack, copycat.workspace, copycat.slipnet
         )
-        chosen_items[:] = [source, target, copycat.slipnet["letter_category"]]
+        chosen_items[:] = [
+            source,
+            target,
+            copycat.slipnet["letter_category"],
+            True,
+        ]
         copycat.coderack.post(selected_codelet[0], temperature=0.0)
         codelet = copycat.coderack.choose(temperature=0.0)
         assert codelet is selected_codelet[0]
         assert codelet.run(temperature=0.0) == Finish()
-        assert copycat.coderack.number_of_codelets_run == 143 + codelet_index * 3
+        assert copycat.coderack.number_of_codelets_run == 107 + codelet_index * 3
         assert (
             source.string.proposed_bonds[-1].bond_category
             is copycat.slipnet["predecessor"]
@@ -420,7 +432,7 @@ def test_single_run(monkeypatch):
         codelet = copycat.coderack.choose(temperature=0.0)
         assert codelet is selected_codelet[0]
         assert codelet.run(temperature=0.0) == Finish()
-        assert copycat.coderack.number_of_codelets_run == 144 + codelet_index * 3
+        assert copycat.coderack.number_of_codelets_run == 108 + codelet_index * 3
         assert any(
             isinstance(posted, BondBuilder) for posted in copycat.coderack.codelets
         )
@@ -433,7 +445,7 @@ def test_single_run(monkeypatch):
         codelet = copycat.coderack.choose(temperature=0.0)
         assert codelet is selected_codelet[0]
         assert codelet.run(temperature=0.0) == Finish()
-        assert copycat.coderack.number_of_codelets_run == 145 + codelet_index * 3
+        assert copycat.coderack.number_of_codelets_run == 109 + codelet_index * 3
         assert (
             source.string.bonds_by_role[source][target].bond_category
             is copycat.slipnet["predecessor"]
