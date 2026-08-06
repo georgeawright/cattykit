@@ -136,7 +136,7 @@ class BondBuilder(Builder):
         )
         if string_position_category_concept_mapping is None:
             return False
-        other_object = correspondence.other_object(self.proposed_bond.left_object)
+        other_object = correspondence.get_other_object(self.proposed_bond.left_object)
         if other_object.is_leftmost_in_string():
             other_bond = other_object.right_bond
         elif other_object.is_rightmost_in_string():
@@ -146,8 +146,8 @@ class BondBuilder(Builder):
         if other_bond is None or other_bond.direction_category is None:
             return False
         bond_concept_mapping = ConceptMapping(
-            description_type_1=self.slipnet.direction_category,
-            description_type_2=self.slipnet.direction_category,
+            description_type_1=self.slipnet["direction_category"],
+            description_type_2=self.slipnet["direction_category"],
             descriptor_1=self.proposed_bond.direction_category,
             descriptor_2=other_bond.direction_category,
             label=None,
