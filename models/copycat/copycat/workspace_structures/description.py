@@ -25,11 +25,7 @@ class Description(WorkspaceStructure):
         return self.descriptor.conceptual_depth
 
     def equates_to(self, other) -> bool:
-        return (self.argument_object, self.facet, self.descriptor) == (
-            other.argument_object,
-            other.facet,
-            other.descriptor,
-        )
+        return (self.facet, self.descriptor) == (other.facet, other.descriptor)
 
     def is_relevant(self) -> bool:
         return self.descriptor.is_active()
