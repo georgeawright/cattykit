@@ -14,6 +14,7 @@ class Slipnode:
         intrinsic_link_length: Optional[float] = None,
         shrunk_link_length: Optional[float] = None,
         description_tester: Optional[Callable] = None,
+        codelets: Optional[List[str]] = None,
     ):
         self.name = name
         self.intrinsic_link_length = intrinsic_link_length
@@ -38,7 +39,7 @@ class Slipnode:
         self.lateral_sliplinks: List["Sliplink"] = []
         self.lateral_non_sliplinks: List["Sliplink"] = []
         self.incoming_links: List["Sliplink"] = []
-        self.codelets: List["Codelet"] = []
+        self.codelets = codelets if codelets is not None else []
 
     def __repr__(self):
         return self.name.upper()

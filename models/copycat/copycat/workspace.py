@@ -342,8 +342,15 @@ class Workspace:
         self, slipnet: "Slipnet", coderack: "Coderack", temperature: float
     ) -> List["Codelet"]:
         codelets: List["Codelet"] = []
-        if self._post_codelet_probability("description", temperature) > random.random():
-            for i in range(self._number_of_codelets_to_post("description")):
+        if (
+            coderack.post_codelet_probability(
+                "description", temperature, workspace=self
+            )
+            > random.random()
+        ):
+            for i in range(
+                coderack.number_of_codelets_to_post("description"), workspace=self
+            ):
                 codelets.append(
                     BottomUpDescriptionScout(
                         urgency_bin=2,
@@ -352,8 +359,11 @@ class Workspace:
                         workspace=self,
                     )
                 )
-        if self._post_codelet_probability("bond", temperature) > random.random():
-            for _ in range(self._number_of_codelets_to_post("bond")):
+        if (
+            coderack.post_codelet_probability("bond", temperature, workspace=self)
+            > random.random()
+        ):
+            for _ in range(coderack.number_of_codelets_to_post("bond", workspace=self)):
                 codelets.append(
                     BottomUpBondScout(
                         urgency_bin=2,
@@ -362,8 +372,13 @@ class Workspace:
                         workspace=self,
                     )
                 )
-        if self._post_codelet_probability("group", temperature) > random.random():
-            for _ in range(self._number_of_codelets_to_post("group")):
+        if (
+            coderack.post_codelet_probability("group", temperature, workspace=self)
+            > random.random()
+        ):
+            for _ in range(
+                coderack.number_of_codelets_to_post("group", workspace=self)
+            ):
                 codelets.append(
                     WholeStringGroupScout(
                         urgency_bin=2,
@@ -372,8 +387,15 @@ class Workspace:
                         workspace=self,
                     )
                 )
-        if self._post_codelet_probability("replacement", temperature) > random.random():
-            for _ in range(self._number_of_codelets_to_post("replacement")):
+        if (
+            coderack.post_codelet_probability(
+                "replacement", temperature, workspace=self
+            )
+            > random.random()
+        ):
+            for _ in range(
+                coderack.number_of_codelets_to_post("replacement", workspace=self)
+            ):
                 codelets.append(
                     ReplacementFinder(
                         urgency_bin=2,
@@ -383,10 +405,14 @@ class Workspace:
                     )
                 )
         if (
-            self._post_codelet_probability("correspondence", temperature)
+            coderack.post_codelet_probability(
+                "correspondence", temperature, workspace=self
+            )
             > random.random()
         ):
-            for _ in range(self._number_of_codelets_to_post("correspondence")):
+            for _ in range(
+                coderack.number_of_codelets_to_post("correspondence", workspace=self)
+            ):
                 codelets.append(
                     BottomUpCorrespondenceScout(
                         urgency_bin=2,
@@ -403,8 +429,11 @@ class Workspace:
                         workspace=self,
                     )
                 )
-        if self._post_codelet_probability("rule", temperature) > random.random():
-            for _ in range(self._number_of_codelets_to_post("rule")):
+        if (
+            coderack.post_codelet_probability("rule", temperature, workspace=self)
+            > random.random()
+        ):
+            for _ in range(coderack.number_of_codelets_to_post("rule", workspace=self)):
                 codelets.append(
                     RuleScout(
                         urgency_bin=2,
@@ -414,10 +443,14 @@ class Workspace:
                     )
                 )
         if (
-            self._post_codelet_probability("translated-rule", temperature)
+            coderack.post_codelet_probability(
+                "translated-rule", temperature, workspace=self
+            )
             > random.random()
         ):
-            for _ in range(self._number_of_codelets_to_post("translated-rule")):
+            for _ in range(
+                coderack.number_of_codelets_to_post("translated-rule", workspace=self)
+            ):
                 urgency_bin = 2 if temperature > 25 else 7
                 codelets.append(
                     RuleTranslator(
@@ -436,69 +469,3 @@ class Workspace:
             )
         )
         return codelets
-
-    def _post_codelet_probability(
-        self, structure_category: str, temperature: float
-    ) -> float:
-        """For a given structure-category (e.g., description, or bond),
-        returns a probability to use in deciding whether codelets looking
-        for this type of structure should be posted.
-        """
-        if structure_category == "description":
-            probability = temperature**2
-        elif structure_category == "bond":
-            probability = self.intra_string_unhappiness()
-        elif structure_category == "group":
-            probability = self.intra_string_unhappiness()
-        elif structure_category == "replacement":
-            probability = 1 if self.unreplaced_objects else 0
-        elif structure_category == "correspondence":
-            probability = self.inter_string_unhappiness()
-        elif structure_category == "rule":
-            probability = 1 if self.rule is None else self.rule.total_weakness
-        elif structure_category == "translated-rule":
-            probability = 1 if self.rule else 0
-        return probability
-
-    def _number_of_codelets_to_post(self, structure_category: str) -> int:
-        """For a given structure-category (e.g., description, or bond),
-        returns the number of codelets looking for this type of structure
-        that should be posted.
-        """
-        if structure_category == "description":
-            number = 1
-        elif structure_category == "bond":
-            number = {
-                "few": 1,
-                "medium": 2,
-                "many": 3,
-            }[self.rough_number_of_unrelated_objects]
-        elif structure_category == "group":
-            if not self.bonds:
-                number = 0
-            else:
-                number = {
-                    "few": 1,
-                    "medium": 2,
-                    "many": 3,
-                }[self.rough_number_of_ungrouped_objects]
-        elif structure_category == "replacement":
-            if self.rule:
-                number = 0
-            else:
-                number = {
-                    "few": 1,
-                    "medium": 2,
-                    "many": 3,
-                }[self.rough_number_of_unreplaced_objects]
-        elif structure_category == "correspondence":
-            number = {
-                "few": 1,
-                "medium": 3,
-                "many": 3,
-            }[self.rough_number_of_uncorresponded_objects]
-        elif structure_category == "rule":
-            number = 2
-        elif structure_category == "translated-rule":
-            number = 0 if not self.rule else 1
-        return number

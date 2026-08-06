@@ -4,6 +4,16 @@ import numpy as np
 import pytest
 
 from copycat import Slipnet
+from copycat.codelets.scouts.bond_scouts import (
+    TopDownCategoryBondScout,
+    TopDownDirectionBondScout,
+)
+from copycat.codelets.scouts.description_scouts import TopDownDescriptionScout
+from copycat.codelets.scouts.group_scouts import (
+    TopDownCategoryGroupScout,
+    TopDownDirectionGroupScout,
+)
+from copycat.slipnode import Slipnode
 
 np.random.seed(0)
 
@@ -174,3 +184,53 @@ def test_activate_node_from_workspace():
 
     assert 0.0 == node_activations[0]
     assert 1.0 == node_activation_buffers[0]
+
+
+def test_get_top_down_codelets_instantiates_configured_codelets():
+    nodes = [
+        Slipnode(
+            "direction",
+            conceptual_depth=0.5,
+            codelets=["TopDownDirectionBondScout", "TopDownDirectionGroupScout"],
+        ),
+        Slipnode(
+            "bond",
+            conceptual_depth=0.5,
+            codelets=["TopDownCategoryBondScout"],
+        ),
+        Slipnode(
+            "group",
+            conceptual_depth=0.5,
+            codelets=["TopDownCategoryGroupScout"],
+        ),
+        Slipnode(
+            "description_type",
+            conceptual_depth=0.5,
+            codelets=["TopDownDescriptionScout"],
+        ),
+    ]
+    slipnet = Slipnet.create(nodes, [])
+    slipnet.node_activations.fill(1.0)
+    for node in slipnet.nodes:
+        node.activation = 1.0
+    coderack = SimpleNamespace(get_urgency_level_from_activation=lambda _: 6)
+    workspace = SimpleNamespace()
+
+    codelets = slipnet.get_top_down_codelets(coderack, workspace)
+
+    assert [type(codelet) for codelet in codelets] == [
+        TopDownDirectionBondScout,
+        TopDownDirectionGroupScout,
+        TopDownCategoryBondScout,
+        TopDownCategoryGroupScout,
+        TopDownDescriptionScout,
+    ]
+    assert codelets[0].direction_category == nodes[0]
+    assert codelets[1].direction_category == nodes[0]
+    assert codelets[2].bond_category == nodes[1]
+    assert codelets[3].group_category == nodes[2]
+    assert codelets[4].description_type == nodes[3]
+    assert all(codelet.urgency_bin == 6 for codelet in codelets)
+    assert all(codelet.coderack is coderack for codelet in codelets)
+    assert all(codelet.workspace is workspace for codelet in codelets)
+    assert all(codelet.slipnet is slipnet for codelet in codelets)

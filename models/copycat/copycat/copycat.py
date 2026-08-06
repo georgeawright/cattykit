@@ -272,7 +272,9 @@ class Copycat:
             codelets_to_post += self.workspace.get_bottom_up_codelets(
                 self.slipnet, self.coderack, self.temperature
             )
-            codelets_to_post += self.slipnet.get_top_down_codelets()
+            codelets_to_post += self.slipnet.get_top_down_codelets(
+                self.coderack, self.workspace
+            )
             self.slipnet.update_activations()
         if codelets_to_post:
             self.coderack.post_many(codelets_to_post, self.temperature)

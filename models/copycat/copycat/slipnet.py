@@ -102,6 +102,7 @@ class Slipnet:
                 ]
                 if node_data.get("description_tester") is not None
                 else None,
+                codelets=node_data.get("codelets"),
             )
             for node_data in json_data["nodes"]
         }
@@ -188,11 +189,62 @@ class Slipnet:
         index = self.node_index_lookup[node_id]
         self.activation_buffers[index] += self.workspace_activation
 
-    def get_top_down_codelets(self) -> List["Codelet"]:
+    def get_top_down_codelets(
+        self, coderack: "Coderack", workspace: "Workspace"
+    ) -> List["Codelet"]:
+        # Imports are deferred to avoid the codelet package importing the slipnet
+        # again while this module is being initialized.
+        from .codelets.scouts.bond_scouts import (
+            TopDownCategoryBondScout,
+            TopDownDirectionBondScout,
+        )
+        from .codelets.scouts.description_scouts import TopDownDescriptionScout
+        from .codelets.scouts.group_scouts import (
+            TopDownCategoryGroupScout,
+            TopDownDirectionGroupScout,
+        )
+
+        codelet_types = {
+            "TopDownCategoryBondScout": (
+                TopDownCategoryBondScout,
+                "bond_category",
+            ),
+            "TopDownCategoryGroupScout": (
+                TopDownCategoryGroupScout,
+                "group_category",
+            ),
+            "TopDownDescriptionScout": (TopDownDescriptionScout, "description_type"),
+            "TopDownDirectionBondScout": (
+                TopDownDirectionBondScout,
+                "direction_category",
+            ),
+            "TopDownDirectionGroupScout": (
+                TopDownDirectionGroupScout,
+                "direction_category",
+            ),
+        }
         top_down_codelets = []
         for node in self.nodes:
-            if node.activation > self.full_activation_threshold:
-                top_down_codelets.extend(node.get_top_down_codelets())
+            if node.activation < self.full_activation_threshold:
+                continue
+            for codelet_name in node.codelets:
+                try:
+                    codelet_class, node_argument = codelet_types[codelet_name]
+                except KeyError as error:
+                    raise ValueError(
+                        f"Unknown top-down codelet: {codelet_name}"
+                    ) from error
+                top_down_codelets.append(
+                    codelet_class(
+                        urgency_bin=coderack.get_urgency_level_from_activation(
+                            node.activation
+                        ),
+                        coderack=coderack,
+                        workspace=workspace,
+                        slipnet=self,
+                        **{node_argument: node},
+                    )
+                )
         return top_down_codelets
 
     def _spread_activations(self):

@@ -123,3 +123,82 @@ class Coderack:
         delete the argument from the workspace."""
         self.get_urgency_bin(codelet.urgency_bin).remove(codelet)
         # TODO: remove arguments of workspace structures
+
+    def post_codelet_probability(
+        self,
+        structure_or_codelet_category: str,
+        temperature: float,
+        workspace: "Workspace",
+    ) -> float:
+        """For a given structure-category (e.g., description, or bond),
+        returns a probability to use in deciding whether codelets looking
+        for this type of structure should be posted.
+        """
+        if structure_or_codelet_category in ["description", "TopDownDescriptionScout"]:
+            probability = temperature**2
+        elif structure_or_codelet_category in [
+            "bond",
+            "TopDownCategoryBondScout",
+            "TopDownDirectionBondScout",
+        ]:
+            probability = workspace.intra_string_unhappiness()
+        elif structure_or_codelet_category in [
+            "group",
+            "TopDownCategoryGroupScout",
+            "TopDownDirectionGroupScout",
+        ]:
+            probability = workspace.intra_string_unhappiness()
+        elif structure_or_codelet_category in ["replacement", "ReplacementFinder"]:
+            probability = 1 if workspace.unreplaced_objects else 0
+        elif structure_or_codelet_category == "correspondence":
+            probability = workspace.inter_string_unhappiness()
+        elif structure_or_codelet_category in ["rule", "RuleScout"]:
+            probability = 1 if workspace.rule is None else self.rule.total_weakness
+        elif structure_or_codelet_category == "translated-rule":
+            probability = 1 if workspace.rule else 0
+        return probability
+
+    def number_of_codelets_to_post(
+        self, structure_category: str, workspace: "Workspace"
+    ) -> int:
+        """For a given structure-category (e.g., description, or bond),
+        returns the number of codelets looking for this type of structure
+        that should be posted.
+        """
+        if structure_category == "description":
+            number = 1
+        elif structure_category == "bond":
+            number = {
+                "few": 1,
+                "medium": 2,
+                "many": 3,
+            }[workspace.rough_number_of_unrelated_objects]
+        elif structure_category == "group":
+            if not workspace.bonds:
+                number = 0
+            else:
+                number = {
+                    "few": 1,
+                    "medium": 2,
+                    "many": 3,
+                }[workspace.rough_number_of_ungrouped_objects]
+        elif structure_category == "replacement":
+            if workspace.rule:
+                number = 0
+            else:
+                number = {
+                    "few": 1,
+                    "medium": 2,
+                    "many": 3,
+                }[workspace.rough_number_of_unreplaced_objects]
+        elif structure_category == "correspondence":
+            number = {
+                "few": 1,
+                "medium": 3,
+                "many": 3,
+            }[workspace.rough_number_of_uncorresponded_objects]
+        elif structure_category == "rule":
+            number = 2
+        elif structure_category == "translated-rule":
+            number = 0 if not workspace.rule else 1
+        return number
