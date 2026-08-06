@@ -83,6 +83,14 @@ def test_single_run(monkeypatch):
         lambda: 0.0,
     )
     monkeypatch.setattr(
+        "copycat.codelets.scouts.correspondence_scout.random.random",
+        lambda: 0.0,
+    )
+    monkeypatch.setattr(
+        "copycat.codelets.strength_testers.correspondence_strength_tester.random.random",
+        lambda: 0.0,
+    )
+    monkeypatch.setattr(
         "copycat.codelets.scouts.description_scouts.top_down_description_scout.np.random.choice",
         lambda population, p=None: (
             next(item for item in chosen_items if item in population)
@@ -311,6 +319,58 @@ def test_single_run(monkeypatch):
         for mapping in initial_group.correspondence.accessory_concept_mappings
     }
 
+    # Pages 110-113: the c-k correspondence supersedes the earlier c-i
+    # proposal.  Its rightmost-to-leftmost mapping is what translates the
+    # rule to operate on k in the target string.
+    chosen_items[:] = [c, k]
+    selected_codelet[0] = BottomUpCorrespondenceScout(
+        2, copycat.coderack, copycat.workspace, copycat.slipnet
+    )
+    copycat.coderack.post(selected_codelet[0], temperature=0.0)
+    codelet = copycat.coderack.choose(temperature=0.0)
+    assert codelet is selected_codelet[0]
+    assert codelet.run(temperature=0.0) == Finish()
+    assert copycat.coderack.number_of_codelets_run == 98
+    proposed_correspondence = copycat.workspace.proposed_correspondences[-1]
+    assert proposed_correspondence.source is c
+    assert proposed_correspondence.target is k
+    assert any(
+        isinstance(posted, CorrespondenceStrengthTester)
+        and posted.proposed_correspondence is proposed_correspondence
+        for posted in copycat.coderack.codelets
+    )
+    selected_codelet[0] = next(
+        posted
+        for posted in copycat.coderack.codelets
+        if isinstance(posted, CorrespondenceStrengthTester)
+        and posted.proposed_correspondence is proposed_correspondence
+    )
+    codelet = copycat.coderack.choose(temperature=0.0)
+    assert codelet is selected_codelet[0]
+    assert codelet.run(temperature=0.0) == Finish()
+    assert copycat.coderack.number_of_codelets_run == 99
+    copycat.slipnet.update_activations()
+    assert any(
+        isinstance(posted, CorrespondenceBuilder)
+        and posted.proposed_correspondence is proposed_correspondence
+        for posted in copycat.coderack.codelets
+    )
+    selected_codelet[0] = next(
+        posted
+        for posted in copycat.coderack.codelets
+        if isinstance(posted, CorrespondenceBuilder)
+        and posted.proposed_correspondence is proposed_correspondence
+    )
+    codelet = copycat.coderack.choose(temperature=0.0)
+    assert codelet is selected_codelet[0]
+    assert codelet.run(temperature=0.0) == Finish()
+    assert copycat.coderack.number_of_codelets_run == 100
+    assert c.correspondence is k.correspondence
+    assert ("rightmost", "leftmost") in {
+        (mapping.descriptor_1.name, mapping.descriptor_2.name)
+        for mapping in c.correspondence.concept_mappings
+    }
+
     for codelet_index, letter in enumerate((a, b)):
         chosen_items[:] = [letter]
         selected_codelet[0] = ReplacementFinder(
@@ -320,7 +380,7 @@ def test_single_run(monkeypatch):
         codelet = copycat.coderack.choose(temperature=0.0)
         assert codelet is selected_codelet[0]
         assert codelet.run(temperature=0.0) == Finish()
-        assert copycat.coderack.number_of_codelets_run == 98 + codelet_index
+        assert copycat.coderack.number_of_codelets_run == 101 + codelet_index
         assert letter.replacement.target.letter_category is letter.letter_category
 
     selected_codelet[0] = RuleScout(
@@ -328,7 +388,7 @@ def test_single_run(monkeypatch):
     )
     initial_description = next(
         description
-        for description in selected_codelet[0]._get_initial_descriptions(c)
+        for description in c.rule_initial_string_descriptions
         if description.descriptor is copycat.slipnet["rightmost"]
     )
     modified_description = next(
@@ -342,7 +402,7 @@ def test_single_run(monkeypatch):
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 100
+    assert copycat.coderack.number_of_codelets_run == 103
     assert any(
         isinstance(posted, RuleStrengthTester)
         and posted.birth_time == copycat.coderack.number_of_codelets_run
@@ -357,7 +417,7 @@ def test_single_run(monkeypatch):
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 101
+    assert copycat.coderack.number_of_codelets_run == 104
     assert any(
         isinstance(posted, RuleBuilder)
         and posted.birth_time == copycat.coderack.number_of_codelets_run
@@ -372,7 +432,7 @@ def test_single_run(monkeypatch):
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 102
+    assert copycat.coderack.number_of_codelets_run == 105
     assert copycat.workspace.rule.descriptor_1 is copycat.slipnet["rightmost"]
     assert (
         copycat.workspace.rule.replaced_description_type
@@ -386,7 +446,7 @@ def test_single_run(monkeypatch):
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 103
+    assert copycat.coderack.number_of_codelets_run == 106
     assert copycat.workspace.translated_rule.descriptor_1 is copycat.slipnet["leftmost"]
     assert copycat.workspace.translated_rule.relation is copycat.slipnet["successor"]
     assert AnswerBuilder(copycat.slipnet, copycat.workspace).build() is None
