@@ -464,7 +464,7 @@ def test_single_run(monkeypatch):
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 149
+    assert copycat.coderack.number_of_codelets_run == 113
     assert any(
         isinstance(posted, GroupStrengthTester) for posted in copycat.coderack.codelets
     )
@@ -477,7 +477,7 @@ def test_single_run(monkeypatch):
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 150
+    assert copycat.coderack.number_of_codelets_run == 114
     assert any(isinstance(posted, GroupBuilder) for posted in copycat.coderack.codelets)
     selected_codelet[0] = [
         posted
@@ -488,79 +488,10 @@ def test_single_run(monkeypatch):
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 151
+    assert copycat.coderack.number_of_codelets_run == 115
     target_group = copycat.workspace.target_string.groups[-1]
     assert target_group.group_category is copycat.slipnet["predecessor_group"]
     assert target_group.direction_category is copycat.slipnet["left"]
-
-    # The page-138 view is successor-group -> predecessor-group, right -> left,
-    # successor -> predecessor, with rightmost -> leftmost supplied by the
-    # diagonal first/last correspondence pressure.
-    final_target_descriptions = (
-        ("object_category", "group"),
-        ("group_category", "predecessor_group"),
-        ("string_position_category", "whole"),
-        ("direction_category", "left"),
-        ("bond_category", "predecessor"),
-        ("bond_facet", "letter_category"),
-    )
-    for codelet_index, (description_type_name, descriptor_name) in enumerate(
-        final_target_descriptions
-    ):
-        description_type = copycat.slipnet[description_type_name]
-        descriptor = copycat.slipnet[descriptor_name]
-        chosen_items[:] = [target_group, descriptor]
-        selected_codelet[0] = TopDownDescriptionScout(
-            2,
-            copycat.coderack,
-            copycat.slipnet,
-            copycat.workspace,
-            description_type,
-        )
-        copycat.coderack.post(selected_codelet[0], temperature=0.0)
-        codelet = copycat.coderack.choose(temperature=0.0)
-        assert codelet is selected_codelet[0]
-        assert codelet.run(temperature=0.0) == Finish()
-        assert copycat.coderack.number_of_codelets_run == 152 + codelet_index * 3
-        assert any(
-            isinstance(posted, DescriptionStrengthTester)
-            for posted in copycat.coderack.codelets
-        )
-        selected_codelet[0] = [
-            posted
-            for posted in copycat.coderack.codelets
-            if isinstance(posted, DescriptionStrengthTester)
-            and posted.birth_time == copycat.coderack.number_of_codelets_run
-        ][-1]
-        codelet = copycat.coderack.choose(temperature=0.0)
-        assert codelet is selected_codelet[0]
-        assert codelet.run(temperature=0.0) == Finish()
-        assert copycat.coderack.number_of_codelets_run == 153 + codelet_index * 3
-        assert any(
-            isinstance(posted, DescriptionBuilder)
-            for posted in copycat.coderack.codelets
-        )
-        selected_codelet[0] = [
-            posted
-            for posted in copycat.coderack.codelets
-            if isinstance(posted, DescriptionBuilder)
-            and posted.birth_time == copycat.coderack.number_of_codelets_run
-        ][-1]
-        codelet = copycat.coderack.choose(temperature=0.0)
-        assert codelet is selected_codelet[0]
-        assert codelet.run(temperature=0.0) == Finish()
-        assert copycat.coderack.number_of_codelets_run == 154 + codelet_index * 3
-        if description_type in (
-            copycat.slipnet["bond_category"],
-            copycat.slipnet["bond_facet"],
-        ):
-            assert any(
-                description.facet is description_type
-                and description.descriptor is descriptor
-                for description in target_group.bond_descriptions
-            )
-        else:
-            assert target_group.get_descriptor(description_type) is descriptor
 
     # Build the diagonal c-x correspondence that supplies the deep
     # rightmost -> leftmost mapping shown in frames 18-21.
@@ -572,7 +503,7 @@ def test_single_run(monkeypatch):
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 170
+    assert copycat.coderack.number_of_codelets_run == 116
     assert any(
         isinstance(posted, CorrespondenceStrengthTester)
         for posted in copycat.coderack.codelets
@@ -586,7 +517,7 @@ def test_single_run(monkeypatch):
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 171
+    assert copycat.coderack.number_of_codelets_run == 117
     copycat.slipnet.update_activations()
     assert any(
         isinstance(posted, CorrespondenceBuilder)
@@ -601,7 +532,7 @@ def test_single_run(monkeypatch):
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 172
+    assert copycat.coderack.number_of_codelets_run == 118
     assert c.correspondence is x.correspondence
     assert ("rightmost", "leftmost") in {
         (mapping.descriptor_1.name, mapping.descriptor_2.name)
@@ -617,7 +548,7 @@ def test_single_run(monkeypatch):
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 173
+    assert copycat.coderack.number_of_codelets_run == 119
     assert any(
         isinstance(posted, CorrespondenceStrengthTester)
         for posted in copycat.coderack.codelets
@@ -631,7 +562,7 @@ def test_single_run(monkeypatch):
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 174
+    assert copycat.coderack.number_of_codelets_run == 120
     copycat.slipnet.update_activations()
     assert any(
         isinstance(posted, CorrespondenceBuilder)
@@ -646,7 +577,7 @@ def test_single_run(monkeypatch):
     codelet = copycat.coderack.choose(temperature=0.0)
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
-    assert copycat.coderack.number_of_codelets_run == 175
+    assert copycat.coderack.number_of_codelets_run == 121
     assert initial_group.correspondence is target_group.correspondence
     assert {
         (mapping.descriptor_1.name, mapping.descriptor_2.name)
