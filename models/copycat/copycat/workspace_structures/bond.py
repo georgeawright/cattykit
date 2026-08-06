@@ -36,11 +36,12 @@ class Bond(WorkspaceStructure):
         self.hash_id = next(Bond._next_id)
 
     def __repr__(self):
-        return (
-            f"{self.source} -- "
-            f"{self.bond_facet} {self.bond_category} {self.direction_category}"
-            f" --> {self.target}"
-        )
+        labels = [
+            l
+            for l in [self.bond_facet, self.bond_category, self.direction_category]
+            if l is not None
+        ]
+        return f"{self.source} --{labels}--> {self.target}"
 
     def __len__(self):
         """Returns the number of letters spanned by the bond.
