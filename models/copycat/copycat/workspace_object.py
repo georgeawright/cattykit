@@ -105,8 +105,7 @@ class WorkspaceObject:
             self.descriptions.append(description)
 
     def has_recursive_group_member(self, other_object) -> bool:
-        if self == other_object:
-            return True
+        return self == other_object
 
     def get_relevant_descriptions(self) -> List["Description"]:
         return [d for d in self.descriptions if d.is_relevant()]
