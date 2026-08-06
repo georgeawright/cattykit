@@ -198,6 +198,10 @@ class Workspace:
         if group.group is not None:
             self.break_group(group.group)
         group.string.delete_group(group)
+        for obj in group.objects:
+            obj.group = None
+        for bond in group.bonds:
+            bond.group = None
         for bond in group.string.proposed_bonds:
             if bond.left_object == group or bond.right_object == group:
                 group.string.delete_proposed_bond(bond)
