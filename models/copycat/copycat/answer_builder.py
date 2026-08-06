@@ -157,11 +157,15 @@ class AnswerBuilder:
         )
         modified_letters.append(new_letter)
         new_position = new_letter.left_position
-        for i in range(1, 1 - int(new_descriptor)):
+        for i in range(1, int(new_descriptor)):
             new_position = new_position + (1 if rightwards else -1)
-            new_letter_category = group.group_category.iterator(
-                new_letter.get_descriptor(self.slipnet["letter_category"])
-            )
+            previous_letter_category = new_letter.letter_category
+            if group.bond_category is self.slipnet["sameness"]:
+                new_letter_category = previous_letter_category
+            else:
+                new_letter_category = previous_letter_category.get_related_node(
+                    group.bond_category.name
+                )
             if new_letter_category is None:
                 self.workspace.snag_objects.append(new_letter)
                 raise SnagException
@@ -188,13 +192,13 @@ class AnswerBuilder:
         self, modified_letters: List[Letter], unmodified_letters: List[Letter]
     ) -> List[Letter]:
         for letter in modified_letters + unmodified_letters:
-            if not (
+            if (
                 letter in modified_letters
-                and letter.left_position > self.changed_length_group.right_position
+                or letter.left_position <= self.changed_length_group.right_position
             ):
                 continue
             letter.left_position += self.amount_length_changed
-            letter.right_position = letter.left_position + self.amount_length_changed
+            letter.right_position = letter.left_position
         return modified_letters + unmodified_letters
 
     def _get_new_descriptor(
