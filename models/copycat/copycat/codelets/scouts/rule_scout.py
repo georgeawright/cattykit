@@ -120,16 +120,22 @@ class RuleScout(Scout):
     ) -> List[Description]:
         if initial_object.correspondence is None:
             return initial_object.rule_initial_string_descriptions
-        return [
-            d
-            for d in initial_object.rule_initial_string_descriptions
-            if (
-                d.apply_slippages(
-                    initial_object, initial_object.correspondence.slippages
-                )
-                in initial_object.correspondence.target.get_relevant_descriptions()
+        initial_descriptions = []
+        relevant_target_descriptions = (
+            initial_object.correspondence.target.get_relevant_descriptions()
+        )
+        for d in initial_object.rule_initial_string_descriptions:
+            slipped_d = d.apply_slippages(
+                initial_object, initial_object.correspondence.slippages
             )
-        ]
+            if any(
+                [
+                    slipped_d.equates_to(target_description)
+                    for target_description in relevant_target_descriptions
+                ]
+            ):
+                initial_descriptions.append(d)
+        return initial_descriptions
 
     def _get_modified_description(
         self,
