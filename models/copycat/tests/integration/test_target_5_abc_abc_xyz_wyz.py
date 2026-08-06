@@ -308,7 +308,7 @@ def test_single_run(monkeypatch):
     )
     initial_description = next(
         description
-        for description in selected_codelet[0]._get_initial_descriptions(c)
+        for description in c.rule_initial_string_descriptions
         if description.descriptor is copycat.slipnet["rightmost"]
     )
     modified_description = next(
@@ -586,9 +586,12 @@ def test_single_run(monkeypatch):
         {
             ("successor_group", "predecessor_group"),
             ("right", "left"),
-            ("successor", "predecessor"),
         }
     )
+    assert ("successor", "predecessor") in {
+        (mapping.descriptor_1.name, mapping.descriptor_2.name)
+        for mapping in initial_group.correspondence.accessory_concept_mappings
+    }
 
     selected_codelet[0] = RuleScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
