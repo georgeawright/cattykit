@@ -198,7 +198,7 @@ class CorrespondenceBuilder(Builder):
             d.apply_slippages(self.workspace.slippages)
             for d in [
                 d.descriptor
-                for d in self.proposed_correspondence.target.relevant_descriptions
+                for d in self.proposed_correspondence.target.get_relevant_descriptions()
             ]
         ]
         if self.workspace.rule.descriptor_1 in slippages:
