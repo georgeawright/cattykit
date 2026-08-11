@@ -1,7 +1,11 @@
+import itertools
+
 from copycat.codelet_result import CodeletResult
 
 
 class Codelet:
+    _next_id = itertools.count(1)
+
     def __init__(
         self,
         urgency_bin,
@@ -13,9 +17,10 @@ class Codelet:
         self.coderack = coderack
         self.workspace = workspace
         self.slipnet = slipnet
+        self.hash_id = next(Codelet._next_id)
 
     def __repr__(self):
-        return f"<{type(self).__name__} in bin {self.urgency_bin}>"
+        return f"<{type(self).__name__} {self.hash_id} in bin {self.urgency_bin}>"
 
     def run(self, temperature: float) -> CodeletResult:
         raise NotImplementedError
