@@ -9,6 +9,9 @@ dependencies = [
     "numpy>=2.4.3",
 ]
 
+[tool.uv.sources]
+cattykit = { path = "../../packages/cattykit" }
+
 [project.entry-points."cattykit.models"]
 copycat = "copycat.cattykit_plugin:plugin"
 

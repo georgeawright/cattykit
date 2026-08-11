@@ -7,7 +7,7 @@ unit:
 	uv run python -m pytest tests/unit
 
 run:
-	uv run python -m main
+	uv run python -m examples.run_copycat
 
 
 tests:
