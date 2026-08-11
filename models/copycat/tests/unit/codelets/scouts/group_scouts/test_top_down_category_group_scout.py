@@ -36,17 +36,13 @@ def test_run(monkeypatch):
     left = SimpleNamespace(name="left", activation=0.0)
     right.get_related_node = lambda relation: left if relation == "opposite" else None
     left.get_related_node = lambda relation: right if relation == "opposite" else None
-    right.get_local_descriptor_support = Mock(return_value=1.0)
-    left.get_local_descriptor_support = Mock(return_value=0.0)
+    right.get_descriptor_support = Mock(return_value=1.0)
+    left.get_descriptor_support = Mock(return_value=0.0)
 
     successor_group = SimpleNamespace(name="successor_group")
     sameness_group = SimpleNamespace(name="sameness_group")
-    successor = SimpleNamespace(
-        name="successor", bond_degree_of_association=0.5
-    )
-    predecessor = SimpleNamespace(
-        name="predecessor", bond_degree_of_association=0.5
-    )
+    successor = SimpleNamespace(name="successor", bond_degree_of_association=0.5)
+    predecessor = SimpleNamespace(name="predecessor", bond_degree_of_association=0.5)
     sameness = SimpleNamespace(name="sameness", bond_degree_of_association=1.0)
     successor_group.get_related_node = (
         lambda relation: successor if relation == "bond_category" else None
@@ -157,21 +153,17 @@ def test_run(monkeypatch):
     initial_string.choose_object.return_value = a
     selected_random_number[0] = 0.99
     result = scout.run(temperature=0.0)
-    assert result == Fizzle(
-        FizzleReason.NOT_ENOUGH_SUPPORT_FOR_SINGLE_LETTER_GROUP
-    )
+    assert result == Fizzle(FizzleReason.NOT_ENOUGH_SUPPORT_FOR_SINGLE_LETTER_GROUP)
     assert coderack.post_called == 0
     assert initial_string.proposed_groups == []
     assert slipnet.activate_called == 0
-    left.get_local_descriptor_support.assert_called_with(initial_string, group)
-    right.get_local_descriptor_support.assert_called_with(initial_string, group)
+    left.get_descriptor_support.assert_called_with(initial_string, group)
+    right.get_descriptor_support.assert_called_with(initial_string, group)
 
     # A bond of the wrong category is treated like no suitable first bond.
     a.right_bond = SimpleNamespace(bond_category=predecessor)
     result = scout.run(temperature=0.0)
-    assert result == Fizzle(
-        FizzleReason.NOT_ENOUGH_SUPPORT_FOR_SINGLE_LETTER_GROUP
-    )
+    assert result == Fizzle(FizzleReason.NOT_ENOUGH_SUPPORT_FOR_SINGLE_LETTER_GROUP)
     assert coderack.post_called == 0
     assert initial_string.proposed_groups == []
     assert slipnet.activate_called == 0
@@ -232,9 +224,7 @@ def test_run(monkeypatch):
     length.activation = 0.0
     selected_random_number[0] = 0.99
     result = sameness_scout.run(temperature=0.0)
-    assert result == Fizzle(
-        FizzleReason.NOT_ENOUGH_SUPPORT_FOR_SINGLE_LETTER_GROUP
-    )
+    assert result == Fizzle(FizzleReason.NOT_ENOUGH_SUPPORT_FOR_SINGLE_LETTER_GROUP)
     assert coderack.post_called == 1
     assert slipnet.activate_called == 0
 
@@ -283,12 +273,8 @@ def test_run(monkeypatch):
         left_object=b,
         right_object=c,
     )
-    a_to_b.get_object = lambda direction: (
-        a if direction.name == "left" else b
-    )
-    b_to_c.get_object = lambda direction: (
-        b if direction.name == "left" else c
-    )
+    a_to_b.get_object = lambda direction: (a if direction.name == "left" else b)
+    b_to_c.get_object = lambda direction: (b if direction.name == "left" else c)
     a.left_bond = None
     a.right_bond = a_to_b
     b.left_bond = a_to_b
