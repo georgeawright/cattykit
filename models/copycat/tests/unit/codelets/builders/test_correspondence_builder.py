@@ -15,7 +15,6 @@ class MockWorkspace:
         self.break_bond_called = 0
         self.break_group_called = 0
         self.break_correspondence_called = 0
-        self.break_rule_called = 0
         self.existing_correspondence = None
         self.rule = None
         self.slippages = [Mock(), Mock()]
@@ -38,9 +37,6 @@ class MockWorkspace:
 
     def break_correspondence(self, correspondence):
         self.break_correspondence_called += 1
-
-    def break_rule(self, rule):
-        self.break_rule_called += 1
 
 
 class MockSlipnet:
@@ -446,7 +442,7 @@ def test_breaks_incompatible_structures_and_builds_correspondence():
     assert workspace.break_group_called == 2
     assert workspace.break_bond_called == 2
     assert workspace.break_correspondence_called == 1
-    assert workspace.break_rule_called == 1
+    assert workspace.rule is None
     assert correspondence.source.correspondence == correspondence
     assert correspondence.target.correspondence == correspondence
     assert workspace.add_correspondence_called == 1
