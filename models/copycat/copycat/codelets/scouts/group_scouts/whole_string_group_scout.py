@@ -27,6 +27,8 @@ class WholeStringGroupScout(GroupScout):
             return Fizzle(FizzleReason.NO_BONDS)
         chosen_object = workspace_string.choose_from_leftmost_objects()
         first_bond = chosen_object.right_bond
+        if first_bond is None:
+            return Fizzle(FizzleReason.BONDS_DO_NOT_SPAN_STRING)
         bonds, objects = self._get_bonds_and_objects(
             direction=self.slipnet["right"], first_bond=first_bond
         )
