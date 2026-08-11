@@ -14,5 +14,8 @@ class Codelet:
         self.workspace = workspace
         self.slipnet = slipnet
 
+    def __repr__(self):
+        return f"<{type(self).__name__} in bin {self.urgency_bin}>"
+
     def run(self, temperature: float) -> CodeletResult:
         raise NotImplementedError

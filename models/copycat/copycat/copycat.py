@@ -320,7 +320,7 @@ class Copycat:
         codelet = self.coderack.choose(self.temperature)
         self.logger.log(
             ModelEvent.create(
-                "copycat", "codelet_selected", codelet_type=str(type(codelet))
+                "copycat", "codelet_selected", codelet_type=type(codelet).__name__
             )
         )
         result = codelet.run(self.temperature)
