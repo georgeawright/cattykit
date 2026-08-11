@@ -1,6 +1,7 @@
 import json
 import random
-from typing import List
+
+from cattykit.logging import ModelEvent, ModelLogger, NullLogger
 
 from .answer_builder import AnswerBuilder
 from .codelets import (
@@ -53,8 +54,9 @@ class Copycat:
         coderack: Coderack,
         workspace: Workspace,
         time_step_length: int,
-        initially_clamped_nodes: List[str],
+        initially_clamped_nodes: list[str],
         initial_slipnode_clamp_time: int,
+        logger: ModelLogger | None = None,
     ):
         self.slipnet = slipnet
         self.coderack = coderack
@@ -68,13 +70,18 @@ class Copycat:
         self.snag_condition = False
         self.snag_object = False
         self.clamp_temperature = False
+        self.logger = logger if logger is not None else NullLogger()
 
     def close(self) -> None:
         """Copycat owns no resources"""
 
     @classmethod
     def from_json(
-        cls, slipnet_json_file: str, coderack_json_file: str, hyperparameters_file: str
+        cls,
+        slipnet_json_file: str,
+        coderack_json_file: str,
+        hyperparameters_file: str,
+        logger: ModelLogger | None = None,
     ):
         with open(hyperparameters_file) as f:
             hyperparameters = json.load(f)
@@ -101,17 +108,29 @@ class Copycat:
             time_step_length=hyperparameters["time_step_length"],
             initially_clamped_nodes=hyperparameters["initially_clamped_nodes"],
             initial_slipnode_clamp_time=hyperparameters["initial_slipnode_clamp_time"],
+            logger=logger,
         )
 
-    def solve(self, string: str):
+    def solve(self, string: str) -> None:
         """
         Solve a string analogy problem (e.g. "abc -> abd ==> ijk -> ?")
         """
-        self._add_letters_to_workspace(string)
-        self._add_initial_descriptions_to_workspace()
-        self._post_initial_codelets()
-        self.slipnet.update_activations()
-        self.run()
+        self.logger.log(ModelEvent.create("copycat", "run_started", problem=string))
+        try:
+            self._add_letters_to_workspace(string)
+            self._add_initial_descriptions_to_workspace()
+            self._post_initial_codelets()
+            self.slipnet.update_activations()
+            self.run()
+        finally:
+            self.logger.log(
+                ModelEvent.create(
+                    "copycat",
+                    "run_finished",
+                    codelets_run=self.coderack.number_of_codelets_run,
+                    found_answer=self.found_answer,
+                )
+            )
 
     def _add_letters_to_workspace(self, string: str):
         """
@@ -255,10 +274,21 @@ class Copycat:
                 continue
             try:
                 answer_builder = AnswerBuilder(self.slipnet, self.workspace)
-                self.found_answer = answer_builder.build()
-                print(self.answer)
+                answer_builder.build()
+                self.found_answer = True
+                self.logger.log(
+                    ModelEvent.create(
+                        "copycat",
+                        "answer_found",
+                        answer="".join(
+                            letter.letter_category.name
+                            for letter in self.workspace.answer_string.letters
+                        ),
+                    )
+                )
                 break
             except SnagException:
+                self.logger.log(ModelEvent.create("copycat", "snag_encountered"))
                 self.handle_snag()
 
     def update(self):

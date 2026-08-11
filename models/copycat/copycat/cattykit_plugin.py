@@ -8,6 +8,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, cast
 
+from cattykit.logging import ModelLogger
 from cattykit.models import ModelPlugin
 
 from .copycat import Copycat
@@ -34,6 +35,7 @@ def plugin() -> ModelPlugin:
 def create_model(
     *,
     config: Mapping[str, Any] | None = None,
+    logger: ModelLogger | None = None,
     **kwargs: Any,
 ) -> Copycat:
     """Create a Copycat model from its bundled configuration files."""
@@ -54,5 +56,6 @@ def create_model(
             str(config_directory / "slipnet.json"),
             str(config_directory / "coderack.json"),
             str(config_directory / "hyperparameters.json"),
+            logger=logger,
         ),
     )
