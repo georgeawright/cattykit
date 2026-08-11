@@ -172,7 +172,7 @@ class Coderack:
                 "few": 1,
                 "medium": 2,
                 "many": 3,
-            }[workspace.rough_number_of_unrelated_objects]
+            }[workspace.rough_number_of_unbonded_objects]
         elif structure_category == "group":
             if not workspace.bonds:
                 number = 0
