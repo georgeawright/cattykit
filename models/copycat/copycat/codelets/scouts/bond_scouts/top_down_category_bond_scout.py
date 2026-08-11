@@ -57,7 +57,7 @@ class TopDownCategoryBondScout(BondScout):
         object_1 = string.choose_object(temperature, lambda x: x.intra_string_salience)
         if object_1 is None:
             return Fizzle(FizzleReason.NO_OBJECTS)
-        object_2 = object_1.choose_neighbor()
+        object_2 = object_1.choose_neighbour()
         if object_2 is None:
             return Fizzle(FizzleReason.NO_NEIGHBOUR)
         bond_facet = self._choose_bond_facet(object_1, object_2)
