@@ -4,7 +4,7 @@ from typing import List, Optional, Tuple
 from copycat.codelets.scouts.group_scout import GroupScout
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.slipnode import Slipnode
-from copycat.tools import temperature_adjust
+from copycat.tools import select_item_from_list, temperature_adjust
 from copycat.workspace_objects import Group
 
 
@@ -49,12 +49,11 @@ class TopDownCategoryGroupScout(GroupScout):
                     d.get_local_descriptor_support(
                         workspace_string, self.slipnet["group"]
                     )
-                    + 1e-5
                     for d in directions
                 ]
-                possible_single_letter_group_direction = random.choices(
-                    directions, weights=supports, k=1
-                )[0]
+                possible_single_letter_group_direction = select_item_from_list(
+                    directions, supports
+                )
             left_object = min(objects, key=lambda o: o.left_position)
             right_object = max(objects, key=lambda o: o.right_position)
             possible_group = Group(

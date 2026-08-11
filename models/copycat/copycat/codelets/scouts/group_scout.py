@@ -1,9 +1,9 @@
-import random
 from typing import List, Optional, Tuple
 
 from copycat.codelets.scout import Scout
 from copycat.codelets.strength_testers import GroupStrengthTester
 from copycat.workspace_objects.group import Group
+from copycat.tools import select_item_from_list
 
 
 class GroupScout(Scout):
@@ -60,10 +60,10 @@ class GroupScout(Scout):
             initial_string_relevance + initial_string_unhappiness
         ) / 2
         target_string_score = (target_string_relevance + target_string_unhappiness) / 2
-        chosen_string = random.choices(
+        chosen_string = select_item_from_list(
             [self.workspace.initial_string, self.workspace.target_string],
-            weights=[initial_string_score, target_string_score],
-        )[0]
+            [initial_string_score, target_string_score],
+        )
         return chosen_string
 
     def _choose_direction(self, chosen_object):
@@ -73,15 +73,13 @@ class GroupScout(Scout):
             return self.slipnet["left"]
         left = self.slipnet["left"]
         right = self.slipnet["right"]
-        return random.choices(
-            [left, right], weights=[left.activation + 1e-5, right.activation + 1e-5]
-        )[0]
+        return select_item_from_list([left, right], [left.activation, right.activation])
 
     def _choose_number_of_bonds(self, workspace_string):
-        number_of_bonds = random.choices(
+        number_of_bonds = select_item_from_list(
             workspace_string.distribution_of_bond_counts,
-            weights=workspace_string.distribution_of_bond_counts,
-        )[0]
+            workspace_string.distribution_of_bond_counts,
+        )
         return number_of_bonds
 
     def _get_first_bond(self, direction, chosen_object) -> Optional["Bond"]:

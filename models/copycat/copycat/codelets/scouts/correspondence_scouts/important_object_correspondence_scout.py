@@ -1,10 +1,10 @@
-import random
 from typing import List, Optional
 
 from copycat.codelets.scouts.correspondence_scout import CorrespondenceScout
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.concept_mapping import ConceptMapping
 from copycat.tools import temperature_adjust
+from copycat.tools import select_item_from_list
 
 
 class ImportantObjectCorrespondenceScout(CorrespondenceScout):
@@ -48,7 +48,7 @@ class ImportantObjectCorrespondenceScout(CorrespondenceScout):
         ]
         if not target_candidates:
             return Fizzle(FizzleReason.NO_OBJECTS_WITH_DESCRIPTOR)
-        self.target = random.choices(
+        self.target = select_item_from_list(
             target_candidates,
-            weights=[obj.inter_string_salience for obj in target_candidates],
-        )[0]
+            [obj.inter_string_salience for obj in target_candidates],
+        )

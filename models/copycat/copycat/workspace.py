@@ -14,7 +14,7 @@ from .codelets import (
     RuleTranslator,
     WholeStringGroupScout,
 )
-from .tools import describe_count, temperature_adjust
+from .tools import describe_count, select_item_from_list, temperature_adjust
 from .workspace_string import WorkspaceString
 from .workspace_object import WorkspaceObject
 from .workspace_structure import WorkspaceStructure
@@ -220,7 +220,7 @@ class Workspace:
     def choose_object(self, temperature, method) -> WorkspaceObject:
         """Return an object probabilistically according to temperature and method."""
         weights = [temperature_adjust(method(obj), temperature) for obj in self.objects]
-        return random.choices(self.objects, weights=weights, k=1)[0]
+        return select_item_from_list(self.objects, weights)
 
     @property
     def letters_without_replacement(self) -> list:

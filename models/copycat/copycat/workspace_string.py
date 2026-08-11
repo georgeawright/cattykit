@@ -2,7 +2,7 @@ from collections import defaultdict
 import random
 from typing import List
 
-from .tools import temperature_adjust
+from .tools import select_item_from_list, temperature_adjust
 
 
 class WorkspaceString:
@@ -155,14 +155,14 @@ class WorkspaceString:
     def choose_object(self, temperature, method) -> "WorkspaceObject":
         """Return an object probabilistically according to temperature and method."""
         weights = [temperature_adjust(method(obj), temperature) for obj in self.objects]
-        return random.choices(self.objects, weights=weights, k=1)[0]
+        return select_item_from_list(self.objects, weights)
 
     def choose_from_leftmost_objects(self):
         """Returns one of the leftmost objects probabilistically."""
         leftmost_objects = [obj for obj in self.objects if obj.is_leftmost_in_string()]
-        weights = [obj.relative_importance + 1e-5 for obj in leftmost_objects]
+        weights = [obj.relative_importance for obj in leftmost_objects]
         try:
-            return random.choices(leftmost_objects, weights=weights, k=1)[0]
+            return select_item_from_list(leftmost_objects, weights)
         except IndexError:
             return None
 

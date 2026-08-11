@@ -1,10 +1,10 @@
-import random
 from typing import List
 
 import numpy as np
 
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelet import Codelet
+from copycat.tools import select_item_from_list
 from copycat.workspace_structures import Rule
 
 
@@ -69,7 +69,7 @@ class RuleTranslator(Codelet):
             weights = self.HIGH_THRESHOLD_WEIGHTS
         else:  # bond_density >= 0.0
             weights = self.VERY_HIGH_THRESHOLD_WEIGHTS
-        return random.choices(self.TEMPERATURE_THRESHOLDS, weights=weights, k=1)[0]
+        return select_item_from_list(self.TEMPERATURE_THRESHOLDS, weights)
 
     def _get_bond_density(self) -> float:
         """A rough measure of how structured the workspace is."""

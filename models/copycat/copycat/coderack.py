@@ -2,6 +2,7 @@ from __future__ import annotations
 import random
 
 from .coderack_bin import CoderackBin
+from .tools import select_item_from_list, select_items_from_list
 
 # in the original copycat implementation, there were 7 urgency bins:
 # these are extremely-low, very-low, low, medium, high, very-high, extremely-high
@@ -89,25 +90,24 @@ class Coderack:
             * (1 + urgency_bin_weights[-1] - urgency_bin_weights[codelet.urgency_bin])
             for codelet in self.codelets
         ]
-        codelets_to_remove = random.choices(
+        codelets_to_remove = select_items_from_list(
             self.codelets,
-            weights=removal_probabilities,
-            k=number_to_remove,
+            removal_probabilities,
+            number_to_remove,
         )
         for codelet in codelets_to_remove:
             self._remove(codelet)
 
     def choose(self, temperature: float):
-        chosen_urgency_bin = random.choices(
+        chosen_urgency_bin = select_item_from_list(
             self._urgency_bins,
-            weights=[
+            [
                 urgency_bin.total_urgency * urgency_bin_weight
                 for urgency_bin, urgency_bin_weight in zip(
                     self._urgency_bins, self.get_urgency_bin_weights(temperature)
                 )
             ],
-            k=1,
-        )[0]
+        )
         chosen_codelet = random.choice(chosen_urgency_bin.codelets)
         self._remove(chosen_codelet)
         self.number_of_codelets_run += 1

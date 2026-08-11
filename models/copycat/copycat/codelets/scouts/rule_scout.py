@@ -1,11 +1,10 @@
 from math import sqrt
-import random
 from typing import List, Optional
 
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.scout import Scout
 from copycat.codelets.strength_testers import RuleStrengthTester
-from copycat.tools import temperature_adjust_list
+from copycat.tools import select_item_from_list, temperature_adjust_list
 from copycat.workspace_object import WorkspaceObject
 from copycat.workspace_structures import Description, ExtrinsicDescription, Rule
 
@@ -113,7 +112,7 @@ class RuleScout(Scout):
         probabilities = temperature_adjust_list(
             [c.conceptual_depth for c in candidates], temperature
         )
-        return random.choices(candidates, weights=probabilities, k=1)[0]
+        return select_item_from_list(candidates, probabilities)
 
     def _get_initial_descriptions(
         self, initial_object: WorkspaceObject
@@ -152,7 +151,7 @@ class RuleScout(Scout):
         probabilities = temperature_adjust_list(
             [c.conceptual_depth for c in candidates], temperature
         )
-        choice = random.choices(candidates, weights=probabilities, k=1)[0]
+        choice = select_item_from_list(candidates, probabilities)
         if isinstance(choice, ExtrinsicDescription):
             related_descriptor = initial_description.descriptor.get_related_node(
                 choice.relation

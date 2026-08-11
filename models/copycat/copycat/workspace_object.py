@@ -2,6 +2,7 @@ from __future__ import annotations
 import random
 from typing import List, Union
 
+from .tools import select_item_from_list
 from .workspace_structure import WorkspaceStructure
 
 
@@ -134,23 +135,23 @@ class WorkspaceObject:
     def choose_neighbour(self) -> Union[WorkspaceObject, None]:
         saliences = [o.intra_string_salience for o in self.neighbours]
         try:
-            return random.choices(self.neighbours, weights=saliences, k=1)[0]
+            return select_item_from_list(self.neighbours, saliences)
         except IndexError:
             return None
 
     def choose_left_neighbour(self) -> Union[WorkspaceObject, None]:
         """Returns a left-neighbour probabilistically, based on intra-string-salience."""
-        saliences = [o.intra_string_salience + 1e-5 for o in self.left_neighbours]
+        saliences = [o.intra_string_salience for o in self.left_neighbours]
         try:
-            return random.choices(self.left_neighbours, weights=saliences, k=1)[0]
+            return select_item_from_list(self.left_neighbours, saliences)
         except IndexError:
             return None
 
     def choose_right_neighbour(self) -> Union[WorkspaceObject, None]:
         """Returns a right-neighbour probabilistically, based on intra-string-salience."""
-        saliences = [o.intra_string_salience + 1e-5 for o in self.right_neighbours]
+        saliences = [o.intra_string_salience for o in self.right_neighbours]
         try:
-            return random.choices(self.right_neighbours, weights=saliences, k=1)[0]
+            return select_item_from_list(self.right_neighbours, saliences)
         except IndexError:
             return None
 
@@ -159,7 +160,7 @@ class WorkspaceObject:
         if len(relevant_descriptions) == 0:
             return None
         activations = [d.descriptor.activation for d in relevant_descriptions]
-        return random.choices(relevant_descriptions, weights=activations, k=1)[0]
+        return select_item_from_list(relevant_descriptions, activations)
 
     def choose_relevant_description_by_conceptual_depth(
         self,
@@ -170,7 +171,7 @@ class WorkspaceObject:
         conceptual_depths = [
             d.descriptor.conceptual_depth for d in relevant_descriptions
         ]
-        return random.choices(relevant_descriptions, weights=conceptual_depths, k=1)[0]
+        return select_item_from_list(relevant_descriptions, conceptual_depths)
 
     def get_correspondee(self) -> Optional[WorkspaceObject]:
         """Returns the object in the other string that corresponds to this one, if any."""

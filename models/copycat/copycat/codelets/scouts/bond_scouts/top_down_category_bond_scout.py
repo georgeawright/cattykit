@@ -1,8 +1,7 @@
-import random
-
 from copycat.codelets.scouts.bond_scout import BondScout
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.slipnode import Slipnode
+from copycat.tools import select_item_from_list
 
 
 class TopDownCategoryBondScout(BondScout):
@@ -51,10 +50,10 @@ class TopDownCategoryBondScout(BondScout):
         target_string_score = round(
             (target_string_relevance + target_string_unhappiness) / 2
         )
-        string = random.choices(
+        string = select_item_from_list(
             [self.workspace.initial_string, self.workspace.target_string],
-            weights=[initial_string_score, target_string_score],
-        )[0]
+            [initial_string_score, target_string_score],
+        )
         object_1 = string.choose_object(temperature, lambda x: x.intra_string_salience)
         if object_1 is None:
             return Fizzle(FizzleReason.NO_OBJECTS)

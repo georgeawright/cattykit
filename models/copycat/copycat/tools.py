@@ -15,6 +15,14 @@ def temperature_adjust_list(values, temperature):
     return [value**exponent for value in values]
 
 
+def select_item_from_list(items, weights):
+    return select_items_from_list(items, weights, k=1)[0]
+
+
+def select_items_from_list(items, weights, k):
+    return random.choices(items, [w + 1e-5 for w in weights], k=k)
+
+
 def describe_count(n):
     if n < blur(2):
         return "few"
@@ -62,4 +70,4 @@ def structure_1_beats_structure_2(
         structure_2.total_strength * weight_2,
     ]
     adjusted_strength_list = temperature_adjust_list(strength_list, temperature)
-    return random.choices([True, False], weights=adjusted_strength_list, k=1)[0]
+    return select_item_from_list([True, False], adjusted_strength_list)

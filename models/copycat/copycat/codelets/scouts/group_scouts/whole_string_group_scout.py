@@ -1,9 +1,9 @@
-import random
 from typing import List, Optional, Tuple
 
 from copycat.codelets.scouts.group_scout import GroupScout
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.slipnode import Slipnode
+from copycat.tools import select_item_from_list
 
 
 class WholeStringGroupScout(GroupScout):
@@ -34,7 +34,7 @@ class WholeStringGroupScout(GroupScout):
             objects[0].is_leftmost_in_string() and objects[-1].is_rightmost_in_string()
         ):
             return Fizzle(FizzleReason.BONDS_DO_NOT_SPAN_STRING)
-        chosen_bond = random.choices(bonds)[0]
+        chosen_bond = select_item_from_list(bonds, [1] * len(bonds))
         bond_category = chosen_bond.bond_category
         direction_category = chosen_bond.direction_category
         bond_facet = chosen_bond.bond_facet

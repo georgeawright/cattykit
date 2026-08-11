@@ -1,9 +1,9 @@
 from __future__ import annotations
-import random
 import itertools
 from typing import Optional
 
 from copycat.workspace_structure import WorkspaceStructure
+from copycat.tools import select_item_from_list
 
 
 class Bond(WorkspaceStructure):
@@ -109,7 +109,7 @@ class Bond(WorkspaceStructure):
             raise ValueError(f"Invalid direction: {direction}")
         if not neighbours:
             return None
-        return random.choices(neighbours, weights=[n.salience for n in neighbours])[0]
+        return select_item_from_list(neighbours, [n.salience for n in neighbours])
 
     def get_object(self, direction: "Slipnode") -> "WorkspaceObject":
         if direction.name == "left":

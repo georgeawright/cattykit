@@ -1,9 +1,9 @@
-import random
 from typing import Optional
 
 from copycat.codelets.scout import Scout
 from copycat.codelets.strength_testers import BondStrengthTester
 from copycat.slipnode import Slipnode
+from copycat.tools import select_item_from_list
 from copycat.workspace_structures.bond import Bond
 
 
@@ -73,10 +73,10 @@ class BondScout(Scout):
         if not common_bond_facets:
             return None
         supports = [
-            facet.get_total_description_type_support(source.string) + 1e-5
+            facet.get_total_description_type_support(source.string)
             for facet in common_bond_facets
         ]
-        return random.choices(common_bond_facets, weights=supports, k=1)[0]
+        return select_item_from_list(common_bond_facets, supports)
 
     def _get_bond_category(
         self, source: Slipnode, target: Slipnode
