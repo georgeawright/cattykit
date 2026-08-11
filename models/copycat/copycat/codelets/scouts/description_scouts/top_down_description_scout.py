@@ -1,8 +1,7 @@
-import numpy as np
-
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.scouts import DescriptionScout
 from copycat.slipnode import Slipnode
+from copycat.tools import select_item_from_list
 
 
 class TopDownDescriptionScout(DescriptionScout):
@@ -38,16 +37,12 @@ class TopDownDescriptionScout(DescriptionScout):
         )
         if not possible_descriptors:
             return Fizzle(FizzleReason.NO_POSSIBLE_DESCRIPTORS)
-        descriptor_activations = np.array(
-            [
-                self.slipnet.get_node_activation(descriptor.name)
-                for descriptor in possible_descriptors
-            ]
-        )
-        total = descriptor_activations.sum()
-        probabilities = None if total <= 0 else descriptor_activations / total
-        chosen_descriptor = np.random.choice(
-            np.array(possible_descriptors), p=probabilities
+        weights = [
+            self.slipnet.get_node_activation(descriptor.name)
+            for descriptor in possible_descriptors
+        ]
+        chosen_descriptor = select_item_from_list(
+            possible_descriptors, weights
         )
         self.propose_description(
             chosen_object,

@@ -485,7 +485,7 @@ def test_single_run(monkeypatch):
         lambda _: [copycat.slipnet["successor_group"]],
     )
     monkeypatch.setattr(
-        "copycat.codelets.scouts.description_scouts.top_down_description_scout.np.random.choice",
+        "copycat.codelets.scouts.description_scouts.top_down_description_scout.select_item_from_list",
         lambda *_args, **_kwargs: copycat.slipnet["successor_group"],
     )
     selected_codelet[0] = TopDownDescriptionScout(

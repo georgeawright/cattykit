@@ -1,9 +1,8 @@
 from typing import Optional
 
-import numpy as np
-
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.scouts.description_scout import DescriptionScout
+from copycat.tools import select_item_from_list
 from copycat.workspace_object import WorkspaceObject
 
 
@@ -30,16 +29,12 @@ class BottomUpDescriptionScout(DescriptionScout):
         )
         if not has_property_links:
             return Fizzle(FizzleReason.NO_RELEVANT_HAS_PROPERTY_LINKS)
-        choice_list = np.array(
-            [
-                link.degree_of_association
-                * self.slipnet.get_node_activation(link.to_node.name)
-                for link in has_property_links
-            ]
-        )
-        chosen_link = np.random.choice(
-            has_property_links, p=choice_list / choice_list.sum()
-        )
+        weights = [
+            link.degree_of_association
+            * self.slipnet.get_node_activation(link.to_node.name)
+            for link in has_property_links
+        ]
+        chosen_link = select_item_from_list(has_property_links, weights)
         chosen_property = chosen_link.to_node
         self.propose_description(
             chosen_object,
