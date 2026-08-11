@@ -4,6 +4,7 @@ import random
 from cattykit.logging import ModelEvent, ModelLogger, NullLogger
 
 from .answer_builder import AnswerBuilder
+from .codelet_result import Finish, Fizzle
 from .codelets import (
     BottomUpBondScout,
     BottomUpCorrespondenceScout,
@@ -317,7 +318,21 @@ class Copycat:
     def step(self):
         """Run a single codelet."""
         codelet = self.coderack.choose(self.temperature)
-        codelet.run(self.temperature)
+        self.logger.log(
+            ModelEvent.create(
+                "copycat", "codelet_selected", codelet_type=str(type(codelet))
+            )
+        )
+        result = codelet.run(self.temperature)
+        data = {
+            "codelet": type(codelet).__name__,
+            "urgency_bin": codelet.urgency_bin,
+            "temperature": self.temperature,
+            "outcome": "finish" if isinstance(result, Finish) else "fizzle",
+        }
+        if isinstance(result, Fizzle):
+            data["reason"] = result.reason.value
+        self.logger.log(ModelEvent.create("copycat", "codelet_finished", **data))
 
     def _update_temperature(self):
         if self.clamp_temperature:
