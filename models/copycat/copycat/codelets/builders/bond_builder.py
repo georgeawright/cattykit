@@ -78,11 +78,11 @@ class BondBuilder(Builder):
 
     def build_bond(self):
         self.proposed_bond.string.add_bond(self.proposed_bond)
-        self.proposed_bond.left_object.outgoing_bonds.append(self.proposed_bond)
-        self.proposed_bond.right_object.incoming_bonds.append(self.proposed_bond)
+        self.proposed_bond.source.outgoing_bonds.append(self.proposed_bond)
+        self.proposed_bond.target.incoming_bonds.append(self.proposed_bond)
         if self.proposed_bond.bond_category == self.slipnet["sameness"]:
-            self.proposed_bond.right_object.outgoing_bonds.append(self.proposed_bond)
-            self.proposed_bond.left_object.incoming_bonds.append(self.proposed_bond)
+            self.proposed_bond.target.outgoing_bonds.append(self.proposed_bond)
+            self.proposed_bond.source.incoming_bonds.append(self.proposed_bond)
         self.proposed_bond.left_object.right_bond = self.proposed_bond
         self.proposed_bond.right_object.left_bond = self.proposed_bond
         self.slipnet.activate_node_from_workspace(self.proposed_bond.bond_category.name)
