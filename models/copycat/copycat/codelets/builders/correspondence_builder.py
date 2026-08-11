@@ -118,7 +118,7 @@ class CorrespondenceBuilder(Builder):
                 self.workspace.target_string.add_bond(bond)
             self.workspace.target_string.add_group(self.proposed_correspondence.target)
         if incompatible_rule:
-            self.workspace.break_rule(incompatible_rule)
+            self.workspace.rule = None
         self._build_correspondence()
         return Finish()
 
