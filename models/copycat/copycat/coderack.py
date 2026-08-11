@@ -153,7 +153,7 @@ class Coderack:
         elif structure_or_codelet_category == "correspondence":
             probability = workspace.inter_string_unhappiness()
         elif structure_or_codelet_category in ["rule", "RuleScout"]:
-            probability = 1 if workspace.rule is None else self.rule.total_weakness
+            probability = 1 if workspace.rule is None else workspace.rule.total_weakness
         elif structure_or_codelet_category == "translated-rule":
             probability = 1 if workspace.rule else 0
         return probability
