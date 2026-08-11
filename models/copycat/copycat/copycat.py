@@ -116,7 +116,14 @@ class Copycat:
         """
         Solve a string analogy problem (e.g. "abc -> abd ==> ijk -> ?")
         """
-        self.logger.log(ModelEvent.create("copycat", "run_started", problem=string))
+        self.logger.log(
+            ModelEvent.create(
+                "copycat",
+                "run_started",
+                problem=string,
+                time=self.coderack.number_of_codelets_run,
+            )
+        )
         try:
             self._add_letters_to_workspace(string)
             self._add_initial_descriptions_to_workspace()
@@ -130,6 +137,7 @@ class Copycat:
                     "run_finished",
                     codelets_run=self.coderack.number_of_codelets_run,
                     found_answer=self.found_answer,
+                    time=self.coderack.number_of_codelets_run,
                 )
             )
 
@@ -285,11 +293,18 @@ class Copycat:
                             letter.letter_category.name
                             for letter in self.workspace.answer_string.letters
                         ),
+                        time=self.coderack.number_of_codelets_run,
                     )
                 )
                 break
             except SnagException:
-                self.logger.log(ModelEvent.create("copycat", "snag_encountered"))
+                self.logger.log(
+                    ModelEvent.create(
+                        "copycat",
+                        "snag_encountered",
+                        time=self.coderack.number_of_codelets_run,
+                    )
+                )
                 self.handle_snag()
 
     def update(self):
@@ -320,7 +335,10 @@ class Copycat:
         codelet = self.coderack.choose(self.temperature)
         self.logger.log(
             ModelEvent.create(
-                "copycat", "codelet_selected", codelet_type=type(codelet).__name__
+                "copycat",
+                "codelet_selected",
+                codelet_type=type(codelet).__name__,
+                time=self.coderack.number_of_codelets_run,
             )
         )
         result = codelet.run(self.temperature)
@@ -332,7 +350,14 @@ class Copycat:
         }
         if isinstance(result, Fizzle):
             data["reason"] = result.reason.value
-        self.logger.log(ModelEvent.create("copycat", "codelet_finished", **data))
+        self.logger.log(
+            ModelEvent.create(
+                "copycat",
+                "codelet_finished",
+                time=self.coderack.number_of_codelets_run,
+                **data
+            )
+        )
 
     def _update_temperature(self):
         if self.clamp_temperature:
