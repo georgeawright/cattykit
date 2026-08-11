@@ -5,10 +5,6 @@ from cattykit.models import ModelPlugin, ModelRegistry
 
 
 class FakeModel:
-    @property
-    def name(self) -> str:
-        return "fake"
-
     def solve(self, *args: Any, **kwargs: Any) -> str:
         return "result"
 
@@ -37,5 +33,4 @@ def test_directly_registered_model_can_be_loaded() -> None:
     plugin = registry.get("fake")
     model = plugin.create()
 
-    assert model.name == "fake"
     assert model.solve() == "result"

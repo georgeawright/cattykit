@@ -3,6 +3,7 @@ from __future__ import annotations
 import subprocess
 import sys
 from collections.abc import Mapping
+from importlib.util import find_spec
 from pathlib import Path
 from typing import Any, Literal
 from urllib.parse import unquote, urlparse
@@ -89,6 +90,13 @@ def install_model(
     explicit local paths are passed directly to pip.
     """
     _, package_source = resolve_model_source(source, model_sources=model_sources)
+
+    if find_spec("pip") is None:
+        raise ModelInstallationError(
+            "The active Python environment does not include pip. "
+            "Install the model with your environment manager instead, for example: "
+            f"uv pip install {package_source}"
+        )
 
     try:
         subprocess.run(

@@ -9,12 +9,10 @@ from .codelets import (
     ReplacementFinder,
 )
 from .coderack import Coderack
-from .coderack_bin import CoderackBin
 from .slipnet import Slipnet
 from .snag_exception import SnagException
 from .workspace import Workspace
 from .workspace_objects import Group, Letter
-from .workspace_string import WorkspaceString
 from .workspace_structures import Bond, Description
 
 DESCRIPTION_TESTERS = {
@@ -70,6 +68,9 @@ class Copycat:
         self.snag_condition = False
         self.snag_object = False
         self.clamp_temperature = False
+
+    def close(self) -> None:
+        """Copycat owns no resources"""
 
     @classmethod
     def from_json(

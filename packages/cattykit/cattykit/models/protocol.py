@@ -9,11 +9,6 @@ from typing import Any, Protocol, runtime_checkable
 class CattyKitModel(Protocol):
     """Minimum interface implemented by a runnable CattyKit model."""
 
-    @property
-    def name(self) -> str:
-        """A stable, human-readable model name."""
-        ...
-
     def solve(self, *args: Any, **kwargs: Any) -> Any:
         """Run the model and return its result."""
         ...

@@ -5,7 +5,25 @@ description = "A Python re-implementation of Melanie Mitchell's classic model of
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "cattykit>=0.1.0",
     "numpy>=2.4.3",
+]
+
+[project.entry-points."cattykit.models"]
+copycat = "copycat.cattykit_plugin:plugin"
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["copycat*"]
+
+[tool.setuptools.data-files]
+"copycat/configs" = [
+    "configs/coderack.json",
+    "configs/hyperparameters.json",
+    "configs/slipnet.json",
 ]
 
 [tool.pytest.ini_options]

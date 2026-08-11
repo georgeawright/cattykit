@@ -1,23 +1,22 @@
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 
 import pytest
 from cattykit.models import (
+    ModelInstallationError,
     ModelNotInstalledError,
     ModelPlugin,
     ModelRegistry,
     ModelSourceError,
+    install_model,
     load_model,
     resolve_model_source,
 )
 
 
 class FakeModel:
-    @property
-    def name(self) -> str:
-        return "fake"
-
     def solve(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         return {"ok": True}
 
@@ -39,10 +38,13 @@ def test_load_model_uses_selected_registry() -> None:
 
     model = load_model("fake", registry=registry)
 
-    assert model.name == "fake"
+    assert model.solve() == {"ok": True}
 
 
-def test_missing_official_model_has_installation_hint() -> None:
+def test_missing_official_model_has_installation_hint(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("cattykit.models.registry.entry_points", lambda **_: ())
     registry = ModelRegistry()
 
     with pytest.raises(ModelNotInstalledError) as exc_info:
@@ -80,3 +82,14 @@ def test_path_is_used_directly() -> None:
 def test_unknown_name_is_rejected() -> None:
     with pytest.raises(ModelSourceError, match="No CattyKit model source"):
         resolve_model_source("unknown", model_sources={})
+
+
+def test_install_model_explains_how_to_install_without_pip() -> None:
+    with (
+        patch("cattykit.models.loading.find_spec", return_value=None),
+        patch("cattykit.models.loading.subprocess.run") as run,
+    ):
+        with pytest.raises(ModelInstallationError, match="does not include pip"):
+            install_model("./models/copycat")
+
+    run.assert_not_called()
