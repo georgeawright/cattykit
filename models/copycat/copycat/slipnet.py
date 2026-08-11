@@ -1,3 +1,4 @@
+import random
 from typing import Callable, Dict, List, Optional
 
 import numpy as np
@@ -270,7 +271,11 @@ class Slipnet:
         full_activation_probabilities = (
             self.node_activations**self.full_activation_probability_exponent
         )
-        random_values = np.random.rand(*self.node_activations.shape)
+        random_values = np.fromiter(
+            (random.random() for _ in range(self.node_activations.size)),
+            dtype=float,
+            count=self.node_activations.size,
+        ).reshape(self.node_activations.shape)
         nodes_to_fully_activate = nodes_above_threshold & (
             random_values < full_activation_probabilities
         )
