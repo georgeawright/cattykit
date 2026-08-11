@@ -51,7 +51,7 @@ class BondBuilder(Builder):
                 self.proposed_bond,
                 1,
                 incompatible_groups,
-                max([g.letter_span for g in incompatible_groups]),
+                max([len(g) for g in incompatible_groups]),
                 temperature=temperature,
             )
             if not fight_result:
