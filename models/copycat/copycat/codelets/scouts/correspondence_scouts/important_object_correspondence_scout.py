@@ -41,7 +41,10 @@ class ImportantObjectCorrespondenceScout(CorrespondenceScout):
         target_candidates = [
             obj
             for obj in self.workspace.target_string.objects
-            if any(d.descriptor == target_descriptor for d in obj.relevant_descriptions)
+            if any(
+                d.descriptor == target_descriptor
+                for d in obj.get_relevant_descriptions()
+            )
         ]
         if not target_candidates:
             return Fizzle(FizzleReason.NO_OBJECTS_WITH_DESCRIPTOR)

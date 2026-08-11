@@ -85,13 +85,13 @@ def test_run():
     # object 1 has relevant description but no objects in target string have that descriptor
     description = SimpleNamespace(descriptor="descriptor")
     source.choose_relevant_description_by_conceptual_depth = lambda: description
-    target.relevant_descriptions = []
+    target.get_relevant_descriptions = lambda: []
     result = scout.run(temperature=0.0)
     assert isinstance(result, Fizzle)
     assert result.reason == FizzleReason.NO_OBJECTS_WITH_DESCRIPTOR
 
     # object 1 spans string but object 2 does not
-    target.relevant_descriptions = [description]
+    target.get_relevant_descriptions = lambda: [description]
     target.spans_whole_string = lambda: False
     target.inter_string_salience = 0.5
     result = scout.run(temperature=0.0)
