@@ -358,7 +358,7 @@ def test_fizzles_if_incompatible_rule_wins():
     correspondence.source.correspondence = None
     correspondence.target = Mock()
     correspondence.target.correspondence = None
-    correspondence.target.relevant_descriptions = [Mock()]
+    correspondence.target.get_relevant_descriptions = lambda: [Mock()]
     correspondence.concept_mappings = [mapping_1, mapping_2]
     workspace.objects += [correspondence.source, correspondence.target]
 
@@ -408,7 +408,7 @@ def test_breaks_incompatible_structures_and_builds_correspondence():
     correspondence.target = Mock()
     correspondence.target.bonds = [Mock()]
     correspondence.target.correspondence = None
-    correspondence.target.relevant_descriptions = [Mock()]
+    correspondence.target.get_relevant_descriptions = lambda: [Mock()]
     correspondence.concept_mappings = [mapping_1, mapping_2]
     workspace.objects += [correspondence.source, correspondence.target]
 
