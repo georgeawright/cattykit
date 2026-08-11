@@ -20,7 +20,24 @@ def select_item_from_list(items, weights):
 
 
 def select_items_from_list(items, weights, k):
-    return random.choices(items, [w + 1e-5 for w in weights], k=k)
+    if k > len(items):
+        raise ValueError("Cannot select more items than are available.")
+
+    weights = [weight + 1e-5 for weight in weights]
+    remaining_items = list(items)
+    remaining_weights = list(weights)
+    selected_items = []
+
+    for _ in range(k):
+        selected_index = random.choices(
+            range(len(remaining_items)),
+            weights=remaining_weights,
+            k=1,
+        )[0]
+        selected_items.append(remaining_items.pop(selected_index))
+        remaining_weights.pop(selected_index)
+
+    return selected_items
 
 
 def describe_count(n):
