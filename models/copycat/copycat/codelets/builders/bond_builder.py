@@ -136,7 +136,14 @@ class BondBuilder(Builder):
         )
         if string_position_category_concept_mapping is None:
             return False
-        other_object = correspondence.get_other_object(self.proposed_bond.left_object)
+        try:
+            other_object = correspondence.get_other_object(
+                self.proposed_bond.left_object
+            )
+        except ValueError:
+            other_object = correspondence.get_other_object(
+                self.proposed_bond.right_object
+            )
         if other_object.is_leftmost_in_string():
             other_bond = other_object.right_bond
         elif other_object.is_rightmost_in_string():
