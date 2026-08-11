@@ -136,7 +136,7 @@ class WorkspaceObject:
         saliences = [o.intra_string_salience for o in self.neighbours]
         try:
             return select_item_from_list(self.neighbours, saliences)
-        except IndexError:
+        except ValueError:
             return None
 
     def choose_left_neighbour(self) -> Union[WorkspaceObject, None]:
@@ -144,7 +144,7 @@ class WorkspaceObject:
         saliences = [o.intra_string_salience for o in self.left_neighbours]
         try:
             return select_item_from_list(self.left_neighbours, saliences)
-        except IndexError:
+        except ValueError:
             return None
 
     def choose_right_neighbour(self) -> Union[WorkspaceObject, None]:
@@ -152,7 +152,7 @@ class WorkspaceObject:
         saliences = [o.intra_string_salience for o in self.right_neighbours]
         try:
             return select_item_from_list(self.right_neighbours, saliences)
-        except IndexError:
+        except ValueError:
             return None
 
     def choose_relevant_description_by_activation(self) -> Union["Description", None]:
