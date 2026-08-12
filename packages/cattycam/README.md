@@ -8,5 +8,4 @@ Browse a Cattycam SQLite history database with:
 panel serve cattycam/app.py --show --args path/to/history.sqlite
 ```
 
-The app produces an HTML documentation page for every table, including its
-columns and current rows.
+The app displays the logs from each recorded run.

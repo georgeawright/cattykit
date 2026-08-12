@@ -20,12 +20,15 @@ def table_names(database: str | Path) -> list[str]:
         ]
 
 
-def table_documentation(database: str | Path, table: str) -> str:
+def table_documentation(
+    database: str | Path, table: str, *, run_id: int | None = None
+) -> str:
     """Return an HTML fragment containing one database table's rows."""
     quoted_table = _quote_identifier(table)
     with sqlite3.connect(database) as connection:
         columns = connection.execute(f"PRAGMA table_info({quoted_table})").fetchall()
-        rows = connection.execute(f"SELECT * FROM {quoted_table}").fetchall()
+        query, parameters = _table_query(quoted_table, table, run_id)
+        rows = connection.execute(query, parameters).fetchall()
     column_names = [column[1] for column in columns]
     return "\n".join(
         (
@@ -34,6 +37,42 @@ def table_documentation(database: str | Path, table: str) -> str:
             _html_table(column_names, rows),
         )
     )
+
+
+def table_rows(
+    database: str | Path, table: str, *, run_id: int | None = None
+) -> tuple[list[str], list[tuple[object, ...]]]:
+    """Return a table's columns and rows, optionally restricted to one run."""
+    quoted_table = _quote_identifier(table)
+    with sqlite3.connect(database) as connection:
+        columns = connection.execute(f"PRAGMA table_info({quoted_table})").fetchall()
+        query, parameters = _table_query(quoted_table, table, run_id)
+        rows = connection.execute(query, parameters).fetchall()
+    return [column[1] for column in columns], rows
+
+
+def _table_query(
+    quoted_table: str, table: str, run_id: int | None
+) -> tuple[str, tuple[object, ...]]:
+    if run_id is None:
+        return f"SELECT * FROM {quoted_table}", ()
+    if table == "runs":
+        return f"SELECT * FROM {quoted_table} WHERE id = ?", (run_id,)
+    if table == "group_members":
+        return (
+            "SELECT group_members.* FROM group_members "
+            "JOIN groups ON groups.id = group_members.group_id "
+            "WHERE groups.run_id = ?",
+            (run_id,),
+        )
+    if table == "group_bonds":
+        return (
+            "SELECT group_bonds.* FROM group_bonds "
+            "JOIN groups ON groups.id = group_bonds.group_id "
+            "WHERE groups.run_id = ?",
+            (run_id,),
+        )
+    return f"SELECT * FROM {quoted_table} WHERE run_id = ?", (run_id,)
 
 
 def _html_table(headers: Sequence[object], rows: Sequence[Sequence[object]]) -> str:
