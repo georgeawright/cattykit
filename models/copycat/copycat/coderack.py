@@ -1,6 +1,8 @@
 from __future__ import annotations
 import random
 
+from cattykit.logging import ModelEvent, ModelLogger
+
 from .coderack_bin import CoderackBin
 from .codelets.builders import BondBuilder, CorrespondenceBuilder, GroupBuilder
 from .codelets.strength_testers import (
@@ -20,13 +22,22 @@ URGENCY_TEMPERATURE_FUNCTION = lambda u, t: (u + 1) ** ((110 - t) / 15)
 
 class Coderack:
     def __init__(
-        self, urgency_bins: list, urgency_lookup_table: list, max_population: int
+        self,
+        urgency_bins: list,
+        urgency_lookup_table: list,
+        max_population: int,
+        logger: ModelLogger | None = None,
     ):
         self._urgency_bins = urgency_bins
         self.urgency_lookup_table = urgency_lookup_table
         self.max_population = max_population
         self.number_of_codelets_run = 0
         self.codelets_to_post = []
+        self.logger = logger
+
+    def set_logger(self, logger: ModelLogger) -> None:
+        """Attach the logger used to record coderack state changes."""
+        self.logger = logger
 
     @classmethod
     def create(cls, number_of_bins: int, max_population: int) -> Coderack:
@@ -115,19 +126,41 @@ class Coderack:
             ],
         )
         chosen_codelet = random.choice(chosen_urgency_bin.codelets)
-        self._remove(chosen_codelet)
+        self._remove(chosen_codelet, discard_proposal=False)
         self.number_of_codelets_run += 1
+        if self.logger is not None:
+            self.logger.log(
+                ModelEvent.create(
+                    "copycat",
+                    "attribute_updated",
+                    object_id="coderack",
+                    attribute="number_of_codelets_on_coderack",
+                    value=self.population,
+                )
+            )
+            self.logger.log(
+                ModelEvent.create(
+                    "copycat",
+                    "codelet_selected",
+                    codelet_id=f"codelet:{chosen_codelet.hash_id}",
+                    codelet_type=type(chosen_codelet).__name__,
+                    urgency_bin=chosen_codelet.urgency_bin,
+                    birth_time=chosen_codelet.birth_time,
+                )
+            )
         return chosen_codelet
 
     def _post(self, codelet):
         self.get_urgency_bin(codelet.urgency_bin).add(codelet)
         codelet.birth_time = self.number_of_codelets_run
 
-    def _remove(self, codelet):
+    def _remove(self, codelet, discard_proposal: bool = True):
         """Remove codelet from coderack and
         If codelet is not a breaker and its argument is not rule or description,
         delete the argument from the workspace."""
         self.get_urgency_bin(codelet.urgency_bin).remove(codelet)
+        if not discard_proposal:
+            return
         if isinstance(codelet, (BondStrengthTester, BondBuilder)):
             codelet.proposed_bond.string.delete_proposed_bond(
                 codelet.proposed_bond,

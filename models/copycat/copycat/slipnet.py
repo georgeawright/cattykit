@@ -3,6 +3,8 @@ from typing import Callable, Dict, List, Optional
 
 import numpy as np
 
+from cattykit.logging import ModelEvent, ModelLogger
+
 from .sliplink import Sliplink
 from .slipnode import Slipnode
 
@@ -25,6 +27,7 @@ class Slipnet:
         full_activation_threshold: float,
         # probability(jumping to full activation) = activation ** exponent
         full_activation_probability_exponent: int,
+        logger: ModelLogger | None = None,
     ):
         self.nodes = nodes
         self.adjacency_table = adjacency_table
@@ -37,6 +40,11 @@ class Slipnet:
         self.workspace_activation = workspace_activation
         self.full_activation_threshold = full_activation_threshold
         self.full_activation_probability_exponent = full_activation_probability_exponent
+        self.logger = logger
+
+    def set_logger(self, logger: ModelLogger) -> None:
+        """Attach the logger used to record slipnet state changes."""
+        self.logger = logger
 
     @classmethod
     def create(
@@ -155,7 +163,42 @@ class Slipnet:
     def get_node_activation(self, node_id):
         return self.node_activations[self.node_index_lookup[node_id]]
 
-    def update_activations(self):
+    def log_definition(self) -> None:
+        """Record the slipnet topology once at the beginning of a run."""
+        links: list[Sliplink] = []
+        for node in self.nodes:
+            if self.logger is not None:
+                self.logger.log(
+                    ModelEvent.create(
+                        "copycat",
+                        "slipnode_initialized",
+                        name=node.name,
+                        conceptual_depth=node.conceptual_depth,
+                        depth_factor=node.depth_factor,
+                        intrinsic_link_length=node.intrinsic_link_length,
+                        shrunk_link_length=node.shrunk_link_length,
+                    )
+                )
+            links.extend(node.outgoing_links)
+        for link in links:
+            if self.logger is not None:
+                self.logger.log(
+                    ModelEvent.create(
+                        "copycat",
+                        "sliplink_initialized",
+                        source=link.source.name,
+                        target=link.target.name,
+                        label=None if link.label is None else link.label.name,
+                        fixed_length=link.fixed_length,
+                        is_category_link=link.is_category_link,
+                        is_instance_link=link.is_instance_link,
+                        is_has_property_link=link.is_has_property_link,
+                        is_lateral_sliplink=link.is_lateral_sliplink,
+                        is_lateral_non_sliplink=link.is_lateral_non_sliplink,
+                    )
+                )
+
+    def update_activations(self) -> None:
         """Recomputes activations according to:
         - activation spread in the slipnet
         - activation boosts from the workspace
@@ -174,6 +217,16 @@ class Slipnet:
         self._probabilistically_activate_nodes()
         for node in self.nodes:
             node.activation = self.node_activations[self.node_index_lookup[node.name]]
+            if self.logger is not None:
+                self.logger.log(
+                    ModelEvent.create(
+                        "copycat",
+                        "attribute_updated",
+                        object_id=f"slipnode:{node.name}",
+                        attribute="activation",
+                        value=float(node.activation),
+                    )
+                )
 
     def clamp_node(self, node_id: str):
         """Clamp a node at full activation."""

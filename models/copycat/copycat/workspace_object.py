@@ -2,6 +2,8 @@ from __future__ import annotations
 import random
 from typing import List, Union
 
+from cattykit.logging import ModelEvent
+
 from .tools import select_item_from_list
 from .workspace_structure import WorkspaceStructure
 
@@ -104,6 +106,18 @@ class WorkspaceObject:
             self.bond_descriptions.append(description)
         else:
             self.descriptions.append(description)
+        logger = self.string.logger
+        if logger is not None:
+            logger.log(
+                ModelEvent.create(
+                    "copycat",
+                    "description_created",
+                    description_id=f"description:{description.hash_id}",
+                    object_id=f"{type(self).__name__.lower()}:{self.hash_id}",
+                    facet=description.facet.name,
+                    descriptor=description.descriptor.name,
+                )
+            )
 
     def has_recursive_group_member(self, other_object) -> bool:
         return self == other_object

@@ -23,4 +23,5 @@ class Codelet:
         return f"<{type(self).__name__} {self.hash_id} in bin {self.urgency_bin}>"
 
     def run(self, temperature: float) -> CodeletResult:
+        """Perform this codelet's model-specific work."""
         raise NotImplementedError

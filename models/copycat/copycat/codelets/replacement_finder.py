@@ -50,6 +50,6 @@ class ReplacementFinder(Codelet):
                     )
                 )
         replacement = Replacement(initial_letter, modified_letter)
-        self.workspace.replacements.append(replacement)
+        self.workspace.add_replacement(replacement)
         initial_letter.replacement = replacement
         return Finish()

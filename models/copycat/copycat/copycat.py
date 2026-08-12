@@ -72,6 +72,9 @@ class Copycat:
         self.snag_object = False
         self.clamp_temperature = False
         self.logger = logger if logger is not None else NullLogger()
+        for component in (self.workspace, self.slipnet, self.coderack):
+            if component is not None and hasattr(component, "set_logger"):
+                component.set_logger(self.logger)
 
     def close(self) -> None:
         """Copycat owns no resources"""
@@ -128,6 +131,7 @@ class Copycat:
             self._add_letters_to_workspace(string)
             self._add_initial_descriptions_to_workspace()
             self._post_initial_codelets()
+            self.slipnet.log_definition()
             self.slipnet.update_activations()
             self.run()
         finally:
@@ -150,44 +154,32 @@ class Copycat:
         initial_string, modified_string = initial_and_modified.split("->")
         target_string, answer_string = target_and_answer.split("->")
         answer_string = answer_string.split("?")[0]
-        self.workspace.initial_string.letters = [
-            Letter(
-                string=self.workspace.initial_string,
-                letter_category=self.slipnet[char],
-                string_position=i,
+        for i, char in enumerate(initial_string.strip()):
+            self.workspace.initial_string.add_letter(
+                Letter(
+                    string=self.workspace.initial_string,
+                    letter_category=self.slipnet[char],
+                    string_position=i,
+                )
             )
-            for i, char in enumerate(initial_string.strip())
-        ]
         self.workspace.initial_string.distribution_of_bond_counts = [
             i for i in range(len(initial_string.strip()) - 1)
         ]
-        self.workspace.modified_string.letters = [
-            Letter(
-                string=self.workspace.modified_string,
-                letter_category=self.slipnet[char],
-                string_position=i,
+        for i, char in enumerate(modified_string.strip()):
+            self.workspace.modified_string.add_letter(
+                Letter(self.workspace.modified_string, self.slipnet[char], i)
             )
-            for i, char in enumerate(modified_string.strip())
-        ]
-        self.workspace.target_string.letters = [
-            Letter(
-                string=self.workspace.target_string,
-                letter_category=self.slipnet[char],
-                string_position=i,
+        for i, char in enumerate(target_string.strip()):
+            self.workspace.target_string.add_letter(
+                Letter(self.workspace.target_string, self.slipnet[char], i)
             )
-            for i, char in enumerate(target_string.strip())
-        ]
         self.workspace.target_string.distribution_of_bond_counts = [
             i for i in range(len(target_string.strip()) - 1)
         ]
-        self.workspace.answer_string.letters = [
-            Letter(
-                string=self.workspace.answer_string,
-                letter_category=self.slipnet[char],
-                string_position=i,
+        for i, char in enumerate(answer_string.strip()):
+            self.workspace.answer_string.add_letter(
+                Letter(self.workspace.answer_string, self.slipnet[char], i)
             )
-            for i, char in enumerate(answer_string.strip())
-        ]
         for role, value in (
             ("initial", initial_string.strip()),
             ("modified", modified_string.strip()),
@@ -211,14 +203,14 @@ class Copycat:
             self.workspace.target_string,
         ]:
             for letter in string.letters:
-                letter.descriptions.append(
+                letter.add_description(
                     Description(
                         letter,
                         self.slipnet["object_category"],
                         self.slipnet["letter"],
                     )
                 )
-                letter.descriptions.append(
+                letter.add_description(
                     Description(
                         letter,
                         self.slipnet["letter_category"],
@@ -226,14 +218,14 @@ class Copycat:
                     )
                 )
             if len(string) > 1:
-                string.letters[0].descriptions.append(
+                string.letters[0].add_description(
                     Description(
                         string.letters[0],
                         self.slipnet["string_position_category"],
                         self.slipnet["leftmost"],
                     )
                 )
-                string.letters[-1].descriptions.append(
+                string.letters[-1].add_description(
                     Description(
                         string.letters[-1],
                         self.slipnet["string_position_category"],
@@ -241,7 +233,7 @@ class Copycat:
                     )
                 )
             else:
-                string.letters[0].descriptions.append(
+                string.letters[0].add_description(
                     Description(
                         string.letters[0],
                         self.slipnet["string_position_category"],
@@ -249,7 +241,7 @@ class Copycat:
                     )
                 )
             if len(string) == 3:
-                string.letters[1].descriptions.append(
+                string.letters[1].add_description(
                     Description(
                         letter,
                         self.slipnet["string_position_category"],
@@ -349,17 +341,10 @@ class Copycat:
     def step(self):
         """Run a single codelet."""
         codelet = self.coderack.choose(self.temperature)
-        self.logger.log(
-            ModelEvent.create(
-                "copycat",
-                "codelet_selected",
-                codelet_type=type(codelet).__name__,
-                urgency_bin=codelet.urgency_bin,
-                birth_time=codelet.birth_time,
-                time=self.coderack.number_of_codelets_run,
-            )
-        )
+        rule = self.workspace.rule
+        translated_rule = self.workspace.translated_rule
         result = codelet.run(self.temperature)
+        self._log_rule_changes(codelet, rule, translated_rule)
         data = {
             "codelet": type(codelet).__name__,
             "urgency_bin": codelet.urgency_bin,
@@ -372,8 +357,55 @@ class Copycat:
             ModelEvent.create(
                 "copycat",
                 "codelet_finished",
+                codelet_id=f"codelet:{codelet.hash_id}",
                 time=self.coderack.number_of_codelets_run,
                 **data,
+            )
+        )
+
+    def _log_rule_changes(self, codelet, rule, translated_rule) -> None:
+        """Record rule state, which is owned by Copycat rather than a component."""
+        proposed_rule = getattr(codelet, "proposed_rule", None)
+        if proposed_rule is not None:
+            self._log_rule("rule_proposed", proposed_rule)
+        if self.workspace.rule is not rule:
+            if rule is not None:
+                self._log_rule("rule_destroyed", rule)
+            if self.workspace.rule is not None:
+                self._log_rule("rule_created", self.workspace.rule)
+        if self.workspace.translated_rule is not translated_rule:
+            self.logger.log(
+                ModelEvent.create(
+                    "copycat",
+                    "attribute_updated",
+                    object_id="copycat",
+                    attribute="translated_rule",
+                    value=None
+                    if self.workspace.translated_rule is None
+                    else f"rule:{self.workspace.translated_rule.hash_id}",
+                )
+            )
+
+    def _log_rule(self, kind: str, rule) -> None:
+        self.logger.log(
+            ModelEvent.create(
+                "copycat",
+                kind,
+                rule_id=f"rule:{rule.hash_id}",
+                **{
+                    attribute: None
+                    if getattr(rule, attribute) is None
+                    else getattr(rule, attribute).name
+                    for attribute in (
+                        "object_category_1",
+                        "descriptor_1_facet",
+                        "descriptor_1",
+                        "object_category_2",
+                        "descriptor_2",
+                        "replaced_description_type",
+                        "relation",
+                    )
+                },
             )
         )
 
@@ -384,6 +416,17 @@ class Copycat:
             1 if not self.translated_rule else 1 - self.translated_rule.total_strength
         )
         self.temperature = self.workspace.total_unhappiness * 0.8 + rule_weakness * 0.2
+        time = 0 if self.coderack is None else self.coderack.number_of_codelets_run
+        self.logger.log(
+            ModelEvent.create(
+                "copycat",
+                "attribute_updated",
+                time=time,
+                object_id="temperature",
+                attribute="value",
+                value=self.temperature,
+            )
+        )
 
     def _probabilistically_unsnag(self):
         """Check if new structures have been made since snag

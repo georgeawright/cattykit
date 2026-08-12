@@ -84,6 +84,7 @@ class RuleScout(Scout):
                 replaced_description_type=modified_description.facet,
                 descriptor_2=modified_description.descriptor,
             )
+        self.proposed_rule = proposed_rule
         if initial_description is None:
             urgency = 1.0
         else:
