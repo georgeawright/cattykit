@@ -2,6 +2,12 @@ from __future__ import annotations
 import random
 
 from .coderack_bin import CoderackBin
+from .codelets.builders import BondBuilder, CorrespondenceBuilder, GroupBuilder
+from .codelets.strength_testers import (
+    BondStrengthTester,
+    CorrespondenceStrengthTester,
+    GroupStrengthTester,
+)
 from .tools import select_item_from_list, select_items_from_list
 
 # in the original copycat implementation, there were 7 urgency bins:
@@ -122,7 +128,18 @@ class Coderack:
         If codelet is not a breaker and its argument is not rule or description,
         delete the argument from the workspace."""
         self.get_urgency_bin(codelet.urgency_bin).remove(codelet)
-        # TODO: remove arguments of workspace structures
+        if isinstance(codelet, (BondStrengthTester, BondBuilder)):
+            codelet.proposed_bond.string.delete_proposed_bond(
+                codelet.proposed_bond,
+            )
+        elif isinstance(codelet, (CorrespondenceStrengthTester, CorrespondenceBuilder)):
+            codelet.workspace.delete_proposed_correspondence(
+                codelet.proposed_correspondence,
+            )
+        elif isinstance(codelet, (GroupStrengthTester, GroupBuilder)):
+            codelet.proposed_group.string.delete_proposed_group(
+                codelet.proposed_group,
+            )
 
     def post_codelet_probability(
         self,
