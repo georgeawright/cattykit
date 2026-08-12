@@ -137,6 +137,7 @@ class Copycat:
                     "run_finished",
                     codelets_run=self.coderack.number_of_codelets_run,
                     found_answer=self.found_answer,
+                    temperature=self.temperature,
                     time=self.coderack.number_of_codelets_run,
                 )
             )
@@ -187,6 +188,21 @@ class Copycat:
             )
             for i, char in enumerate(answer_string.strip())
         ]
+        for role, value in (
+            ("initial", initial_string.strip()),
+            ("modified", modified_string.strip()),
+            ("target", target_string.strip()),
+            ("answer", answer_string.strip()),
+        ):
+            self.logger.log(
+                ModelEvent.create(
+                    "copycat",
+                    "string_initialized",
+                    string_id=role,
+                    role=role,
+                    value=value,
+                )
+            )
 
     def _add_initial_descriptions_to_workspace(self):
         for string in [
@@ -338,6 +354,8 @@ class Copycat:
                 "copycat",
                 "codelet_selected",
                 codelet_type=type(codelet).__name__,
+                urgency_bin=codelet.urgency_bin,
+                birth_time=codelet.birth_time,
                 time=self.coderack.number_of_codelets_run,
             )
         )
@@ -355,7 +373,7 @@ class Copycat:
                 "copycat",
                 "codelet_finished",
                 time=self.coderack.number_of_codelets_run,
-                **data
+                **data,
             )
         )
 

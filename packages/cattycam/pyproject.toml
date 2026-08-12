@@ -4,7 +4,9 @@ version = "0.1.0"
 description = "An interactive tool for logging and debugging artificial intelligence models built using Cattykit"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "panel>=1.5",
+]
 
 [dependency-groups]
 dev = [
