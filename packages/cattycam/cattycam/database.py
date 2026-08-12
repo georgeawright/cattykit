@@ -21,25 +21,16 @@ def table_names(database: str | Path) -> list[str]:
 
 
 def table_documentation(database: str | Path, table: str) -> str:
-    """Return an HTML document fragment for one database table."""
+    """Return an HTML fragment containing one database table's rows."""
     quoted_table = _quote_identifier(table)
     with sqlite3.connect(database) as connection:
         columns = connection.execute(f"PRAGMA table_info({quoted_table})").fetchall()
         rows = connection.execute(f"SELECT * FROM {quoted_table}").fetchall()
     column_names = [column[1] for column in columns]
-    schema_rows = [
-        (column[1], column[2], "yes" if column[3] else "no", column[4], column[5])
-        for column in columns
-    ]
     return "\n".join(
         (
             f"<h2>{html.escape(table)}</h2>",
             f"<p>{len(rows)} row{'s' if len(rows) != 1 else ''}</p>",
-            "<h3>Columns</h3>",
-            _html_table(
-                ("Name", "Type", "Required", "Default", "Primary key"), schema_rows
-            ),
-            "<h3>Data</h3>",
             _html_table(column_names, rows),
         )
     )
