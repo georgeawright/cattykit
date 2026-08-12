@@ -227,6 +227,7 @@ def _line_chart(
         y_axis_label=y_axis_label,
         height=260,
         width=380,
+        toolbar_location=None,
     )
     chart.line(*zip(*values), line_width=2)
     _add_time_marker(chart, codelet_time, values, value_formatter)
@@ -245,6 +246,7 @@ def _workspace_chart(
         y_axis_label="Total count",
         height=260,
         width=380,
+        toolbar_location=None,
     )
     chart.line(times, totals, line_width=2, color="#1f77b4")
     _add_time_marker(chart, codelet_time, values, str)
