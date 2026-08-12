@@ -125,6 +125,50 @@ def test_sqlite_logger_populates_cattycam_run_history(tmp_path) -> None:
     assert codelet == ("c-1", "BottomUpBondScout", 2, 0, 1, "fizzle", "no_bond")
 
 
+def test_sqlite_logger_attaches_its_codelet_time_to_untimed_events(tmp_path) -> None:
+    database = tmp_path / "cattycam.sqlite"
+    logger = SQLiteLogger(database)
+
+    logger.log(ModelEvent.create("copycat", "run_started", problem="abc -> abd"))
+    logger.log(
+        ModelEvent.create(
+            "copycat",
+            "attribute_updated",
+            object_id="temperature",
+            attribute="value",
+            value=100.0,
+        )
+    )
+    logger.log(
+        ModelEvent.create(
+            "copycat",
+            "codelet_selected",
+            codelet_id="c-1",
+            codelet_type="BottomUpBondScout",
+        )
+    )
+    logger.log(
+        ModelEvent.create(
+            "copycat",
+            "attribute_updated",
+            object_id="temperature",
+            attribute="value",
+            value=90.0,
+        )
+    )
+    logger.close()
+
+    with sqlite3.connect(database) as connection:
+        attribute_times = connection.execute(
+            "SELECT time FROM attribute_values ORDER BY id"
+        ).fetchall()
+        codelet_time = connection.execute("SELECT run_time FROM codelets").fetchone()
+
+    assert attribute_times == [(0,), (1,)]
+    assert codelet_time == (1,)
+    assert logger.codelets_run == 1
+
+
 def test_sqlite_logger_populates_typed_workspace_tables(tmp_path) -> None:
     database = tmp_path / "cattycam.sqlite"
     logger = SQLiteLogger(database)

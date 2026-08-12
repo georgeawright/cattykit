@@ -18,11 +18,21 @@ class SQLiteLogger:
         self._run_ids: dict[str, int] = {}
         self._create_schema()
         self._connection.commit()
+        self._codelets_run = 0
 
     def log(self, event: ModelEvent) -> None:
-        """Record an event and update database entries."""
-        self._record_event(event)
+        """Record an event using the logger's current codelet-time cursor."""
+        data = dict(event.data)
+        self._update_codelet_time(event.kind, data)
+        if data.get("time") is None:
+            data["time"] = self._codelets_run
+        self._record_event(event, data)
         self._connection.commit()
+
+    @property
+    def codelets_run(self) -> int:
+        """Return the current codelet-time cursor for the active run."""
+        return self._codelets_run
 
     def close(self) -> None:
         """Close the SQLite connection."""
@@ -260,8 +270,16 @@ class SQLiteLogger:
     def _run_id(self, event: ModelEvent) -> int | None:
         return self._run_ids.get(event.model)
 
-    def _record_event(self, event: ModelEvent) -> None:
-        data = event.data
+    def _update_codelet_time(self, kind: str, data: Mapping[str, Any]) -> None:
+        """Synchronize the logger's codelet-time cursor with an incoming event."""
+        if kind == "run_started":
+            self._codelets_run = int(data.get("time", 0))
+        elif data.get("time") is not None:
+            self._codelets_run = int(data["time"])
+        elif kind == "codelet_selected":
+            self._codelets_run += 1
+
+    def _record_event(self, event: ModelEvent, data: Mapping[str, Any]) -> None:
         if event.kind == "run_started":
             cursor = self._connection.execute(
                 "INSERT INTO runs (model, run_time, problem) VALUES (?, ?, ?)",
