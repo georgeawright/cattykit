@@ -11,6 +11,7 @@ from typing import Any
 
 import pandas as pd
 import panel as pn
+from bokeh.plotting import figure
 
 # Panel executes a served file as a script, rather than as a package module.
 # Add the source-package root so this works with ``panel serve cattycam/app.py``.
@@ -37,7 +38,12 @@ class BrowserHistoryBridge(pn.reactive.ReactiveHTML):
 
 def create_app(database: str | Path) -> pn.Column:
     """Create a run picker which opens a tabbed, run-specific database view."""
-    from cattycam.database import table_documentation, table_names, table_rows
+    from cattycam.database import (
+        run_overview_series,
+        table_documentation,
+        table_names,
+        table_rows,
+    )
 
     database_path = Path(database)
     if not database_path.is_file():
@@ -66,6 +72,7 @@ def create_app(database: str | Path) -> pn.Column:
         pn.state.location.sync(active_run, {"value": "run_id"})
 
     def show_run(run_id: int) -> None:
+        overview = _run_overview(run_overview_series(database_path, run_id))
         pages = {
             table: pn.pane.HTML(
                 table_documentation(database_path, table, run_id=run_id),
@@ -73,6 +80,7 @@ def create_app(database: str | Path) -> pn.Column:
             )
             for table in tables
         }
+        pages = {"Overview": overview, **pages}
         back = pn.widgets.Button(name="Back to runs", button_type="default")
         back.on_click(lambda _: setattr(active_run, "value", 0))
         content.objects = [
@@ -117,6 +125,52 @@ def create_app(database: str | Path) -> pn.Column:
         BrowserHistoryBridge(),
         sizing_mode="stretch_width",
     )
+
+
+def _run_overview(series: dict[str, list[tuple]]) -> pn.Column:
+    """Build charts summarizing the selected run."""
+    return pn.Column(
+        "## Run overview",
+        _line_chart(
+            "Codelets on coderack",
+            series["coderack"],
+            "Number of codelets on coderack",
+        ),
+        _line_chart("Temperature", series["temperature"], "Temperature"),
+        _workspace_chart(series["workspace"]),
+        sizing_mode="stretch_width",
+    )
+
+
+def _line_chart(
+    title: str, values: list[tuple], y_axis_label: str
+) -> pn.viewable.Viewable:
+    if not values:
+        return pn.pane.Alert(f"No {title.lower()} data was logged.", alert_type="info")
+    chart = figure(
+        title=title,
+        x_axis_label="Codelets run",
+        y_axis_label=y_axis_label,
+        height=260,
+        sizing_mode="stretch_width",
+    )
+    chart.line(*zip(*values), line_width=2)
+    return chart
+
+
+def _workspace_chart(values: list[tuple]) -> pn.viewable.Viewable:
+    if not values:
+        return pn.pane.Alert("No workspace data was logged.", alert_type="info")
+    times, totals = zip(*values)
+    chart = figure(
+        title="Workspace objects and structures",
+        x_axis_label="Codelets run",
+        y_axis_label="Total count",
+        height=260,
+        sizing_mode="stretch_width",
+    )
+    chart.line(times, totals, line_width=2, color="#1f77b4")
+    return chart
 
 
 database_argument = sys.argv[1] if len(sys.argv) > 1 else "cattycam.sqlite"

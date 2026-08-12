@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import html
+import json
 import sqlite3
 from collections.abc import Sequence
 from pathlib import Path
@@ -49,6 +50,62 @@ def table_rows(
         query, parameters = _table_query(quoted_table, table, run_id)
         rows = connection.execute(query, parameters).fetchall()
     return [column[1] for column in columns], rows
+
+
+def run_overview_series(database: str | Path, run_id: int) -> dict[str, list[tuple]]:
+    """Return the selected run's coderack, temperature, and workspace series."""
+    with sqlite3.connect(database) as connection:
+        attributes = connection.execute(
+            """SELECT time, object_id, attribute, value_json
+               FROM attribute_values WHERE run_id = ? ORDER BY time, id""",
+            (run_id,),
+        ).fetchall()
+        structures = connection.execute(
+            """SELECT creation_time, destruction_time FROM letters WHERE run_id = ?
+               UNION ALL SELECT creation_time, destruction_time FROM groups WHERE run_id = ?
+               UNION ALL SELECT creation_time, destruction_time FROM bonds WHERE run_id = ?
+               UNION ALL SELECT creation_time, destruction_time FROM correspondences WHERE run_id = ?
+               UNION ALL SELECT creation_time, destruction_time FROM replacements WHERE run_id = ?
+               UNION ALL SELECT creation_time, destruction_time FROM rules WHERE run_id = ?""",
+            (run_id,) * 6,
+        ).fetchall()
+        objects = connection.execute(
+            """SELECT creation_time, destruction_time FROM letters WHERE run_id = ?
+               UNION ALL SELECT creation_time, destruction_time FROM groups WHERE run_id = ?""",
+            (run_id, run_id),
+        ).fetchall()
+
+    coderack: list[tuple] = []
+    temperature: list[tuple] = []
+    times: set[int] = set()
+    for time, object_id, attribute, value_json in attributes:
+        value = json.loads(value_json)
+        times.add(time)
+        if object_id == "coderack" and attribute == "number_of_codelets_on_coderack":
+            coderack.append((time, value))
+        elif object_id == "temperature" and attribute == "value":
+            temperature.append((time, value))
+    for creation_time, destruction_time in structures:
+        times.update(
+            time for time in (creation_time, destruction_time) if time is not None
+        )
+
+    def live_count(rows: list[tuple], time: int) -> int:
+        return sum(
+            creation_time is not None
+            and creation_time <= time
+            and (destruction_time is None or destruction_time > time)
+            for creation_time, destruction_time in rows
+        )
+
+    return {
+        "coderack": coderack,
+        "temperature": temperature,
+        "workspace": [
+            (time, live_count(objects, time) + live_count(structures, time))
+            for time in sorted(times)
+        ],
+    }
 
 
 def _table_query(
