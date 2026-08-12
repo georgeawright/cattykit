@@ -48,14 +48,14 @@ def create_app(database: str | Path) -> pn.Column:
     database_path = Path(database)
     if not database_path.is_file():
         return pn.Column(
-            "# Cattycam database browser",
+            "# Cattycam",
             pn.pane.Alert(f"Database not found: {database_path}", alert_type="danger"),
         )
 
     tables = table_names(database_path)
     if "runs" not in tables:
         return pn.Column(
-            "# Cattycam database browser",
+            "# Cattycam",
             pn.pane.Alert(
                 "This database has no Cattycam runs table. Generate a new history "
                 "database with the current SQLiteLogger.",
@@ -72,20 +72,69 @@ def create_app(database: str | Path) -> pn.Column:
         pn.state.location.sync(active_run, {"value": "run_id"})
 
     def show_run(run_id: int) -> None:
+        columns, rows = table_rows(database_path, "runs", run_id=run_id)
+        if not rows:
+            content.objects = [
+                pn.pane.Alert(f"Run {run_id} was not found.", alert_type="warning")
+            ]
+            return
+        run = dict(zip(columns, rows[0], strict=True))
+        model = run["model"]
+        problem = run["problem"]
+        solution = run["solution"]
+        codelets_run = run["number_of_codelets_run"]
+        final_temperature = run["final_temperature"]
         overview = _run_overview(run_overview_series(database_path, run_id))
-        pages = {
-            table: pn.pane.HTML(
-                table_documentation(database_path, table, run_id=run_id),
+        visible_tables = [table for table in tables if table != "attribute_values"]
+        table_content = pn.Column(sizing_mode="stretch_width")
+        table_links = pn.Row(sizing_mode="stretch_width")
+
+        def show_table(table: str) -> None:
+            table_content.objects = [
+                pn.pane.HTML(
+                    table_documentation(database_path, table, run_id=run_id),
+                    sizing_mode="stretch_width",
+                )
+            ]
+
+        for table in visible_tables:
+            link = pn.widgets.Button(name=table, button_type="light")
+            link.on_click(lambda _, table=table: show_table(table))
+            table_links.append(link)
+        detail_panels = pn.Row(
+            pn.Column(
+                "### Coderack",
+                pn.Spacer(height=120),
+                "### Codelet history",
+                pn.Spacer(height=120),
                 sizing_mode="stretch_width",
-            )
-            for table in tables
-        }
-        pages = {"Overview": overview, **pages}
-        back = pn.widgets.Button(name="Back to runs", button_type="default")
-        back.on_click(lambda _: setattr(active_run, "value", 0))
+                styles={"flex": "1"},
+            ),
+            pn.Column(
+                "### Workspace",
+                pn.Spacer(height=120),
+                "### Slipnet",
+                pn.Spacer(height=120),
+                sizing_mode="stretch_width",
+                styles={"flex": "2"},
+            ),
+            sizing_mode="stretch_width",
+        )
+        problem_and_solution = (
+            problem if solution is None else str(problem).replace("?", str(solution))
+        )
         content.objects = [
-            pn.Row(back, pn.pane.Markdown(f"## Run {run_id}")),
-            pn.Tabs(*pages.items(), dynamic=True, sizing_mode="stretch_width"),
+            pn.Row(
+                pn.pane.Markdown(
+                    f"## Run {run_id} of {model} {problem_and_solution}"
+                    f" Codelets run: {codelets_run}"
+                    f" final temperature: {final_temperature}"
+                )
+            ),
+            overview,
+            detail_panels,
+            table_links,
+            table_content,
         ]
 
     def show_runs(_: object | None = None) -> None:
@@ -119,8 +168,7 @@ def create_app(database: str | Path) -> pn.Column:
     active_run.param.watch(update_view, "value")
     update_view()
     return pn.Column(
-        "# Cattycam database browser",
-        pn.pane.Markdown(f"`{database_path}` — {len(tables)} tables"),
+        "# Cattycam",
         content,
         BrowserHistoryBridge(),
         sizing_mode="stretch_width",
@@ -130,14 +178,16 @@ def create_app(database: str | Path) -> pn.Column:
 def _run_overview(series: dict[str, list[tuple]]) -> pn.Column:
     """Build charts summarizing the selected run."""
     return pn.Column(
-        "## Run overview",
-        _line_chart(
-            "Codelets on coderack",
-            series["coderack"],
-            "Number of codelets on coderack",
+        pn.Row(
+            _line_chart(
+                "Codelets on coderack",
+                series["coderack"],
+                "Number of codelets on coderack",
+            ),
+            _line_chart("Temperature", series["temperature"], "Temperature"),
+            _workspace_chart(series["workspace"]),
+            sizing_mode="stretch_width",
         ),
-        _line_chart("Temperature", series["temperature"], "Temperature"),
-        _workspace_chart(series["workspace"]),
         sizing_mode="stretch_width",
     )
 
@@ -152,7 +202,7 @@ def _line_chart(
         x_axis_label="Codelets run",
         y_axis_label=y_axis_label,
         height=260,
-        sizing_mode="stretch_width",
+        width=380,
     )
     chart.line(*zip(*values), line_width=2)
     return chart
@@ -167,7 +217,7 @@ def _workspace_chart(values: list[tuple]) -> pn.viewable.Viewable:
         x_axis_label="Codelets run",
         y_axis_label="Total count",
         height=260,
-        sizing_mode="stretch_width",
+        width=380,
     )
     chart.line(times, totals, line_width=2, color="#1f77b4")
     return chart
