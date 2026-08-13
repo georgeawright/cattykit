@@ -148,6 +148,76 @@ def codelet_types(database: str | Path, run_id: int) -> dict[str, str]:
         )
 
 
+def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
+    """Return workspace entities visible at a selected codelet time."""
+    with sqlite3.connect(database) as connection:
+        letters = connection.execute(
+            """SELECT letter_id, string_id, position, letter_category
+               FROM letters WHERE run_id = ? AND creation_time <= ?
+               AND (destruction_time IS NULL OR destruction_time > ?)
+               ORDER BY string_id, position""",
+            (run_id, time, time),
+        ).fetchall()
+        groups = connection.execute(
+            """SELECT group_id, string_id, left_position, right_position,
+                      proposal_time, creation_time
+               FROM groups WHERE run_id = ? AND (proposal_time <= ? OR creation_time <= ?)
+               AND (destruction_time IS NULL OR destruction_time > ?)
+               AND (creation_time IS NULL OR creation_time > ? OR creation_time <= ?)""",
+            (run_id, time, time, time, time, time),
+        ).fetchall()
+        bonds = connection.execute(
+            """SELECT bond_id, source_id, target_id, proposal_time, creation_time
+               FROM bonds WHERE run_id = ? AND (proposal_time <= ? OR creation_time <= ?)
+               AND (destruction_time IS NULL OR destruction_time > ?)
+               AND (creation_time IS NULL OR creation_time > ? OR creation_time <= ?)""",
+            (run_id, time, time, time, time, time),
+        ).fetchall()
+        correspondences = connection.execute(
+            """SELECT correspondence_id, source_id, target_id, proposal_time,
+                      creation_time FROM correspondences
+               WHERE run_id = ? AND (proposal_time <= ? OR creation_time <= ?)
+               AND (destruction_time IS NULL OR destruction_time > ?)
+               AND (creation_time IS NULL OR creation_time > ? OR creation_time <= ?)""",
+            (run_id, time, time, time, time, time),
+        ).fetchall()
+
+    return {
+        "letters": [
+            {"id": letter_id, "string": string_id, "position": position, "value": value}
+            for letter_id, string_id, position, value in letters
+        ],
+        "groups": [
+            {
+                "id": group_id,
+                "string": string_id,
+                "left": left,
+                "right": right,
+                "proposed": creation is None,
+            }
+            for group_id, string_id, left, right, _, creation in groups
+        ],
+        "bonds": [
+            {
+                "id": bond_id,
+                "source": source,
+                "target": target,
+                "proposed": creation is None,
+            }
+            for bond_id, source, target, _, creation in bonds
+        ],
+        "correspondences": [
+            {
+                "id": correspondence_id,
+                "source": source,
+                "target": target,
+                "proposed": creation is None,
+            }
+            for correspondence_id, source, target, _, creation in correspondences
+        ],
+    }
+
+
 def _table_query(
     quoted_table: str, table: str, run_id: int | None
 ) -> tuple[str, tuple[object, ...]]:

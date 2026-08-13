@@ -8,6 +8,7 @@ from cattycam.database import (
     table_documentation,
     table_names,
     table_rows,
+    workspace_snapshot,
 )
 
 
@@ -145,3 +146,51 @@ def test_codelet_history_filters_by_time_and_orders_newest_first(tmp_path) -> No
         "codelet:2": "Builder",
         "codelet:3": "Later",
     }
+
+
+def test_workspace_snapshot_includes_built_and_proposed_entities(tmp_path) -> None:
+    database = tmp_path / "history.sqlite"
+    with sqlite3.connect(database) as connection:
+        connection.execute(
+            "CREATE TABLE letters "
+            "(run_id INTEGER, letter_id TEXT, string_id TEXT, position INTEGER, "
+            "letter_category TEXT, creation_time INTEGER, destruction_time INTEGER)"
+        )
+        for table, identifier in (
+            ("groups", "group_id"),
+            ("bonds", "bond_id"),
+            ("correspondences", "correspondence_id"),
+        ):
+            columns = (
+                "string_id TEXT, left_position INTEGER, right_position INTEGER"
+                if table == "groups"
+                else "source_id TEXT, target_id TEXT"
+            )
+            connection.execute(
+                f"CREATE TABLE {table} "
+                f"(run_id INTEGER, {identifier} TEXT, {columns}, proposal_time INTEGER, "
+                "creation_time INTEGER, destruction_time INTEGER)"
+            )
+        connection.executemany(
+            "INSERT INTO letters VALUES (?, ?, ?, ?, ?, ?, ?)",
+            [
+                (1, "letter:1", "initial", 0, "a", 0, None),
+                (1, "letter:2", "initial", 1, "b", 0, None),
+            ],
+        )
+        connection.execute(
+            "INSERT INTO groups VALUES (1, 'group:1', 'initial', 0, 1, 2, NULL, NULL)"
+        )
+        connection.execute(
+            "INSERT INTO bonds VALUES (1, 'bond:1', 'letter:1', 'letter:2', 1, 2, NULL)"
+        )
+        connection.execute(
+            "INSERT INTO correspondences VALUES (1, 'correspondence:1', 'letter:1', 'letter:2', 2, NULL, NULL)"
+        )
+
+    snapshot = workspace_snapshot(database, 1, 2)
+
+    assert [letter["value"] for letter in snapshot["letters"]] == ["a", "b"]
+    assert snapshot["groups"][0]["proposed"] is True
+    assert snapshot["bonds"][0]["proposed"] is False
+    assert snapshot["correspondences"][0]["proposed"] is True

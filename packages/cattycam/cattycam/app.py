@@ -10,6 +10,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import param
 import pandas as pd
 import panel as pn
 from bokeh.models import Label, Span
@@ -22,6 +23,108 @@ if str(PACKAGE_ROOT) not in sys.path:
     sys.path.insert(0, str(PACKAGE_ROOT))
 
 pn.extension("tabulator")
+
+
+class WorkspaceCanvas(pn.reactive.ReactiveHTML):
+    """Canvas rendering of the Copycat workspace at one codelet time."""
+
+    snapshot = param.Dict(default={})
+
+    _template = """
+    <div id="container" style="width:100%; overflow:hidden; border:1px solid #d0d0d0;">
+      <canvas id="canvas" style="display:block; width:100%; height:390px;"></canvas>
+    </div>
+    """
+
+    _scripts = {
+        "snapshot": "if (state.draw) state.draw()",
+    }
+
+    _scripts["draw"] = """
+    const width = Math.max(container.clientWidth, 620)
+    const height = 390
+    const scale = window.devicePixelRatio || 1
+    canvas.width = width * scale
+    canvas.height = height * scale
+    const ctx = canvas.getContext('2d')
+    ctx.setTransform(scale, 0, 0, scale, 0, 0)
+    ctx.clearRect(0, 0, width, height)
+    ctx.font = '14px sans-serif'
+    ctx.fillStyle = '#20242a'
+    const layout = {
+      initial: [20, 54, width / 2 - 35, 110],
+      modified: [width / 2 + 15, 54, width / 2 - 35, 110],
+      target: [20, 245, width / 2 - 35, 110],
+      answer: [width / 2 + 15, 245, width / 2 - 35, 110],
+    }
+    const points = new Map()
+    const lettersByString = {}
+    for (const letter of (data.snapshot.letters || [])) {
+      ;(lettersByString[letter.string] ||= []).push(letter)
+    }
+    for (const [role, box] of Object.entries(layout)) {
+      ctx.fillStyle = '#4b5563'
+      ctx.font = '12px sans-serif'
+      ctx.fillText(role, box[0], box[1] - 18)
+      const letters = (lettersByString[role] || []).sort((a, b) => a.position - b.position)
+      const step = box[2] / Math.max(letters.length + 1, 2)
+      letters.forEach((letter, index) => {
+        const point = {x: box[0] + step * (index + 1), y: box[1] + box[3] / 2}
+        points.set(letter.id, point)
+      })
+    }
+    function strokeStyle(proposed) {
+      ctx.setLineDash(proposed ? [5, 4] : [])
+      ctx.strokeStyle = proposed ? '#8a6d3b' : '#334e68'
+      ctx.lineWidth = 1.6
+    }
+    function arrow(from, to, bend, proposed) {
+      if (!from || !to) return
+      const mx = (from.x + to.x) / 2
+      const my = (from.y + to.y) / 2 + bend
+      strokeStyle(proposed)
+      ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.quadraticCurveTo(mx, my, to.x, to.y); ctx.stroke()
+      const angle = Math.atan2(to.y - my, to.x - mx)
+      ctx.setLineDash([]); ctx.fillStyle = ctx.strokeStyle
+      ctx.beginPath(); ctx.moveTo(to.x, to.y)
+      ctx.lineTo(to.x - 8 * Math.cos(angle - 0.45), to.y - 8 * Math.sin(angle - 0.45))
+      ctx.lineTo(to.x - 8 * Math.cos(angle + 0.45), to.y - 8 * Math.sin(angle + 0.45))
+      ctx.closePath(); ctx.fill()
+    }
+    for (const bond of (data.snapshot.bonds || [])) {
+      const from = points.get(bond.source), to = points.get(bond.target)
+      arrow(from, to, (from && from.y < height / 2) ? -36 : 36, bond.proposed)
+    }
+    for (const correspondence of (data.snapshot.correspondences || [])) {
+      const from = points.get(correspondence.source), to = points.get(correspondence.target)
+      arrow(from, to, from && to ? (from.x < to.x ? -30 : 30) : 0, correspondence.proposed)
+    }
+    for (const group of (data.snapshot.groups || [])) {
+      const box = layout[group.string]
+      if (!box) continue
+      const letters = (lettersByString[group.string] || []).sort((a, b) => a.position - b.position)
+      const selected = letters.filter(letter => letter.position >= group.left && letter.position <= group.right)
+      if (!selected.length) continue
+      const ps = selected.map(letter => points.get(letter.id))
+      const left = Math.min(...ps.map(point => point.x)) - 20
+      const right = Math.max(...ps.map(point => point.x)) + 20
+      strokeStyle(group.proposed)
+      ctx.strokeRect(left, box[1] + 24, right - left, 62)
+    }
+    ctx.setLineDash([])
+    for (const [role, letters] of Object.entries(lettersByString)) {
+      for (const letter of letters) {
+        const point = points.get(letter.id)
+        if (!point) continue
+        ctx.fillStyle = '#111827'; ctx.font = '22px serif'
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+        ctx.fillText(letter.value, point.x, point.y)
+      }
+    }
+    ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic'
+    """
+    _scripts["render"] = "state.draw = () => {" + _scripts["draw"] + "}; state.draw()"
+    del _scripts["draw"]
 
 
 class BrowserHistoryBridge(pn.reactive.ReactiveHTML):
@@ -125,6 +228,12 @@ def create_app(database: str | Path) -> pn.Column:
             run_id,
             codelet_time.param.value_throttled,
         )
+        workspace_panel = pn.bind(
+            _workspace_canvas,
+            database_path,
+            run_id,
+            codelet_time.param.value_throttled,
+        )
         detail_panels = pn.Row(
             pn.Column(
                 "### Coderack",
@@ -136,7 +245,7 @@ def create_app(database: str | Path) -> pn.Column:
             ),
             pn.Column(
                 "### Workspace",
-                pn.Spacer(height=120),
+                workspace_panel,
                 "### Slipnet",
                 pn.Spacer(height=120),
                 sizing_mode="stretch_width",
@@ -359,6 +468,15 @@ def _coderack_badges(database: Path, run_id: int, time: int) -> pn.Column:
         height=180,
         scroll=True,
         sizing_mode="stretch_width",
+    )
+
+
+def _workspace_canvas(database: Path, run_id: int, time: int) -> WorkspaceCanvas:
+    """Render the workspace state for the selected run and codelet time."""
+    from cattycam.database import workspace_snapshot
+
+    return WorkspaceCanvas(
+        snapshot=workspace_snapshot(database, run_id, time), sizing_mode="stretch_width"
     )
 
 
