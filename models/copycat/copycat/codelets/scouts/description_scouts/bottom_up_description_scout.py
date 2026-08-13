@@ -31,11 +31,11 @@ class BottomUpDescriptionScout(DescriptionScout):
             return Fizzle(FizzleReason.NO_RELEVANT_HAS_PROPERTY_LINKS)
         weights = [
             link.degree_of_association
-            * self.slipnet.get_node_activation(link.to_node.name)
+            * self.slipnet.get_node_activation(link.target.name)
             for link in has_property_links
         ]
         chosen_link = select_item_from_list(has_property_links, weights)
-        chosen_property = chosen_link.to_node
+        chosen_property = chosen_link.target
         self.propose_description(
             chosen_object,
             chosen_property.category,
