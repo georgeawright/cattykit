@@ -138,21 +138,27 @@ class Coderack:
                     value=self.population,
                 )
             )
-            self.logger.log(
-                ModelEvent.create(
-                    "copycat",
-                    "codelet_selected",
-                    codelet_id=f"codelet:{chosen_codelet.hash_id}",
-                    codelet_type=type(chosen_codelet).__name__,
-                    urgency_bin=chosen_codelet.urgency_bin,
-                    birth_time=chosen_codelet.birth_time,
-                )
-            )
         return chosen_codelet
 
     def _post(self, codelet):
         self.get_urgency_bin(codelet.urgency_bin).add(codelet)
         codelet.birth_time = self.number_of_codelets_run
+        if self.logger is not None:
+            self.logger.log(
+                ModelEvent.create(
+                    "copycat",
+                    "codelet_posted",
+                    codelet_id=f"codelet:{codelet.hash_id}",
+                    codelet_type=type(codelet).__name__,
+                    urgency_bin=codelet.urgency_bin,
+                    birth_time=codelet.birth_time,
+                    arguments={
+                        "proposed_structure": getattr(
+                            codelet, "proposed_structure", None
+                        )
+                    },
+                )
+            )
 
     def _remove(self, codelet, discard_proposal: bool = True):
         """Remove codelet from coderack and

@@ -19,6 +19,7 @@ class SQLiteLogger:
         self._create_schema()
         self._connection.commit()
         self._codelets_run = 0
+        self._active_codelet_id: str | None = None
 
     def log(self, event: ModelEvent) -> None:
         """Record an event using the logger's current codelet-time cursor."""
@@ -26,7 +27,15 @@ class SQLiteLogger:
         self._update_codelet_time(event.kind, data)
         if data.get("time") is None:
             data["time"] = self._codelets_run
+        if event.kind == "run_started":
+            self._active_codelet_id = None
+        elif event.kind != "codelet_selected" and self._active_codelet_id is not None:
+            data.setdefault("parent_codelet_id", self._active_codelet_id)
         self._record_event(event, data)
+        if event.kind == "codelet_selected":
+            self._active_codelet_id = data.get("codelet_id")
+        elif event.kind in {"codelet_finished", "run_finished"}:
+            self._active_codelet_id = None
         self._connection.commit()
 
     @property
@@ -316,22 +325,40 @@ class SQLiteLogger:
                 (run_id,),
             )
         elif event.kind in {"codelet_selected", "codelet_started"}:
-            self._connection.execute(
-                """INSERT INTO codelets
-                (run_id, codelet_id, parent_codelet_id, codelet_type, urgency_bin,
-                 arguments_json, birth_time, run_time)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            cursor = self._connection.execute(
+                """UPDATE codelets SET
+                   parent_codelet_id = COALESCE(?, parent_codelet_id), codelet_type = ?,
+                   urgency_bin = ?, birth_time = ?, run_time = ?
+                   WHERE run_id = ? AND codelet_id = ?""",
                 (
-                    run_id,
-                    data.get("codelet_id"),
                     data.get("parent_codelet_id"),
                     data.get("codelet_type", data.get("codelet", "unknown")),
                     data.get("urgency_bin"),
-                    self._json(data.get("arguments", {})),
                     data.get("birth_time"),
                     data.get("time"),
+                    run_id,
+                    data.get("codelet_id"),
                 ),
             )
+            if cursor.rowcount == 0:
+                self._connection.execute(
+                    """INSERT INTO codelets
+                (run_id, codelet_id, parent_codelet_id, codelet_type, urgency_bin,
+                 arguments_json, birth_time, run_time)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (
+                        run_id,
+                        data.get("codelet_id"),
+                        data.get("parent_codelet_id"),
+                        data.get("codelet_type", data.get("codelet", "unknown")),
+                        data.get("urgency_bin"),
+                        self._json(data.get("arguments", {})),
+                        data.get("birth_time"),
+                        data.get("time"),
+                    ),
+                )
+        elif event.kind == "codelet_posted":
+            self._post_codelet(run_id, data)
         elif event.kind == "codelet_finished":
             self._finish_codelet(run_id, data)
         elif event.kind in {"string_created", "string_initialized"}:
@@ -398,16 +425,39 @@ class SQLiteLogger:
                 ),
             )
 
+    def _post_codelet(self, run_id: int, data: Mapping[str, Any]) -> None:
+        """Record a codelet when it enters the coderack.
+
+        Selection later updates this row with the codelet's run time, preserving
+        the interval between posting and execution.
+        """
+        self._connection.execute(
+            """INSERT INTO codelets
+               (run_id, codelet_id, parent_codelet_id, codelet_type, urgency_bin,
+                arguments_json, birth_time)
+               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (
+                run_id,
+                data.get("codelet_id"),
+                self._active_codelet_id,
+                data.get("codelet_type", data.get("codelet", "unknown")),
+                data.get("urgency_bin"),
+                self._json(data.get("arguments", data.get("argument"))),
+                data.get("birth_time", data.get("time")),
+            ),
+        )
+
     def _finish_codelet(self, run_id: int, data: Mapping[str, Any]) -> None:
         cursor = self._connection.execute(
             """UPDATE codelets SET result = ?, fizzle_reason = ?, run_time = ?
                WHERE id = (SELECT id FROM codelets WHERE run_id = ?
-               AND result IS NULL ORDER BY id DESC LIMIT 1)""",
+               AND codelet_id = ? AND result IS NULL ORDER BY id DESC LIMIT 1)""",
             (
                 data.get("outcome", data.get("result")),
                 data.get("reason", data.get("fizzle_reason")),
                 data.get("time"),
                 run_id,
+                data.get("codelet_id"),
             ),
         )
         if cursor.rowcount == 0:

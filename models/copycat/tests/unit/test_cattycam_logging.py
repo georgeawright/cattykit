@@ -88,3 +88,38 @@ def test_workspace_logs_the_structure_a_codelet_builds(tmp_path, monkeypatch) ->
     assert replacement[0].startswith("letter:")
     assert replacement[1].startswith("letter:")
     assert replacement[2] == 0
+
+
+def test_coderack_logs_a_codelet_when_it_is_posted(tmp_path) -> None:
+    database = tmp_path / "history.sqlite"
+    logger = SQLiteLogger(database)
+    copycat = Copycat.from_json(
+        str(CONFIG_DIRECTORY / "slipnet.json"),
+        str(CONFIG_DIRECTORY / "coderack.json"),
+        str(CONFIG_DIRECTORY / "hyperparameters.json"),
+        logger=logger,
+    )
+    codelet = ReplacementFinder(
+        urgency_bin=2,
+        coderack=copycat.coderack,
+        workspace=copycat.workspace,
+        slipnet=copycat.slipnet,
+    )
+
+    logger.log(ModelEvent.create("copycat", "run_started", problem="abc -> abd"))
+    copycat.coderack.post(codelet, temperature=1.0)
+    logger.close()
+
+    with sqlite3.connect(database) as connection:
+        posted_codelet = connection.execute(
+            "SELECT codelet_id, codelet_type, urgency_bin, birth_time, run_time "
+            "FROM codelets"
+        ).fetchone()
+
+    assert posted_codelet == (
+        f"codelet:{codelet.hash_id}",
+        "ReplacementFinder",
+        2,
+        0,
+        None,
+    )

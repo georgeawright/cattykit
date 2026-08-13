@@ -341,6 +341,17 @@ class Copycat:
     def step(self):
         """Run a single codelet."""
         codelet = self.coderack.choose(self.temperature)
+        self.logger.log(
+            ModelEvent.create(
+                "copycat",
+                "codelet_selected",
+                codelet_id=f"codelet:{codelet.hash_id}",
+                codelet_type=type(codelet).__name__,
+                urgency_bin=codelet.urgency_bin,
+                birth_time=codelet.birth_time,
+                time=self.coderack.number_of_codelets_run,
+            )
+        )
         rule = self.workspace.rule
         translated_rule = self.workspace.translated_rule
         result = codelet.run(self.temperature)

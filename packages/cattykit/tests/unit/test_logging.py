@@ -169,6 +169,86 @@ def test_sqlite_logger_attaches_its_codelet_time_to_untimed_events(tmp_path) -> 
     assert logger.codelets_run == 1
 
 
+def test_sqlite_logger_updates_a_posted_codelet_when_selected(tmp_path) -> None:
+    database = tmp_path / "cattycam.sqlite"
+    logger = SQLiteLogger(database)
+    logger.log(ModelEvent.create("copycat", "run_started", problem="abc -> abd"))
+    logger.log(
+        ModelEvent.create(
+            "copycat",
+            "codelet_posted",
+            codelet_id="codelet:1",
+            codelet_type="BottomUpBondScout",
+            urgency_bin=2,
+            birth_time=0,
+        )
+    )
+    logger.log(
+        ModelEvent.create(
+            "copycat",
+            "codelet_selected",
+            codelet_id="codelet:1",
+            codelet_type="BottomUpBondScout",
+            urgency_bin=2,
+            birth_time=0,
+            time=4,
+        )
+    )
+    logger.close()
+
+    with sqlite3.connect(database) as connection:
+        codelets = connection.execute(
+            "SELECT codelet_id, birth_time, run_time FROM codelets"
+        ).fetchall()
+
+    assert codelets == [("codelet:1", 0, 4)]
+
+
+def test_sqlite_logger_assigns_selected_codelet_as_parent_of_new_posts(
+    tmp_path,
+) -> None:
+    database = tmp_path / "cattycam.sqlite"
+    logger = SQLiteLogger(database)
+    logger.log(ModelEvent.create("copycat", "run_started", problem="abc -> abd"))
+    logger.log(
+        ModelEvent.create(
+            "copycat",
+            "codelet_posted",
+            codelet_id="codelet:parent",
+            codelet_type="BondScout",
+            urgency_bin=2,
+        )
+    )
+    logger.log(
+        ModelEvent.create(
+            "copycat",
+            "codelet_selected",
+            codelet_id="codelet:parent",
+            codelet_type="BondScout",
+            urgency_bin=2,
+            time=1,
+        )
+    )
+    logger.log(
+        ModelEvent.create(
+            "copycat",
+            "codelet_posted",
+            codelet_id="codelet:child",
+            codelet_type="BondStrengthTester",
+            urgency_bin=3,
+            parent_codelet_id="codelet:incorrect-parent",
+        )
+    )
+    logger.close()
+
+    with sqlite3.connect(database) as connection:
+        parent_id = connection.execute(
+            "SELECT parent_codelet_id FROM codelets WHERE codelet_id = 'codelet:child'"
+        ).fetchone()
+
+    assert parent_id == ("codelet:parent",)
+
+
 def test_sqlite_logger_populates_typed_workspace_tables(tmp_path) -> None:
     database = tmp_path / "cattycam.sqlite"
     logger = SQLiteLogger(database)
