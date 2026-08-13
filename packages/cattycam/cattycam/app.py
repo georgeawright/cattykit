@@ -84,15 +84,26 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
       if (!from || !to) return
       const mx = (from.x + to.x) / 2
       const my = (from.y + to.y) / 2 + bend
+      const clearance = 20
+      const sourceDistance = Math.max(Math.hypot(mx - from.x, my - from.y), 1)
+      const targetDistance = Math.max(Math.hypot(to.x - mx, to.y - my), 1)
+      const start = {
+        x: from.x + clearance * (mx - from.x) / sourceDistance,
+        y: from.y + clearance * (my - from.y) / sourceDistance,
+      }
+      const end = {
+        x: to.x - clearance * (to.x - mx) / targetDistance,
+        y: to.y - clearance * (to.y - my) / targetDistance,
+      }
       strokeStyle(proposed, color)
-      ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.quadraticCurveTo(mx, my, to.x, to.y); ctx.stroke()
-      const angle = Math.atan2(to.y - my, to.x - mx)
+      ctx.beginPath(); ctx.moveTo(start.x, start.y); ctx.quadraticCurveTo(mx, my, end.x, end.y); ctx.stroke()
+      const angle = Math.atan2(end.y - my, end.x - mx)
       ctx.setLineDash([]); ctx.fillStyle = ctx.strokeStyle
-      ctx.beginPath(); ctx.moveTo(to.x, to.y)
-      ctx.lineTo(to.x - 8 * Math.cos(angle - 0.45), to.y - 8 * Math.sin(angle - 0.45))
-      ctx.lineTo(to.x - 8 * Math.cos(angle + 0.45), to.y - 8 * Math.sin(angle + 0.45))
+      ctx.beginPath(); ctx.moveTo(end.x, end.y)
+      ctx.lineTo(end.x - 8 * Math.cos(angle - 0.45), end.y - 8 * Math.sin(angle - 0.45))
+      ctx.lineTo(end.x - 8 * Math.cos(angle + 0.45), end.y - 8 * Math.sin(angle + 0.45))
       ctx.closePath(); ctx.fill()
-      return {from, to, mx, my}
+      return {from: start, to: end, mx, my}
     }
     for (const bond of (data.snapshot.bonds || [])) {
       const from = points.get(bond.source), to = points.get(bond.target)
