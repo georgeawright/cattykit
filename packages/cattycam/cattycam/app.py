@@ -129,7 +129,7 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
           connection.type === 'replacement' ? '#7c3aed' : undefined,
         )
         if (connection.type === 'bond' && curve) {
-          hits.push({type: 'bond', ...curve, facet: connection.facet, category: connection.category, direction: connection.direction})
+          hits.push({type: 'bond', id: connection.id, ...curve, facet: connection.facet, category: connection.category, direction: connection.direction})
         } else if (connection.type === 'correspondence' && curve) {
           hits.push({type: 'correspondence', ...curve, id: connection.id, mappings: connection.mappings || []})
         }
@@ -166,7 +166,7 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
         : selection.type === 'correspondence'
           ? (selection.mappings || []).map(mapping => `${mapping.source_type || '—'} → ${mapping.target_type || '—'}`)
         : [...new Set(descriptionLines)]
-      const title = selection.type === 'bond' ? 'bond' : selection.id
+      const title = selection.id
       const cardX = Math.min(width - 190, Math.max(8, selection.cardX + 16))
       const cardY = Math.min(height - 70, Math.max(8, selection.cardY - 12))
       ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.font = '12px sans-serif'
