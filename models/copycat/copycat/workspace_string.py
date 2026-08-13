@@ -1,6 +1,6 @@
 from collections import defaultdict
 import random
-from typing import List
+from typing import Dict, List
 
 from cattykit.logging import ModelEvent, ModelLogger
 
@@ -17,7 +17,7 @@ class WorkspaceString:
         self.bonds_by_role = defaultdict(lambda: defaultdict(lambda: None))
         self.bonds_by_position = defaultdict(lambda: defaultdict(lambda: None))
         self._proposed_groups = defaultdict(lambda: defaultdict(list))
-        self._groups = {}
+        self._groups: Dict["Group"] = {}
         self.distribution_of_bond_counts = [0]
         self.intra_string_unhappiness = 0
 

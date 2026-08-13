@@ -113,11 +113,13 @@ class GroupBuilder(Builder):
         return True
 
     def _get_incompatible_groups(self):
-        return [
-            obj.group
-            for obj in self.proposed_group.objects
-            if obj.group and not obj.group.equates_to(self.proposed_group)
-        ]
+        groups = []
+        for obj in self.proposed_group.objects:
+            if obj.group and not obj.group.equates_to(self.proposed_group):
+                if obj.group in groups:
+                    continue
+                groups.append(obj.group)
+        return groups
 
     def _get_incompatible_correspondences(self):
         return [
