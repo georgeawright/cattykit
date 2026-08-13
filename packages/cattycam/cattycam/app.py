@@ -596,7 +596,9 @@ def _coderack_badges(database: Path, run_id: int, time: int) -> pn.Column:
 
     codelets = coderack_codelets(database, run_id, time)
     if not codelets:
-        return pn.pane.Markdown("_No codelets on the coderack._")
+        return pn.pane.Markdown(
+            "_No codelets on the coderack._", height=390, sizing_mode="stretch_width"
+        )
     rows: dict[int, list[str]] = {}
     for urgency_bin, codelet_type, codelet_id in codelets:
         rows.setdefault(urgency_bin, []).append(
@@ -634,7 +636,7 @@ def _coderack_badges(database: Path, run_id: int, time: int) -> pn.Column:
     return pn.Column(
         pn.Row(pn.pane.Markdown("**Urgency**", width=55)),
         *bin_rows,
-        height=180,
+        height=390,
         scroll=True,
         sizing_mode="stretch_width",
     )
@@ -690,7 +692,9 @@ def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.View
 
     codelets = codelet_history(database, run_id, time)
     if not codelets:
-        return pn.pane.Markdown("_No codelets have run yet._")
+        return pn.pane.Markdown(
+            "_No codelets have run yet._", height=430, sizing_mode="stretch_width"
+        )
     children_by_parent: dict[str, list[str]] = {}
     for codelet_id, parent_id, *_ in codelets:
         if parent_id is not None:
@@ -723,7 +727,7 @@ def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.View
     )
     return pn.pane.HTML(
         cards,
-        height=180,
+        height=430,
         sizing_mode="stretch_width",
         styles={"overflow-y": "auto"},
     )
