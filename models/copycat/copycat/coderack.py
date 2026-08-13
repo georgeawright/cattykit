@@ -167,6 +167,14 @@ class Coderack:
         self.get_urgency_bin(codelet.urgency_bin).remove(codelet)
         if not discard_proposal:
             return
+        if self.logger is not None:
+            self.logger.log(
+                ModelEvent.create(
+                    "copycat",
+                    "codelet_removed",
+                    codelet_id=f"codelet:{codelet.hash_id}",
+                )
+            )
         if isinstance(codelet, (BondStrengthTester, BondBuilder)):
             codelet.proposed_bond.string.delete_proposed_bond(
                 codelet.proposed_bond,

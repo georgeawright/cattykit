@@ -1,6 +1,7 @@
 import sqlite3
 
 from cattycam.database import (
+    coderack_codelets,
     run_overview_series,
     table_documentation,
     table_names,
@@ -84,3 +85,26 @@ def test_run_overview_series_uses_attribute_and_lifecycle_history(tmp_path) -> N
         "temperature": [(2, 0.5)],
         "workspace": [(0, 2), (1, 3), (2, 2)],
     }
+
+
+def test_coderack_codelets_returns_only_active_codelets_by_urgency(tmp_path) -> None:
+    database = tmp_path / "history.sqlite"
+    with sqlite3.connect(database) as connection:
+        connection.execute(
+            "CREATE TABLE codelets "
+            "(id INTEGER PRIMARY KEY, run_id INTEGER, codelet_type TEXT, "
+            "urgency_bin INTEGER, birth_time INTEGER, removal_time INTEGER)"
+        )
+        connection.executemany(
+            "INSERT INTO codelets "
+            "(run_id, codelet_type, urgency_bin, birth_time, removal_time) "
+            "VALUES (?, ?, ?, ?, ?)",
+            [
+                (1, "Low", 1, 0, None),
+                (1, "High", 4, 1, None),
+                (1, "Removed", 6, 0, 2),
+                (2, "Other run", 7, 0, None),
+            ],
+        )
+
+    assert coderack_codelets(database, 1, time=2) == [(4, "High"), (1, "Low")]

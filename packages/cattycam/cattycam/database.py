@@ -108,6 +108,20 @@ def run_overview_series(database: str | Path, run_id: int) -> dict[str, list[tup
     }
 
 
+def coderack_codelets(
+    database: str | Path, run_id: int, time: int
+) -> list[tuple[int, str]]:
+    """Return codelets still on the coderack at a selected codelet time."""
+    with sqlite3.connect(database) as connection:
+        return connection.execute(
+            """SELECT urgency_bin, codelet_type FROM codelets
+               WHERE run_id = ? AND birth_time <= ?
+               AND (removal_time IS NULL OR removal_time > ?)
+               ORDER BY urgency_bin DESC, id""",
+            (run_id, time, time),
+        ).fetchall()
+
+
 def _table_query(
     quoted_table: str, table: str, run_id: int | None
 ) -> tuple[str, tuple[object, ...]]:

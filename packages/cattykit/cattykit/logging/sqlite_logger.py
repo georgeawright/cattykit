@@ -71,6 +71,7 @@ class SQLiteLogger:
                 arguments_json TEXT,
                 birth_time INTEGER,
                 run_time INTEGER,
+                removal_time INTEGER,
                 result TEXT,
                 fizzle_reason TEXT
             );
@@ -270,6 +271,17 @@ class SQLiteLogger:
                 ON correspondences(run_id, correspondence_id);
             """
         )
+        self._ensure_column("codelets", "removal_time", "INTEGER")
+
+    def _ensure_column(self, table: str, column: str, definition: str) -> None:
+        """Add a schema column when opening a history database from an older logger."""
+        columns = {
+            row[1] for row in self._connection.execute(f"PRAGMA table_info({table})")
+        }
+        if column not in columns:
+            self._connection.execute(
+                f"ALTER TABLE {table} ADD COLUMN {column} {definition}"
+            )
 
     @staticmethod
     def _json(value: Any) -> str:
@@ -327,14 +339,17 @@ class SQLiteLogger:
         elif event.kind in {"codelet_selected", "codelet_started"}:
             cursor = self._connection.execute(
                 """UPDATE codelets SET
-                   parent_codelet_id = COALESCE(?, parent_codelet_id), codelet_type = ?,
-                   urgency_bin = ?, birth_time = ?, run_time = ?
+                   parent_codelet_id = COALESCE(?, parent_codelet_id),
+                   codelet_type = COALESCE(?, codelet_type),
+                   urgency_bin = COALESCE(?, urgency_bin),
+                   birth_time = COALESCE(?, birth_time), run_time = ?, removal_time = ?
                    WHERE run_id = ? AND codelet_id = ?""",
                 (
                     data.get("parent_codelet_id"),
                     data.get("codelet_type", data.get("codelet", "unknown")),
                     data.get("urgency_bin"),
                     data.get("birth_time"),
+                    data.get("time"),
                     data.get("time"),
                     run_id,
                     data.get("codelet_id"),
@@ -344,8 +359,8 @@ class SQLiteLogger:
                 self._connection.execute(
                     """INSERT INTO codelets
                 (run_id, codelet_id, parent_codelet_id, codelet_type, urgency_bin,
-                 arguments_json, birth_time, run_time)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                 arguments_json, birth_time, run_time, removal_time)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                     (
                         run_id,
                         data.get("codelet_id"),
@@ -355,10 +370,17 @@ class SQLiteLogger:
                         self._json(data.get("arguments", {})),
                         data.get("birth_time"),
                         data.get("time"),
+                        data.get("time"),
                     ),
                 )
         elif event.kind == "codelet_posted":
             self._post_codelet(run_id, data)
+        elif event.kind == "codelet_removed":
+            self._connection.execute(
+                """UPDATE codelets SET removal_time = ?
+                   WHERE run_id = ? AND codelet_id = ? AND removal_time IS NULL""",
+                (data["time"], run_id, data.get("codelet_id")),
+            )
         elif event.kind == "codelet_finished":
             self._finish_codelet(run_id, data)
         elif event.kind in {"string_created", "string_initialized"}:

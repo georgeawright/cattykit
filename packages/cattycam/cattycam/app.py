@@ -5,6 +5,7 @@ Run with ``panel serve cattycam/app.py --show --args path/to/history.sqlite``.
 
 from __future__ import annotations
 
+import html
 import sys
 from pathlib import Path
 from typing import Any
@@ -40,6 +41,7 @@ class BrowserHistoryBridge(pn.reactive.ReactiveHTML):
 def create_app(database: str | Path) -> pn.Column:
     """Create a run picker which opens a tabbed, run-specific database view."""
     from cattycam.database import (
+        coderack_codelets,
         run_overview_series,
         table_documentation,
         table_names,
@@ -111,10 +113,11 @@ def create_app(database: str | Path) -> pn.Column:
             link = pn.widgets.Button(name=table, button_type="light")
             link.on_click(lambda _, table=table: show_table(table))
             table_links.append(link)
+        coderack_panel = pn.bind(_coderack_badges, database_path, run_id, codelet_time)
         detail_panels = pn.Row(
             pn.Column(
                 "### Coderack",
-                pn.Spacer(height=120),
+                coderack_panel,
                 "### Codelet history",
                 pn.Spacer(height=120),
                 sizing_mode="stretch_width",
@@ -296,6 +299,54 @@ def _value_at_time(values: list[tuple], time: int) -> object:
     return next(
         (value for value_time, value in reversed(values) if value_time <= time),
         values[0][1],
+    )
+
+
+def _coderack_badges(database: Path, run_id: int, time: int) -> pn.Column:
+    """Render active codelets as urgency-bin rows of compact type badges."""
+    from cattycam.database import coderack_codelets
+
+    codelets = coderack_codelets(database, run_id, time)
+    if not codelets:
+        return pn.pane.Markdown("_No codelets on the coderack._")
+    rows: dict[int, list[str]] = {}
+    for urgency_bin, codelet_type in codelets:
+        rows.setdefault(urgency_bin, []).append(codelet_type)
+    bin_rows = []
+    for urgency_bin, codelet_types in rows.items():
+        if bin_rows:
+            bin_rows.append(
+                pn.pane.HTML(
+                    "<hr style='width:100%; margin:6px 0; border:0; "
+                    "border-top:1px solid #d0d0d0;'>",
+                    sizing_mode="stretch_width",
+                )
+            )
+        bin_rows.append(
+            pn.Row(
+                pn.pane.Markdown(str(urgency_bin), width=55),
+                pn.FlexBox(
+                    *[
+                        pn.pane.HTML(
+                            f'<span style="display:inline-block; padding:3px 7px; '
+                            f"border-radius:10px; background:#e8eef7; "
+                            f'border:1px solid #8296b4;">'
+                            f"{html.escape(codelet_type)}</span>"
+                        )
+                        for codelet_type in codelet_types
+                    ],
+                    flex_wrap="wrap",
+                    sizing_mode="stretch_width",
+                ),
+                sizing_mode="stretch_width",
+            )
+        )
+    return pn.Column(
+        pn.Row(pn.pane.Markdown("**Urgency**", width=55)),
+        *bin_rows,
+        height=180,
+        scroll=True,
+        sizing_mode="stretch_width",
     )
 
 
