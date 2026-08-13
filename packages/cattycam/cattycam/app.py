@@ -182,7 +182,6 @@ def create_app(database: str | Path) -> pn.Column:
     active_run.param.watch(update_view, "value")
     update_view()
     return pn.Column(
-        "# Cattycam",
         content,
         BrowserHistoryBridge(),
         sizing_mode="stretch_width",
