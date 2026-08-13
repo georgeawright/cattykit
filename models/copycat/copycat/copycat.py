@@ -290,7 +290,9 @@ class Copycat:
                 continue
             try:
                 answer_builder = AnswerBuilder(self.slipnet, self.workspace)
+                previous_answer_letters = list(self.workspace.answer_string.letters)
                 answer_builder.build()
+                self._log_answer_letters(previous_answer_letters)
                 self.found_answer = True
                 self.logger.log(
                     ModelEvent.create(
@@ -313,6 +315,31 @@ class Copycat:
                     )
                 )
                 self.handle_snag()
+
+    def _log_answer_letters(self, previous_answer_letters) -> None:
+        """Record the answer-string replacement produced by AnswerBuilder."""
+        time = self.coderack.number_of_codelets_run
+        for letter in previous_answer_letters:
+            self.logger.log(
+                ModelEvent.create(
+                    "copycat",
+                    "letter_destroyed",
+                    letter_id=f"letter:{letter.hash_id}",
+                    time=time,
+                )
+            )
+        for letter in self.workspace.answer_string.letters:
+            self.logger.log(
+                ModelEvent.create(
+                    "copycat",
+                    "letter_created",
+                    letter_id=f"letter:{letter.hash_id}",
+                    string_id="answer",
+                    position=letter.left_position,
+                    letter_category=letter.letter_category.name,
+                    time=time,
+                )
+            )
 
     def update(self):
         """Update values of workspace structures and slipnet activations."""
