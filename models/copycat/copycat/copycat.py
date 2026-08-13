@@ -385,17 +385,10 @@ class Copycat:
             if self.workspace.rule is not None:
                 self._log_rule("rule_created", self.workspace.rule)
         if self.workspace.translated_rule is not translated_rule:
-            self.logger.log(
-                ModelEvent.create(
-                    "copycat",
-                    "attribute_updated",
-                    object_id="copycat",
-                    attribute="translated_rule",
-                    value=None
-                    if self.workspace.translated_rule is None
-                    else f"rule:{self.workspace.translated_rule.hash_id}",
-                )
-            )
+            if translated_rule is not None:
+                self._log_rule("translated_rule_destroyed", translated_rule)
+            if self.workspace.translated_rule is not None:
+                self._log_rule("translated_rule_created", self.workspace.translated_rule)
 
     def _log_rule(self, kind: str, rule) -> None:
         self.logger.log(
@@ -403,6 +396,7 @@ class Copycat:
                 "copycat",
                 kind,
                 rule_id=f"rule:{rule.hash_id}",
+                time=self.coderack.number_of_codelets_run,
                 **{
                     attribute: None
                     if getattr(rule, attribute) is None

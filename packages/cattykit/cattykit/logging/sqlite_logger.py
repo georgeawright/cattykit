@@ -221,6 +221,24 @@ class SQLiteLogger:
                 UNIQUE(run_id, rule_id)
             );
 
+            CREATE TABLE IF NOT EXISTS translated_rules (
+                id INTEGER PRIMARY KEY,
+                run_id INTEGER NOT NULL REFERENCES runs(id),
+                rule_id TEXT NOT NULL,
+                parent_codelet_id TEXT,
+                object_category_1 TEXT,
+                descriptor_1_facet TEXT,
+                descriptor_1 TEXT,
+                object_category_2 TEXT,
+                descriptor_2 TEXT,
+                replaced_description_type TEXT,
+                relation TEXT,
+                proposal_time INTEGER,
+                creation_time INTEGER,
+                destruction_time INTEGER,
+                UNIQUE(run_id, rule_id)
+            );
+
             CREATE TABLE IF NOT EXISTS slipnodes (
                 id INTEGER PRIMARY KEY,
                 run_id INTEGER NOT NULL REFERENCES runs(id),
@@ -427,6 +445,14 @@ class SQLiteLogger:
             )
         elif event.kind in {"rule_proposed", "rule_created", "rule_destroyed"}:
             self._upsert_lifecycle_entity("rules", "rule", run_id, event.kind, data)
+        elif event.kind in {
+            "translated_rule_proposed",
+            "translated_rule_created",
+            "translated_rule_destroyed",
+        }:
+            self._upsert_lifecycle_entity(
+                "translated_rules", "rule", run_id, event.kind, data
+            )
         elif event.kind in {"concept_mapping_created", "concept_mapping_updated"}:
             self._upsert_concept_mapping(run_id, data)
         elif event.kind in {"slipnode_created", "slipnode_initialized"}:
@@ -568,6 +594,16 @@ class SQLiteLogger:
                 "target_id",
             ),
             "rules": (
+                "parent_codelet_id",
+                "object_category_1",
+                "descriptor_1_facet",
+                "descriptor_1",
+                "object_category_2",
+                "descriptor_2",
+                "replaced_description_type",
+                "relation",
+            ),
+            "translated_rules": (
                 "parent_codelet_id",
                 "object_category_1",
                 "descriptor_1_facet",

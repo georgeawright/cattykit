@@ -212,8 +212,18 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
                ORDER BY COALESCE(creation_time, proposal_time) DESC, id DESC""",
             (run_id, time, time, time),
         ).fetchall()
+        translated_rules = connection.execute(
+            """SELECT rule_id, object_category_1, descriptor_1,
+                      replaced_description_type, descriptor_2, relation
+               FROM translated_rules WHERE run_id = ?
+               AND creation_time <= ?
+               AND (destruction_time IS NULL OR destruction_time > ?)
+               ORDER BY creation_time DESC, id DESC""",
+            (run_id, time, time),
+        ).fetchall()
 
     rule = rules[0] if rules else None
+    translated_rule = translated_rules[0] if translated_rules else None
 
     return {
         "letters": [
@@ -290,6 +300,18 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
                 "relation": rule[5],
             }
             if rules
+            else None
+        ),
+        "translated_rule": (
+            {
+                "id": translated_rule[0],
+                "object_category": translated_rule[1],
+                "descriptor": translated_rule[2],
+                "replaced_description_type": translated_rule[3],
+                "descriptor_2": translated_rule[4],
+                "relation": translated_rule[5],
+            }
+            if translated_rule
             else None
         ),
     }

@@ -172,6 +172,19 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
       ctx.fillRect(ruleX, ruleY, ruleWidth, 22); ctx.strokeRect(ruleX, ruleY, ruleWidth, 22)
       ctx.fillStyle = '#111827'; ctx.fillText(ruleText, modifiedBox[0] + modifiedBox[2] / 2, ruleY + 11)
     }
+    const translatedRule = data.snapshot.translated_rule
+    if (translatedRule) {
+      const secondHalf = translatedRule.relation || translatedRule.descriptor_2 || '—'
+      const ruleText = `Replace ${translatedRule.replaced_description_type || '—'} of ${translatedRule.descriptor || '—'} ${translatedRule.object_category || '—'} by ${secondHalf}`
+      const answerBox = layout.answer
+      ctx.font = '12px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+      const ruleWidth = Math.min(answerBox[2] - 12, ctx.measureText(ruleText).width + 16)
+      const ruleX = answerBox[0] + (answerBox[2] - ruleWidth) / 2
+      const ruleY = answerBox[1] + answerBox[3] - 25
+      ctx.fillStyle = 'white'; ctx.strokeStyle = 'black'; ctx.lineWidth = 1
+      ctx.fillRect(ruleX, ruleY, ruleWidth, 22); ctx.strokeRect(ruleX, ruleY, ruleWidth, 22)
+      ctx.fillStyle = '#111827'; ctx.fillText(ruleText, answerBox[0] + answerBox[2] / 2, ruleY + 11)
+    }
     if (state.selection) {
       const selection = state.selection
       const descriptionLines = (selection.descriptions || []).map(description => `${description.facet || '—'}: ${description.descriptor || '—'}`)

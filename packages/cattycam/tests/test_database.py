@@ -194,6 +194,12 @@ def test_workspace_snapshot_includes_built_and_proposed_entities(tmp_path) -> No
             "descriptor_1 TEXT, replaced_description_type TEXT, descriptor_2 TEXT, relation TEXT, "
             "proposal_time INTEGER, creation_time INTEGER, destruction_time INTEGER)"
         )
+        connection.execute(
+            "CREATE TABLE translated_rules "
+            "(id INTEGER PRIMARY KEY, run_id INTEGER, rule_id TEXT, object_category_1 TEXT, "
+            "descriptor_1 TEXT, replaced_description_type TEXT, descriptor_2 TEXT, relation TEXT, "
+            "proposal_time INTEGER, creation_time INTEGER, destruction_time INTEGER)"
+        )
         connection.executemany(
             "INSERT INTO letters VALUES (?, ?, ?, ?, ?, ?, ?)",
             [
@@ -224,6 +230,10 @@ def test_workspace_snapshot_includes_built_and_proposed_entities(tmp_path) -> No
         connection.execute(
             "INSERT INTO rules VALUES (1, 1, 'rule:1', 'letter', 'a', 'letter_category', 'b', NULL, 2, NULL, NULL)"
         )
+        connection.execute(
+            "INSERT INTO translated_rules VALUES (1, 1, 'rule:translated:1', 'letter', 'a', "
+            "'letter_category', 'b', NULL, NULL, 2, NULL)"
+        )
 
     snapshot = workspace_snapshot(database, 1, 2)
 
@@ -243,6 +253,10 @@ def test_workspace_snapshot_includes_built_and_proposed_entities(tmp_path) -> No
     ]
     assert snapshot["rule"] == {
         "id": "rule:1", "object_category": "letter", "descriptor": "a",
+        "replaced_description_type": "letter_category", "descriptor_2": "b", "relation": None,
+    }
+    assert snapshot["translated_rule"] == {
+        "id": "rule:translated:1", "object_category": "letter", "descriptor": "a",
         "replaced_description_type": "letter_category", "descriptor_2": "b", "relation": None,
     }
 

@@ -55,6 +55,7 @@ def test_sqlite_logger_creates_the_cattycam_schema(tmp_path) -> None:
         "concept_mappings",
         "replacements",
         "rules",
+        "translated_rules",
         "slipnodes",
         "sliplinks",
         "attribute_values",
@@ -167,6 +168,32 @@ def test_sqlite_logger_attaches_its_codelet_time_to_untimed_events(tmp_path) -> 
     assert attribute_times == [(0,), (1,)]
     assert codelet_time == (1,)
     assert logger.codelets_run == 1
+
+
+def test_sqlite_logger_records_translated_rules_separately(tmp_path) -> None:
+    database = tmp_path / "cattycam.sqlite"
+    logger = SQLiteLogger(database)
+    logger.log(ModelEvent.create("copycat", "run_started", problem="abc -> abd"))
+    logger.log(
+        ModelEvent.create(
+            "copycat",
+            "translated_rule_created",
+            rule_id="rule:translated:1",
+            object_category_1="letter",
+            descriptor_1="rightmost",
+            replaced_description_type="letter_category",
+            relation="successor",
+            time=4,
+        )
+    )
+    logger.close()
+
+    with sqlite3.connect(database) as connection:
+        translated_rule = connection.execute(
+            "SELECT rule_id, descriptor_1, relation, creation_time FROM translated_rules"
+        ).fetchone()
+
+    assert translated_rule == ("rule:translated:1", "rightmost", "successor", 4)
 
 
 def test_sqlite_logger_updates_a_posted_codelet_when_selected(tmp_path) -> None:
