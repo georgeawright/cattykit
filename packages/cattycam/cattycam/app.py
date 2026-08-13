@@ -159,6 +159,19 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
         ctx.fillText(letter.value, point.x, point.y)
       }
     }
+    const rule = data.snapshot.rule
+    if (rule) {
+      const secondHalf = rule.relation || rule.descriptor_2 || '—'
+      const ruleText = `Replace ${rule.replaced_description_type || '—'} of ${rule.descriptor || '—'} ${rule.object_category || '—'} by ${secondHalf}`
+      const modifiedBox = layout.modified
+      ctx.font = '12px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+      const ruleWidth = Math.min(modifiedBox[2] - 12, ctx.measureText(ruleText).width + 16)
+      const ruleX = modifiedBox[0] + (modifiedBox[2] - ruleWidth) / 2
+      const ruleY = modifiedBox[1] + 4
+      ctx.fillStyle = 'white'; ctx.strokeStyle = 'black'; ctx.lineWidth = 1
+      ctx.fillRect(ruleX, ruleY, ruleWidth, 22); ctx.strokeRect(ruleX, ruleY, ruleWidth, 22)
+      ctx.fillStyle = '#111827'; ctx.fillText(ruleText, modifiedBox[0] + modifiedBox[2] / 2, ruleY + 11)
+    }
     if (state.selection) {
       const selection = state.selection
       const descriptionLines = (selection.descriptions || []).map(description => `${description.facet || '—'}: ${description.descriptor || '—'}`)

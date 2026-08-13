@@ -203,6 +203,17 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
                FROM concept_mappings WHERE run_id = ? ORDER BY id""",
             (run_id,),
         ).fetchall()
+        rules = connection.execute(
+            """SELECT rule_id, object_category_1, descriptor_1,
+                      replaced_description_type, descriptor_2, relation
+               FROM rules WHERE run_id = ?
+               AND (proposal_time <= ? OR creation_time <= ?)
+               AND (destruction_time IS NULL OR destruction_time > ?)
+               ORDER BY COALESCE(creation_time, proposal_time) DESC, id DESC""",
+            (run_id, time, time, time),
+        ).fetchall()
+
+    rule = rules[0] if rules else None
 
     return {
         "letters": [
@@ -269,6 +280,18 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
             ]
             for object_id in {object_id for object_id, _, _ in descriptions}
         },
+        "rule": (
+            {
+                "id": rule[0],
+                "object_category": rule[1],
+                "descriptor": rule[2],
+                "replaced_description_type": rule[3],
+                "descriptor_2": rule[4],
+                "relation": rule[5],
+            }
+            if rules
+            else None
+        ),
     }
 
 

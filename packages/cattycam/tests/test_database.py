@@ -188,6 +188,12 @@ def test_workspace_snapshot_includes_built_and_proposed_entities(tmp_path) -> No
             "description_type_1 TEXT, description_type_2 TEXT, initial_descriptor TEXT, "
             "target_descriptor TEXT, label TEXT)"
         )
+        connection.execute(
+            "CREATE TABLE rules "
+            "(id INTEGER PRIMARY KEY, run_id INTEGER, rule_id TEXT, object_category_1 TEXT, "
+            "descriptor_1 TEXT, replaced_description_type TEXT, descriptor_2 TEXT, relation TEXT, "
+            "proposal_time INTEGER, creation_time INTEGER, destruction_time INTEGER)"
+        )
         connection.executemany(
             "INSERT INTO letters VALUES (?, ?, ?, ?, ?, ?, ?)",
             [
@@ -215,6 +221,9 @@ def test_workspace_snapshot_includes_built_and_proposed_entities(tmp_path) -> No
         connection.execute(
             "INSERT INTO replacements VALUES (1, 'replacement:1', 'letter:1', 'letter:2', 2, NULL, NULL)"
         )
+        connection.execute(
+            "INSERT INTO rules VALUES (1, 1, 'rule:1', 'letter', 'a', 'letter_category', 'b', NULL, 2, NULL, NULL)"
+        )
 
     snapshot = workspace_snapshot(database, 1, 2)
 
@@ -232,6 +241,10 @@ def test_workspace_snapshot_includes_built_and_proposed_entities(tmp_path) -> No
     assert snapshot["descriptions"]["letter:1"] == [
         {"facet": "object_category", "descriptor": "letter"}
     ]
+    assert snapshot["rule"] == {
+        "id": "rule:1", "object_category": "letter", "descriptor": "a",
+        "replaced_description_type": "letter_category", "descriptor_2": "b", "relation": None,
+    }
 
 
 def test_slipnet_snapshot_uses_the_latest_activation_at_the_selected_time(tmp_path) -> None:
