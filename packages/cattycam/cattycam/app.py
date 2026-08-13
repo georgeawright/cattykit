@@ -113,9 +113,17 @@ def create_app(database: str | Path) -> pn.Column:
             link = pn.widgets.Button(name=table, button_type="light")
             link.on_click(lambda _, table=table: show_table(table))
             table_links.append(link)
-        coderack_panel = pn.bind(_coderack_badges, database_path, run_id, codelet_time)
+        coderack_panel = pn.bind(
+            _coderack_badges,
+            database_path,
+            run_id,
+            codelet_time.param.value_throttled,
+        )
         codelet_history_panel = pn.bind(
-            _codelet_history, database_path, run_id, codelet_time
+            _codelet_history,
+            database_path,
+            run_id,
+            codelet_time.param.value_throttled,
         )
         detail_panels = pn.Row(
             pn.Column(
@@ -265,16 +273,16 @@ def _add_time_marker(
     value_formatter,
 ) -> None:
     """Add a vertical marker and value label that follow the selected time."""
-    value = _value_at_time(values, codelet_time.value)
+    value = _value_at_time(values, codelet_time.value_throttled)
     marker = Span(
-        location=codelet_time.value,
+        location=codelet_time.value_throttled,
         dimension="height",
         line_color="red",
         line_width=2,
     )
     chart.add_layout(marker)
     label = Label(
-        x=codelet_time.value,
+        x=codelet_time.value_throttled,
         # The plot frame is shorter than the figure because of its title and axes.
         # Keep the screen-positioned label inside that frame.
         y=175,
@@ -293,7 +301,7 @@ def _add_time_marker(
         label.x = event.new
         label.text = value_formatter(_value_at_time(values, event.new))
 
-    codelet_time.param.watch(update_marker, "value")
+    codelet_time.param.watch(update_marker, "value_throttled")
 
 
 def _value_at_time(values: list[tuple], time: int) -> object:
