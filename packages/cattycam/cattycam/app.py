@@ -75,9 +75,9 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
         hits.push({type: 'letter', id: letter.id, x: point.x, y: point.y, descriptions: data.snapshot.descriptions[letter.id] || []})
       })
     }
-    function strokeStyle(proposed, color = '#334e68') {
+    function strokeStyle(proposed, color = '#004D40') {
       ctx.setLineDash(proposed ? [5, 4] : [])
-      ctx.strokeStyle = proposed ? '#8a6d3b' : color
+      ctx.strokeStyle = color
       ctx.lineWidth = 1.6
     }
     function arrow(from, to, bend, proposed, color) {
@@ -126,7 +126,8 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
           to,
           baseBend + laneOffset,
           connection.proposed,
-          connection.type === 'replacement' ? '#7c3aed' : undefined,
+          connection.type === 'correspondence' ? '#D81B60'
+            : connection.type === 'replacement' ? '#1E88E5' : '#004D40',
         )
         if (connection.type === 'bond' && curve) {
           hits.push({type: 'bond', id: connection.id, ...curve, facet: connection.facet, category: connection.category, direction: connection.direction})
