@@ -105,18 +105,33 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
       ctx.closePath(); ctx.fill()
       return {from: start, to: end, mx, my}
     }
-    for (const bond of (data.snapshot.bonds || [])) {
-      const from = points.get(bond.source), to = points.get(bond.target)
-      const curve = arrow(from, to, (from && from.y < height / 2) ? -36 : 36, bond.proposed)
-      if (curve) hits.push({type: 'bond', ...curve, facet: bond.facet, category: bond.category})
+    const connections = [
+      ...(data.snapshot.bonds || []).map(connection => ({...connection, type: 'bond'})),
+      ...(data.snapshot.correspondences || []).map(connection => ({...connection, type: 'correspondence'})),
+      ...(data.snapshot.replacements || []).map(connection => ({...connection, type: 'replacement'})),
+    ]
+    const connectionsByPair = {}
+    for (const connection of connections) {
+      const pair = [connection.source, connection.target].sort().join('|')
+      ;(connectionsByPair[pair] ||= []).push(connection)
     }
-    for (const correspondence of (data.snapshot.correspondences || [])) {
-      const from = points.get(correspondence.source), to = points.get(correspondence.target)
-      arrow(from, to, from && to ? (from.x < to.x ? -30 : 30) : 0, correspondence.proposed)
-    }
-    for (const replacement of (data.snapshot.replacements || [])) {
-      const from = points.get(replacement.source), to = points.get(replacement.target)
-      arrow(from, to, -48, replacement.proposed, '#7c3aed')
+    for (const pairConnections of Object.values(connectionsByPair)) {
+      pairConnections.forEach((connection, index) => {
+        const from = points.get(connection.source), to = points.get(connection.target)
+        if (!from || !to) return
+        const baseBend = from.y === to.y ? -36 : (from.x < to.x ? -30 : 30)
+        const laneOffset = (index - (pairConnections.length - 1) / 2) * 24
+        const curve = arrow(
+          from,
+          to,
+          baseBend + laneOffset,
+          connection.proposed,
+          connection.type === 'replacement' ? '#7c3aed' : undefined,
+        )
+        if (connection.type === 'bond' && curve) {
+          hits.push({type: 'bond', ...curve, facet: connection.facet, category: connection.category})
+        }
+      })
     }
     for (const group of (data.snapshot.groups || [])) {
       const box = layout[group.string]
