@@ -1,4 +1,4 @@
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 
@@ -125,9 +125,9 @@ def test_fizzles_if_incompatible_groups_beat_proposed_bond(monkeypatch):
     workspace.objects.extend([bond.source, bond.target])
     bond.string = MockWorkspaceString([])
     incompatible_bonds = [Mock(), Mock()]
-    incompatible_groups = [Mock(), Mock()]
-    incompatible_groups[0].letter_span = 2
-    incompatible_groups[1].letter_span = 3
+    incompatible_groups = [MagicMock(), MagicMock()]
+    incompatible_groups[0].__len__.return_value = 2
+    incompatible_groups[1].__len__.return_value = 3
     builder = BondBuilder(
         urgency_bin=0,
         coderack=Mock(),
@@ -169,9 +169,9 @@ def test_fizzles_if_incompatible_correspondences_beat_proposed_bond(monkeypatch)
     workspace.objects.extend([bond.source, bond.target])
     bond.string = MockWorkspaceString([])
     incompatible_bonds = [Mock(), Mock()]
-    incompatible_groups = [Mock(), Mock()]
-    incompatible_groups[0].letter_span = 2
-    incompatible_groups[1].letter_span = 3
+    incompatible_groups = [MagicMock(), MagicMock()]
+    incompatible_groups[0].__len__.return_value = 2
+    incompatible_groups[1].__len__.return_value = 3
     incompatible_correspondences = [Mock(), Mock()]
     builder = BondBuilder(
         urgency_bin=0,
@@ -217,9 +217,9 @@ def test_builds_bond_and_breaks_incompatible_structures(monkeypatch):
     workspace.objects.extend([bond.source, bond.target])
     bond.string = MockWorkspaceString([])
     incompatible_bonds = [Mock(), Mock()]
-    incompatible_groups = [Mock(), Mock()]
-    incompatible_groups[0].letter_span = 2
-    incompatible_groups[1].letter_span = 3
+    incompatible_groups = [MagicMock(), MagicMock()]
+    incompatible_groups[0].__len__.return_value = 2
+    incompatible_groups[1].__len__.return_value = 3
     incompatible_correspondences = [Mock(), Mock()]
 
     builder = BondBuilder(
