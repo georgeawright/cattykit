@@ -129,7 +129,9 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
           connection.type === 'replacement' ? '#7c3aed' : undefined,
         )
         if (connection.type === 'bond' && curve) {
-          hits.push({type: 'bond', ...curve, facet: connection.facet, category: connection.category})
+          hits.push({type: 'bond', ...curve, facet: connection.facet, category: connection.category, direction: connection.direction})
+        } else if (connection.type === 'correspondence' && curve) {
+          hits.push({type: 'correspondence', ...curve, id: connection.id, mappings: connection.mappings || []})
         }
       })
     }
@@ -160,7 +162,9 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
       const selection = state.selection
       const descriptionLines = (selection.descriptions || []).map(description => `${description.facet || '—'}: ${description.descriptor || '—'}`)
       const lines = selection.type === 'bond'
-        ? [`facet: ${selection.facet || '—'}`, `bond category: ${selection.category || '—'}`]
+        ? [`facet: ${selection.facet || '—'}`, `bond category: ${selection.category || '—'}`, `direction category: ${selection.direction || '—'}`]
+        : selection.type === 'correspondence'
+          ? (selection.mappings || []).map(mapping => `${mapping.source_type || '—'} → ${mapping.target_type || '—'}`)
         : [...new Set(descriptionLines)]
       const title = selection.type === 'bond' ? 'bond' : selection.id
       const cardX = Math.min(width - 190, Math.max(8, selection.cardX + 16))
@@ -173,7 +177,7 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
       ctx.fillStyle = '#111827'; ctx.font = '600 12px sans-serif'; ctx.fillText(title, cardX + 8, cardY + 17)
       ctx.font = '12px sans-serif'
       if (lines.length) lines.forEach((line, index) => ctx.fillText(line, cardX + 8, cardY + 37 + index * 18))
-      else ctx.fillText('No descriptions', cardX + 8, cardY + 37)
+      else ctx.fillText(selection.type === 'correspondence' ? 'No concept mappings' : 'No descriptions', cardX + 8, cardY + 37)
     }
     state.hits = hits
     ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic'
@@ -184,21 +188,30 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
       const bounds = canvas.getBoundingClientRect()
       return {x: event.clientX - bounds.left, y: event.clientY - bounds.top}
     }
-    state.hitAt = point => (state.hits || []).slice().reverse().find(hit => {
+    state.hitAt = point => {
+      const hits = state.hits || []
+      for (const type of ['letter', 'correspondence', 'bond', 'group']) {
+        const hit = hits.slice().reverse().find(hit => {
+          if (hit.type !== type) return false
       if (hit.type === 'letter') return Math.hypot(hit.x - point.x, hit.y - point.y) < 18
       if (hit.type === 'group') return point.x >= hit.x && point.x <= hit.x + hit.width && point.y >= hit.y && point.y <= hit.y + hit.height
-      if (hit.type === 'bond') {
+      if (hit.type === 'bond' || hit.type === 'correspondence') {
         let previous = hit.from
         for (let step = 1; step <= 20; step++) {
           const t = step / 20, next = {x: (1-t)*(1-t)*hit.from.x + 2*(1-t)*t*hit.mx + t*t*hit.to.x, y: (1-t)*(1-t)*hit.from.y + 2*(1-t)*t*hit.my + t*t*hit.to.y}
           const length = Math.hypot(next.x - previous.x, next.y - previous.y)
           const distance = length ? Math.abs((next.x-previous.x)*(previous.y-point.y) - (previous.x-point.x)*(next.y-previous.y)) / length : Infinity
-          if (distance < 7 && point.x >= Math.min(previous.x,next.x)-7 && point.x <= Math.max(previous.x,next.x)+7 && point.y >= Math.min(previous.y,next.y)-7 && point.y <= Math.max(previous.y,next.y)+7) return true
+          const tolerance = hit.type === 'correspondence' ? 11 : 7
+          if (distance < tolerance && point.x >= Math.min(previous.x,next.x)-tolerance && point.x <= Math.max(previous.x,next.x)+tolerance && point.y >= Math.min(previous.y,next.y)-tolerance && point.y <= Math.max(previous.y,next.y)+tolerance) return true
           previous = next
         }
       }
       return false
-    })
+        })
+        if (hit) return hit
+      }
+      return null
+    }
     canvas.addEventListener('click', event => {
       const selection = state.hitAt(state.point(event))
       state.selection = selection ? {...selection, cardX: selection.x || selection.from.x, cardY: selection.y || selection.from.y} : null

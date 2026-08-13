@@ -168,6 +168,7 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
         ).fetchall()
         bonds = connection.execute(
             """SELECT bond_id, source_id, target_id, bond_facet, bond_category,
+                      direction_category,
                       proposal_time, creation_time
                FROM bonds WHERE run_id = ? AND (proposal_time <= ? OR creation_time <= ?)
                AND (destruction_time IS NULL OR destruction_time > ?)
@@ -196,6 +197,12 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
                ORDER BY rowid""",
             (run_id, time, time, time),
         ).fetchall()
+        mappings = connection.execute(
+            """SELECT correspondence_id, description_type_1, description_type_2,
+                      initial_descriptor, target_descriptor, label
+               FROM concept_mappings WHERE run_id = ? ORDER BY id""",
+            (run_id,),
+        ).fetchall()
 
     return {
         "letters": [
@@ -219,9 +226,10 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
                 "target": target,
                 "facet": facet,
                 "category": category,
+                "direction": direction,
                 "proposed": creation is None,
             }
-            for bond_id, source, target, facet, category, _, creation in bonds
+            for bond_id, source, target, facet, category, direction, _, creation in bonds
         ],
         "correspondences": [
             {
@@ -229,6 +237,18 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
                 "source": source,
                 "target": target,
                 "proposed": creation is None,
+                "mappings": [
+                    {
+                        "source": initial_descriptor,
+                        "target": target_descriptor,
+                        "label": label,
+                        "source_type": description_type_1,
+                        "target_type": description_type_2,
+                    }
+                    for mapping_correspondence_id, description_type_1, description_type_2,
+                    initial_descriptor, target_descriptor, label in mappings
+                    if mapping_correspondence_id == correspondence_id
+                ],
             }
             for correspondence_id, source, target, _, creation in correspondences
         ],

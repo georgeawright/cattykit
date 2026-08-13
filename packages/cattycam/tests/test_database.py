@@ -167,7 +167,7 @@ def test_workspace_snapshot_includes_built_and_proposed_entities(tmp_path) -> No
                 "string_id TEXT, left_position INTEGER, right_position INTEGER"
                 if table == "groups"
                 else (
-                    "source_id TEXT, target_id TEXT, bond_facet TEXT, bond_category TEXT"
+                    "source_id TEXT, target_id TEXT, bond_facet TEXT, bond_category TEXT, direction_category TEXT"
                     if table == "bonds"
                     else "source_id TEXT, target_id TEXT"
                 )
@@ -182,6 +182,12 @@ def test_workspace_snapshot_includes_built_and_proposed_entities(tmp_path) -> No
             "(run_id INTEGER, object_id TEXT, facet TEXT, descriptor TEXT, "
             "proposal_time INTEGER, creation_time INTEGER, destruction_time INTEGER)"
         )
+        connection.execute(
+            "CREATE TABLE concept_mappings "
+            "(id INTEGER PRIMARY KEY, run_id INTEGER, correspondence_id TEXT, "
+            "description_type_1 TEXT, description_type_2 TEXT, initial_descriptor TEXT, "
+            "target_descriptor TEXT, label TEXT)"
+        )
         connection.executemany(
             "INSERT INTO letters VALUES (?, ?, ?, ?, ?, ?, ?)",
             [
@@ -194,13 +200,17 @@ def test_workspace_snapshot_includes_built_and_proposed_entities(tmp_path) -> No
         )
         connection.execute(
             "INSERT INTO bonds VALUES (1, 'bond:1', 'letter:1', 'letter:2', "
-            "'letter_category', 'successor', 1, 2, NULL)"
+            "'letter_category', 'successor', 'right', 1, 2, NULL)"
         )
         connection.execute(
             "INSERT INTO descriptions VALUES (1, 'letter:1', 'object_category', 'letter', 0, 0, NULL)"
         )
         connection.execute(
             "INSERT INTO correspondences VALUES (1, 'correspondence:1', 'letter:1', 'letter:2', 2, NULL, NULL)"
+        )
+        connection.execute(
+            "INSERT INTO concept_mappings VALUES "
+            "(1, 1, 'correspondence:1', 'letter_category', 'letter_category', 'a', 'b', 'successor')"
         )
         connection.execute(
             "INSERT INTO replacements VALUES (1, 'replacement:1', 'letter:1', 'letter:2', 2, NULL, NULL)"
@@ -213,7 +223,11 @@ def test_workspace_snapshot_includes_built_and_proposed_entities(tmp_path) -> No
     assert snapshot["bonds"][0]["proposed"] is False
     assert snapshot["bonds"][0]["facet"] == "letter_category"
     assert snapshot["bonds"][0]["category"] == "successor"
+    assert snapshot["bonds"][0]["direction"] == "right"
     assert snapshot["correspondences"][0]["proposed"] is True
+    assert snapshot["correspondences"][0]["mappings"] == [
+        {"source": "a", "target": "b", "label": "successor", "source_type": "letter_category", "target_type": "letter_category"}
+    ]
     assert snapshot["replacements"][0]["proposed"] is True
     assert snapshot["descriptions"]["letter:1"] == [
         {"facet": "object_category", "descriptor": "letter"}
