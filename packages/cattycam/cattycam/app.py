@@ -393,6 +393,12 @@ def create_app(database: str | Path) -> pn.Column:
             run_id,
             codelet_time.param.value_throttled,
         )
+        slipnet_activations = pn.bind(
+            _slipnet_activation_list,
+            database_path,
+            run_id,
+            codelet_time.param.value_throttled,
+        )
         detail_panels = pn.Row(
             pn.Column(
                 "### Coderack",
@@ -406,7 +412,11 @@ def create_app(database: str | Path) -> pn.Column:
                 "### Workspace",
                 workspace_panel,
                 "### Slipnet",
-                slipnet_panel,
+                pn.Row(
+                    slipnet_panel,
+                    slipnet_activations,
+                    sizing_mode="stretch_width",
+                ),
                 sizing_mode="stretch_width",
                 styles={"flex": "2"},
             ),
@@ -645,6 +655,32 @@ def _slipnet_canvas(database: Path, run_id: int, time: int) -> SlipnetCanvas:
 
     return SlipnetCanvas(
         snapshot=slipnet_snapshot(database, run_id, time), sizing_mode="stretch_width"
+    )
+
+
+def _slipnet_activation_list(database: Path, run_id: int, time: int) -> pn.Column:
+    """Render the Slipnet's nodes ordered by activation beside its graph."""
+    from cattycam.database import slipnet_snapshot
+
+    nodes = sorted(
+        slipnet_snapshot(database, run_id, time)["nodes"],
+        key=lambda node: (-float(node["activation"]), node["name"]),
+    )
+    rows = "".join(
+        "<tr><td>"
+        f"{html.escape(node['name'])}</td><td>{float(node['activation']):.2f}</td></tr>"
+        for node in nodes
+    )
+    return pn.Column(
+        "#### Activation",
+        pn.pane.HTML(
+            "<table style='width:100%; font-size:12px'><tbody>"
+            f"{rows}</tbody></table>",
+            sizing_mode="stretch_width",
+        ),
+        width=210,
+        height=430,
+        scroll=True,
     )
 
 
