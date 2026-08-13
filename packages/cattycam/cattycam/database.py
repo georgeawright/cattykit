@@ -218,6 +218,49 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
     }
 
 
+def slipnet_snapshot(database: str | Path, run_id: int, time: int) -> dict:
+    """Return Slipnet nodes, links, and activations at a selected codelet time."""
+    with sqlite3.connect(database) as connection:
+        nodes = connection.execute(
+            "SELECT name FROM slipnodes WHERE run_id = ? ORDER BY name", (run_id,)
+        ).fetchall()
+        links = connection.execute(
+            """SELECT source, target, label, fixed_length FROM sliplinks
+               WHERE run_id = ? ORDER BY id""",
+            (run_id,),
+        ).fetchall()
+        activation_changes = connection.execute(
+            """SELECT object_id, value_json FROM attribute_values
+               WHERE run_id = ? AND time <= ? AND attribute = 'activation'
+               AND object_id LIKE 'slipnode:%' ORDER BY time, id""",
+            (run_id, time),
+        ).fetchall()
+
+    activations: dict[str, float] = {}
+    for object_id, value_json in activation_changes:
+        try:
+            activations[object_id.removeprefix("slipnode:")] = float(
+                json.loads(value_json)
+            )
+        except (TypeError, ValueError, json.JSONDecodeError):
+            continue
+    return {
+        "nodes": [
+            {"name": name, "activation": activations.get(name, 0.0)}
+            for (name,) in nodes
+        ],
+        "links": [
+            {
+                "source": source,
+                "target": target,
+                "label": label or "",
+                "fixed_length": fixed_length,
+            }
+            for source, target, label, fixed_length in links
+        ],
+    }
+
+
 def _table_query(
     quoted_table: str, table: str, run_id: int | None
 ) -> tuple[str, tuple[object, ...]]:

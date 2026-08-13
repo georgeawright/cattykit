@@ -127,6 +127,159 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
     del _scripts["draw"]
 
 
+class SlipnetCanvas(pn.reactive.ReactiveHTML):
+    """Canvas graph of the Slipnet at one codelet time."""
+
+    snapshot = param.Dict(default={})
+
+    _template = """
+    <div id="container" style="width:100%; overflow:hidden; border:1px solid #d0d0d0;">
+      <canvas id="canvas" style="display:block; width:100%; height:430px;"></canvas>
+    </div>
+    """
+    _scripts = {"snapshot": "if (state.draw) state.draw()"}
+    _scripts["draw"] = """
+    const width = Math.max(container.clientWidth, 620)
+    const height = 430
+    const scale = window.devicePixelRatio || 1
+    canvas.width = width * scale; canvas.height = height * scale
+    const ctx = canvas.getContext('2d')
+    ctx.setTransform(scale, 0, 0, scale, 0, 0)
+    ctx.clearRect(0, 0, width, height)
+    const snapshotNodes = data.snapshot.nodes || []
+    const names = snapshotNodes.map(node => node.name)
+    const positionsMatch = state.nodes && state.nodes.length === names.length &&
+      state.nodes.every(node => names.includes(node.name))
+    if (!positionsMatch) {
+      const orbit = Math.min(width, height) * 0.36
+      state.nodes = snapshotNodes.map((node, index) => {
+        const angle = (2 * Math.PI * index) / snapshotNodes.length - Math.PI / 2
+        return {...node, index, x: width / 2 + orbit * Math.cos(angle), y: height / 2 + orbit * Math.sin(angle)}
+      })
+    } else {
+      const activationByName = new Map(snapshotNodes.map(node => [node.name, node.activation]))
+      state.nodes.forEach((node, index) => { node.index = index; node.activation = activationByName.get(node.name) || 0 })
+      if (state.width && state.width !== width) {
+        const horizontalScale = width / state.width
+        state.nodes.forEach(node => { node.x *= horizontalScale })
+      }
+    }
+    const nodes = state.nodes
+    state.width = width
+    if (nodes.length && (!state.selected || !nodes.some(node => node.name === state.selected))) {
+      state.selected = nodes.reduce(
+        (mostActive, node) => Number(node.activation || 0) > Number(mostActive.activation || 0)
+          ? node : mostActive,
+        nodes[0],
+      ).name
+    }
+    const links = (data.snapshot.links || []).filter(link =>
+      nodes.some(node => node.name === link.source) && nodes.some(node => node.name === link.target)
+    )
+    if (!nodes.length) {
+      ctx.fillStyle = '#4b5563'; ctx.font = '14px sans-serif'
+      ctx.fillText('No Slipnet data recorded for this run.', 16, 28)
+      return
+    }
+    const byName = new Map(nodes.map(node => [node.name, node]))
+    const padding = 26
+    for (let iteration = 0; iteration < (state.dragged ? 0 : 100); iteration++) {
+      const forces = nodes.map(() => ({x: 0, y: 0}))
+      for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {
+        const dx = nodes[j].x - nodes[i].x, dy = nodes[j].y - nodes[i].y
+        const distance = Math.max(Math.hypot(dx, dy), 1)
+        const force = 1100 / (distance * distance)
+        const x = force * dx / distance, y = force * dy / distance
+        forces[i].x -= x; forces[i].y -= y; forces[j].x += x; forces[j].y += y
+      }
+      for (const link of links) {
+        const source = byName.get(link.source), target = byName.get(link.target)
+        const dx = target.x - source.x, dy = target.y - source.y
+        const distance = Math.max(Math.hypot(dx, dy), 1)
+        const desired = 34 + 78 * Math.min(Math.max(Number(link.fixed_length) || 0.5, 0), 1)
+        const force = (distance - desired) * 0.025
+        const x = force * dx / distance, y = force * dy / distance
+        forces[source.index].x += x; forces[source.index].y += y
+        forces[target.index].x -= x; forces[target.index].y -= y
+      }
+      nodes.forEach((node, index) => {
+        node.x = Math.min(width - padding, Math.max(padding, node.x + forces[index].x))
+        node.y = Math.min(height - padding, Math.max(padding, node.y + forces[index].y))
+      })
+    }
+    ctx.font = '10px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+    for (const link of links) {
+      const source = byName.get(link.source), target = byName.get(link.target)
+      ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1
+      ctx.beginPath(); ctx.moveTo(source.x, source.y); ctx.lineTo(target.x, target.y); ctx.stroke()
+      if (link.label) {
+        const x = (source.x + target.x) / 2, y = (source.y + target.y) / 2
+        const text = link.label, textWidth = ctx.measureText(text).width
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.88)'
+        ctx.fillRect(x - textWidth / 2 - 3, y - 7, textWidth + 6, 14)
+        ctx.fillStyle = '#475569'; ctx.fillText(text, x, y)
+      }
+    }
+    for (const node of nodes) {
+      const activation = Math.min(Math.max(Number(node.activation) || 0, 0), 1)
+      const radius = 7 + activation * 16
+      ctx.beginPath(); ctx.arc(node.x, node.y, radius, 0, Math.PI * 2)
+      ctx.fillStyle = `rgba(37, 99, 235, ${0.22 + activation * 0.7})`; ctx.fill()
+      ctx.strokeStyle = '#1d4ed8'; ctx.lineWidth = 1.2; ctx.stroke()
+      ctx.fillStyle = '#111827'; ctx.font = '11px sans-serif'
+      ctx.textAlign = 'left'; ctx.fillText(node.name, node.x + radius + 3, node.y)
+      if (state.selected === node.name) {
+        ctx.beginPath(); ctx.arc(node.x, node.y, radius + 4, 0, Math.PI * 2)
+        ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2.5; ctx.stroke()
+      }
+    }
+    if (state.selected) {
+      const node = byName.get(state.selected)
+      if (node) {
+        const text = `${node.name} — activation ${Number(node.activation || 0).toFixed(2)}`
+        ctx.font = '13px sans-serif'; const textWidth = ctx.measureText(text).width
+        ctx.fillStyle = 'white'; ctx.strokeStyle = '#111827'; ctx.lineWidth = 1
+        ctx.fillRect(12, 12, textWidth + 18, 27); ctx.strokeRect(12, 12, textWidth + 18, 27)
+        ctx.fillStyle = '#111827'; ctx.textAlign = 'left'; ctx.fillText(text, 21, 26)
+      }
+    }
+    ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic'
+    """
+    _scripts["render"] = """
+    state.draw = () => {""" + _scripts["draw"] + """}
+    state.point = event => {
+      const bounds = canvas.getBoundingClientRect()
+      return {x: event.clientX - bounds.left, y: event.clientY - bounds.top}
+    }
+    state.nodeAt = point => (state.nodes || []).find(node => {
+      const radius = 10 + Math.min(Math.max(Number(node.activation) || 0, 0), 1) * 16
+      return Math.hypot(node.x - point.x, node.y - point.y) <= radius
+    })
+    canvas.addEventListener('mousedown', event => {
+      const node = state.nodeAt(state.point(event))
+      if (node) { state.dragged = node; state.selected = node.name; canvas.style.cursor = 'grabbing'; state.draw() }
+    })
+    canvas.addEventListener('mousemove', event => {
+      const point = state.point(event)
+      if (state.dragged) {
+        state.dragged.x = point.x; state.dragged.y = point.y; state.draw()
+      } else {
+        canvas.style.cursor = state.nodeAt(point) ? 'grab' : 'default'
+      }
+    })
+    const release = () => { if (state.dragged) { state.dragged = null; canvas.style.cursor = 'default'; state.draw() } }
+    canvas.addEventListener('mouseup', release)
+    canvas.addEventListener('mouseleave', release)
+    state.resizeObserver = new ResizeObserver(() => {
+      window.clearTimeout(state.resizeTimer)
+      state.resizeTimer = window.setTimeout(() => state.draw(), 50)
+    })
+    state.resizeObserver.observe(container)
+    state.draw()
+    """
+    del _scripts["draw"]
+
+
 class BrowserHistoryBridge(pn.reactive.ReactiveHTML):
     """Reload the standalone app after browser Back or Forward navigation."""
 
@@ -234,6 +387,12 @@ def create_app(database: str | Path) -> pn.Column:
             run_id,
             codelet_time.param.value_throttled,
         )
+        slipnet_panel = pn.bind(
+            _slipnet_canvas,
+            database_path,
+            run_id,
+            codelet_time.param.value_throttled,
+        )
         detail_panels = pn.Row(
             pn.Column(
                 "### Coderack",
@@ -247,7 +406,7 @@ def create_app(database: str | Path) -> pn.Column:
                 "### Workspace",
                 workspace_panel,
                 "### Slipnet",
-                pn.Spacer(height=120),
+                slipnet_panel,
                 sizing_mode="stretch_width",
                 styles={"flex": "2"},
             ),
@@ -477,6 +636,15 @@ def _workspace_canvas(database: Path, run_id: int, time: int) -> WorkspaceCanvas
 
     return WorkspaceCanvas(
         snapshot=workspace_snapshot(database, run_id, time), sizing_mode="stretch_width"
+    )
+
+
+def _slipnet_canvas(database: Path, run_id: int, time: int) -> SlipnetCanvas:
+    """Render the Slipnet state for the selected run and codelet time."""
+    from cattycam.database import slipnet_snapshot
+
+    return SlipnetCanvas(
+        snapshot=slipnet_snapshot(database, run_id, time), sizing_mode="stretch_width"
     )
 
 

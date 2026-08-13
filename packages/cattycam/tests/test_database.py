@@ -5,6 +5,7 @@ from cattycam.database import (
     codelet_types,
     coderack_codelets,
     run_overview_series,
+    slipnet_snapshot,
     table_documentation,
     table_names,
     table_rows,
@@ -194,3 +195,43 @@ def test_workspace_snapshot_includes_built_and_proposed_entities(tmp_path) -> No
     assert snapshot["groups"][0]["proposed"] is True
     assert snapshot["bonds"][0]["proposed"] is False
     assert snapshot["correspondences"][0]["proposed"] is True
+
+
+def test_slipnet_snapshot_uses_the_latest_activation_at_the_selected_time(tmp_path) -> None:
+    database = tmp_path / "history.sqlite"
+    with sqlite3.connect(database) as connection:
+        connection.execute("CREATE TABLE slipnodes (run_id INTEGER, name TEXT)")
+        connection.execute(
+            "CREATE TABLE sliplinks "
+            "(id INTEGER PRIMARY KEY, run_id INTEGER, source TEXT, target TEXT, "
+            "label TEXT, fixed_length REAL)"
+        )
+        connection.execute(
+            "CREATE TABLE attribute_values "
+            "(id INTEGER PRIMARY KEY, run_id INTEGER, time INTEGER, object_id TEXT, "
+            "attribute TEXT, value_json TEXT)"
+        )
+        connection.executemany(
+            "INSERT INTO slipnodes VALUES (1, ?)", [("left",), ("right",)]
+        )
+        connection.execute(
+            "INSERT INTO sliplinks VALUES (1, 1, 'left', 'right', 'opposite', 0.8)"
+        )
+        connection.executemany(
+            "INSERT INTO attribute_values VALUES (?, 1, ?, ?, 'activation', ?)",
+            [
+                (1, 0, "slipnode:left", "0.2"),
+                (2, 1, "slipnode:right", "0.4"),
+                (3, 3, "slipnode:left", "0.9"),
+            ],
+        )
+
+    snapshot = slipnet_snapshot(database, 1, 2)
+
+    assert snapshot["nodes"] == [
+        {"name": "left", "activation": 0.2},
+        {"name": "right", "activation": 0.4},
+    ]
+    assert snapshot["links"] == [
+        {"source": "left", "target": "right", "label": "opposite", "fixed_length": 0.8}
+    ]
