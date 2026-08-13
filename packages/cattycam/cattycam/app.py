@@ -73,16 +73,16 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
         points.set(letter.id, point)
       })
     }
-    function strokeStyle(proposed) {
+    function strokeStyle(proposed, color = '#334e68') {
       ctx.setLineDash(proposed ? [5, 4] : [])
-      ctx.strokeStyle = proposed ? '#8a6d3b' : '#334e68'
+      ctx.strokeStyle = proposed ? '#8a6d3b' : color
       ctx.lineWidth = 1.6
     }
-    function arrow(from, to, bend, proposed) {
+    function arrow(from, to, bend, proposed, color) {
       if (!from || !to) return
       const mx = (from.x + to.x) / 2
       const my = (from.y + to.y) / 2 + bend
-      strokeStyle(proposed)
+      strokeStyle(proposed, color)
       ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.quadraticCurveTo(mx, my, to.x, to.y); ctx.stroke()
       const angle = Math.atan2(to.y - my, to.x - mx)
       ctx.setLineDash([]); ctx.fillStyle = ctx.strokeStyle
@@ -98,6 +98,10 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
     for (const correspondence of (data.snapshot.correspondences || [])) {
       const from = points.get(correspondence.source), to = points.get(correspondence.target)
       arrow(from, to, from && to ? (from.x < to.x ? -30 : 30) : 0, correspondence.proposed)
+    }
+    for (const replacement of (data.snapshot.replacements || [])) {
+      const from = points.get(replacement.source), to = points.get(replacement.target)
+      arrow(from, to, -48, replacement.proposed, '#7c3aed')
     }
     for (const group of (data.snapshot.groups || [])) {
       const box = layout[group.string]

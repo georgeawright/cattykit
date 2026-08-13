@@ -181,6 +181,13 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
                AND (creation_time IS NULL OR creation_time > ? OR creation_time <= ?)""",
             (run_id, time, time, time, time, time),
         ).fetchall()
+        replacements = connection.execute(
+            """SELECT replacement_id, source_id, target_id, proposal_time, creation_time
+               FROM replacements WHERE run_id = ?
+               AND (proposal_time <= ? OR creation_time <= ?)
+               AND (destruction_time IS NULL OR destruction_time > ?)""",
+            (run_id, time, time, time),
+        ).fetchall()
 
     return {
         "letters": [
@@ -214,6 +221,15 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
                 "proposed": creation is None,
             }
             for correspondence_id, source, target, _, creation in correspondences
+        ],
+        "replacements": [
+            {
+                "id": replacement_id,
+                "source": source,
+                "target": target,
+                "proposed": creation is None,
+            }
+            for replacement_id, source, target, _, creation in replacements
         ],
     }
 

@@ -161,6 +161,7 @@ def test_workspace_snapshot_includes_built_and_proposed_entities(tmp_path) -> No
             ("groups", "group_id"),
             ("bonds", "bond_id"),
             ("correspondences", "correspondence_id"),
+            ("replacements", "replacement_id"),
         ):
             columns = (
                 "string_id TEXT, left_position INTEGER, right_position INTEGER"
@@ -188,6 +189,9 @@ def test_workspace_snapshot_includes_built_and_proposed_entities(tmp_path) -> No
         connection.execute(
             "INSERT INTO correspondences VALUES (1, 'correspondence:1', 'letter:1', 'letter:2', 2, NULL, NULL)"
         )
+        connection.execute(
+            "INSERT INTO replacements VALUES (1, 'replacement:1', 'letter:1', 'letter:2', 2, NULL, NULL)"
+        )
 
     snapshot = workspace_snapshot(database, 1, 2)
 
@@ -195,6 +199,7 @@ def test_workspace_snapshot_includes_built_and_proposed_entities(tmp_path) -> No
     assert snapshot["groups"][0]["proposed"] is True
     assert snapshot["bonds"][0]["proposed"] is False
     assert snapshot["correspondences"][0]["proposed"] is True
+    assert snapshot["replacements"][0]["proposed"] is True
 
 
 def test_slipnet_snapshot_uses_the_latest_activation_at_the_selected_time(tmp_path) -> None:
