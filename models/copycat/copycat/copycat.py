@@ -66,7 +66,6 @@ class Copycat:
         self.time_step_length = time_step_length
         self.initially_clamped_nodes = initially_clamped_nodes
         self.initial_slipnode_clamp_time = initial_slipnode_clamp_time
-        self.translated_rule = None
         self.found_answer = False
         self.snag_condition = False
         self.snag_object = False
@@ -287,7 +286,7 @@ class Copycat:
                 self._clamp_initially_clamped_nodes()
                 self._post_intial_codelets()
             self.step()
-            if self.translated_rule is None:
+            if self.workspace.translated_rule is None:
                 continue
             try:
                 answer_builder = AnswerBuilder(self.slipnet, self.workspace)
@@ -388,7 +387,9 @@ class Copycat:
             if translated_rule is not None:
                 self._log_rule("translated_rule_destroyed", translated_rule)
             if self.workspace.translated_rule is not None:
-                self._log_rule("translated_rule_created", self.workspace.translated_rule)
+                self._log_rule(
+                    "translated_rule_created", self.workspace.translated_rule
+                )
 
     def _log_rule(self, kind: str, rule) -> None:
         self.logger.log(
@@ -418,7 +419,9 @@ class Copycat:
         if self.clamp_temperature:
             return
         rule_weakness = (
-            1 if not self.translated_rule else 1 - self.translated_rule.total_strength
+            1
+            if not self.workspace.translated_rule
+            else 1 - self.workspace.translated_rule.total_strength
         )
         self.temperature = self.workspace.total_unhappiness * 0.8 + rule_weakness * 0.2
         time = 0 if self.coderack is None else self.coderack.number_of_codelets_run
