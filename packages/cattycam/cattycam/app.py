@@ -706,6 +706,7 @@ def _coderack_badges(database: Path, run_id: int, time: int) -> pn.Column:
         )
     bin_rows = []
     for urgency_bin, codelet_types in rows.items():
+        lightness = max(72, 98 - min(urgency_bin, 7) * 3.5)
         if bin_rows:
             bin_rows.append(
                 pn.pane.HTML(
@@ -721,8 +722,8 @@ def _coderack_badges(database: Path, run_id: int, time: int) -> pn.Column:
                     *[
                         pn.pane.HTML(
                             f'<span style="display:inline-block; padding:3px 7px; '
-                            f"border-radius:10px; background:#e8eef7; "
-                            f'border:1px solid #8296b4;">'
+                            f"border-radius:10px; background:hsl(265 55% {lightness}%); "
+                            f'border:1px solid hsl(265 35% {max(42, lightness - 22)}%);">'
                             f"{html.escape(codelet_type)}</span>"
                         )
                         for codelet_type in codelet_types
