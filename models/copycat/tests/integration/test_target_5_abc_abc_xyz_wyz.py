@@ -254,6 +254,8 @@ def test_single_run(monkeypatch):
 
     # Build the first whole-string group correspondence.
     chosen_items[:] = [initial_group, first_target_group]
+    for description in initial_group.descriptions + first_target_group.descriptions:
+        description.descriptor.activation = 1.0
     selected_codelet[0] = BottomUpCorrespondenceScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
@@ -503,6 +505,8 @@ def test_single_run(monkeypatch):
     # Build the diagonal c-x correspondence that supplies the deep
     # rightmost -> leftmost mapping shown in frames 18-21.
     chosen_items[:] = [c, x, True]
+    for description in c.descriptions + x.descriptions:
+        description.descriptor.activation = 1.0
     selected_codelet[0] = BottomUpCorrespondenceScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
@@ -548,6 +552,13 @@ def test_single_run(monkeypatch):
 
     # Build the final whole-string group correspondence.
     chosen_items[:] = [initial_group, target_group]
+    for description in (
+        initial_group.descriptions
+        + initial_group.bond_descriptions
+        + target_group.descriptions
+        + target_group.bond_descriptions
+    ):
+        description.descriptor.activation = 1.0
     selected_codelet[0] = BottomUpCorrespondenceScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
@@ -571,6 +582,8 @@ def test_single_run(monkeypatch):
     assert codelet.run(temperature=0.0) == Finish()
     assert copycat.coderack.number_of_codelets_run == 120
     copycat.slipnet.update_activations()
+    for description in initial_group.bond_descriptions + target_group.bond_descriptions:
+        description.descriptor.activation = 1.0
     assert any(
         isinstance(posted, CorrespondenceBuilder)
         for posted in copycat.coderack.codelets
@@ -604,6 +617,8 @@ def test_single_run(monkeypatch):
     # rebuild the diagonal c-x correspondence so its rightmost-to-leftmost
     # mapping is available to the rule scout.
     chosen_items[:] = [c, x, True]
+    for description in c.descriptions + x.descriptions:
+        description.descriptor.activation = 1.0
     selected_codelet[0] = BottomUpCorrespondenceScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )

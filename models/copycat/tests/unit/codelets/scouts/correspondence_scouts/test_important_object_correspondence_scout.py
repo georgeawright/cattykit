@@ -67,6 +67,8 @@ def test_run():
 
     source = SimpleNamespace(spans_whole_string=lambda: True)
     target = SimpleNamespace(spans_whole_string=lambda: True)
+    source.get_relevant_descriptions = lambda: source.descriptions
+    target.get_relevant_descriptions = lambda: target.descriptions
     workspace.target_string.objects = [target]
 
     # initial string has no objects
@@ -111,11 +113,14 @@ def test_run():
     description_2 = SimpleNamespace(facet=SimpleNamespace(name="group"))
     source.descriptions = [description_1]
     target.descriptions = [description_2]
+    relevant_descriptions = iter(([description], target.descriptions))
+    target.get_relevant_descriptions = lambda: next(relevant_descriptions)
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
     # concept mappings possible but not distinguishing
+    target.get_relevant_descriptions = lambda: target.descriptions
     description_1 = SimpleNamespace(
         facet=SimpleNamespace(name="group"), descriptor=SimpleNamespace(name="whole")
     )
@@ -145,10 +150,15 @@ def test_run():
         facet=SimpleNamespace(name="group"), descriptor=successor_node
     )
     description_2 = SimpleNamespace(
-        facet=SimpleNamespace(name="group"), descriptor=predecessor_node
+        facet=description_1.facet, descriptor=predecessor_node
     )
     source.descriptions = [description_1]
     target.descriptions = [description_2]
+    source.choose_relevant_description_by_conceptual_depth = lambda: description_1
+    relevant_descriptions = iter(
+        ([SimpleNamespace(descriptor=successor_node)], target.descriptions)
+    )
+    target.get_relevant_descriptions = lambda: next(relevant_descriptions)
     source.is_distinguished_by = lambda descriptor: True
     target.is_distinguished_by = lambda descriptor: True
     result = scout.run(temperature=0.0)

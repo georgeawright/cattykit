@@ -2,7 +2,7 @@ from typing import Optional
 
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.builder import Builder
-from copycat.concept_mapping import ConceptMapping
+from copycat.concept_mapping import ConceptMapping, get_concept_mappings
 from copycat.tools import structure_beats_structures
 from copycat.workspace_objects import Group, Letter
 from copycat.workspace_structures import Bond, Correspondence
@@ -129,7 +129,8 @@ class CorrespondenceBuilder(Builder):
         if existing_correspondence is None:
             return False
         for mapping in self.proposed_correspondence.concept_mappings:
-            self.slipnet.activate_node_from_workspace(mapping.label)
+            if mapping.label is not None:
+                self.slipnet.activate_node_from_workspace(mapping.label.name)
             if mapping in existing_correspondence.concept_mappings:
                 continue
             existing_correspondence.concept_mappings.append(mapping)
@@ -225,7 +226,7 @@ class CorrespondenceBuilder(Builder):
         if isinstance(self.proposed_correspondence.source, Group) and isinstance(
             self.proposed_correspondence.target, Group
         ):
-            for mapping in self._get_concept_mappings(
+            for mapping in get_concept_mappings(
                 self.proposed_correspondence.source,
                 self.proposed_correspondence.target,
                 self.proposed_correspondence.source.bond_descriptions,
@@ -239,24 +240,3 @@ class CorrespondenceBuilder(Builder):
         for mapping in self.proposed_correspondence.concept_mappings:
             if mapping.label:
                 self.slipnet.activate_node_from_workspace(mapping.label.name)
-
-    def _get_concept_mappings(
-        self, source, target, source_descriptions, target_descriptions
-    ):
-        return [
-            ConceptMapping(
-                description_type_1=desc_1.facet,
-                description_type_2=desc_2.facet,
-                descriptor_1=desc_1.descriptor,
-                descriptor_2=desc_2.descriptor,
-                object_1=source,
-                object_2=target,
-            )
-            for desc_1 in source_descriptions
-            for desc_2 in target_descriptions
-            if desc_1.facet == desc_2.facet
-            and (
-                desc_1.descriptor == desc_2.descriptor
-                or desc_1.descriptor.is_sliplinked_to(desc_2.descriptor)
-            )
-        ]

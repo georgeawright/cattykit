@@ -413,6 +413,8 @@ def test_single_run(monkeypatch):
     # The c-K correspondence supplies the letter-to-group slippage used to
     # translate the rule from the rightmost letter to the rightmost group.
     chosen_items[:] = [c, k_group]
+    for description in c.descriptions + k_group.descriptions:
+        description.descriptor.activation = 1.0
     selected_codelet[0] = BottomUpCorrespondenceScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
@@ -513,6 +515,8 @@ def test_single_run(monkeypatch):
     # Continued consideration of c-K keeps rightmost active while the
     # whole-string correspondence is tested and built.
     chosen_items[:] = [c, k_group]
+    for description in c.descriptions + k_group.descriptions:
+        description.descriptor.activation = 1.0
     selected_codelet[0] = BottomUpCorrespondenceScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
@@ -524,6 +528,8 @@ def test_single_run(monkeypatch):
 
     # Whole-string correspondence: scout, strength tester, builder.
     chosen_items[:] = [initial_group, target_group]
+    for description in initial_group.descriptions + target_group.descriptions:
+        description.descriptor.activation = 1.0
     selected_codelet[0] = BottomUpCorrespondenceScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )

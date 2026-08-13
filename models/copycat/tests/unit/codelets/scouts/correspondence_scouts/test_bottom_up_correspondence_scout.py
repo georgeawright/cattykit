@@ -64,6 +64,8 @@ def test_run():
 
     source = SimpleNamespace(spans_whole_string=lambda: True)
     target = SimpleNamespace(spans_whole_string=lambda: True)
+    source.get_relevant_descriptions = lambda: source.descriptions
+    target.get_relevant_descriptions = lambda: target.descriptions
     workspace.initial_string.objects = [source]
     workspace.target_string.objects = [target]
 

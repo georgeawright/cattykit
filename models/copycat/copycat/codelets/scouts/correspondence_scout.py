@@ -36,7 +36,12 @@ class CorrespondenceScout(Scout):
             self.target.spans_whole_string() and not self.source.spans_whole_string()
         ):
             return Fizzle(FizzleReason.INCOMPATIBLE_OBJECT_SPANS)
-        concept_mappings = get_concept_mappings(self.source, self.target)
+        concept_mappings = get_concept_mappings(
+            self.source,
+            self.target,
+            self.source.get_relevant_descriptions(),
+            self.target.get_relevant_descriptions(),
+        )
         concept_mappings_possible = any(
             random.random() < temperature_adjust(mapping.slippability, temperature)
             for mapping in concept_mappings

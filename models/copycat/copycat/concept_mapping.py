@@ -6,9 +6,19 @@ from .workspace_object import WorkspaceObject
 
 
 def get_concept_mappings(
-    source: WorkspaceObject, target: WorkspaceObject
+    source: WorkspaceObject,
+    target: WorkspaceObject,
+    source_descriptions=None,
+    target_descriptions=None,
 ) -> List[ConceptMapping]:
-    return [
+    source_descriptions = (
+        source.descriptions if source_descriptions is None else source_descriptions
+    )
+    target_descriptions = (
+        target.descriptions if target_descriptions is None else target_descriptions
+    )
+    mappings = []
+    for m in [
         ConceptMapping(
             description_type_1=desc_1.facet,
             description_type_2=desc_2.facet,
@@ -17,14 +27,18 @@ def get_concept_mappings(
             object_1=source,
             object_2=target,
         )
-        for desc_1 in source.descriptions
-        for desc_2 in target.descriptions
+        for desc_1 in source_descriptions
+        for desc_2 in target_descriptions
         if desc_1.facet == desc_2.facet
         and (
             desc_1.descriptor == desc_2.descriptor
             or desc_1.descriptor.is_linked_to(desc_2.descriptor)
         )
-    ]
+    ]:
+        if m in mappings:
+            continue
+        mappings.append(m)
+    return mappings
 
 
 class ConceptMapping:
@@ -48,6 +62,27 @@ class ConceptMapping:
 
     def __repr__(self):
         return f"{self.description_type_1.name}++>{self.description_type_2.name}"
+
+    def __eq__(self, other):
+        if not isinstance(other, ConceptMapping):
+            return NotImplemented
+        return (
+            self.description_type_1,
+            self.description_type_2,
+            self.descriptor_1,
+            self.descriptor_2,
+            self.label,
+            self.object_2,
+            self.object_1,
+        ) == (
+            other.description_type_1,
+            other.description_type_2,
+            other.descriptor_1,
+            other.descriptor_2,
+            other.label,
+            other.object_1,
+            other.object_2,
+        )
 
     @property
     def degree_of_assocation(self) -> float:

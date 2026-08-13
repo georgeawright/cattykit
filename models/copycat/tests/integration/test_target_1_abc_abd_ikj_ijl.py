@@ -604,6 +604,8 @@ def test_single_run(monkeypatch):
     monkeypatch.setattr(
         copycat.workspace.target_string, "choose_object", lambda **_: target_group
     )
+    for description in initial_group.descriptions + target_group.descriptions:
+        description.descriptor.activation = 1.0
     selected_codelet[0] = BottomUpCorrespondenceScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )

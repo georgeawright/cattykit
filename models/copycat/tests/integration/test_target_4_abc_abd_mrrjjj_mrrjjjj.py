@@ -384,6 +384,8 @@ def test_single_run(monkeypatch):
     # target singleton group.  Its letter-to-group slippage is needed when the
     # rule is translated from the initial string to the target string.
     chosen_items[:] = [a, m_group]
+    for description in a.descriptions + m_group.descriptions:
+        description.descriptor.activation = 1.0
     selected_codelet[0] = BottomUpCorrespondenceScout(
         2, copycat.coderack, copycat.workspace, copycat.slipnet
     )
