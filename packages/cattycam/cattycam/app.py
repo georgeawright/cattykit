@@ -114,12 +114,15 @@ def create_app(database: str | Path) -> pn.Column:
             link.on_click(lambda _, table=table: show_table(table))
             table_links.append(link)
         coderack_panel = pn.bind(_coderack_badges, database_path, run_id, codelet_time)
+        codelet_history_panel = pn.bind(
+            _codelet_history, database_path, run_id, codelet_time
+        )
         detail_panels = pn.Row(
             pn.Column(
                 "### Coderack",
                 coderack_panel,
                 "### Codelet history",
-                pn.Spacer(height=120),
+                codelet_history_panel,
                 sizing_mode="stretch_width",
                 styles={"flex": "1"},
             ),
@@ -343,6 +346,42 @@ def _coderack_badges(database: Path, run_id: int, time: int) -> pn.Column:
     return pn.Column(
         pn.Row(pn.pane.Markdown("**Urgency**", width=55)),
         *bin_rows,
+        height=180,
+        scroll=True,
+        sizing_mode="stretch_width",
+    )
+
+
+def _codelet_history(database: Path, run_id: int, time: int) -> pn.Column:
+    """Render executed codelets as reverse-chronological detail cards."""
+    from cattycam.database import codelet_history
+
+    codelets = codelet_history(database, run_id, time)
+    if not codelets:
+        return pn.pane.Markdown("_No codelets have run yet._")
+    return pn.Column(
+        *[
+            pn.Row(
+                pn.pane.Markdown(f"**{run_time}**", width=55),
+                pn.pane.HTML(
+                    "<div style='box-sizing:border-box; width:100%; "
+                    "border:1px solid #8296b4; border-radius:5px; padding:6px; "
+                    "margin-bottom:4px;'>"
+                    "<div style='display:flex; justify-content:space-between; "
+                    "font-weight:600;'>"
+                    f"<span>{html.escape(codelet_type)}</span>"
+                    f"<span>{urgency_bin if urgency_bin is not None else ''}</span>"
+                    "</div>"
+                    "<div style='margin-top:4px;'>"
+                    f"{html.escape(result or '')}"
+                    f" {html.escape(fizzle_reason or '')}"
+                    "</div></div>",
+                    sizing_mode="stretch_width",
+                ),
+                sizing_mode="stretch_width",
+            )
+            for run_time, codelet_type, urgency_bin, result, fizzle_reason in codelets
+        ],
         height=180,
         scroll=True,
         sizing_mode="stretch_width",

@@ -1,6 +1,7 @@
 import sqlite3
 
 from cattycam.database import (
+    codelet_history,
     coderack_codelets,
     run_overview_series,
     table_documentation,
@@ -108,3 +109,29 @@ def test_coderack_codelets_returns_only_active_codelets_by_urgency(tmp_path) -> 
         )
 
     assert coderack_codelets(database, 1, time=2) == [(4, "High"), (1, "Low")]
+
+
+def test_codelet_history_filters_by_time_and_orders_newest_first(tmp_path) -> None:
+    database = tmp_path / "history.sqlite"
+    with sqlite3.connect(database) as connection:
+        connection.execute(
+            "CREATE TABLE codelets "
+            "(id INTEGER PRIMARY KEY, run_id INTEGER, run_time INTEGER, "
+            "codelet_type TEXT, urgency_bin INTEGER, result TEXT, fizzle_reason TEXT)"
+        )
+        connection.executemany(
+            "INSERT INTO codelets "
+            "(run_id, run_time, codelet_type, urgency_bin, result, fizzle_reason) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            [
+                (1, 1, "Scout", 2, "fizzle", "no match"),
+                (1, 3, "Builder", 4, "finish", None),
+                (1, 4, "Later", 6, "finish", None),
+                (2, 5, "Other run", 7, "finish", None),
+            ],
+        )
+
+    assert codelet_history(database, 1, time=3) == [
+        (3, "Builder", 4, "finish", None),
+        (1, "Scout", 2, "fizzle", "no match"),
+    ]
