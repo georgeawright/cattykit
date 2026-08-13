@@ -58,6 +58,7 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
       answer: [width / 2 + 15, 245, width / 2 - 35, 110],
     }
     const points = new Map()
+    const hits = []
     const lettersByString = {}
     for (const letter of (data.snapshot.letters || [])) {
       ;(lettersByString[letter.string] ||= []).push(letter)
@@ -71,6 +72,7 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
       letters.forEach((letter, index) => {
         const point = {x: box[0] + step * (index + 1), y: box[1] + box[3] / 2}
         points.set(letter.id, point)
+        hits.push({type: 'letter', id: letter.id, x: point.x, y: point.y, descriptions: data.snapshot.descriptions[letter.id] || []})
       })
     }
     function strokeStyle(proposed, color = '#334e68') {
@@ -90,10 +92,12 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
       ctx.lineTo(to.x - 8 * Math.cos(angle - 0.45), to.y - 8 * Math.sin(angle - 0.45))
       ctx.lineTo(to.x - 8 * Math.cos(angle + 0.45), to.y - 8 * Math.sin(angle + 0.45))
       ctx.closePath(); ctx.fill()
+      return {from, to, mx, my}
     }
     for (const bond of (data.snapshot.bonds || [])) {
       const from = points.get(bond.source), to = points.get(bond.target)
-      arrow(from, to, (from && from.y < height / 2) ? -36 : 36, bond.proposed)
+      const curve = arrow(from, to, (from && from.y < height / 2) ? -36 : 36, bond.proposed)
+      if (curve) hits.push({type: 'bond', ...curve, facet: bond.facet, category: bond.category})
     }
     for (const correspondence of (data.snapshot.correspondences || [])) {
       const from = points.get(correspondence.source), to = points.get(correspondence.target)
@@ -114,6 +118,7 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
       const right = Math.max(...ps.map(point => point.x)) + 20
       strokeStyle(group.proposed)
       ctx.strokeRect(left, box[1] + 24, right - left, 62)
+      hits.push({type: 'group', id: group.id, x: left, y: box[1] + 24, width: right - left, height: 62, descriptions: data.snapshot.descriptions[group.id] || []})
     }
     ctx.setLineDash([])
     for (const [role, letters] of Object.entries(lettersByString)) {
@@ -125,9 +130,61 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
         ctx.fillText(letter.value, point.x, point.y)
       }
     }
+    if (state.selection) {
+      const selection = state.selection
+      const descriptionLines = (selection.descriptions || []).map(description => `${description.facet || '—'}: ${description.descriptor || '—'}`)
+      const lines = selection.type === 'bond'
+        ? [`facet: ${selection.facet || '—'}`, `bond category: ${selection.category || '—'}`]
+        : [...new Set(descriptionLines)]
+      const title = selection.type === 'bond' ? 'bond' : selection.id
+      const cardX = Math.min(width - 190, Math.max(8, selection.cardX + 16))
+      const cardY = Math.min(height - 70, Math.max(8, selection.cardY - 12))
+      ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.font = '12px sans-serif'
+      const cardWidth = Math.max(145, ctx.measureText(title).width + 20, ...lines.map(line => ctx.measureText(line).width + 20))
+      const cardHeight = 27 + Math.max(lines.length, 1) * 18
+      ctx.fillStyle = 'white'; ctx.strokeStyle = '#111827'; ctx.lineWidth = 1
+      ctx.fillRect(cardX, cardY, cardWidth, cardHeight); ctx.strokeRect(cardX, cardY, cardWidth, cardHeight)
+      ctx.fillStyle = '#111827'; ctx.font = '600 12px sans-serif'; ctx.fillText(title, cardX + 8, cardY + 17)
+      ctx.font = '12px sans-serif'
+      if (lines.length) lines.forEach((line, index) => ctx.fillText(line, cardX + 8, cardY + 37 + index * 18))
+      else ctx.fillText('No descriptions', cardX + 8, cardY + 37)
+    }
+    state.hits = hits
     ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic'
     """
-    _scripts["render"] = "state.draw = () => {" + _scripts["draw"] + "}; state.draw()"
+    _scripts["render"] = """
+    state.draw = () => {""" + _scripts["draw"] + """}
+    state.point = event => {
+      const bounds = canvas.getBoundingClientRect()
+      return {x: event.clientX - bounds.left, y: event.clientY - bounds.top}
+    }
+    state.hitAt = point => (state.hits || []).slice().reverse().find(hit => {
+      if (hit.type === 'letter') return Math.hypot(hit.x - point.x, hit.y - point.y) < 18
+      if (hit.type === 'group') return point.x >= hit.x && point.x <= hit.x + hit.width && point.y >= hit.y && point.y <= hit.y + hit.height
+      if (hit.type === 'bond') {
+        let previous = hit.from
+        for (let step = 1; step <= 20; step++) {
+          const t = step / 20, next = {x: (1-t)*(1-t)*hit.from.x + 2*(1-t)*t*hit.mx + t*t*hit.to.x, y: (1-t)*(1-t)*hit.from.y + 2*(1-t)*t*hit.my + t*t*hit.to.y}
+          const length = Math.hypot(next.x - previous.x, next.y - previous.y)
+          const distance = length ? Math.abs((next.x-previous.x)*(previous.y-point.y) - (previous.x-point.x)*(next.y-previous.y)) / length : Infinity
+          if (distance < 7 && point.x >= Math.min(previous.x,next.x)-7 && point.x <= Math.max(previous.x,next.x)+7 && point.y >= Math.min(previous.y,next.y)-7 && point.y <= Math.max(previous.y,next.y)+7) return true
+          previous = next
+        }
+      }
+      return false
+    })
+    canvas.addEventListener('click', event => {
+      const selection = state.hitAt(state.point(event))
+      state.selection = selection ? {...selection, cardX: selection.x || selection.from.x, cardY: selection.y || selection.from.y} : null
+      state.draw()
+    })
+    state.resizeObserver = new ResizeObserver(() => {
+      window.clearTimeout(state.resizeTimer)
+      state.resizeTimer = window.setTimeout(() => state.draw(), 50)
+    })
+    state.resizeObserver.observe(container)
+    state.draw()
+    """
     del _scripts["draw"]
 
 

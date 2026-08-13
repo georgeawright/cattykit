@@ -166,13 +166,22 @@ def test_workspace_snapshot_includes_built_and_proposed_entities(tmp_path) -> No
             columns = (
                 "string_id TEXT, left_position INTEGER, right_position INTEGER"
                 if table == "groups"
-                else "source_id TEXT, target_id TEXT"
+                else (
+                    "source_id TEXT, target_id TEXT, bond_facet TEXT, bond_category TEXT"
+                    if table == "bonds"
+                    else "source_id TEXT, target_id TEXT"
+                )
             )
             connection.execute(
                 f"CREATE TABLE {table} "
                 f"(run_id INTEGER, {identifier} TEXT, {columns}, proposal_time INTEGER, "
                 "creation_time INTEGER, destruction_time INTEGER)"
             )
+        connection.execute(
+            "CREATE TABLE descriptions "
+            "(run_id INTEGER, object_id TEXT, facet TEXT, descriptor TEXT, "
+            "proposal_time INTEGER, creation_time INTEGER, destruction_time INTEGER)"
+        )
         connection.executemany(
             "INSERT INTO letters VALUES (?, ?, ?, ?, ?, ?, ?)",
             [
@@ -184,7 +193,11 @@ def test_workspace_snapshot_includes_built_and_proposed_entities(tmp_path) -> No
             "INSERT INTO groups VALUES (1, 'group:1', 'initial', 0, 1, 2, NULL, NULL)"
         )
         connection.execute(
-            "INSERT INTO bonds VALUES (1, 'bond:1', 'letter:1', 'letter:2', 1, 2, NULL)"
+            "INSERT INTO bonds VALUES (1, 'bond:1', 'letter:1', 'letter:2', "
+            "'letter_category', 'successor', 1, 2, NULL)"
+        )
+        connection.execute(
+            "INSERT INTO descriptions VALUES (1, 'letter:1', 'object_category', 'letter', 0, 0, NULL)"
         )
         connection.execute(
             "INSERT INTO correspondences VALUES (1, 'correspondence:1', 'letter:1', 'letter:2', 2, NULL, NULL)"
@@ -198,8 +211,13 @@ def test_workspace_snapshot_includes_built_and_proposed_entities(tmp_path) -> No
     assert [letter["value"] for letter in snapshot["letters"]] == ["a", "b"]
     assert snapshot["groups"][0]["proposed"] is True
     assert snapshot["bonds"][0]["proposed"] is False
+    assert snapshot["bonds"][0]["facet"] == "letter_category"
+    assert snapshot["bonds"][0]["category"] == "successor"
     assert snapshot["correspondences"][0]["proposed"] is True
     assert snapshot["replacements"][0]["proposed"] is True
+    assert snapshot["descriptions"]["letter:1"] == [
+        {"facet": "object_category", "descriptor": "letter"}
+    ]
 
 
 def test_slipnet_snapshot_uses_the_latest_activation_at_the_selected_time(tmp_path) -> None:

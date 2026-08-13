@@ -167,7 +167,8 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
             (run_id, time, time, time, time, time),
         ).fetchall()
         bonds = connection.execute(
-            """SELECT bond_id, source_id, target_id, proposal_time, creation_time
+            """SELECT bond_id, source_id, target_id, bond_facet, bond_category,
+                      proposal_time, creation_time
                FROM bonds WHERE run_id = ? AND (proposal_time <= ? OR creation_time <= ?)
                AND (destruction_time IS NULL OR destruction_time > ?)
                AND (creation_time IS NULL OR creation_time > ? OR creation_time <= ?)""",
@@ -186,6 +187,13 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
                FROM replacements WHERE run_id = ?
                AND (proposal_time <= ? OR creation_time <= ?)
                AND (destruction_time IS NULL OR destruction_time > ?)""",
+            (run_id, time, time, time),
+        ).fetchall()
+        descriptions = connection.execute(
+            """SELECT object_id, facet, descriptor FROM descriptions WHERE run_id = ?
+               AND (proposal_time <= ? OR creation_time <= ?)
+               AND (destruction_time IS NULL OR destruction_time > ?)
+               ORDER BY rowid""",
             (run_id, time, time, time),
         ).fetchall()
 
@@ -209,9 +217,11 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
                 "id": bond_id,
                 "source": source,
                 "target": target,
+                "facet": facet,
+                "category": category,
                 "proposed": creation is None,
             }
-            for bond_id, source, target, _, creation in bonds
+            for bond_id, source, target, facet, category, _, creation in bonds
         ],
         "correspondences": [
             {
@@ -231,6 +241,14 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
             }
             for replacement_id, source, target, _, creation in replacements
         ],
+        "descriptions": {
+            object_id: [
+                {"facet": facet, "descriptor": descriptor}
+                for description_object_id, facet, descriptor in descriptions
+                if description_object_id == object_id
+            ]
+            for object_id in {object_id for object_id, _, _ in descriptions}
+        },
     }
 
 
