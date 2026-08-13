@@ -810,11 +810,21 @@ def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.View
             f"{codelet_id.removeprefix('codelet:')}"
         )
 
+    def card_colors(urgency_bin: int | None, result: str | None) -> tuple[str, str]:
+        """Return a pastel result colour, strengthened for higher urgency bins."""
+        lightness = max(72, 98 - min(urgency_bin or 0, 7) * 3.5)
+        hue = 0 if result == "fizzle" else 215
+        return (
+            f"hsl({hue} 65% {lightness}%)",
+            f"hsl({hue} 42% {max(42, lightness - 22)}%)",
+        )
+
     cards = "".join(
         "<div style='display:flex; gap:6px; min-height:76px; margin-bottom:8px;'>"
         f"<div style='width:42px; flex:0 0 42px; font-weight:600;'>{run_time}</div>"
         "<div style='box-sizing:border-box; flex:1; border:1px solid #8296b4; "
-        "border-radius:5px; padding:6px;'>"
+        f"border-radius:5px; padding:6px; background:{card_colors(urgency_bin, result)[0]}; "
+        f"border-color:{card_colors(urgency_bin, result)[1]};'>"
         "<div style='display:flex; justify-content:space-between; font-weight:600;'>"
         f"<span>{html.escape(codelet_type)} {codelet_id.removeprefix('codelet:')}</span>"
         f"<span>{urgency_bin if urgency_bin is not None else ''}</span>"
