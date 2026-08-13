@@ -312,8 +312,10 @@ def _coderack_badges(database: Path, run_id: int, time: int) -> pn.Column:
     if not codelets:
         return pn.pane.Markdown("_No codelets on the coderack._")
     rows: dict[int, list[str]] = {}
-    for urgency_bin, codelet_type in codelets:
-        rows.setdefault(urgency_bin, []).append(codelet_type)
+    for urgency_bin, codelet_type, codelet_id in codelets:
+        rows.setdefault(urgency_bin, []).append(
+            f"{codelet_type} {codelet_id.removeprefix('codelet:')}"
+        )
     bin_rows = []
     for urgency_bin, codelet_types in rows.items():
         if bin_rows:
@@ -352,39 +354,48 @@ def _coderack_badges(database: Path, run_id: int, time: int) -> pn.Column:
     )
 
 
-def _codelet_history(database: Path, run_id: int, time: int) -> pn.Column:
+def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.Viewable:
     """Render executed codelets as reverse-chronological detail cards."""
-    from cattycam.database import codelet_history
+    from cattycam.database import codelet_history, codelet_types
 
     codelets = codelet_history(database, run_id, time)
     if not codelets:
         return pn.pane.Markdown("_No codelets have run yet._")
-    return pn.Column(
-        *[
-            pn.Row(
-                pn.pane.Markdown(f"**{run_time}**", width=55),
-                pn.pane.HTML(
-                    "<div style='box-sizing:border-box; width:100%; "
-                    "border:1px solid #8296b4; border-radius:5px; padding:6px; "
-                    "margin-bottom:4px;'>"
-                    "<div style='display:flex; justify-content:space-between; "
-                    "font-weight:600;'>"
-                    f"<span>{html.escape(codelet_type)}</span>"
-                    f"<span>{urgency_bin if urgency_bin is not None else ''}</span>"
-                    "</div>"
-                    "<div style='margin-top:4px;'>"
-                    f"{html.escape(result or '')}"
-                    f" {html.escape(fizzle_reason or '')}"
-                    "</div></div>",
-                    sizing_mode="stretch_width",
-                ),
-                sizing_mode="stretch_width",
-            )
-            for run_time, codelet_type, urgency_bin, result, fizzle_reason in codelets
-        ],
+    children_by_parent: dict[str, list[str]] = {}
+    for codelet_id, parent_id, *_ in codelets:
+        if parent_id is not None:
+            children_by_parent.setdefault(parent_id, []).append(codelet_id)
+    types = codelet_types(database, run_id)
+
+    def codelet_label(codelet_id: str | None) -> str:
+        if codelet_id is None:
+            return "—"
+        return (
+            f"{html.escape(types.get(codelet_id, 'unknown'))} "
+            f"{codelet_id.removeprefix('codelet:')}"
+        )
+
+    cards = "".join(
+        "<div style='display:flex; gap:6px; min-height:76px; margin-bottom:8px;'>"
+        f"<div style='width:42px; flex:0 0 42px; font-weight:600;'>{run_time}</div>"
+        "<div style='box-sizing:border-box; flex:1; border:1px solid #8296b4; "
+        "border-radius:5px; padding:6px;'>"
+        "<div style='display:flex; justify-content:space-between; font-weight:600;'>"
+        f"<span>{html.escape(codelet_type)} {codelet_id.removeprefix('codelet:')}</span>"
+        f"<span>{urgency_bin if urgency_bin is not None else ''}</span>"
+        "</div><div style='margin-top:4px;'>"
+        f"{html.escape(result or '')} {html.escape(fizzle_reason or '')}"
+        "</div><div style='margin-top:4px; font-size:0.9em; color:#4c4c4c;'>"
+        f"Parent codelet: {codelet_label(parent_id)} · "
+        f"Child codelet: {', '.join(codelet_label(child) for child in children_by_parent.get(codelet_id, [])) or '—'}"
+        "</div></div></div>"
+        for codelet_id, parent_id, run_time, codelet_type, urgency_bin, result, fizzle_reason in codelets
+    )
+    return pn.pane.HTML(
+        cards,
         height=180,
-        scroll=True,
         sizing_mode="stretch_width",
+        styles={"overflow-y": "auto"},
     )
 
 

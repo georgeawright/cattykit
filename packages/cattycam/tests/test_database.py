@@ -2,6 +2,7 @@ import sqlite3
 
 from cattycam.database import (
     codelet_history,
+    codelet_types,
     coderack_codelets,
     run_overview_series,
     table_documentation,
@@ -93,22 +94,25 @@ def test_coderack_codelets_returns_only_active_codelets_by_urgency(tmp_path) -> 
     with sqlite3.connect(database) as connection:
         connection.execute(
             "CREATE TABLE codelets "
-            "(id INTEGER PRIMARY KEY, run_id INTEGER, codelet_type TEXT, "
+            "(id INTEGER PRIMARY KEY, run_id INTEGER, codelet_id TEXT, codelet_type TEXT, "
             "urgency_bin INTEGER, birth_time INTEGER, removal_time INTEGER)"
         )
         connection.executemany(
             "INSERT INTO codelets "
-            "(run_id, codelet_type, urgency_bin, birth_time, removal_time) "
-            "VALUES (?, ?, ?, ?, ?)",
+            "(run_id, codelet_id, codelet_type, urgency_bin, birth_time, removal_time) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
             [
-                (1, "Low", 1, 0, None),
-                (1, "High", 4, 1, None),
-                (1, "Removed", 6, 0, 2),
-                (2, "Other run", 7, 0, None),
+                (1, "codelet:1", "Low", 1, 0, None),
+                (1, "codelet:2", "High", 4, 1, None),
+                (1, "codelet:3", "Removed", 6, 0, 2),
+                (2, "codelet:4", "Other run", 7, 0, None),
             ],
         )
 
-    assert coderack_codelets(database, 1, time=2) == [(4, "High"), (1, "Low")]
+    assert coderack_codelets(database, 1, time=2) == [
+        (4, "High", "codelet:2"),
+        (1, "Low", "codelet:1"),
+    ]
 
 
 def test_codelet_history_filters_by_time_and_orders_newest_first(tmp_path) -> None:
@@ -116,22 +120,28 @@ def test_codelet_history_filters_by_time_and_orders_newest_first(tmp_path) -> No
     with sqlite3.connect(database) as connection:
         connection.execute(
             "CREATE TABLE codelets "
-            "(id INTEGER PRIMARY KEY, run_id INTEGER, run_time INTEGER, "
-            "codelet_type TEXT, urgency_bin INTEGER, result TEXT, fizzle_reason TEXT)"
+            "(id INTEGER PRIMARY KEY, run_id INTEGER, codelet_id TEXT, "
+            "parent_codelet_id TEXT, run_time INTEGER, codelet_type TEXT, "
+            "urgency_bin INTEGER, result TEXT, fizzle_reason TEXT)"
         )
         connection.executemany(
             "INSERT INTO codelets "
-            "(run_id, run_time, codelet_type, urgency_bin, result, fizzle_reason) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
+            "(run_id, codelet_id, parent_codelet_id, run_time, codelet_type, "
+            "urgency_bin, result, fizzle_reason) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
             [
-                (1, 1, "Scout", 2, "fizzle", "no match"),
-                (1, 3, "Builder", 4, "finish", None),
-                (1, 4, "Later", 6, "finish", None),
-                (2, 5, "Other run", 7, "finish", None),
+                (1, "codelet:1", None, 1, "Scout", 2, "fizzle", "no match"),
+                (1, "codelet:2", "codelet:1", 3, "Builder", 4, "finish", None),
+                (1, "codelet:3", None, 4, "Later", 6, "finish", None),
+                (2, "codelet:4", None, 5, "Other run", 7, "finish", None),
             ],
         )
 
     assert codelet_history(database, 1, time=3) == [
-        (3, "Builder", 4, "finish", None),
-        (1, "Scout", 2, "fizzle", "no match"),
+        ("codelet:2", "codelet:1", 3, "Builder", 4, "finish", None),
+        ("codelet:1", None, 1, "Scout", 2, "fizzle", "no match"),
     ]
+    assert codelet_types(database, 1) == {
+        "codelet:1": "Scout",
+        "codelet:2": "Builder",
+        "codelet:3": "Later",
+    }

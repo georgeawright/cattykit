@@ -110,11 +110,11 @@ def run_overview_series(database: str | Path, run_id: int) -> dict[str, list[tup
 
 def coderack_codelets(
     database: str | Path, run_id: int, time: int
-) -> list[tuple[int, str]]:
+) -> list[tuple[int, str, str]]:
     """Return codelets still on the coderack at a selected codelet time."""
     with sqlite3.connect(database) as connection:
         return connection.execute(
-            """SELECT urgency_bin, codelet_type FROM codelets
+            """SELECT urgency_bin, codelet_type, codelet_id FROM codelets
                WHERE run_id = ? AND birth_time <= ?
                AND (removal_time IS NULL OR removal_time > ?)
                ORDER BY urgency_bin DESC, id""",
@@ -124,16 +124,28 @@ def coderack_codelets(
 
 def codelet_history(
     database: str | Path, run_id: int, time: int
-) -> list[tuple[int, str, int | None, str | None, str | None]]:
+) -> list[tuple[str, str | None, int, str, int | None, str | None, str | None]]:
     """Return completed codelets up to a selected time, newest first."""
     with sqlite3.connect(database) as connection:
         return connection.execute(
-            """SELECT run_time, codelet_type, urgency_bin, result, fizzle_reason
+            """SELECT codelet_id, parent_codelet_id, run_time, codelet_type,
+                      urgency_bin, result, fizzle_reason
                FROM codelets WHERE run_id = ?
                AND run_time IS NOT NULL AND run_time <= ?
                ORDER BY run_time DESC, id DESC""",
             (run_id, time),
         ).fetchall()
+
+
+def codelet_types(database: str | Path, run_id: int) -> dict[str, str]:
+    """Return codelet types keyed by their logged identifiers for one run."""
+    with sqlite3.connect(database) as connection:
+        return dict(
+            connection.execute(
+                "SELECT codelet_id, codelet_type FROM codelets WHERE run_id = ?",
+                (run_id,),
+            ).fetchall()
+        )
 
 
 def _table_query(
