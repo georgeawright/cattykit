@@ -4,6 +4,8 @@ Cattykit is a framework for implementing artificial intelligence models based on
 
 ## Usage
 
+To install and run a model once on a single problem:
+
 ```python
 import cattykit
 from cattykit.logging import PrintLogger
@@ -25,3 +27,27 @@ try:
 finally:
     logger.close()
 ```
+
+To run a suite of problems on a single model:
+
+``` python
+from cattykit import install_model, run_experiment
+
+# Install the model if necessary.
+cattykit.install_model("./models/copycat")
+
+results_db = run_experiment(
+    model_name="copycat",
+    problems=[
+	    "abc -> abd ==> ijk -> ?",
+		"abc -> abc ==> iijjkk -> ?",
+		"abc -> abc ==> kji -> ?",
+		"abc -> abc ==> mrrjjj -> ?",
+		"abc -> abc ==> xyz -> ?",
+    ],
+	iterations=1000
+)
+print(results_db)
+```
+
+This will generate a database located at `results_db` containing logs of the runs and summary statistics. These can be explored using the Cattycam package.
