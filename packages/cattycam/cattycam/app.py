@@ -570,22 +570,24 @@ def create_app(database: str | Path) -> pn.Column:
     def show_runs(_: object | None = None) -> None:
         columns, rows = table_rows(database_path, "runs")
         runs = pd.DataFrame(rows, columns=columns)
-        grid = pn.widgets.Tabulator(
-            runs,
-            selectable=1,
-            show_index=False,
-            sizing_mode="stretch_width",
-        )
-
-        def open_run(event: Any) -> None:
-            row_index = event.row
-            active_run.value = int(runs.iloc[row_index]["id"])
-
-        grid.on_click(open_run)
+        groups = []
+        for (model, problem), grouped_runs in runs.groupby(
+            ["model", "problem"], dropna=False, sort=True
+        ):
+            groups.extend(
+                (
+                    pn.pane.HTML(
+                        "<h3>"
+                        f"{html.escape(str(model))} — {html.escape(str(problem))}"
+                        "</h3>"
+                    ),
+                    _run_group_table(grouped_runs, columns),
+                )
+            )
         content.objects = [
             "## Runs",
-            pn.pane.Markdown("Click a row to inspect that run."),
-            grid,
+            pn.pane.Markdown("Click a run ID to inspect that run."),
+            *groups,
         ]
 
     def update_view(event: Any | None = None) -> None:
@@ -600,6 +602,36 @@ def create_app(database: str | Path) -> pn.Column:
     return pn.Column(
         content,
         BrowserHistoryBridge(),
+        sizing_mode="stretch_width",
+    )
+
+
+def _run_group_table(runs: pd.DataFrame, columns: list[str]) -> pn.pane.HTML:
+    """Render one model/problem run group in a native collapsed details element."""
+    headers = "<th>View</th>" + "".join(
+        f"<th>{html.escape(column)}</th>" for column in columns
+    )
+    body = "".join(
+        "<tr>"
+        + f'<td><a href="?run_id={int(row[columns.index("id")])}">View</a></td>'
+        + "".join(
+            (
+                f'<td><a href="?run_id={int(value)}">{int(value)}</a></td>'
+                if column == "id"
+                else f"<td>{html.escape('' if value is None else str(value))}</td>"
+            )
+            for column, value in zip(columns, row, strict=True)
+        )
+        + "</tr>"
+        for row in runs.itertuples(index=False, name=None)
+    )
+    count = len(runs)
+    return pn.pane.HTML(
+        "<details>"
+        f"<summary>Show {count} run{'s' if count != 1 else ''}</summary>"
+        "<table><thead><tr>"
+        f"{headers}</tr></thead><tbody>{body}</tbody></table>"
+        "</details>",
         sizing_mode="stretch_width",
     )
 
