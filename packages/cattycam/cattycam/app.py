@@ -629,8 +629,10 @@ def create_app(database: str | Path) -> pn.Column:
     )
 
 
-def _run_group_table(runs: pd.DataFrame, columns: list[str]) -> pn.pane.HTML:
-    """Render one model/problem run group in a native collapsed details element."""
+def _run_group_table(
+    runs: pd.DataFrame, columns: list[str], *, collapsed: bool = True
+) -> pn.pane.HTML:
+    """Render one model/problem run group, optionally in a details element."""
     headers = "<th>View</th>" + "".join(
         f"<th>{html.escape(column)}</th>" for column in columns
     )
@@ -649,12 +651,16 @@ def _run_group_table(runs: pd.DataFrame, columns: list[str]) -> pn.pane.HTML:
         for row in runs.itertuples(index=False, name=None)
     )
     count = len(runs)
-    return pn.pane.HTML(
+    table = f"<table><thead><tr>{headers}</tr></thead><tbody>{body}</tbody></table>"
+    content = (
         "<details>"
         f"<summary>Show {count} run{'s' if count != 1 else ''}</summary>"
-        "<table><thead><tr>"
-        f"{headers}</tr></thead><tbody>{body}</tbody></table>"
-        "</details>",
+        f"{table}</details>"
+        if collapsed
+        else table
+    )
+    return pn.pane.HTML(
+        content,
         sizing_mode="stretch_width",
     )
 
@@ -741,6 +747,8 @@ def _problem_overview(model: str, problem: str, runs: pd.DataFrame) -> pn.Column
         f"## Runs of {model} on problem {problem}",
         statistics,
         chart,
+        "### Runs",
+        _run_group_table(runs, list(runs.columns), collapsed=False),
         sizing_mode="stretch_width",
     )
 def _run_overview(
