@@ -9,11 +9,12 @@ import html
 import sys
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlencode
 
 import param
 import pandas as pd
 import panel as pn
-from bokeh.models import Label, Span
+from bokeh.models import ColumnDataSource, FactorRange, FixedTicker, Label, LabelSet, Range1d, Span
 from bokeh.plotting import figure
 
 # Panel executes a served file as a script, rather than as a package module.
@@ -579,6 +580,7 @@ def create_app(database: str | Path) -> pn.Column:
                     pn.pane.HTML(
                         "<h3>"
                         f"{html.escape(str(model))} — {html.escape(str(problem))}"
+                        f" <a href=\"?{urlencode({'model': model, 'problem': problem})}\">Overview</a>"
                         "</h3>"
                     ),
                     _run_group_table(grouped_runs, columns),
@@ -590,10 +592,31 @@ def create_app(database: str | Path) -> pn.Column:
             *groups,
         ]
 
+    def show_problem(model: str, problem: str) -> None:
+        columns, rows = table_rows(database_path, "runs")
+        runs = pd.DataFrame(rows, columns=columns)
+        problem_runs = runs[(runs["model"] == model) & (runs["problem"] == problem)]
+        if problem_runs.empty:
+            content.objects = [
+                pn.pane.Alert("No runs were found for this model and problem.", alert_type="warning")
+            ]
+            return
+        content.objects = [
+            pn.pane.HTML('<p><a href="?">← All runs</a></p>'),
+            _problem_overview(model, problem, problem_runs),
+        ]
+
     def update_view(event: Any | None = None) -> None:
         run_id = active_run.value if event is None else event.new
         if run_id:
             show_run(run_id)
+        elif pn.state.location and {
+            "model", "problem"
+        } <= pn.state.location.query_params.keys():
+            show_problem(
+                pn.state.location.query_params["model"],
+                pn.state.location.query_params["problem"],
+            )
         else:
             show_runs()
 
@@ -636,6 +659,90 @@ def _run_group_table(runs: pd.DataFrame, columns: list[str]) -> pn.pane.HTML:
     )
 
 
+def _problem_overview(model: str, problem: str, runs: pd.DataFrame) -> pn.Column:
+    """Build the aggregate view for one model/problem pair."""
+    codelets = pd.to_numeric(runs["number_of_codelets_run"], errors="coerce")
+    temperatures = pd.to_numeric(runs["final_temperature"], errors="coerce")
+    solution_runs = runs.assign(solution=runs["solution"].fillna("—")).copy()
+    solution_summary = (
+        solution_runs.groupby("solution", sort=True)
+        .agg(
+            frequency=("solution", "size"),
+            mean_temperature=("final_temperature", "mean"),
+            mean_codelets=("number_of_codelets_run", "mean"),
+        )
+        .reset_index()
+        .sort_values(["frequency", "solution"], ascending=[False, True])
+    )
+    most_common_solution = solution_summary.loc[
+        solution_summary["frequency"].idxmax(), "solution"
+    ]
+    measured_temperatures = temperatures.dropna()
+    lowest_temperature_solution = (
+        solution_runs.loc[measured_temperatures.idxmin(), "solution"]
+        if not measured_temperatures.empty
+        else "—"
+    )
+
+    def statistic(value: float) -> str:
+        return "—" if pd.isna(value) else f"{value:.2f}"
+
+    statistics = pn.pane.HTML(
+        "<ul>"
+        f"<li>Number of runs: {len(runs)}</li>"
+        f"<li>Codelets run: mean {statistic(codelets.mean())}, stdev {statistic(codelets.std())}</li>"
+        f"<li>Final temperature: mean {statistic(temperatures.mean())}, stdev {statistic(temperatures.std())}</li>"
+        f"<li>Most common solution: {html.escape(str(most_common_solution))}</li>"
+        f"<li>Solution with lowest temperature: {html.escape(str(lowest_temperature_solution))}</li>"
+        "</ul>"
+    )
+    source = ColumnDataSource(
+        {
+            "solution": solution_summary["solution"].astype(str).tolist(),
+            "frequency": solution_summary["frequency"].tolist(),
+            "label": [
+                f"T {statistic(temperature)}, C {statistic(codelets_run)}"
+                for temperature, codelets_run in zip(
+                    solution_summary["mean_temperature"],
+                    solution_summary["mean_codelets"],
+                    strict=True,
+                )
+            ],
+        }
+    )
+    solution_count = len(solution_summary)
+    maximum_frequency = max(source.data["frequency"])
+    padding_factors = ["\u00a0" * (index + 1) for index in range(10 - solution_count)]
+    chart = figure(
+        title="Solution frequency",
+        x_range=FactorRange(*source.data["solution"], *padding_factors),
+        y_range=Range1d(0, maximum_frequency * 1.25),
+        x_axis_label="Solution",
+        y_axis_label="Runs",
+        height=360,
+        sizing_mode="stretch_width",
+        toolbar_location=None,
+    )
+    chart.vbar(x="solution", top="frequency", width=0.8, source=source, color="#5b7db1")
+    chart.add_layout(
+        LabelSet(
+            x="solution",
+            y="frequency",
+            text="label",
+            y_offset=8,
+            text_align="center",
+            text_font_size="9px",
+            source=source,
+        )
+    )
+    chart.yaxis.ticker = FixedTicker(ticks=list(range(maximum_frequency + 1)))
+    chart.xaxis.major_label_orientation = 0
+    return pn.Column(
+        f"## Runs of {model} on problem {problem}",
+        statistics,
+        chart,
+        sizing_mode="stretch_width",
+    )
 def _run_overview(
     series: dict[str, list[tuple]], codelet_time: pn.widgets.EditableIntSlider
 ) -> pn.Column:
