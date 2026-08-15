@@ -452,9 +452,9 @@ class Copycat:
         if self.clamp_temperature:
             return
         rule_weakness = (
-            1
-            if not self.workspace.translated_rule
-            else 1 - self.workspace.translated_rule.total_strength
+            self.workspace.translated_rule.total_weakness
+            if self.workspace.translated_rule
+            else 1
         )
         self.temperature = self.workspace.total_unhappiness * 0.8 + rule_weakness * 0.2
         time = 0 if self.coderack is None else self.coderack.number_of_codelets_run

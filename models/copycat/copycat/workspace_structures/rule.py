@@ -23,6 +23,7 @@ class Rule(WorkspaceStructure):
         replaced_description_type: Optional[Slipnode] = None,
         relation: Optional[Slipnode] = None,
     ):
+        super().__init__()
         self.workspace = workspace
         self.object_category_1 = object_category_1
         self.descriptor_1_facet = descriptor_1_facet

@@ -17,6 +17,7 @@ class Correspondence(WorkspaceStructure):
         target: "WorkspaceObject",
         concept_mappings: List[ConceptMapping],
     ):
+        super().__init__()
         self.workspace = workspace
         self.source = source
         self.target = target

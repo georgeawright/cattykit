@@ -18,6 +18,7 @@ class ExtrinsicDescription(WorkspaceStructure):
         description_type_related: Slipnode,
         other_object: WorkspaceObject,
     ):
+        super().__init__()
         self.relation = relation
         self.description_type_related = description_type_related
         self.other_object = other_object
