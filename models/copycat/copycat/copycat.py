@@ -282,9 +282,9 @@ class Copycat:
         while True:
             if self.coderack.number_of_codelets_run % self.time_step_length == 0:
                 self.update()
-            if self.coderack.empty():
+            if self.coderack.is_empty():
                 self._clamp_initially_clamped_nodes()
-                self._post_intial_codelets()
+                self._post_initial_codelets()
             self.step()
             if self.workspace.translated_rule is None:
                 continue
