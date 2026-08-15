@@ -16,7 +16,8 @@ def main() -> None:
         str(_CONFIG_DIRECTORY / "hyperparameters.json"),
         logger=logger,
     )
-    copycat.solve("abc -> abd ==> iijjkk -> ?")
+    result = copycat.solve("abc -> abd ==> ijk -> ?")
+    print(result)
     logger.close()
 
 
