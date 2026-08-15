@@ -56,7 +56,7 @@ class AnswerBuilder:
                 objects_to_change.append(obj)
         if (
             rule_facet != self.slipnet["string_position_category"]
-            and len(objects_to_change) <= 1
+            or len(objects_to_change) <= 1
         ):
             return objects_to_change
         changed_object_correspondence = (
