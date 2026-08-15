@@ -150,6 +150,13 @@ class GroupBuilder(Builder):
             other_bond = other_obj.left_bond
         if other_bond is None or other_bond.direction_category is None:
             return False
+        if (
+            # extra guard to prevent checking for relation between null slipnodes
+            self.proposed_group.direction_category is None
+            or other_bond is None
+            or other_bond.direction_category is None
+        ):
+            return False
         group_concept_mapping = ConceptMapping(
             description_type_1=self.slipnet["direction_category"],
             description_type_2=self.slipnet["direction_category"],
