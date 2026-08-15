@@ -1,10 +1,10 @@
-from pathlib import Path
 import random
+from pathlib import Path
 
 from cattykit.logging import SQLiteLogger
 from copycat import Copycat
 
-_CONFIG_DIRECTORY = Path(__file__).parent.parent / "configs"
+_CONFIG_DIRECTORY = Path(__file__).parent.parent / "models" / "copycat" / "configs"
 
 
 def main() -> None:
@@ -16,7 +16,7 @@ def main() -> None:
         str(_CONFIG_DIRECTORY / "hyperparameters.json"),
         logger=logger,
     )
-    copycat.solve("abc -> abd ==> ijk -> ?")
+    copycat.solve("abc -> abd ==> iijjkk -> ?")
     logger.close()
 
 
