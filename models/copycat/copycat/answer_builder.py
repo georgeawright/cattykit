@@ -52,7 +52,7 @@ class AnswerBuilder:
             tester = self.workspace.translated_rule.descriptor_1.description_tester
             if tester is not None and tester(obj):
                 description = Description(obj, rule_facet, rule_descriptor)
-                obj.add_description()
+                obj.add_description(description)
                 objects_to_change.append(obj)
         if (
             rule_facet != self.slipnet["string_position_category"]
