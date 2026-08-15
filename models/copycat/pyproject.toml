@@ -10,7 +10,7 @@ dependencies = [
 ]
 
 [tool.uv.sources]
-cattykit = { path = "../../packages/cattykit" }
+cattykit = { workspace = true }
 
 [project.entry-points."cattykit.models"]
 copycat = "copycat.cattykit_plugin:plugin"
@@ -22,12 +22,8 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 include = ["copycat*"]
 
-[tool.setuptools.data-files]
-"copycat/configs" = [
-    "configs/coderack.json",
-    "configs/hyperparameters.json",
-    "configs/slipnet.json",
-]
+[tool.setuptools.package-data]
+copycat = ["configs/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

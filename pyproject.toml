@@ -5,7 +5,7 @@ addopts = [
 pythonpath = ["packages/cattykit"]
 
 [tool.uv.workspace]
-members = ["packages/*"]
+members = ["packages/*", "models/copycat"]
 
 [dependency-groups]
 dev = [

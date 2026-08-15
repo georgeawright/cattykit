@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import random
-import sysconfig
 from collections.abc import Mapping
+from importlib.resources import as_file, files
 from pathlib import Path
 from typing import Any, cast
 
@@ -13,13 +13,7 @@ from cattykit.models import ModelPlugin
 
 from .copycat import Copycat
 
-_INSTALLED_CONFIG_DIRECTORY = Path(sysconfig.get_path("data")) / "copycat" / "configs"
-_SOURCE_CONFIG_DIRECTORY = Path(__file__).parent.parent / "configs"
-_CONFIG_DIRECTORY = (
-    _INSTALLED_CONFIG_DIRECTORY
-    if _INSTALLED_CONFIG_DIRECTORY.is_dir()
-    else _SOURCE_CONFIG_DIRECTORY
-)
+_CONFIG_DIRECTORY = files("copycat").joinpath("configs")
 
 
 def plugin() -> ModelPlugin:
@@ -40,7 +34,7 @@ def create_model(
 ) -> Copycat:
     """Create a Copycat model from its bundled configuration files."""
     options = dict(config or {})
-    config_directory = Path(options.pop("config_directory", _CONFIG_DIRECTORY))
+    config_directory = options.pop("config_directory", None)
     seed = options.pop("seed", None)
 
     if options:
@@ -50,6 +44,15 @@ def create_model(
     if seed is not None:
         random.seed(seed)
 
+    if config_directory is not None:
+        return _load_copycat(Path(config_directory), logger)
+
+    with as_file(_CONFIG_DIRECTORY) as bundled_config_directory:
+        return _load_copycat(bundled_config_directory, logger)
+
+
+def _load_copycat(config_directory: Path, logger: ModelLogger | None) -> Copycat:
+    """Load Copycat from a directory containing its JSON configuration files."""
     return cast(
         Copycat,
         Copycat.from_json(

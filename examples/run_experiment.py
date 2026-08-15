@@ -1,13 +1,7 @@
-from pathlib import Path
-
 import cattykit
-
-_REPOSITORY_ROOT = Path(__file__).parent.parent
 
 
 def main() -> None:
-    cattykit.install_model(_REPOSITORY_ROOT / "models" / "copycat")
-
     results_db = cattykit.run_experiment(
         model_name="copycat",
         problems=[

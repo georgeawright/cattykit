@@ -4,7 +4,9 @@ from pathlib import Path
 from cattykit.logging import SQLiteLogger
 from copycat import Copycat
 
-_CONFIG_DIRECTORY = Path(__file__).parent.parent / "models" / "copycat" / "configs"
+_CONFIG_DIRECTORY = (
+    Path(__file__).parent.parent / "models" / "copycat" / "copycat" / "configs"
+)
 
 
 def main() -> None:

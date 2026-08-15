@@ -44,9 +44,9 @@ from copycat.codelets.strength_testers import (
 from copycat.snag_exception import SnagException
 
 
-SLIPNET_JSON_FILE = "configs/slipnet.json"
-CODERACK_JSON_FILE = "configs/coderack.json"
-HYPERPARAMETERS_FILE = "configs/hyperparameters.json"
+SLIPNET_JSON_FILE = "copycat/configs/slipnet.json"
+CODERACK_JSON_FILE = "copycat/configs/coderack.json"
+HYPERPARAMETERS_FILE = "copycat/configs/hyperparameters.json"
 
 
 def test_single_run(monkeypatch):
