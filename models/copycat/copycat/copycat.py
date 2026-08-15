@@ -114,7 +114,7 @@ class Copycat:
             logger=logger,
         )
 
-    def solve(self, string: str) -> None:
+    def solve(self, string: str) -> str | None:
         """
         Solve a string analogy problem (e.g. "abc -> abd ==> ijk -> ?")
         """
@@ -133,6 +133,12 @@ class Copycat:
             self.slipnet.log_definition()
             self.slipnet.update_activations()
             self.run()
+            return "".join(
+                [
+                    letter.letter_category.name
+                    for letter in self.workspace.answer_string.letters
+                ]
+            )
         finally:
             self.logger.log(
                 ModelEvent.create(

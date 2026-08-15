@@ -35,7 +35,7 @@ def run_experiment(
                 try:
                     result = model.solve(problem)
                     if verbose:
-                        print(result)
+                        print(f"{seed}: {result}")
                 finally:
                     model.close()
     finally:
