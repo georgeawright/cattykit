@@ -11,7 +11,7 @@ def main() -> None:
             "abc -> abc ==> mrrjjj -> ?",
             "abc -> abc ==> xyz -> ?",
         ],
-        iterations=1_000,
+        iterations=10,
     )
     print(f"Results saved to {results_db}")
 
