@@ -6,10 +6,10 @@ def main() -> None:
         model_name="copycat",
         problems=[
             "abc -> abd ==> ijk -> ?",
-            "abc -> abc ==> iijjkk -> ?",
-            "abc -> abc ==> kji -> ?",
-            "abc -> abc ==> mrrjjj -> ?",
-            "abc -> abc ==> xyz -> ?",
+            "abc -> abd ==> iijjkk -> ?",
+            "abc -> abd ==> kji -> ?",
+            "abc -> abd ==> mrrjjj -> ?",
+            "abc -> abd ==> xyz -> ?",
         ],
         iterations=10,
     )
