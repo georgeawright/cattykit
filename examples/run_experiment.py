@@ -2,7 +2,7 @@ import cattykit
 
 
 def main() -> None:
-    results_db = cattykit.run_experiment(
+    results = cattykit.run_experiment(
         model_name="copycat",
         problems=[
             "abc -> abd ==> ijk -> ?",
@@ -11,9 +11,9 @@ def main() -> None:
             "abc -> abd ==> mrrjjj -> ?",
             "abc -> abd ==> xyz -> ?",
         ],
-        iterations=10,
+        iterations=1_000,
     )
-    print(f"Results saved to {results_db}")
+    print(f"Results saved to {results.logging_db}")
 
 
 if __name__ == "__main__":
