@@ -325,7 +325,7 @@ class Workspace:
         for bond in group.string.proposed_bonds:
             if bond.left_object == group or bond.right_object == group:
                 group.string.delete_proposed_bond(bond)
-        for bond in group.incoming_bonds + group.outgoing_bonds:
+        for bond in group.outgoing_and_incoming_bonds:
             self.break_bond(bond)
 
     def contains_slippage(self, slippage) -> bool:

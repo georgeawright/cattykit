@@ -39,19 +39,25 @@ class WorkspaceObject:
         return self.hash_id
 
     @property
-    def neighbours(self):
+    def neighbours(self) -> list[WorkspaceObject]:
         return self.left_neighbours + self.right_neighbours
 
     @property
-    def left_neighbours(self):
+    def left_neighbours(self) -> list[WorkspaceObject]:
         return [
             o for o in self.string.objects if o.right_position == self.left_position - 1
         ]
 
     @property
-    def right_neighbours(self):
+    def right_neighbours(self) -> list[WorkspaceObject]:
         return [
             o for o in self.string.objects if o.left_position == self.right_position + 1
+        ]
+
+    @property
+    def outgoing_and_incoming_bonds(self) -> list["Bond"]:
+        return self.outgoing_bonds + [
+            b for b in self.incoming_bonds if b not in self.outgoing_bonds
         ]
 
     @property
