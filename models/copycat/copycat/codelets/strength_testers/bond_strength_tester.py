@@ -35,7 +35,10 @@ class BondStrengthTester(StrengthTester):
             self.proposed_bond.total_strength, temperature
         )
         if build_probability < random.random():
-            self.proposed_bond.string.delete_proposed_bond(self.proposed_bond)
+            try:  # arguments may already have been deleted
+                self.proposed_bond.string.delete_proposed_bond(self.proposed_bond)
+            except ValueError:
+                pass
             return Fizzle(FizzleReason.PROPOSED_STRUCTURE_TOO_WEAK)
         self.slipnet.activate_node_from_workspace(
             self.proposed_bond.source_descriptor.name

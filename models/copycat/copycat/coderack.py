@@ -176,13 +176,19 @@ class Coderack:
                 )
             )
         if isinstance(codelet, (BondStrengthTester, BondBuilder)):
-            codelet.proposed_bond.string.delete_proposed_bond(
-                codelet.proposed_bond,
-            )
+            try:  # arguments of bond might have been deleted
+                codelet.proposed_bond.string.delete_proposed_bond(
+                    codelet.proposed_bond,
+                )
+            except ValueError:
+                pass
         elif isinstance(codelet, (CorrespondenceStrengthTester, CorrespondenceBuilder)):
-            codelet.workspace.delete_proposed_correspondence(
-                codelet.proposed_correspondence,
-            )
+            try:  # arguments of correspondence might have been deleted
+                codelet.workspace.delete_proposed_correspondence(
+                    codelet.proposed_correspondence,
+                )
+            except ValueError:
+                pass
         elif isinstance(codelet, (GroupStrengthTester, GroupBuilder)):
             codelet.proposed_group.string.delete_proposed_group(
                 codelet.proposed_group,
