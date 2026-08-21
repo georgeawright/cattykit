@@ -108,7 +108,6 @@ class CorrespondenceScout(Scout):
         proposed_correspondence = Correspondence(
             self.workspace, source, target, concept_mappings
         )
-        proposed_correspondence.proposal_level = 1
         distinguishing_mappings = proposed_correspondence.get_distinguishing_mappings()
         for mapping in distinguishing_mappings:
             self.slipnet.activate_node_from_workspace(mapping.description_type_1.name)

@@ -41,7 +41,6 @@ class BondScout(Scout):
             source_descriptor=source_descriptor,
             target_descriptor=target_descriptor,
         )
-        proposed_bond.proposal_level = 1
         source.string.add_proposed_bond(proposed_bond)
         urgency = bond_category.bond_degree_of_association
         urgency_bin = self.coderack.get_urgency_level_from_activation(urgency)
