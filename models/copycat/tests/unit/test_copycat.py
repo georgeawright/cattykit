@@ -17,7 +17,9 @@ def test_logs_answer_letters_created_by_answer_builder():
         left_position=0,
         letter_category=SimpleNamespace(name="l"),
     )
-    copycat.workspace = SimpleNamespace(answer_string=SimpleNamespace(letters=[new_letter]))
+    copycat.workspace = SimpleNamespace(
+        answer_string=SimpleNamespace(letters=[new_letter])
+    )
 
     copycat._log_answer_letters([old_letter])
 
@@ -37,20 +39,20 @@ def test_logs_answer_letters_created_by_answer_builder():
 
 
 @pytest.mark.parametrize(
-    "rule_strength, workspace_unhappiness, expected",
+    "rule_weakness, workspace_unhappiness, expected",
     [
-        (0.0, 0.0, 0.2),
-        (0.0, 1.0, 1.0),
+        (1.0, 0.0, 0.2),
+        (1.0, 1.0, 1.0),
         (0.5, 0.0, 0.1),
         (0.5, 1.0, 0.9),
-        (1.0, 0.0, 0.0),
-        (1.0, 1.0, 0.8),
+        (0.0, 0.0, 0.0),
+        (0.0, 1.0, 0.8),
     ],
 )
-def test_update_temperature(rule_strength, workspace_unhappiness, expected):
+def test_update_temperature(rule_weakness, workspace_unhappiness, expected):
     workspace = SimpleNamespace(
         total_unhappiness=workspace_unhappiness,
-        translated_rule=SimpleNamespace(total_strength=rule_strength),
+        translated_rule=SimpleNamespace(total_weakness=rule_weakness),
     )
     copycat = Copycat(None, None, workspace, None, None, None)
     copycat._update_temperature()
