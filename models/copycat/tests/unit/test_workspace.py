@@ -105,6 +105,7 @@ def test_break_group():
     )
     group.incoming_bonds = [bond]
     group.outgoing_bonds = []
+    group.outgoing_and_incoming_bonds = [bond]
     left_object.outgoing_bonds.append(bond)
     proposed_bond = SimpleNamespace(
         source=group,
