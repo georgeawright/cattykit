@@ -118,8 +118,9 @@ class ConceptMapping:
             else degree_of_association * max(0.01, self.conceptual_depth**2)
         )
 
+    @property
     def is_slippage(self) -> bool:
-        self.label.name != "identity"
+        return self.label is None or self.label.name != "identity"
 
     def is_relevant(self) -> bool:
         return (
