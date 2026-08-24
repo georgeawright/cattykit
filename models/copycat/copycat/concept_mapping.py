@@ -106,7 +106,7 @@ class ConceptMapping:
         return (
             1.0
             if self.degree_of_assocation == 1.0
-            else self.degree_of_assocation * max(0.01, self.conceptual_depth**2)
+            else self.degree_of_assocation * max(0.01, 1 + self.conceptual_depth**2)
         )
 
     @property
@@ -115,7 +115,7 @@ class ConceptMapping:
         return (
             1.0
             if degree_of_association == 1.0
-            else degree_of_association * max(0.01, self.conceptual_depth**2)
+            else degree_of_association * max(0.01, 1 - self.conceptual_depth**2)
         )
 
     @property

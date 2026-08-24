@@ -69,11 +69,11 @@ def test_conceptual_depth(descriptor_1_depth, descriptor_2_depth, expected):
     [
         ("same_descriptor", "same_descriptor", 1.0, 1.0, None, 1.0),
         ("descriptor_1", "descriptor_2", 1.0, 1.0, 1.0, 1.0),
-        ("descriptor_1", "descriptor_2", 1.0, 1.0, 0.5, 0.5),
+        ("descriptor_1", "descriptor_2", 1.0, 1.0, 0.5, 1.0),
         ("descriptor_1", "descriptor_2", 1.0, 1.0, 0.0, 0.0),
-        ("descriptor_1", "descriptor_2", 1.0, 0.0, 0.5, 0.125),
-        ("descriptor_1", "descriptor_2", 0.0, 1.0, 0.5, 0.125),
-        ("descriptor_1", "descriptor_2", 0.0, 0.0, 0.5, 0.005),
+        ("descriptor_1", "descriptor_2", 1.0, 0.0, 0.5, 0.625),
+        ("descriptor_1", "descriptor_2", 0.0, 1.0, 0.5, 0.625),
+        ("descriptor_1", "descriptor_2", 0.0, 0.0, 0.5, 0.5),
     ],
 )
 def test_strength(
