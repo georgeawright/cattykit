@@ -51,10 +51,6 @@ class Slipnode:
             raise ValueError("Slipnode does not represent an integer category")
 
     @property
-    def depth_factor(self) -> float:
-        return 1 / self.conceptual_depth if self.conceptual_depth > 0 else 0
-
-    @property
     def degree_of_association(self) -> float:
         """The degree of association encoded in the links this node labels."""
         return (

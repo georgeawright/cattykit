@@ -20,7 +20,7 @@ class Slipnet:
         node_activations: np.ndarray,  # the activation value of each node
         activation_buffers: np.ndarray,  # buffers for pending updates
         clamped_nodes: np.ndarray,  # nodes which should be clamped at full activation
-        node_depth_factors: np.ndarray,  # the reciprocal of nodes' conceptual depth
+        node_depths: np.ndarray,  # nodes' conceptual depth
         # the amount of activation to add to nodes from the workspace
         workspace_activation: float,
         # nodes with activation above threshold probabilistically jump to full activation
@@ -36,7 +36,7 @@ class Slipnet:
         self.node_activations = node_activations
         self.activation_buffers = activation_buffers
         self.clamped_nodes = clamped_nodes
-        self.node_depth_factors = node_depth_factors
+        self.node_depths = node_depths
         self.workspace_activation = workspace_activation
         self.full_activation_threshold = full_activation_threshold
         self.full_activation_probability_exponent = full_activation_probability_exponent
@@ -60,7 +60,7 @@ class Slipnet:
         node_activations = np.zeros(number_of_nodes, dtype=np.float32)
         activation_buffers = np.zeros(number_of_nodes, dtype=np.float32)
         clamped_nodes = np.array([False for node in nodes])
-        node_depth_factors = np.array([node.depth_factor for node in nodes])
+        node_depths = np.array([node.conceptual_depth for node in nodes])
         adjacency_table = np.zeros((number_of_nodes, number_of_nodes))
         for link in links:
             link.target.incoming_links.append(link)
@@ -84,7 +84,7 @@ class Slipnet:
             node_activations,
             activation_buffers,
             clamped_nodes,
-            node_depth_factors,
+            node_depths,
             workspace_activation,
             full_activation_threshold,
             full_activation_probability_exponent,
@@ -174,7 +174,6 @@ class Slipnet:
                         "slipnode_initialized",
                         name=node.name,
                         conceptual_depth=node.conceptual_depth,
-                        depth_factor=node.depth_factor,
                         intrinsic_link_length=node.intrinsic_link_length,
                         shrunk_link_length=node.shrunk_link_length,
                     )
@@ -316,7 +315,7 @@ class Slipnet:
     def _decay_activations(self):
         """calculates how much nodes' activation should decay
         according to their conceptual depth."""
-        return -self.node_activations * self.node_depth_factors
+        return -self.node_activations * (1 - self.node_depths)
 
     def _probabilistically_activate_nodes(self):
         """Probabilistically fully boost nodes with activation above threshold."""
