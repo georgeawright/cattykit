@@ -110,7 +110,9 @@ class Rule(WorkspaceStructure):
             shared_descriptor_term = (
                 1.0 if self.descriptor_1 in slipped_descriptors else 0.0
             )
-        shared_descriptor_weight = 1 - self.descriptor_1.conceptual_depth**1.4
+        shared_descriptor_weight = (
+            (1 - self.descriptor_1.conceptual_depth) * 10
+        ) ** 1.4
         depth_diff = abs(source_depth - target_depth)
         depth_mean = (source_depth + target_depth) / 2
         depth_term = depth_mean**1.1
