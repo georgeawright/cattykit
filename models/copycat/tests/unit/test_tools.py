@@ -71,6 +71,8 @@ def test_structure_1_beats_structure_2(
     temperature,
     expected_win_proportion,
 ):
+    random.seed(1)
+
     class MockStructure:
         def __init__(self, total_strength):
             self.total_strength = total_strength

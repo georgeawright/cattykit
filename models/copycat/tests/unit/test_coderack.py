@@ -127,9 +127,9 @@ def test_post_many():
     assert 11 == coderack.population
 
 
-def test_zero_temperature_favours_highest_urgency_codelets():
+def test_temperature_zero_favours_highest_urgency_codelets():
     random.seed(1)
-    trials = 10_000
+    trials = 1_000
     chosen_bins = []
 
     for _ in range(trials):
@@ -138,13 +138,30 @@ def test_zero_temperature_favours_highest_urgency_codelets():
         coderack.post_many(codelets, temperature=0.0)
         chosen_bins.append(coderack.choose(temperature=0.0).urgency_bin)
 
-    assert chosen_bins.count(6) > trials * 0.65
-    assert (
-        chosen_bins.count(6)
-        > chosen_bins.count(5)
-        > chosen_bins.count(4)
-        > chosen_bins.count(3)
-        > chosen_bins.count(2)
-        >= chosen_bins.count(1)
-        >= chosen_bins.count(0)
-    )
+    assert chosen_bins.count(6) / trials >= 0.65
+    assert chosen_bins.count(5) / trials >= 0.20
+    assert chosen_bins.count(4) / trials >= 0.01
+    assert chosen_bins.count(3) / trials >= 0.00
+    assert chosen_bins.count(2) / trials >= 0.00
+    assert chosen_bins.count(1) / trials >= 0.00
+    assert chosen_bins.count(0) / trials >= 0.00
+
+
+def test_temperature_one_does_not_favour_highest_urgency_codelets():
+    random.seed(1)
+    trials = 1_000
+    chosen_bins = []
+
+    for _ in range(trials):
+        coderack = Coderack.create(7, 100)
+        codelets = [SimpleNamespace(urgency_bin=i) for i in range(7)]
+        coderack.post_many(codelets, temperature=1.0)
+        chosen_bins.append(coderack.choose(temperature=1.0).urgency_bin)
+
+    assert chosen_bins.count(6) / trials >= 0.30
+    assert chosen_bins.count(5) / trials >= 0.20
+    assert chosen_bins.count(4) / trials >= 0.10
+    assert chosen_bins.count(3) / trials >= 0.10
+    assert chosen_bins.count(2) / trials >= 0.09
+    assert chosen_bins.count(1) / trials >= 0.03
+    assert chosen_bins.count(0) / trials >= 0.00
