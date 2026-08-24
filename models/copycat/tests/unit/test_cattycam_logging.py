@@ -6,7 +6,7 @@ from copycat import Copycat
 from copycat.codelets import ReplacementFinder
 
 
-CONFIG_DIRECTORY = Path(__file__).parents[2] / "configs"
+CONFIG_DIRECTORY = Path(__file__).parents[2] / "copycat/configs"
 
 
 def test_copycat_logs_initial_workspace_and_slipnet_state(tmp_path) -> None:
