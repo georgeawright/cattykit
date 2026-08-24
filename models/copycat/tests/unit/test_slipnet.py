@@ -35,7 +35,7 @@ def test_get_node_activation():
 @pytest.mark.parametrize(
     [
         "start_state",  # nodes and their activations
-        "depth_factor",  # for the sake of these tests, all nodes will have the same depth
+        "conceptual_depth",  # for the sake of these tests, all nodes will have the same depth
         "cat_is_a_animal_degree_of_association",
         "dog_is_a_animal_degree_of_association",
         "expected_end_state",
@@ -44,7 +44,7 @@ def test_get_node_activation():
         (
             # no nodes are active, so no activation is spread
             {"cat": 0.0, "dog": 0.0, "animal": 0.0},
-            0.0,
+            1.0,
             1.0,
             1.0,
             {"cat": 0.0, "dog": 0.0, "animal": 0.0},
@@ -52,7 +52,7 @@ def test_get_node_activation():
         (
             # no nodes are fully active, so no activation is spread
             {"cat": 0.9, "dog": 0.9, "animal": 0.0},
-            0.0,
+            1.0,
             1.0,
             1.0,
             {"cat": 0.9, "dog": 0.9, "animal": 0.0},
@@ -60,7 +60,7 @@ def test_get_node_activation():
         (
             # cat is fully active, so animal becomes fully active
             {"cat": 1.0, "dog": 0.0, "animal": 0.0},
-            0.0,
+            1.0,
             1.0,
             1.0,
             {"cat": 1.0, "dog": 0.0, "animal": 1.0},
@@ -68,7 +68,7 @@ def test_get_node_activation():
         (
             # cat is fully active, lower association means animal becomes half active
             {"cat": 1.0, "dog": 0.0, "animal": 0.0},
-            0.0,
+            1.0,
             0.5,
             0.5,
             {"cat": 1.0, "dog": 0.0, "animal": 0.5},
@@ -76,13 +76,13 @@ def test_get_node_activation():
         (
             # cat and dog are fully active, animal becomes fully active
             {"cat": 1.0, "dog": 1.0, "animal": 0.0},
-            0.0,
+            1.0,
             0.5,
             0.5,
             {"cat": 1.0, "dog": 1.0, "animal": 1.0},
         ),
         (
-            # cat and dog decay due to a depth factor of 0.5
+            # cat and dog decay due to a conceptual depth of 0.5
             {"cat": 1.0, "dog": 1.0, "animal": 0.0},
             0.5,
             0.5,
@@ -93,22 +93,32 @@ def test_get_node_activation():
 )
 def test_update_activations_no_jumping(
     start_state,
-    depth_factor,
+    conceptual_depth,
     cat_is_a_animal_degree_of_association,
     dog_is_a_animal_degree_of_association,
     expected_end_state,
 ):
     cat_node = SimpleNamespace(
-        name="cat", depth_factor=depth_factor, incoming_links=[], category_links=[]
+        name="cat",
+        conceptual_depth=conceptual_depth,
+        incoming_links=[],
+        category_links=[],
     )
     dog_node = SimpleNamespace(
-        name="dog", depth_factor=depth_factor, incoming_links=[], category_links=[]
+        name="dog",
+        conceptual_depth=conceptual_depth,
+        incoming_links=[],
+        category_links=[],
     )
     animal_node = SimpleNamespace(
-        name="animal", depth_factor=depth_factor, incoming_links=[]
+        name="animal",
+        conceptual_depth=conceptual_depth,
+        incoming_links=[],
     )
     is_a_node = SimpleNamespace(
-        name="is-a", depth_factor=depth_factor, incoming_links=[]
+        name="is-a",
+        conceptual_depth=conceptual_depth,
+        incoming_links=[],
     )
 
     cat_is_a_animal = SimpleNamespace(
