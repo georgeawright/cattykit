@@ -68,7 +68,7 @@ class Coderack:
         return self.population == 0
 
     def get_urgency_bin(self, urgency_level):
-        return self._urgency_bins[urgency_level - 1]
+        return self._urgency_bins[urgency_level]
 
     def get_urgency_level_from_activation(self, activation: float):
         return min(

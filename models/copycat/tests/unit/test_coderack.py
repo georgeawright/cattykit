@@ -91,7 +91,7 @@ def test_get_urgency_level_from_activation(number_of_bins, activation, expected)
 
 def test_post_to_empty_coderack():
     coderack = Coderack.create(7, 100)
-    for urgency_bin in range(1, 8):
+    for urgency_bin in range(7):
         codelet = SimpleNamespace(urgency_bin=urgency_bin)
         temperature = 0.0
         assert 0 == len(coderack.get_urgency_bin(urgency_bin))
@@ -127,12 +127,24 @@ def test_post_many():
     assert 11 == coderack.population
 
 
-def test_choose():
+def test_zero_temperature_favours_highest_urgency_codelets():
     random.seed(1)
-    codelets = [SimpleNamespace(urgency_bin=i % 7) for i in range(7)]
-    coderack = Coderack.create(7, 100)
-    temperature = 0.0
-    assert 0 == coderack.population
-    coderack.post_many(codelets, temperature)
-    codelet = coderack.choose(temperature)
-    assert codelet.urgency_bin == 6
+    trials = 10_000
+    chosen_bins = []
+
+    for _ in range(trials):
+        coderack = Coderack.create(7, 100)
+        codelets = [SimpleNamespace(urgency_bin=i) for i in range(7)]
+        coderack.post_many(codelets, temperature=0.0)
+        chosen_bins.append(coderack.choose(temperature=0.0).urgency_bin)
+
+    assert chosen_bins.count(6) > trials * 0.65
+    assert (
+        chosen_bins.count(6)
+        > chosen_bins.count(5)
+        > chosen_bins.count(4)
+        > chosen_bins.count(3)
+        > chosen_bins.count(2)
+        >= chosen_bins.count(1)
+        >= chosen_bins.count(0)
+    )
