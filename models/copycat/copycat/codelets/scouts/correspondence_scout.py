@@ -83,7 +83,7 @@ class CorrespondenceScout(Scout):
             and all(
                 mapping.is_opposite for mapping in possible_opposite_concept_mappings
             )
-            and not self.slipnet.get_node("opposite").is_active()
+            and not self.slipnet["opposite"].is_active()
         ):
             self.target = self.target.get_flipped_version()
             concept_mappings = self.slipnet.get_concept_mappings(
