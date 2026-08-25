@@ -115,13 +115,16 @@ def test_run():
 
     # object 2 spans string but object 1 does not
     source.spans_whole_string = lambda: True
+    source.is_string_spanning_group = lambda: True
     target.spans_whole_string = lambda: False
+    source.is_string_spanning_group = lambda: False
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
     # both objects span whole string but concept mappings not possible
     target.spans_whole_string = lambda: True
+    target.is_string_spanning_group = lambda: True
     description_1 = SimpleNamespace(facet=SimpleNamespace(name="bond"))
     description_2 = SimpleNamespace(facet=SimpleNamespace(name="group"))
     source.descriptions = [description_1]

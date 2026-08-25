@@ -74,8 +74,8 @@ class CorrespondenceScout(Scout):
         ]
         target_flipped = False
         if (
-            self.source.spans_whole_string()
-            and self.target.spans_whole_string()
+            self.source.is_string_spanning_group()
+            and self.target.is_string_spanning_group()
             and any(
                 mapping.description_type_1.name == "direction_category"
                 for mapping in possible_opposite_concept_mappings
