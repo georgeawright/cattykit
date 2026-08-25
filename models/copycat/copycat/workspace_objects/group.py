@@ -184,7 +184,11 @@ class Group(WorkspaceObject, WorkspaceStructure):
         """The description-type upon which the bonds making up
         this group are based (i.e., letter-category or
         length)."""
-        bond_facet_factor = 1 if self.bond_facet.name == "letter_category" else 0.5
+        bond_facet_factor = (
+            1
+            if self.bond_facet is not None and self.bond_facet.name == "letter_category"
+            else 0.5
+        )
         bond_component = (
             self.group_category.get_related_node("bond_category").degree_of_association
             * bond_facet_factor
