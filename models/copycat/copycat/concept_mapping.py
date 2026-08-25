@@ -12,7 +12,7 @@ class ConceptMapping:
         description_type_2: Slipnode,
         descriptor_1: Slipnode,
         descriptor_2: Slipnode,
-        label: Slipnode,
+        label: Optional[Slipnode],
         object_1: Optional[WorkspaceObject] = None,
         object_2: Optional[WorkspaceObject] = None,
     ):
@@ -25,7 +25,11 @@ class ConceptMapping:
         self.object_2 = object_2
 
     def __repr__(self):
-        return f"{self.description_type_1.name}++>{self.description_type_2.name}"
+        return (
+            f"{self.description_type_1}-{self.descriptor_1}"
+            f"++{self.label}++>"
+            f"{self.description_type_2}-{self.descriptor_2}"
+        )
 
     def __eq__(self, other):
         if not isinstance(other, ConceptMapping):
@@ -84,11 +88,11 @@ class ConceptMapping:
 
     @property
     def is_slippage(self) -> bool:
-        return self.label.name != "identity"
+        return self.label is None or self.label.name != "identity"
 
     @property
     def is_opposite(self) -> bool:
-        return self.label.name == "opposite"
+        return self.label is not None and self.label.name == "opposite"
 
     def is_relevant(self) -> bool:
         return (
@@ -126,6 +130,8 @@ class ConceptMapping:
             or self.descriptor_2.is_related_to(other.descriptor_2)
         ):
             return False
+        if self.label is None or other.label is None:
+            return False
         return self.label == other.label
 
     def is_incompatible_with(self, other: ConceptMapping) -> bool:
@@ -142,6 +148,8 @@ class ConceptMapping:
             or self.descriptor_2.is_related_to(other.descriptor_2)
         ):
             return False
+        if self.label is None or other.label is None:
+            return False
         return self.label != other.label
 
     def contradicts(self, other: ConceptMapping) -> bool:
@@ -153,15 +161,22 @@ class ConceptMapping:
             and self.descriptor_1 != other.descriptor_1
         )
 
-    def get_symmetric_version(self) -> ConceptMapping:
-        if self.label.name == "identity":
+    def get_symmetric_version(self) -> Optional[ConceptMapping]:
+        if self.label is not None and self.label.name == "identity":
             return self
+        reverse_label = None
+        for link in self.descriptor_2.outgoing_links:
+            if link.target == self.descriptor_1:
+                reverse_label = link.label
+                break
+        if reverse_label != self.label:
+            return None
         return ConceptMapping(
             description_type_1=self.description_type_2,
             description_type_2=self.description_type_1,
             descriptor_1=self.descriptor_2,
             descriptor_2=self.descriptor_1,
-            label=self.label,
+            label=reverse_label,
             object_1=self.object_2,
             object_2=self.object_1,
         )
