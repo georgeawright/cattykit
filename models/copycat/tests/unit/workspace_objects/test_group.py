@@ -1,4 +1,5 @@
 from types import SimpleNamespace
+from unittest.mock import Mock
 
 import pytest
 
@@ -153,7 +154,7 @@ def test_is_distinguished_by(
 
 
 @pytest.mark.parametrize(
-    "group_category_name, bond_category_degree_of_association, length, expected",
+    "bond_facet_name, bond_category_degree_of_association, length, expected",
     [
         ("letter_category", 1.0, 4, 1.0),
         ("length", 1.0, 4, 0.697208),
@@ -163,19 +164,20 @@ def test_is_distinguished_by(
     ],
 )
 def test_calculate_internal_strength(
-    group_category_name, bond_category_degree_of_association, length, expected
+    bond_facet_name, bond_category_degree_of_association, length, expected
 ):
-    group_category = SimpleNamespace(name=group_category_name)
+    bond_facet = SimpleNamespace(name=bond_facet_name)
     related_node = SimpleNamespace(
         degree_of_association=bond_category_degree_of_association
     )
+    group_category = Mock()
     group_category.get_related_node = (
         lambda x: related_node if x == "bond_category" else None
     )
     letters = [SimpleNamespace() for _ in range(length)]
     for letter in letters:
         letter.letters = [letter]
-    group = Group(None, 0, 1, letters, [], group_category, None, None)
+    group = Group(None, 0, 1, letters, [], group_category, None, None, bond_facet)
 
     assert group.calculate_internal_strength() == pytest.approx(expected)
 
