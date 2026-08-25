@@ -122,6 +122,22 @@ class Group(WorkspaceObject, WorkspaceStructure):
             or self.left_position >= other_group.right_position
         )
 
+    def get_flipped_version(self) -> Group:
+        if self.group_category.name not in ("predecessor_group", "successor_group"):
+            return self
+        flipped_bonds = [b.get_flipped_version for b in self.bonds]
+        return Group(
+            self.string,
+            self.left_position,
+            self.right_position,
+            self.objects,
+            flipped_bonds,
+            self.group_category.get_related_node("opposite"),
+            self.direction_category.get_related_node("opposite"),
+            self.bond_category.get_related_node("opposite"),
+            self.bond_facet,
+        )
+
     def get_bonds_to_be_flipped(self) -> List["Bond"]:
         """Returns a list of bonds that need to be flipped
         in order for this group to be built."""
