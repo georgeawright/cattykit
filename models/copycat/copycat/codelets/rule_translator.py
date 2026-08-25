@@ -61,11 +61,11 @@ class RuleTranslator(Codelet):
         bond_density = self._get_bond_density()
         if bond_density >= 0.8:
             weights = self.VERY_LOW_THRESHOLD_WEIGHTS
-        if bond_density >= 0.6:
+        elif bond_density >= 0.6:
             weights = self.LOW_THRESHOLD_WEIGHTS
-        if bond_density >= 0.4:
+        elif bond_density >= 0.4:
             weights = self.MEDIUM_THRESHOLD_WEIGHTS
-        if bond_density >= 0.2:
+        elif bond_density >= 0.2:
             weights = self.HIGH_THRESHOLD_WEIGHTS
         else:  # bond_density >= 0.0
             weights = self.VERY_HIGH_THRESHOLD_WEIGHTS
