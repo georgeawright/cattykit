@@ -80,7 +80,7 @@ class Coderack:
         return self.urgency_lookup_table[temperature_index]
 
     def empty(self):
-        self.urgency_bins = [
+        self._urgency_bins = [
             CoderackBin(i + 1) for i, _ in enumerate(self._urgency_bins)
         ]
 
