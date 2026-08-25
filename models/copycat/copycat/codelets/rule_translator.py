@@ -79,4 +79,5 @@ class RuleTranslator(Codelet):
             return 1
         initial_bonds = len(self.workspace.initial_string.bonds)
         target_bonds = len(self.workspace.target_string.bonds)
-        return (initial_bonds + target_bonds) / (initial_length + target_length)
+        possible_bonds = initial_length - 1 + target_length - 1
+        return (initial_bonds + target_bonds) / possible_bonds
