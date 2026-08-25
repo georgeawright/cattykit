@@ -296,22 +296,30 @@ class Slipnet:
         )
 
         codelet_types = {
+            "TopDownDescriptionScout": (
+                TopDownDescriptionScout,
+                "description_type",
+                "description",
+            ),
             "TopDownCategoryBondScout": (
                 TopDownCategoryBondScout,
                 "bond_category",
+                "bond",
+            ),
+            "TopDownDirectionBondScout": (
+                TopDownDirectionBondScout,
+                "direction_category",
+                "bond",
             ),
             "TopDownCategoryGroupScout": (
                 TopDownCategoryGroupScout,
                 "group_category",
-            ),
-            "TopDownDescriptionScout": (TopDownDescriptionScout, "description_type"),
-            "TopDownDirectionBondScout": (
-                TopDownDirectionBondScout,
-                "direction_category",
+                "group",
             ),
             "TopDownDirectionGroupScout": (
                 TopDownDirectionGroupScout,
                 "direction_category",
+                "group",
             ),
         }
         top_down_codelets = []
@@ -319,30 +327,35 @@ class Slipnet:
             if node.activation < self.full_activation_threshold:
                 continue
             for codelet_name in node.codelets:
-                if (
-                    coderack.post_codelet_probability(
-                        codelet_name, temperature, workspace
-                    )
-                    < random.random()
-                ):
-                    continue
                 try:
-                    codelet_class, node_argument = codelet_types[codelet_name]
+                    codelet_class, node_argument, structure_type_name = codelet_types[
+                        codelet_name
+                    ]
                 except KeyError as error:
                     raise ValueError(
                         f"Unknown top-down codelet: {codelet_name}"
                     ) from error
-                top_down_codelets.append(
-                    codelet_class(
-                        urgency_bin=coderack.get_urgency_level_from_activation(
-                            node.activation
-                        ),
-                        coderack=coderack,
-                        workspace=workspace,
-                        slipnet=self,
-                        **{node_argument: node},
+                if (
+                    coderack.post_codelet_probability(
+                        structure_type_name, temperature, workspace
                     )
-                )
+                    < random.random()
+                ):
+                    continue
+                for _ in range(
+                    coderack.number_of_codelets_to_post(structure_type_name, workspace)
+                ):
+                    top_down_codelets.append(
+                        codelet_class(
+                            urgency_bin=coderack.get_urgency_level_from_activation(
+                                node.activation
+                            ),
+                            coderack=coderack,
+                            workspace=workspace,
+                            slipnet=self,
+                            **{node_argument: node},
+                        )
+                    )
         return top_down_codelets
 
     def _spread_activations(self):

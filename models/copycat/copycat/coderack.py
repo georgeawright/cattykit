@@ -196,7 +196,7 @@ class Coderack:
 
     def post_codelet_probability(
         self,
-        structure_or_codelet_category: str,
+        structure_category: str,
         temperature: float,
         workspace: "Workspace",
     ) -> float:
@@ -204,27 +204,19 @@ class Coderack:
         returns a probability to use in deciding whether codelets looking
         for this type of structure should be posted.
         """
-        if structure_or_codelet_category in ["description", "TopDownDescriptionScout"]:
+        if structure_category == "description":
             probability = temperature**2
-        elif structure_or_codelet_category in [
-            "bond",
-            "TopDownCategoryBondScout",
-            "TopDownDirectionBondScout",
-        ]:
+        elif structure_category == "bond":
             probability = workspace.intra_string_unhappiness()
-        elif structure_or_codelet_category in [
-            "group",
-            "TopDownCategoryGroupScout",
-            "TopDownDirectionGroupScout",
-        ]:
+        elif structure_category == "group":
             probability = workspace.intra_string_unhappiness()
-        elif structure_or_codelet_category in ["replacement", "ReplacementFinder"]:
+        elif structure_category == "replacement":
             probability = 1 if workspace.unreplaced_objects else 0
-        elif structure_or_codelet_category == "correspondence":
+        elif structure_category == "correspondence":
             probability = workspace.inter_string_unhappiness()
-        elif structure_or_codelet_category in ["rule", "RuleScout"]:
+        elif structure_category == "rule":
             probability = 1 if workspace.rule is None else workspace.rule.total_weakness
-        elif structure_or_codelet_category == "translated-rule":
+        elif structure_category == "translated-rule":
             probability = 1 if workspace.rule else 0
         return probability
 

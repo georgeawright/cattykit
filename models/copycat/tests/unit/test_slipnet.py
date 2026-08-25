@@ -226,6 +226,7 @@ def test_get_top_down_codelets_instantiates_configured_codelets():
     coderack = SimpleNamespace(
         get_urgency_level_from_activation=lambda _: 6,
         post_codelet_probability=lambda *_: 1.0,
+        number_of_codelets_to_post=lambda *_: 1,
     )
     workspace = SimpleNamespace()
 
