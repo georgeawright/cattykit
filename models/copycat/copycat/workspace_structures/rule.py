@@ -115,7 +115,8 @@ class Rule(WorkspaceStructure):
         ) ** 1.4
         depth_diff = abs(source_depth - target_depth)
         depth_mean = (source_depth + target_depth) / 2
-        depth_term = depth_mean**1.1
+        depth_term = 100**0.1 * depth_mean**1.1
+        # depth term is rescaled to 0-1.58 to match copycat depth term in 0-158
         diff_term = 1 - depth_diff
         rule_strength = np.average(
             [depth_term, diff_term, shared_descriptor_term],
