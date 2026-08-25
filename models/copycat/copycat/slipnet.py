@@ -281,7 +281,7 @@ class Slipnet:
         return mappings
 
     def get_top_down_codelets(
-        self, coderack: "Coderack", workspace: "Workspace"
+        self, coderack: "Coderack", workspace: "Workspace", temperature: float
     ) -> List["Codelet"]:
         # Imports are deferred to avoid the codelet package importing the slipnet
         # again while this module is being initialized.
@@ -319,6 +319,13 @@ class Slipnet:
             if node.activation < self.full_activation_threshold:
                 continue
             for codelet_name in node.codelets:
+                if (
+                    coderack.post_codelet_probability(
+                        codelet_name, temperature, workspace
+                    )
+                    < random.random()
+                ):
+                    continue
                 try:
                     codelet_class, node_argument = codelet_types[codelet_name]
                 except KeyError as error:

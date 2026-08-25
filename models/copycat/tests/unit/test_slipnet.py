@@ -223,10 +223,13 @@ def test_get_top_down_codelets_instantiates_configured_codelets():
     slipnet.node_activations.fill(1.0)
     for node in slipnet.nodes:
         node.activation = 1.0
-    coderack = SimpleNamespace(get_urgency_level_from_activation=lambda _: 6)
+    coderack = SimpleNamespace(
+        get_urgency_level_from_activation=lambda _: 6,
+        post_codelet_probability=lambda *_: 1.0,
+    )
     workspace = SimpleNamespace()
 
-    codelets = slipnet.get_top_down_codelets(coderack, workspace)
+    codelets = slipnet.get_top_down_codelets(coderack, workspace, 0.0)
 
     assert [type(codelet) for codelet in codelets] == [
         TopDownDirectionBondScout,

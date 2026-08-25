@@ -364,7 +364,7 @@ class Copycat:
                 self.slipnet, self.coderack, self.temperature
             )
             codelets_to_post += self.slipnet.get_top_down_codelets(
-                self.coderack, self.workspace
+                self.coderack, self.workspace, self.temperature
             )
             self.slipnet.update_activations()
         if codelets_to_post:
