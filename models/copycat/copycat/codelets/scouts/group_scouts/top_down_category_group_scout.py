@@ -4,7 +4,7 @@ from typing import List, Optional, Tuple
 from copycat.codelets.scouts.group_scout import GroupScout
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.slipnode import Slipnode
-from copycat.tools import select_item_from_list, temperature_adjust
+from copycat.tools import select_item_from_list, temperature_adjust_probability
 from copycat.workspace_objects import Group
 
 
@@ -118,4 +118,4 @@ class TopDownCategoryGroupScout(GroupScout):
         }.get(group._number_of_local_supporting_groups(), 1)
         probability = group._local_support() * self.slipnet["length"].activation
         probability **= exponent
-        return temperature_adjust(probability, temperature)
+        return temperature_adjust_probability(probability, temperature)

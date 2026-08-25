@@ -4,7 +4,7 @@ from typing import List
 from copycat.codelets.builder import Builder
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.concept_mapping import ConceptMapping
-from copycat.tools import structure_beats_structures, temperature_adjust
+from copycat.tools import structure_beats_structures, temperature_adjust_probability
 from copycat.workspace_objects import Group
 from copycat.workspace_structures import Description
 
@@ -249,7 +249,7 @@ class GroupBuilder(Builder):
             base_probability = 0.5 ** (
                 group_length**3 * (1 - self.slipnet["length"].activation)
             )
-            length_description_probability = temperature_adjust(
+            length_description_probability = temperature_adjust_probability(
                 base_probability, temperature
             )
             if random.random() < length_description_probability:

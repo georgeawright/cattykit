@@ -3,7 +3,7 @@ import random
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.builders.correspondence_builder import CorrespondenceBuilder
 from copycat.codelets.strength_tester import StrengthTester
-from copycat.tools import temperature_adjust
+from copycat.tools import temperature_adjust_probability
 
 
 class CorrespondenceStrengthTester(StrengthTester):
@@ -36,7 +36,7 @@ class CorrespondenceStrengthTester(StrengthTester):
         ):
             return Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
         self.proposed_correspondence.update_strength_values()
-        build_probability = temperature_adjust(
+        build_probability = temperature_adjust_probability(
             self.proposed_correspondence.total_strength, temperature
         )
         if random.random() > build_probability:

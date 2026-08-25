@@ -6,7 +6,7 @@ from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.scout import Scout
 from copycat.codelets.strength_testers import CorrespondenceStrengthTester
 from copycat.concept_mapping import ConceptMapping
-from copycat.tools import temperature_adjust
+from copycat.tools import temperature_adjust_probability
 
 
 class CorrespondenceScout(Scout):
@@ -43,7 +43,8 @@ class CorrespondenceScout(Scout):
             self.target.get_relevant_descriptions(),
         )
         concept_mappings_possible = any(
-            random.random() < temperature_adjust(mapping.slippability, temperature)
+            random.random()
+            < temperature_adjust_probability(mapping.slippability, temperature)
             for mapping in concept_mappings
         )
         if not concept_mappings_possible:

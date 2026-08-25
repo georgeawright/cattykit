@@ -3,7 +3,7 @@ import random
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.builders import RuleBuilder
 from copycat.codelets.strength_tester import StrengthTester
-from copycat.tools import temperature_adjust
+from copycat.tools import temperature_adjust_probability
 from copycat.workspace_structures import Rule
 
 
@@ -31,7 +31,7 @@ class RuleStrengthTester(StrengthTester):
 
     def run(self, temperature: float) -> CodeletResult:
         self.proposed_rule.update_strength_values()
-        build_probability = temperature_adjust(
+        build_probability = temperature_adjust_probability(
             self.proposed_rule.total_strength, temperature
         )
         if build_probability < random.random():

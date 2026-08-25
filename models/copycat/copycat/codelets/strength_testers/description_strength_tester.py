@@ -3,7 +3,7 @@ import random
 from copycat.codelets.builders import DescriptionBuilder
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.strength_tester import StrengthTester
-from copycat.tools import temperature_adjust
+from copycat.tools import temperature_adjust_probability
 from copycat.workspace_structures import Description
 
 
@@ -34,7 +34,7 @@ class DescriptionStrengthTester(StrengthTester):
             self.proposed_description.descriptor.name
         )
         self.proposed_description.update_strength_values()
-        build_probability = temperature_adjust(
+        build_probability = temperature_adjust_probability(
             self.proposed_description.total_strength, temperature
         )
         if build_probability < random.random():

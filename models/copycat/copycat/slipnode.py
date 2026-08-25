@@ -3,7 +3,7 @@ from math import sqrt
 import random
 from typing import Callable, List, Optional
 
-from .tools import temperature_adjust
+from .tools import temperature_adjust_probability
 
 
 class Slipnode:
@@ -119,7 +119,7 @@ class Slipnode:
         return [
             link
             for link in self.has_property_links
-            if temperature_adjust(link.degree_of_association, temperature)
+            if temperature_adjust_probability(link.degree_of_association, temperature)
             > random.random()
         ]
 
