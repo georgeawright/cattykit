@@ -196,12 +196,9 @@ def test_is_distinguishing(
     "self_label, other_label, "
     "expected",
     [
-        ("a", "b", "a", "b", None, None, None, None, True),
         ("a", "b", "c", "d", True, False, "e", "e", True),
         ("a", "b", "c", "d", False, True, "e", "e", True),
-        ("a", "b", "c", "d", False, False, None, None, False),
         ("a", "b", "c", "d", False, True, "e", "f", False),
-        ("a", "b", "c", "d", False, True, None, None, False),
     ],
 )
 def test_supports(

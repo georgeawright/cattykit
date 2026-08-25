@@ -5,42 +5,6 @@ from .slipnode import Slipnode
 from .workspace_object import WorkspaceObject
 
 
-def get_concept_mappings(
-    source: WorkspaceObject,
-    target: WorkspaceObject,
-    source_descriptions=None,
-    target_descriptions=None,
-) -> List[ConceptMapping]:
-    source_descriptions = (
-        source.descriptions if source_descriptions is None else source_descriptions
-    )
-    target_descriptions = (
-        target.descriptions if target_descriptions is None else target_descriptions
-    )
-    mappings = []
-    for m in [
-        ConceptMapping(
-            description_type_1=desc_1.facet,
-            description_type_2=desc_2.facet,
-            descriptor_1=desc_1.descriptor,
-            descriptor_2=desc_2.descriptor,
-            object_1=source,
-            object_2=target,
-        )
-        for desc_1 in source_descriptions
-        for desc_2 in target_descriptions
-        if desc_1.facet == desc_2.facet
-        and (
-            desc_1.descriptor == desc_2.descriptor
-            or desc_1.descriptor.is_linked_to(desc_2.descriptor)
-        )
-    ]:
-        if m in mappings:
-            continue
-        mappings.append(m)
-    return mappings
-
-
 class ConceptMapping:
     def __init__(
         self,
@@ -48,7 +12,7 @@ class ConceptMapping:
         description_type_2: Slipnode,
         descriptor_1: Slipnode,
         descriptor_2: Slipnode,
-        label: Optional[Slipnode] = None,
+        label: Slipnode,
         object_1: Optional[WorkspaceObject] = None,
         object_2: Optional[WorkspaceObject] = None,
     ):
@@ -120,7 +84,11 @@ class ConceptMapping:
 
     @property
     def is_slippage(self) -> bool:
-        return self.label is None or self.label.name != "identity"
+        return self.label.name != "identity"
+
+    @property
+    def is_opposite(self) -> bool:
+        return self.label.name == "opposite"
 
     def is_relevant(self) -> bool:
         return (
@@ -140,9 +108,6 @@ class ConceptMapping:
         )
         return descriptor_1_is_distinguishing and descriptor_2_is_distinguishing
 
-    def is_opposite(self) -> bool:
-        return self.label is not None and self.label.name == "opposite"
-
     def supports(self, other: ConceptMapping) -> bool:
         """Concept-mappings (a -> b) and (c -> d) support each other
         if a is related to c and if b is related to d
@@ -161,8 +126,6 @@ class ConceptMapping:
             or self.descriptor_2.is_related_to(other.descriptor_2)
         ):
             return False
-        if self.label is None or other.label is None:
-            return False
         return self.label == other.label
 
     def is_incompatible_with(self, other: ConceptMapping) -> bool:
@@ -179,8 +142,6 @@ class ConceptMapping:
             or self.descriptor_2.is_related_to(other.descriptor_2)
         ):
             return False
-        if self.label is None or other.label is None:
-            return False
         return self.label != other.label
 
     def contradicts(self, other: ConceptMapping) -> bool:
@@ -193,7 +154,7 @@ class ConceptMapping:
         )
 
     def get_symmetric_version(self) -> ConceptMapping:
-        if self.label is not None and self.label.name == "identity":
+        if self.label.name == "identity":
             return self
         return ConceptMapping(
             description_type_1=self.description_type_2,

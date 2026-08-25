@@ -6,6 +6,7 @@ import pytest
 from copycat.codelets.scouts.correspondence_scouts import BottomUpCorrespondenceScout
 from copycat.codelet_result import Finish, Fizzle, FizzleReason
 from copycat.codelets.strength_testers import CorrespondenceStrengthTester
+from copycat.slipnet import Slipnet
 
 
 def test_run():
@@ -24,6 +25,8 @@ def test_run():
     class MockSlipnet:
         def __init__(self):
             self.activate_called = 0
+            self.identity = SimpleNamespace(name="identity")
+            self.opposite = SimpleNamespace(name="opposite")
 
         def __getitem__(self, name):
             return SimpleNamespace(name=name)
@@ -33,6 +36,16 @@ def test_run():
 
         def get_node_activation(self, name):
             return 0.5
+
+        def get_label_node(self, source, target):
+            return self.identity if source is target else self.opposite
+
+        def get_concept_mappings(
+            self, source, target, source_descriptions, target_descriptions
+        ):
+            return Slipnet.get_concept_mappings(
+                self, source, target, source_descriptions, target_descriptions
+            )
 
     class MockWorkspace:
         def __init__(self, initial_string, target_string):
@@ -108,8 +121,8 @@ def test_run():
     # distinguishing concept mappings
     successor_node = SimpleNamespace(name="successor", conceptual_depth=0.5)
     predecessor_node = SimpleNamespace(name="predecessor", conceptual_depth=0.5)
-    successor_node.is_linked_to = lambda other: other == predecessor_node
-    predecessor_node.is_linked_to = lambda other: other == successor_node
+    successor_node.is_sliplinked_to = lambda other: other == predecessor_node
+    predecessor_node.is_sliplinked_to = lambda other: other == successor_node
     succesor_to_predecessor_link = SimpleNamespace(
         source=successor_node, target=predecessor_node, degree_of_association=1.0
     )

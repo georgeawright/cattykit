@@ -2,7 +2,7 @@ from typing import Optional
 
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.builder import Builder
-from copycat.concept_mapping import ConceptMapping, get_concept_mappings
+from copycat.concept_mapping import ConceptMapping
 from copycat.tools import structure_beats_structures
 from copycat.workspace_objects import Group, Letter
 from copycat.workspace_structures import Bond, Correspondence
@@ -177,6 +177,7 @@ class CorrespondenceBuilder(Builder):
         bond_concept_mapping = ConceptMapping(
             self.slipnet["direction_category"],
             self.slipnet["direction_category"],
+            self.slipnet["identity"],
             source_bond.direction_category,
             target_bond.direction_category,
         )
@@ -226,7 +227,7 @@ class CorrespondenceBuilder(Builder):
         if isinstance(self.proposed_correspondence.source, Group) and isinstance(
             self.proposed_correspondence.target, Group
         ):
-            for mapping in get_concept_mappings(
+            for mapping in self.slipnet.get_concept_mappings(
                 self.proposed_correspondence.source,
                 self.proposed_correspondence.target,
                 self.proposed_correspondence.source.bond_descriptions,

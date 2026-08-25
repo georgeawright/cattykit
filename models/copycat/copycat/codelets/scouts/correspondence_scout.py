@@ -5,7 +5,7 @@ from copycat.workspace_structures import Correspondence
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.scout import Scout
 from copycat.codelets.strength_testers import CorrespondenceStrengthTester
-from copycat.concept_mapping import ConceptMapping, get_concept_mappings
+from copycat.concept_mapping import ConceptMapping
 from copycat.tools import temperature_adjust
 
 
@@ -36,7 +36,7 @@ class CorrespondenceScout(Scout):
             self.target.spans_whole_string() and not self.source.spans_whole_string()
         ):
             return Fizzle(FizzleReason.INCOMPATIBLE_OBJECT_SPANS)
-        concept_mappings = get_concept_mappings(
+        concept_mappings = self.slipnet.get_concept_mappings(
             self.source,
             self.target,
             self.source.get_relevant_descriptions(),
@@ -81,12 +81,14 @@ class CorrespondenceScout(Scout):
                 for mapping in possible_opposite_concept_mappings
             )
             and all(
-                mapping.is_opposite() for mapping in possible_opposite_concept_mappings
+                mapping.is_opposite for mapping in possible_opposite_concept_mappings
             )
             and not self.slipnet.get_node("opposite").is_active()
         ):
             self.target = self.target.get_flipped_version()
-            concept_mappings = self._get_concept_mappings(self.source, self.target)
+            concept_mappings = self.slipnet.get_concept_mappings(
+                self.source, self.target
+            )
             target_flipped = True
         self.propose_correspondence(
             self.source,

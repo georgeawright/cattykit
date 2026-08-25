@@ -5,6 +5,7 @@ import numpy as np
 
 from cattykit.logging import ModelEvent, ModelLogger
 
+from .concept_mapping import ConceptMapping
 from .sliplink import Sliplink
 from .slipnode import Slipnode
 
@@ -241,6 +242,43 @@ class Slipnet:
     def activate_node_from_workspace(self, node_id: str):
         index = self.node_index_lookup[node_id]
         self.activation_buffers[index] += self.workspace_activation
+
+    def get_concept_mappings(
+        self,
+        source: "WorkspaceObject",
+        target: "WorkspaceObject",
+        source_descriptions=None,
+        target_descriptions=None,
+    ) -> List[ConceptMapping]:
+        source_descriptions = (
+            source.descriptions if source_descriptions is None else source_descriptions
+        )
+        target_descriptions = (
+            target.descriptions if target_descriptions is None else target_descriptions
+        )
+        mappings = []
+        for m in [
+            ConceptMapping(
+                description_type_1=desc_1.facet,
+                description_type_2=desc_2.facet,
+                descriptor_1=desc_1.descriptor,
+                descriptor_2=desc_2.descriptor,
+                label=self.get_label_node(desc_1.descriptor, desc_2.descriptor),
+                object_1=source,
+                object_2=target,
+            )
+            for desc_1 in source_descriptions
+            for desc_2 in target_descriptions
+            if desc_1.facet == desc_2.facet
+            and (
+                desc_1.descriptor == desc_2.descriptor
+                or desc_1.descriptor.is_sliplinked_to(desc_2.descriptor)
+            )
+        ]:
+            if m in mappings:
+                continue
+            mappings.append(m)
+        return mappings
 
     def get_top_down_codelets(
         self, coderack: "Coderack", workspace: "Workspace"
