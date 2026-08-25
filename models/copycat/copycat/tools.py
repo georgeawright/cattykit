@@ -2,17 +2,31 @@ import math
 import random
 
 TEMPERATURE_SCALER = 0.3
-TEMPERATURE_EXPONENT_FLOOR = 0.005
+TEMPERATURE_EXPONENT_FLOOR = 0.5
 
 
-def temperature_adjust(value, temperature):
+def temperature_adjust(value, temperature) -> float:
     exponent = (1 - temperature) / TEMPERATURE_SCALER + TEMPERATURE_EXPONENT_FLOOR
     return value**exponent
 
 
-def temperature_adjust_list(values, temperature):
+def temperature_adjust_list(values, temperature) -> list[float]:
     exponent = (1 - temperature) / TEMPERATURE_SCALER + TEMPERATURE_EXPONENT_FLOOR
     return [value**exponent for value in values]
+
+
+def temperature_adjust_probability(probability, temperature) -> float:
+    if probability == 0.0:
+        return 0.0
+    temperature_factor = 0.1 * (1 - math.sqrt(1 - temperature))
+    if probability <= 0.5:
+        low_probability_factor = max(1, math.trunc(abs(math.log10(probability))))
+        upper_probability = 10 ** -(low_probability_factor - 1)
+        return min(
+            probability + temperature_factor * (upper_probability - probability),
+            0.5,
+        )
+    return max(probability - temperature_factor * probability, 0.5)
 
 
 def select_item_from_list(items, weights):
@@ -38,9 +52,7 @@ def select_items_from_list(items, weights, k):
             k=1,
         )[0]
         selected_index = next(
-            index
-            for index, item in enumerate(remaining_items)
-            if item is selected_item
+            index for index, item in enumerate(remaining_items) if item is selected_item
         )
         selected_items.append(remaining_items.pop(selected_index))
         remaining_weights.pop(selected_index)

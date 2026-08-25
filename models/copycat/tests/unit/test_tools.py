@@ -7,14 +7,14 @@ from copycat.tools import *
     ["values", "temperature", "expected_values"],
     [
         # low temperatures exaggerate differences
-        ([0, 0.2, 0.4, 0.6, 0.8, 1], 0.0, [0.00, 0.00, 0.05, 0.18, 0.47, 1.00]),
-        ([0, 0.2, 0.4, 0.6, 0.8, 1], 0.2, [0.00, 0.01, 0.09, 0.26, 0.55, 1.00]),
+        ([0, 0.2, 0.4, 0.6, 0.8, 1], 0.0, [0.00, 0.00, 0.03, 0.14, 0.43, 1.00]),
+        ([0, 0.2, 0.4, 0.6, 0.8, 1], 0.2, [0.00, 0.01, 0.05, 0.20, 0.49, 1.00]),
         # mid temperatures make smaller adjustments
-        ([0, 0.2, 0.4, 0.6, 0.8, 1], 0.4, [0.00, 0.04, 0.16, 0.36, 0.64, 1.00]),
-        ([0, 0.2, 0.4, 0.6, 0.8, 1], 0.6, [0.00, 0.12, 0.29, 0.50, 0.74, 1.00]),
+        ([0, 0.2, 0.4, 0.6, 0.8, 1], 0.4, [0.00, 0.02, 0.10, 0.28, 0.57, 1.00]),
+        ([0, 0.2, 0.4, 0.6, 0.8, 1], 0.6, [0.00, 0.05, 0.19, 0.39, 0.66, 1.00]),
         # high temperatures flatten differences
-        ([0, 0.2, 0.4, 0.6, 0.8, 1], 0.8, [0.00, 0.34, 0.54, 0.71, 0.86, 1.00]),
-        ([0, 0.2, 0.4, 0.6, 0.8, 1], 1.0, [0.00, 0.99, 1.00, 1.00, 1.00, 1.00]),
+        ([0, 0.2, 0.4, 0.6, 0.8, 1], 0.8, [0.00, 0.15, 0.34, 0.55, 0.77, 1.00]),
+        ([0, 0.2, 0.4, 0.6, 0.8, 1], 1.0, [0.00, 0.45, 0.63, 0.77, 0.89, 1.00]),
     ],
 )
 def test_temperature_adjust(values, temperature, expected_values):
@@ -34,6 +34,27 @@ def test_temperature_adjust(values, temperature, expected_values):
 
 
 @pytest.mark.parametrize(
+    ["probability", "temperature", "expected"],
+    [
+        # low temperatures preserve differences between probabilities
+        (0.0, 0.0, 0.0),
+        (0.01, 0.0, 0.01),
+        (0.5, 0.0, 0.5),
+        (0.9, 0.0, 0.9),
+        # high temperatures shift probabilities towards 50/50
+        (0.01, 1.0, 0.019),
+        (0.1, 1.0, 0.19),
+        (0.5, 1.0, 0.5),
+        (0.9, 1.0, 0.81),
+    ],
+)
+def test_temperature_adjust_probability(probability, temperature, expected):
+    assert temperature_adjust_probability(probability, temperature) == pytest.approx(
+        expected
+    )
+
+
+@pytest.mark.parametrize(
     [
         "structure_1_strength",
         "weight_1",
@@ -49,12 +70,12 @@ def test_temperature_adjust(values, temperature, expected_values):
         (0.7, 1.0, 0.3, 1.0, 0.0, 0.9),
         (0.5, 1.0, 0.5, 1.0, 0.0, 0.5),
         (0.3, 1.0, 0.7, 1.0, 0.0, 0.1),
-        # high temperature => closer to random
+        # high temperature => closer to random, but not uniform
         (1.0, 1.0, 0.0, 1.0, 1.0, 1.0),
-        (0.8, 1.0, 0.2, 1.0, 1.0, 0.5),
-        (0.7, 1.0, 0.3, 1.0, 1.0, 0.5),
+        (0.8, 1.0, 0.2, 1.0, 1.0, 0.65),
+        (0.7, 1.0, 0.3, 1.0, 1.0, 0.63),
         (0.5, 1.0, 0.5, 1.0, 1.0, 0.5),
-        (0.3, 1.0, 0.7, 1.0, 1.0, 0.5),
+        (0.3, 1.0, 0.7, 1.0, 1.0, 0.33),
         # mid temperature => in between
         (1.0, 1.0, 0.0, 1.0, 0.5, 1.0),
         (0.8, 1.0, 0.2, 1.0, 0.5, 0.9),
