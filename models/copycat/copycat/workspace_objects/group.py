@@ -123,20 +123,40 @@ class Group(WorkspaceObject, WorkspaceStructure):
         )
 
     def get_flipped_version(self) -> Group:
+        from copycat.workspace_structures import Description
+
         if self.group_category.name not in ("predecessor_group", "successor_group"):
             return self
-        flipped_bonds = [b.get_flipped_version for b in self.bonds]
-        return Group(
+        flipped_group_category = self.group_category.get_related_node("opposite")
+        flipped_direction = self.direction_category.get_related_node("opposite")
+        flipped_bond_category = self.bond_category.get_related_node("opposite")
+        flipped_group = Group(
             self.string,
             self.left_position,
             self.right_position,
             self.objects,
-            flipped_bonds,
-            self.group_category.get_related_node("opposite"),
-            self.direction_category.get_related_node("opposite"),
-            self.bond_category.get_related_node("opposite"),
+            [bond.get_flipped_version() for bond in self.bonds],
+            flipped_group_category,
+            flipped_direction,
+            flipped_bond_category,
             self.bond_facet,
         )
+        flipped_descriptors = {
+            self.group_category: flipped_group_category,
+            self.direction_category: flipped_direction,
+            self.bond_category: flipped_bond_category,
+        }
+        for description in self.descriptions + self.bond_descriptions:
+            flipped_group.add_description(
+                Description(
+                    flipped_group,
+                    description.facet,
+                    flipped_descriptors.get(
+                        description.descriptor, description.descriptor
+                    ),
+                )
+            )
+        return flipped_group
 
     def get_bonds_to_be_flipped(self) -> List["Bond"]:
         """Returns a list of bonds that need to be flipped

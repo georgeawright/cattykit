@@ -87,7 +87,10 @@ class CorrespondenceScout(Scout):
         ):
             self.target = self.target.get_flipped_version()
             concept_mappings = self.slipnet.get_concept_mappings(
-                self.source, self.target
+                self.source,
+                self.target,
+                self.source.get_relevant_descriptions(),
+                self.target.get_relevant_descriptions(),
             )
             target_flipped = True
         self.propose_correspondence(
