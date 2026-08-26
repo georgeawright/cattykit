@@ -26,6 +26,8 @@ class Description(WorkspaceStructure):
         return self.descriptor.conceptual_depth
 
     def equates_to(self, other) -> bool:
+        if not isinstance(other, Description):
+            return False
         return (self.facet, self.descriptor) == (other.facet, other.descriptor)
 
     def is_relevant(self) -> bool:

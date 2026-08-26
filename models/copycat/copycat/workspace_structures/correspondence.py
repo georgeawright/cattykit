@@ -57,6 +57,8 @@ class Correspondence(WorkspaceStructure):
         return len(self.source) + len(self.target)
 
     def equates_to(self, other) -> bool:
+        if not isinstance(other, Correspondence):
+            return False
         return (
             self.source,
             self.target,

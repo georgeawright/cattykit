@@ -1,5 +1,6 @@
 import json
 import random
+from typing import Optional
 
 from cattykit.logging import ModelEvent, ModelLogger, NullLogger
 
@@ -15,6 +16,7 @@ from .slipnet import Slipnet
 from .snag_exception import SnagException
 from .workspace import Workspace
 from .workspace_objects import Group, Letter
+from .workspace_structure import WorkspaceStructure
 from .workspace_structures import Bond, Description
 
 DESCRIPTION_TESTERS = {
@@ -68,7 +70,9 @@ class Copycat:
         self.initial_slipnode_clamp_time = initial_slipnode_clamp_time
         self.found_answer = False
         self.snag_condition = False
-        self.snag_object = False
+        self.snag_count = 0
+        self.snag_structures: list[WorkspaceStructure] = []
+        self.last_snag_time: Optional[int] = None
         self.clamp_temperature = False
         self.logger = logger if logger is not None else NullLogger()
         for component in (self.workspace, self.slipnet, self.coderack):
@@ -356,7 +360,7 @@ class Copycat:
             == self.initial_slipnode_clamp_time * self.time_step_length
         ):
             self._unclamp_initially_clamped_nodes()
-        if self.snag_object and self.snag_condition:
+        if self.workspace.snag_object and self.snag_condition:
             self._probabilistically_unsnag()
         if self.coderack.number_of_codelets_run > 0:
             self._update_temperature()
@@ -473,21 +477,27 @@ class Copycat:
         """Check if new structures have been made since snag
         and probabilistically end snag."""
         new_structure_list = [
-            s
-            for s in self.workspace.structures
-            if not isinstance(s, Bond) and s not in self.workspace.snag_structure_list
+            structure
+            for structure in self.workspace.structures
+            if not isinstance(structure, Bond)
+            and not any(
+                [
+                    structure.equates_to(snag_structure)
+                    for snag_structure in self.snag_structures
+                ]
+            )
         ]
         unclamp_probability = (
             max([s.total_strength for s in new_structure_list])
             if new_structure_list
             else 0
         )
-        if random.random() > unclamp_probability:
+        if unclamp_probability > random.random():
             self.snag_condition = False
             self.clamp_temperature = False
-            for description in self.snag_object.descriptions:
-                description.descriptor.unclamp()
-            self.snag_object.set_clamp_salience = False
+            for description in self.workspace.snag_object.descriptions:
+                description.descriptor.clamp = False
+            self.workspace.snag_object.set_clamp_salience = False
 
     def _clamp_initially_clamped_nodes(self):
         for node in self.initially_clamped_nodes:
@@ -498,11 +508,21 @@ class Copycat:
             self.slipnet.unclamp_node(node)
 
     def handle_snag(self):
-        """If there is a snag in building the answer:
-        - delete all proposed structures,
-        - empty coderack,
-        - raise and clamp temperature,
-        - clamp activation of all descriptions of the offending object."""
+        self.snag_count += 1
+        self.last_snag_time = self.coderack.number_of_codelets_run
+        self.snag_structures = self.workspace.structures
+        self.workspace.delete_proposed_structures()
+        self.coderack.empty()
+        self.workspace.delete_translated_rule()
+        self.workspace.answer_string.empty()
+        self.snag_condition = True
+        self.temperature = 1.0
+        self.clamp_temperature = True
+        for description in self.workspace.snag_object.descriptions:
+            description.descriptor.clamp = True
+        self.workspace.snag_object.salience_is_clamped = True
+        self._post_initial_codelets()
+        self.update()
 
     def delete_answer(self):
         pass

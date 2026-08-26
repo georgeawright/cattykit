@@ -72,7 +72,7 @@ class Workspace:
         self.replacements: List[Replacement] = []
         self.rule: Optional[Rule] = None
         self.translated_rule: Optional[Rule] = None
-        self.snag_objects: List[WorkspaceObject] = []
+        self.snag_object: Optional[WorkspaceObject] = None
 
     def set_logger(self, logger: ModelLogger) -> None:
         """Attach the logger used to record workspace mutations."""
@@ -267,6 +267,17 @@ class Workspace:
             source_id=_object_id(replacement.source),
             target_id=_object_id(replacement.target),
         )
+
+    def delete_translated_rule(self):
+        self.translated_rule = None
+
+    def delete_proposed_structures(self):
+        for bond in self.proposed_bonds:
+            bond.string.delete_proposed_bond(bond)
+        for group in self.proposed_groups:
+            group.string.delete_proposed_group(group)
+        for correspondence in self.proposed_correspondences:
+            self.delete_proposed_correspondence(correspondence)
 
     def _log_correspondence(self, kind: str, correspondence: Correspondence) -> None:
         if self.logger is None:

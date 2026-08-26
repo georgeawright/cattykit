@@ -112,6 +112,9 @@ class WorkspaceString:
                 )
             )
 
+    def empty(self):
+        self.__init__(self.string_id, self.logger)
+
     def add_letter(self, letter):
         self.letters.append(letter)
         if self.logger is not None:

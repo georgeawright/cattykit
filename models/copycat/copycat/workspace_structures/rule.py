@@ -44,6 +44,8 @@ class Rule(WorkspaceStructure):
         )
 
     def equates_to(self, other) -> bool:
+        if not isinstance(other, Rule):
+            return False
         return (
             self.object_category_1,
             self.descriptor_1_facet,

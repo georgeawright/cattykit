@@ -90,7 +90,7 @@ class AnswerBuilder:
         modified_letters = []
         new_descriptor = self._get_new_descriptor(letter, description_type)
         if new_descriptor is None:
-            self.workspace.snag_objects.append(letter)
+            self.workspace.snag_object = letter
             raise SnagException
         if description_type == self.slipnet["letter_category"]:
             new_letter = Letter(
@@ -98,7 +98,7 @@ class AnswerBuilder:
             )
             modified_letters.append(new_letter)
         else:
-            self.workspace.snag_objects.append(letter)
+            self.workspace.snag_object = letter
             raise SnagException
         return modified_letters
 
@@ -118,7 +118,7 @@ class AnswerBuilder:
                 letter, self.slipnet["letter_category"]
             )
             if new_descriptor is None:
-                self.workspace.snag_objects.append(letter)
+                self.workspace.snag_object = letter
                 raise SnagException
             new_letter = Letter(
                 self.workspace.answer_string, new_descriptor, letter.left_position
@@ -135,7 +135,7 @@ class AnswerBuilder:
             [isinstance(member, Group) for member in group.objects]
             # snags due to probably not working with nested groups
         ):
-            self.workspace.snag_objects.append(group)
+            self.workspace.snag_object = group
             raise SnagException
         self.amount_length_changed = int(new_descriptor) - int(
             group.get_descriptor(self.slipnet["length"])
@@ -167,7 +167,7 @@ class AnswerBuilder:
                     group.bond_category.name
                 )
             if new_letter_category is None:
-                self.workspace.snag_objects.append(new_letter)
+                self.workspace.snag_object = new_letter
                 raise SnagException
             new_letter = Letter(
                 self.workspace.answer_string, new_letter_category, new_position
