@@ -37,8 +37,8 @@ class Correspondence(WorkspaceStructure):
             (
                 mapping.label
                 for mapping in self.concept_mappings
-                if mapping.description_type_1.name == "direction-category"
-                and mapping.description_type_2.name == "direction-category"
+                if mapping.description_type_1.name == "direction_category"
+                and mapping.description_type_2.name == "direction_category"
             ),
             None,
         )
