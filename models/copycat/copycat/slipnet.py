@@ -233,11 +233,13 @@ class Slipnet:
         index = self.node_index_lookup[node_id]
         self.clamped_nodes[index] = True
         self.node_activations[index] = 1.0
+        self[node_id].clamped = True
 
     def unclamp_node(self, node_id: str):
         """Unclamp a node so that its activation can decay."""
         index = self.node_index_lookup[node_id]
         self.clamped_nodes[index] = False
+        self[node_id].clamped = False
 
     def activate_node_from_workspace(self, node_id: str):
         index = self.node_index_lookup[node_id]

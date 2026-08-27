@@ -496,7 +496,7 @@ class Copycat:
             self.snag_condition = False
             self.clamp_temperature = False
             for description in self.workspace.snag_object.descriptions:
-                description.descriptor.clamp = False
+                self.slipnet.unclamp_node(description.descriptor.name)
             self.workspace.snag_object.salience_is_clamped = False
 
     def _clamp_initially_clamped_nodes(self):
@@ -519,7 +519,7 @@ class Copycat:
         self.temperature = 1.0
         self.clamp_temperature = True
         for description in self.workspace.snag_object.descriptions:
-            description.descriptor.clamp = True
+            self.slipnet.clamp_node(description.descriptor.name)
         self.workspace.snag_object.salience_is_clamped = True
         self._post_initial_codelets()
         self.update()
