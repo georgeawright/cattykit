@@ -144,7 +144,10 @@ class Slipnode:
         self, workspace_string: "WorkspaceString"
     ) -> float:
         description_type_count = sum(
-            1 for obj in workspace_string.objects if obj.has_description(self)
+            1
+            for obj in workspace_string.objects
+            for description in obj.descriptions
+            if description.descriptor == self
         )
         return (
             description_type_count / len(workspace_string.objects)
