@@ -1,3 +1,4 @@
+import random
 from unittest.mock import Mock
 
 import pytest
@@ -36,6 +37,7 @@ def test_fizzles_if_structure_too_strong():
 
 
 def test_succeeds_if_structure_weak():
+    random.seed(1)
     structure = Mock()
     structure.total_weakness = 1.0
     workspace = Mock()

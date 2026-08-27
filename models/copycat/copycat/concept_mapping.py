@@ -40,8 +40,8 @@ class ConceptMapping:
             self.descriptor_1,
             self.descriptor_2,
             self.label,
-            self.object_2,
             self.object_1,
+            self.object_2,
         ) == (
             other.description_type_1,
             other.description_type_2,
