@@ -31,7 +31,7 @@ class Description(WorkspaceStructure):
         return (self.facet, self.descriptor) == (other.facet, other.descriptor)
 
     def is_relevant(self) -> bool:
-        return self.descriptor.is_active()
+        return self.facet.is_active()
 
     def is_bond_description(self) -> bool:
         return self.facet.name in ("bond_category", "bond_facet")

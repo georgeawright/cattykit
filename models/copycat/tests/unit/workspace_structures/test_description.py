@@ -13,8 +13,8 @@ from copycat.workspace_structures import Description
     ],
 )
 def test_is_relevant(is_active, expected):
-    descriptor = SimpleNamespace(is_active=lambda: is_active)
-    description = Description(argument_object=None, facet=None, descriptor=descriptor)
+    facet = SimpleNamespace(is_active=lambda: is_active)
+    description = Description(argument_object=None, facet=facet, descriptor=None)
 
     assert expected == description.is_relevant()
 
