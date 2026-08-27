@@ -455,11 +455,7 @@ class Copycat:
     def _update_temperature(self):
         if self.clamp_temperature:
             return
-        rule_weakness = (
-            self.workspace.translated_rule.total_weakness
-            if self.workspace.translated_rule
-            else 1
-        )
+        rule_weakness = self.workspace.rule.total_weakness if self.workspace.rule else 1
         self.temperature = self.workspace.total_unhappiness * 0.8 + rule_weakness * 0.2
         time = 0 if self.coderack is None else self.coderack.number_of_codelets_run
         self.logger.log(

@@ -52,7 +52,7 @@ def test_logs_answer_letters_created_by_answer_builder():
 def test_update_temperature(rule_weakness, workspace_unhappiness, expected):
     workspace = SimpleNamespace(
         total_unhappiness=workspace_unhappiness,
-        translated_rule=SimpleNamespace(total_weakness=rule_weakness),
+        rule=SimpleNamespace(total_weakness=rule_weakness),
     )
     copycat = Copycat(None, None, workspace, None, None, None)
     copycat._update_temperature()
