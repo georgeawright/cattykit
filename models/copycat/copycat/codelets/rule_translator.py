@@ -38,8 +38,12 @@ class RuleTranslator(Codelet):
             slippages = [
                 slippage
                 for slippage in self.workspace.slippages
-                for mapping in changed_object.correspondence.concept_mappings
-                if not mapping.contradicts(slippage)
+                if not any(
+                    [
+                        mapping.contradicts(slippage)
+                        for mapping in changed_object.correspondence.concept_mappings
+                    ]
+                )
             ]
         self.workspace.translated_rule = self.workspace.rule.apply_slippages(slippages)
         return Finish()
