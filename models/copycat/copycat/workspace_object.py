@@ -99,7 +99,7 @@ class WorkspaceObject:
         return self.right_position == len(self.string.letters) - 1
 
     def has_description(self, description: "Description") -> bool:
-        return description in self.descriptions
+        return any([description.equates_to(d) for d in self.descriptions])
 
     def get_descriptor(self, facet: "Slipnode") -> Union["Slipnode", None]:
         for description in self.descriptions:

@@ -11,6 +11,10 @@ def test_has_description():
         facet=SimpleNamespace(name="test_facet"),
         descriptor=SimpleNamespace(name="test_descriptor"),
     )
+    description.equates_to = (
+        lambda d: d.facet == description.facet
+        and d.descriptor == description.descriptor
+    )
     assert not object.has_description(description)
     object.descriptions.append(description)
     assert object.has_description(description)
