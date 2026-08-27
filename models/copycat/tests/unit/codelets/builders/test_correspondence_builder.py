@@ -438,6 +438,8 @@ def test_breaks_incompatible_structures_and_builds_correspondence():
     target_bond.total_strength = 0
     correspondence.target.is_leftmost_in_string.return_value = True
     correspondence.target.right_bond = target_bond
+    correspondence.target.objects = [Mock(), Mock()]
+    correspondence.target.descriptions = [Mock(), Mock()]
     mapping_1.is_incompatible_with.return_value = True
     incompatible_group = Mock()
     incompatible_group.total_strength = 0
@@ -463,4 +465,4 @@ def test_breaks_incompatible_structures_and_builds_correspondence():
     assert correspondence.source.correspondence == correspondence
     assert correspondence.target.correspondence == correspondence
     assert workspace.add_correspondence_called == 1
-    assert slipnet.activate_called == 2
+    assert slipnet.activate_called == 5

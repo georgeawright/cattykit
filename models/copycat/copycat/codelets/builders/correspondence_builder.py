@@ -116,7 +116,21 @@ class CorrespondenceBuilder(Builder):
                 self.workspace.break_bond(bond)
             for bond in self.proposed_correspondence.target.bonds:
                 self.workspace.target_string.add_bond(bond)
+                bond.source.outgoing_bonds.append(bond)
+                bond.target.incoming_bonds.append(bond)
+                if bond.bond_category == self.slipnet["sameness"]:
+                    bond.target.outgoing_bonds.append(bond)
+                    bond.source.incoming_bonds.append(bond)
+                bond.left_object.right_bond = bond
+                bond.right_object.left_bond = bond
+                self.slipnet.activate_node_from_workspace(bond.bond_category.name)
             self.workspace.target_string.add_group(self.proposed_correspondence.target)
+            for obj in self.proposed_correspondence.target.objects:
+                obj.group = self.proposed_correspondence.target
+            for bond in self.proposed_correspondence.target.bonds:
+                bond.group = self.proposed_correspondence.target
+            for description in self.proposed_correspondence.target.descriptions:
+                self.slipnet.activate_node_from_workspace(description.descriptor.name)
         if incompatible_rule:
             self.workspace.rule = None
         self._build_correspondence()
