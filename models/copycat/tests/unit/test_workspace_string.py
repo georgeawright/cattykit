@@ -22,12 +22,22 @@ class MockBond:
         self.right_object = right_object
         self.bond_category = Mock(name="sameness" if is_sameness_bond else "successor")
 
+    def equates_to(self, other):
+        if other is None:
+            return False
+        return self == other
+
 
 class MockGroup(NamedTuple):
     left_object: MockObject
     right_object: MockObject
     left_position: int
     right_position: int
+
+    def equates_to(self, other):
+        if other is None:
+            return False
+        return self == other
 
 
 @pytest.mark.parametrize(

@@ -157,7 +157,7 @@ class WorkspaceString:
     def get_bond_if_present(self, bond):
         """Return the equivalent bond if it is already in the string, else False."""
         existing_bond = self.bonds_by_role[bond.source][bond.target]
-        if existing_bond == bond:
+        if bond.equates_to(existing_bond):
             return existing_bond
         return False
 
@@ -211,7 +211,7 @@ class WorkspaceString:
             existing_group = self._groups[group.left_object]
         except KeyError:
             return False
-        if existing_group == group:
+        if group.equates_to(existing_group):
             return existing_group
         return False
 
