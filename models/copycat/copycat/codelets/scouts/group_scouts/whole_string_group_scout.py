@@ -51,7 +51,7 @@ class WholeStringGroupScout(GroupScout):
         group_category = bond_category.get_related_node("group_category")
         self.propose_group(
             objects=list(objects),
-            bonds=list(bonds),
+            bonds=possible_group_bonds,
             group_category=group_category,
             direction=direction_category,
             bond_category=bond_category,
