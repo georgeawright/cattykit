@@ -157,7 +157,9 @@ class BondBuilder(Builder):
             description_type_2=self.slipnet["direction_category"],
             descriptor_1=self.proposed_bond.direction_category,
             descriptor_2=other_bond.direction_category,
-            label=None,
+            label=self.slipnet.get_label_node(
+                self.proposed_bond.direction_category, other_bond.direction_category
+            ),
             object_1=None,
             object_2=None,
         )
