@@ -497,7 +497,7 @@ class Copycat:
             self.clamp_temperature = False
             for description in self.workspace.snag_object.descriptions:
                 description.descriptor.clamp = False
-            self.workspace.snag_object.set_clamp_salience = False
+            self.workspace.snag_object.salience_is_clamped = False
 
     def _clamp_initially_clamped_nodes(self):
         for node in self.initially_clamped_nodes:
