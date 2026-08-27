@@ -44,9 +44,7 @@ def test_run():
     target_flipped = Mock()
     proposed_correspondence.source = source
     proposed_correspondence.target = target
-    proposed_correspondence.target.get_flipped_version.return_value = (
-        target_flipped
-    )
+    proposed_correspondence.target.get_flipped_version.return_value = target_flipped
     proposed_correspondence.concept_mappings = [Mock()]
 
     strength_tester = CorrespondenceStrengthTester(
@@ -59,6 +57,7 @@ def test_run():
     )
 
     # if object 1 no longer exists, should fizzle
+    workspace.contains_group = lambda x: False
     result = strength_tester.run(temperature=0.0)
     assert result == Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
     assert slipnet.activate_called == 0
@@ -79,6 +78,7 @@ def test_run():
     assert coderack.post_called == 0
 
     # weak correspondence should not post a builder
+    workspace.contains_group = lambda x: True
     workspace.objects.append(proposed_correspondence.target)
     proposed_correspondence.total_strength = 0.0
     strength_tester.target_flipped = False

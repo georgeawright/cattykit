@@ -19,6 +19,7 @@ from .codelets import (
 from .tools import describe_count, select_item_from_list, temperature_adjust
 from .workspace_string import WorkspaceString
 from .workspace_object import WorkspaceObject
+from .workspace_objects import Group
 from .workspace_structure import WorkspaceStructure
 from .workspace_structures import Bond, Correspondence, Description, Replacement, Rule
 
@@ -292,6 +293,13 @@ class Workspace:
     def _log(self, kind: str, **data: object) -> None:
         if self.logger is not None:
             self.logger.log(ModelEvent.create("copycat", kind, **data))
+
+    def contains_group(self, g: Group) -> bool:
+        """Returns True if the workspace contains an equivalent group."""
+        for group in self.groups:
+            if g.equates_to(group):
+                return True
+        return False
 
     def contains_correspondence(self, c: Correspondence) -> bool:
         """Returns True if the workspace contains the correspondence."""
