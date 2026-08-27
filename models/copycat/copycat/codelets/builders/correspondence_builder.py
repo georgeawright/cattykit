@@ -189,11 +189,11 @@ class CorrespondenceBuilder(Builder):
         ):
             return None
         bond_concept_mapping = ConceptMapping(
-            self.slipnet["direction_category"],
-            self.slipnet["direction_category"],
-            self.slipnet["identity"],
-            source_bond.direction_category,
-            target_bond.direction_category,
+            description_type_1=self.slipnet["direction_category"],
+            description_type_2=self.slipnet["direction_category"],
+            descriptor_1=source_bond.direction_category,
+            descriptor_2=target_bond.direction_category,
+            label=self.slipnet["identity"],
         )
         for mapping in self.proposed_correspondence.concept_mappings:
             if mapping.is_incompatible_with(bond_concept_mapping):
