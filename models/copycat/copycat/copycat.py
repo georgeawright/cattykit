@@ -172,7 +172,7 @@ class Copycat:
                 )
             )
         self.workspace.initial_string.distribution_of_bond_counts = [
-            i for i in range(len(initial_string.strip()) - 1)
+            i for i in range(len(initial_string.strip()))
         ]
         for i, char in enumerate(modified_string.strip()):
             self.workspace.modified_string.add_letter(
@@ -183,7 +183,7 @@ class Copycat:
                 Letter(self.workspace.target_string, self.slipnet[char], i)
             )
         self.workspace.target_string.distribution_of_bond_counts = [
-            i for i in range(len(target_string.strip()) - 1)
+            i for i in range(len(target_string.strip()))
         ]
         for i, char in enumerate(answer_string.strip()):
             self.workspace.answer_string.add_letter(
