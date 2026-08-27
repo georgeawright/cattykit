@@ -301,7 +301,10 @@ class Workspace:
             return False
         if not existing_correspondence:
             return False
-        return existing_correspondence.equates_to(c)
+        return (
+            existing_correspondence.source == c.source
+            and existing_correspondence.target == c.target
+        )
 
     def get_existing_correspondence(
         self, c: Correspondence
@@ -311,7 +314,11 @@ class Workspace:
             existing_correspondence = self._correspondences[c.source]
         except KeyError:
             return None
-        if existing_correspondence and existing_correspondence.equates_to(c):
+        if (
+            existing_correspondence
+            and existing_correspondence.source == c.source
+            and existing_correspondence.target == c.target
+        ):
             return existing_correspondence
         return None
 
