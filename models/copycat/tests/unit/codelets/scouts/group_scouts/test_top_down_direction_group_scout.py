@@ -24,6 +24,13 @@ def test_run():
     class MockSlipnet:
         right_node = SimpleNamespace(name="right")
         left_node = SimpleNamespace(name="left")
+        numbers = [
+            SimpleNamespace(name="one"),
+            SimpleNamespace(name="two"),
+            SimpleNamespace(name="three"),
+            SimpleNamespace(name="four"),
+            SimpleNamespace(name="five"),
+        ]
 
         def __init__(self):
             self.activate_called = 0
@@ -31,15 +38,24 @@ def test_run():
         def __getitem__(self, name):
             if name == "right":
                 return self.right_node
-            elif name == "left":
+            if name == "left":
                 return self.left_node
-            return SimpleNamespace(name=name)
+            return SimpleNamespace(name=name, activation=0.5)
 
         def activate_node_from_workspace(self, name):
             self.activate_called += 1
 
         def get_node_activation(self, name):
             return 0.5
+
+        def get_node(self, name):
+            return (
+                self.right_node
+                if name == "right"
+                else self.left_node
+                if name == "left"
+                else None
+            )
 
     class MockWorkspace:
         initial_string = Mock()
@@ -125,6 +141,7 @@ def test_run():
         is_rightmost_in_string=False,
         spans_whole_string=lambda: False,
     )
+    a.letters = [a]
     b = SimpleNamespace(
         string=workspace.initial_string,
         left_position=1,
@@ -133,6 +150,7 @@ def test_run():
         is_rightmost_in_string=False,
         spans_whole_string=lambda: False,
     )
+    b.letters = [b]
     c = SimpleNamespace(
         string=workspace.initial_string,
         left_position=2,
@@ -141,6 +159,8 @@ def test_run():
         is_rightmost_in_string=True,
         spans_whole_string=lambda: False,
     )
+    c.letters = [c]
+    workspace.initial_string.letters = [a, b, c]
     a_to_b = SimpleNamespace(
         bond_category=bond_category,
         bond_facet=SimpleNamespace(name="facet"),

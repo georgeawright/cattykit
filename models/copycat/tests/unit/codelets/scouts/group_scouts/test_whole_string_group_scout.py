@@ -24,12 +24,19 @@ def test_run():
     class MockSlipnet:
         right_node = SimpleNamespace(name="right")
         left_node = SimpleNamespace(name="left")
+        numbers = [
+            SimpleNamespace(name="one"),
+            SimpleNamespace(name="two"),
+            SimpleNamespace(name="three"),
+            SimpleNamespace(name="four"),
+            SimpleNamespace(name="five"),
+        ]
 
         def __init__(self):
             self.activate_called = 0
 
         def __getitem__(self, name):
-            return SimpleNamespace(name=name)
+            return SimpleNamespace(name=name, activation=0.5)
 
         def activate_node_from_workspace(self, name):
             self.activate_called += 1
@@ -50,6 +57,7 @@ def test_run():
         length = 0
         leftmost_object = None
         bonds = []
+        logger = Mock()
 
         def __len__(self):
             return self.length
@@ -108,6 +116,7 @@ def test_run():
     # set up a string with multiple objects and bonds
     a = SimpleNamespace(
         name="a",
+        letter_category=SimpleNamespace(),
         string=workspace.initial_string,
         left_position=0,
         right_position=0,
@@ -115,8 +124,10 @@ def test_run():
         is_rightmost_in_string=lambda: False,
         spans_whole_string=lambda: False,
     )
+    a.letters = [a]
     b = SimpleNamespace(
         name="b",
+        letter_category=SimpleNamespace(),
         string=workspace.initial_string,
         left_position=1,
         right_position=1,
@@ -124,8 +135,10 @@ def test_run():
         is_rightmost_in_string=lambda: False,
         spans_whole_string=lambda: False,
     )
+    b.letters = [b]
     c = SimpleNamespace(
         name="c",
+        letter_category=SimpleNamespace(),
         string=workspace.initial_string,
         left_position=2,
         right_position=2,
@@ -133,6 +146,8 @@ def test_run():
         is_rightmost_in_string=lambda: True,
         spans_whole_string=lambda: False,
     )
+    c.letters = [c]
+    workspace.initial_string.letters = [a, b, c]
     a_to_b = SimpleNamespace(
         name="a-b",
         bond_category=bond_category,

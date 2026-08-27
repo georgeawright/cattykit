@@ -294,25 +294,9 @@ def test_breaks_incompatible_structures_flips_bonds_and_builds_group():
     # Run the builder
     result = builder.run(temperature=0.5)
 
-    assert slipnet.activate_node_from_workspace_called == 5
+    assert slipnet.activate_node_from_workspace_called == 1
     assert workspace.break_group_called == 2
     assert proposed_group.string.add_group_called == 1
-    assert [
-        (description.facet.name, description.descriptor.name)
-        for description in proposed_group.descriptions[1:]
-    ] == [
-        ("object_category", "group"),
-        ("string_position_category", "leftmost"),
-        ("letter_category", "i"),
-        ("group_category", "sameness_group"),
-    ]
-    assert [
-        (description.facet.name, description.descriptor.name)
-        for description in proposed_group.bond_descriptions
-    ] == [
-        ("bond_facet", "letter_category"),
-        ("bond_category", "sameness"),
-    ]
     assert result == Finish()
 
     # Restore the original function

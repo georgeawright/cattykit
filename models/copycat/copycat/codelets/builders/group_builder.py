@@ -4,7 +4,7 @@ from typing import List
 from copycat.codelets.builder import Builder
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.concept_mapping import ConceptMapping
-from copycat.tools import structure_beats_structures, temperature_adjust_probability
+from copycat.tools import structure_beats_structures
 from copycat.workspace_objects import Group
 from copycat.workspace_structures import Description
 
@@ -205,88 +205,5 @@ class GroupBuilder(Builder):
             obj.group = self.proposed_group
         for bond in self.proposed_group.bonds:
             bond.group = self.proposed_group
-        self._add_descriptions_to_group(self.proposed_group, temperature)
         for description in self.proposed_group.descriptions:
             self.slipnet.activate_node_from_workspace(description.descriptor.name)
-
-    def _add_descriptions_to_group(self, group: Group, temperature: float):
-        self._add_description(
-            group, self.slipnet["object_category"], self.slipnet["group"]
-        )
-        string_position = self._get_string_position(group)
-        if string_position is not None:
-            self._add_description(
-                group, self.slipnet["string_position_category"], string_position
-            )
-
-        if group.group_category == self.slipnet["sameness_group"] and (
-            not group.bonds
-            or group.bonds[0].bond_facet == self.slipnet["letter_category"]
-        ):
-            self._add_description(
-                group,
-                self.slipnet["letter_category"],
-                group.left_object.get_descriptor(self.slipnet["letter_category"]),
-            )
-
-        self._add_description(
-            group, self.slipnet["group_category"], group.group_category
-        )
-        if group.direction_category is not None:
-            self._add_description(
-                group,
-                self.slipnet["direction_category"],
-                group.direction_category,
-            )
-
-        if group.bonds:
-            group.bond_facet = group.bonds[0].bond_facet
-            self._add_description(group, self.slipnet["bond_facet"], group.bond_facet)
-        self._add_description(group, self.slipnet["bond_category"], group.bond_category)
-
-        group_length = len(group.objects)
-        if 1 <= group_length <= len(self.slipnet.numbers):
-            base_probability = 0.5 ** (
-                group_length**3 * (1 - self.slipnet["length"].activation)
-            )
-            length_description_probability = temperature_adjust_probability(
-                base_probability, temperature
-            )
-            if random.random() < length_description_probability:
-                self._add_description(
-                    group,
-                    self.slipnet["length"],
-                    self.slipnet.numbers[group_length - 1],
-                )
-
-    def _add_description(self, group: Group, facet, descriptor):
-        if descriptor is None:
-            return
-        description = Description(group, facet, descriptor)
-        existing_descriptions = group.descriptions + group.bond_descriptions
-        if any(
-            getattr(existing, "facet", None) == facet
-            and getattr(existing, "descriptor", None) == descriptor
-            for existing in existing_descriptions
-        ):
-            return
-        group.add_description(description)
-
-    def _get_string_position(self, group: Group):
-        if group.spans_whole_string():
-            return self.slipnet["whole"]
-        if group.is_leftmost_in_string():
-            return self.slipnet["leftmost"]
-        if self._is_middle_in_string(group):
-            return self.slipnet["middle"]
-        if group.is_rightmost_in_string():
-            return self.slipnet["rightmost"]
-        return None
-
-    @staticmethod
-    def _is_middle_in_string(group: Group) -> bool:
-        return any(
-            neighbour.is_leftmost_in_string() for neighbour in group.left_neighbours
-        ) and any(
-            neighbour.is_rightmost_in_string() for neighbour in group.right_neighbours
-        )

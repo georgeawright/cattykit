@@ -22,15 +22,39 @@ def test_run(monkeypatch):
             return 0
 
     class MockSlipnet:
+        numbers = [
+            SimpleNamespace(name="one"),
+            SimpleNamespace(name="two"),
+            SimpleNamespace(name="three"),
+            SimpleNamespace(name="four"),
+            SimpleNamespace(name="five"),
+        ]
+
         def __init__(self, nodes):
             self.nodes = nodes
             self.activate_called = 0
 
         def __getitem__(self, name):
-            return self.nodes[name]
+            return (
+                self.nodes[name]
+                if name in self.nodes
+                else SimpleNamespace(name=name, activation=0.5)
+            )
 
         def activate_node_from_workspace(self, name):
             self.activate_called += 1
+
+        def get_node_activation(self, name):
+            return 0.5
+
+        def get_node(self, name):
+            return (
+                self.right_node
+                if name == "right"
+                else self.left_node
+                if name == "left"
+                else None
+            )
 
     right = SimpleNamespace(name="right", activation=1.0)
     left = SimpleNamespace(name="left", activation=0.0)
