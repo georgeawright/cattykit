@@ -193,7 +193,9 @@ class CorrespondenceBuilder(Builder):
             description_type_2=self.slipnet["direction_category"],
             descriptor_1=source_bond.direction_category,
             descriptor_2=target_bond.direction_category,
-            label=self.slipnet["identity"],
+            label=self.slipnet.get_label_node(
+                source_bond.direction_category, target_bond.direction_category
+            ),
         )
         for mapping in self.proposed_correspondence.concept_mappings:
             if mapping.is_incompatible_with(bond_concept_mapping):
