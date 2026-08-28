@@ -99,8 +99,11 @@ class GroupBuilder(Builder):
         for description in source_group.descriptions:
             if target_group.has_description(description):
                 continue
-            new_description = description.copy()
-            new_description.argument_object = target_group
+            new_description = Description(
+                argument_object=target_group,
+                facet=description.facet,
+                descriptor=description.descriptor,
+            )
             target_group.add_description(description)
 
     def _all_bonds_still_exist(self, workspace_string: "WorkspaceString") -> bool:
