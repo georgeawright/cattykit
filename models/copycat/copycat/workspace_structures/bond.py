@@ -57,12 +57,12 @@ class Bond(WorkspaceStructure):
             self.source,
             self.target,
             self.bond_category,
-            self.bond_facet,
+            self.direction_category,
         ) == (
             other.source,
             other.target,
             other.bond_category,
-            other.bond_facet,
+            other.direction_category,
         )
 
     @property
