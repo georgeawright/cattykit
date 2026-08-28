@@ -109,9 +109,10 @@ class Rule(WorkspaceStructure):
                 ).descriptor
                 for d in source_correspondee.get_relevant_descriptions()
             ]
-            shared_descriptor_term = (
-                1.0 if self.descriptor_1 in slipped_descriptors else 0.0
-            )
+            if self.descriptor_1 not in slipped_descriptors:
+                # rule cannot be made
+                return 0.0
+            shared_descriptor_term = 1.0
         shared_descriptor_weight = (
             (1 - self.descriptor_1.conceptual_depth) * 10
         ) ** 1.4
