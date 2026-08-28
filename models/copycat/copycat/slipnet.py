@@ -350,7 +350,7 @@ class Slipnet:
                     top_down_codelets.append(
                         codelet_class(
                             urgency_bin=coderack.get_urgency_level_from_activation(
-                                node.activation
+                                node.activation * node.conceptual_depth
                             ),
                             coderack=coderack,
                             workspace=workspace,
