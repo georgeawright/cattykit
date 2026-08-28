@@ -75,7 +75,7 @@ class WorkspaceString:
 
     @property
     def non_string_spanning_objects(self):
-        return [obj for obj in self.objects if not obj.spans_whole_string]
+        return [obj for obj in self.objects if not obj.spans_whole_string()]
 
     def update_relative_importances(self):
         total_raw_importance = sum(obj.raw_importance for obj in self.objects)
