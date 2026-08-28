@@ -138,20 +138,20 @@ def test_letters_without_replacement():
 
 
 def test_ungrouped_objects():
-    a = SimpleNamespace(spans_whole_string=False, group=None)
-    b = SimpleNamespace(spans_whole_string=False, group=None)
-    c = SimpleNamespace(spans_whole_string=False, group=None)
+    a = SimpleNamespace(spans_whole_string=lambda: False, group=None)
+    b = SimpleNamespace(spans_whole_string=lambda: False, group=None)
+    c = SimpleNamespace(spans_whole_string=lambda: False, group=None)
     objects = [a, b, c]
     initial_string = SimpleNamespace(objects=objects)
     target_string = SimpleNamespace(objects=[])
     workspace = Workspace(initial_string, None, target_string, None)
     assert 3 == len(workspace.ungrouped_objects)
-    ab = SimpleNamespace(spans_whole_string=False, group=None)
+    ab = SimpleNamespace(spans_whole_string=lambda: False, group=None)
     a.group = ab
     b.group = ab
     objects.append(ab)
     assert 2 == len(workspace.ungrouped_objects)
-    abc = SimpleNamespace(spans_whole_string=True, group=None)
+    abc = SimpleNamespace(spans_whole_string=lambda: True, group=None)
     a.group = abc
     b.group = abc
     c.group = abc
@@ -162,13 +162,22 @@ def test_ungrouped_objects():
 
 def test_unbonded_objects():
     a = SimpleNamespace(
-        spans_whole_string=False, group=None, bonds=[], is_at_edge_of_string=True
+        spans_whole_string=lambda: False,
+        group=None,
+        bonds=[],
+        is_at_edge_of_string=lambda: True,
     )
     b = SimpleNamespace(
-        spans_whole_string=False, group=None, bonds=[], is_at_edge_of_string=False
+        spans_whole_string=lambda: False,
+        group=None,
+        bonds=[],
+        is_at_edge_of_string=lambda: False,
     )
     c = SimpleNamespace(
-        spans_whole_string=False, group=None, bonds=[], is_at_edge_of_string=True
+        spans_whole_string=lambda: False,
+        group=None,
+        bonds=[],
+        is_at_edge_of_string=lambda: True,
     )
     objects = [a, b, c]
     initial_string = SimpleNamespace(objects=objects)
