@@ -262,7 +262,7 @@ class Copycat:
         for _ in range(2 * len(self.workspace.objects)):
             self.coderack.post(
                 BottomUpBondScout(
-                    urgency_bin=2,
+                    urgency_bin=1,
                     coderack=self.coderack,
                     workspace=self.workspace,
                     slipnet=self.slipnet,
@@ -271,7 +271,7 @@ class Copycat:
             )
             self.coderack.post(
                 ReplacementFinder(
-                    urgency_bin=2,
+                    urgency_bin=1,
                     coderack=self.coderack,
                     workspace=self.workspace,
                     slipnet=self.slipnet,
@@ -280,7 +280,7 @@ class Copycat:
             )
             self.coderack.post(
                 BottomUpCorrespondenceScout(
-                    urgency_bin=2,
+                    urgency_bin=1,
                     coderack=self.coderack,
                     workspace=self.workspace,
                     slipnet=self.slipnet,
