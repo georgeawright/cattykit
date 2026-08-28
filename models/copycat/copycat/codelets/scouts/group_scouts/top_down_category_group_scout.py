@@ -46,7 +46,9 @@ class TopDownCategoryGroupScout(GroupScout):
             else:
                 directions = [self.slipnet["left"], self.slipnet["right"]]
                 supports = [
-                    d.get_descriptor_support(workspace_string, self.slipnet["group"])
+                    d.get_local_descriptor_support(
+                        workspace_string, self.slipnet["group"]
+                    )
                     for d in directions
                 ]
                 possible_single_letter_group_direction = select_item_from_list(

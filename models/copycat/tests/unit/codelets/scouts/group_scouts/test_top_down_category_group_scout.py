@@ -60,8 +60,8 @@ def test_run(monkeypatch):
     left = SimpleNamespace(name="left", activation=0.0)
     right.get_related_node = lambda relation: left if relation == "opposite" else None
     left.get_related_node = lambda relation: right if relation == "opposite" else None
-    right.get_descriptor_support = Mock(return_value=1.0)
-    left.get_descriptor_support = Mock(return_value=0.0)
+    right.get_local_descriptor_support = Mock(return_value=1.0)
+    left.get_local_descriptor_support = Mock(return_value=0.0)
 
     successor_group = SimpleNamespace(name="successor_group")
     sameness_group = SimpleNamespace(name="sameness_group")
@@ -181,8 +181,8 @@ def test_run(monkeypatch):
     assert coderack.post_called == 0
     assert initial_string.proposed_groups == []
     assert slipnet.activate_called == 0
-    left.get_descriptor_support.assert_called_with(initial_string, group)
-    right.get_descriptor_support.assert_called_with(initial_string, group)
+    left.get_local_descriptor_support.assert_called_with(initial_string, group)
+    right.get_local_descriptor_support.assert_called_with(initial_string, group)
 
     # A bond of the wrong category is treated like no suitable first bond.
     a.right_bond = SimpleNamespace(bond_category=predecessor)

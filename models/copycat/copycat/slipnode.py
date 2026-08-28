@@ -140,22 +140,7 @@ class Slipnode:
             self.get_local_description_type_support(workspace_string) + self.activation
         ) / 2
 
-    def get_local_description_type_support(
-        self, workspace_string: "WorkspaceString"
-    ) -> float:
-        description_type_count = sum(
-            1
-            for obj in workspace_string.objects
-            for description in obj.descriptions
-            if description.descriptor == self
-        )
-        return (
-            description_type_count / len(workspace_string.objects)
-            if workspace_string.objects
-            else 0
-        )
-
-    def get_descriptor_support(
+    def get_local_descriptor_support(
         self, workspace_string: "WorkspaceString", object_category: Slipnode
     ) -> float:
         relevant_objects = (
@@ -167,6 +152,21 @@ class Slipnode:
             1 for obj in relevant_objects if obj.has_description(self)
         )
         return descriptor_count / len(relevant_objects) if relevant_objects else 0
+
+    def get_local_description_type_support(
+        self, workspace_string: "WorkspaceString"
+    ) -> float:
+        description_type_count = sum(
+            1
+            for obj in workspace_string.objects
+            for description in obj.descriptions
+            if description.description_type == self
+        )
+        return (
+            description_type_count / len(workspace_string.objects)
+            if workspace_string.objects
+            else 0
+        )
 
     def apply_slippages(self, slippages: list) -> Slipnode:
         for slippage in slippages:
