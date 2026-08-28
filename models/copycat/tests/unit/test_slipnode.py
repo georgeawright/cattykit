@@ -106,7 +106,7 @@ def test_support(supporting_objects, non_supporting_objects, activation, expecte
     workspace_string = SimpleNamespace(name="workspace_string", objects=[])
     for _ in range(supporting_objects):
         obj = SimpleNamespace(name="object")
-        obj.descriptions = [SimpleNamespace(description_type=node)]
+        obj.descriptions = [SimpleNamespace(facet=node)]
         workspace_string.objects.append(obj)
     for _ in range(non_supporting_objects):
         obj = SimpleNamespace(name="object")

@@ -160,7 +160,7 @@ class Slipnode:
             1
             for obj in workspace_string.objects
             for description in obj.descriptions
-            if description.description_type == self
+            if description.facet == self
         )
         return (
             description_type_count / len(workspace_string.objects)
