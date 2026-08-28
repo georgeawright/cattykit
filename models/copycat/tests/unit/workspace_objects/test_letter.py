@@ -10,7 +10,7 @@ from copycat.workspace_objects import Letter
     [
         ("letter", ["anything"], False),
         ("group", ["anything"], False),
-        ("1", ["anything"], False),
+        ("one", ["anything"], False),
         ("descriptor", ["anything"], True),
         ("descriptor", ["descriptor"], False),
     ],

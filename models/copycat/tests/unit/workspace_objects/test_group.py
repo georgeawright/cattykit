@@ -79,7 +79,7 @@ def test_has_description():
             False,
         ),
         (
-            "1",
+            "one",
             ["super_descriptor"],
             ["sub_descriptor"],
             ["other_descriptor"],
