@@ -145,7 +145,15 @@ class WorkspaceObject:
 
     def is_distinguished_by(self, descriptor: "Slipnode") -> bool:
         """True if no other object of the same type has the same descriptor."""
-        if descriptor.name in ["letter", "group", "1", "2", "3", "4", "5", "6"]:
+        if descriptor.name in [
+            "letter",
+            "group",
+            "one",
+            "two",
+            "three",
+            "four",
+            "five",
+        ]:
             return False
         return self._is_distinguished_by(descriptor)
 
