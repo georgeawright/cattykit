@@ -357,6 +357,11 @@ class Workspace:
                 group.string.delete_proposed_bond(bond)
         for bond in group.outgoing_and_incoming_bonds:
             self.break_bond(bond)
+        for correspondence in self.proposed_correspondences:
+            if correspondence.source is group or correspondence.target is group:
+                self.delete_proposed_correspondence(correspondence)
+        if group.correspondence is not None:
+            self.break_correspondence(group.correspondence)
 
     def contains_slippage(self, slippage) -> bool:
         """Returns True if the workspace contains the slippage."""

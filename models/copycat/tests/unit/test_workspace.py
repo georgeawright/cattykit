@@ -95,6 +95,7 @@ def test_break_group():
         right_position=1,
         objects=[SimpleNamespace()],
         bonds=[SimpleNamespace()],
+        correspondence=None,
     )
     bond = SimpleNamespace(
         source=left_object,
