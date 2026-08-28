@@ -107,6 +107,14 @@ class WorkspaceObject:
                 return description.descriptor
         return None
 
+    def get_descriptor_with_facet_name(
+        self, facet_name: str
+    ) -> Union["Slipnode", None]:
+        for description in self.descriptions:
+            if description.facet.name == facet_name:
+                return description.descriptor
+        return None
+
     def add_description(self, description: "Description"):
         if description.is_bond_description():
             self.bond_descriptions.append(description)
