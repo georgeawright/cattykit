@@ -170,7 +170,7 @@ class Bond(WorkspaceStructure):
             and b.left_object.distance_from(self.left_object) != 0
             and b.right_object.distance_from(self.right_object) != 0
             and b.bond_category == self.bond_category
-            and b.bond_facet == self.bond_facet
+            and b.direction_category == self.direction_category
         ]
         return len(supporting_bonds)
 
