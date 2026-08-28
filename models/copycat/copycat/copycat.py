@@ -27,8 +27,8 @@ DESCRIPTION_TESTERS = {
     "length_is_four": lambda x: isinstance(x, Group) and len(x) == 4,
     "length_is_five": lambda x: isinstance(x, Group) and len(x) == 5,
     # STRING POSITION
-    "is_leftmost": lambda x: not x.spans_whole_string and x.leftmost_in_string,
-    "is_rightmost": lambda x: not x.spans_whole_string and x.rightmost_in_string,
+    "is_leftmost": lambda x: not x.spans_whole_string() and x.leftmost_in_string(),
+    "is_rightmost": lambda x: not x.spans_whole_string() and x.rightmost_in_string(),
     "is_middle": lambda x: (
         any(
             neighbour.group is None and neighbour.is_leftmost_in_string()
@@ -39,8 +39,8 @@ DESCRIPTION_TESTERS = {
             for neighbour in x.right_neighbours
         )
     ),
-    "is_single": lambda x: isinstance(x, Letter) and x.spans_whole_string,
-    "is_whole": lambda x: isinstance(x, Group) and x.spans_whole_string,
+    "is_single": lambda x: isinstance(x, Letter) and x.spans_whole_string(),
+    "is_whole": lambda x: isinstance(x, Group) and x.spans_whole_string(),
     # ALPHABETIC POSITION
     "is_first": lambda x: x.get_descriptor("letter_category") == "a",
     "is_last": lambda x: x.get_descriptor("letter_category") == "z",
@@ -290,6 +290,8 @@ class Copycat:
 
     def run(self):
         while True:
+            if self.coderack.number_of_codelets_run > 9999:
+                break
             if self.coderack.number_of_codelets_run % self.time_step_length == 0:
                 self.update()
             if self.coderack.is_empty():
