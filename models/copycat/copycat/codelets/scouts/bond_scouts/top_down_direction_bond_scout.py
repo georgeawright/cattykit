@@ -44,12 +44,10 @@ class TopDownDirectionBondScout(BondScout):
         target_string_unhappiness = (
             self.workspace.target_string.intra_string_unhappiness
         )
-        initial_string_score = round(
-            (initial_string_relevance + initial_string_unhappiness) / 2
-        )
-        target_string_score = round(
-            (target_string_relevance + target_string_unhappiness) / 2
-        )
+        initial_string_score = (
+            initial_string_relevance + initial_string_unhappiness
+        ) / 2
+        target_string_score = (target_string_relevance + target_string_unhappiness) / 2
         string = select_item_from_list(
             [self.workspace.initial_string, self.workspace.target_string],
             [initial_string_score, target_string_score],
