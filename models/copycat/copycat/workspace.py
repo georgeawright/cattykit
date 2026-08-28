@@ -105,7 +105,9 @@ class Workspace:
     @property
     def unreplaced_objects(self):
         """A list of all letters in the initial string that don't have a replacement."""
-        [letter for letter in self.initial_string.letters if not letter.replacement]
+        return [
+            letter for letter in self.initial_string.letters if not letter.replacement
+        ]
 
     @property
     def proposed_bonds(self):
