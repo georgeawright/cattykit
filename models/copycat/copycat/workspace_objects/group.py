@@ -43,7 +43,7 @@ class Group(WorkspaceObject, WorkspaceStructure):
         return f"{group_type}({letters})@{self.left_position}-{self.right_position}"
 
     def __len__(self):
-        return len(self.letters)
+        return len(self.objects)
 
     def equates_to(self, other) -> bool:
         if not isinstance(other, Group):
