@@ -98,6 +98,9 @@ class WorkspaceObject:
     def is_rightmost_in_string(self) -> bool:
         return self.right_position == len(self.string.letters) - 1
 
+    def is_at_edge_of_string(self) -> bool:
+        return self.is_leftmost_in_string() or self.is_rightmost_in_string()
+
     def has_description(self, description: "Description") -> bool:
         return any([description.equates_to(d) for d in self.descriptions])
 
