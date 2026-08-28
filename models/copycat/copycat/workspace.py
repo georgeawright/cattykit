@@ -388,7 +388,7 @@ class Workspace:
         return [
             obj
             for obj in self.objects
-            if not obj.spans_whole_string and obj.group is None
+            if not obj.spans_whole_string() and obj.group is None
         ]
 
     @property
