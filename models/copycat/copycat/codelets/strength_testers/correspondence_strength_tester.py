@@ -4,6 +4,7 @@ from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.builders.correspondence_builder import CorrespondenceBuilder
 from copycat.codelets.strength_tester import StrengthTester
 from copycat.tools import temperature_adjust_probability
+from copycat.workspace_objects import Group
 
 
 class CorrespondenceStrengthTester(StrengthTester):
@@ -27,7 +28,9 @@ class CorrespondenceStrengthTester(StrengthTester):
         self.target_flipped = target_flipped
 
     def run(self, temperature: float) -> CodeletResult:
-        if not self.workspace.contains_group(self.proposed_correspondence.source):
+        if isinstance(
+            self.proposed_correspondence.source, Group
+        ) and not self.workspace.contains_group(self.proposed_correspondence.source):
             return Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
         if self.proposed_correspondence.target not in self.workspace.objects and not (
             self.target_flipped
