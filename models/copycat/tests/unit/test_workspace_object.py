@@ -102,31 +102,35 @@ def test_choose_relevant_description_by_activation():
 
 
 @pytest.mark.parametrize(
-    "number_of_relevant_descriptions, is_changed_letter, group, expected",
+    "descriptor_activations, is_changed_letter, group, expected",
     [
-        (0, False, None, 0),
-        (0, False, "group", 0),
-        (0, True, None, 0),
-        (0, True, "group", 0),
-        (1, False, None, 1),
-        (1, False, "group", 0.666667),
-        (1, True, None, 2),
-        (1, True, "group", 1.333333),
-        (2, False, None, 2),
-        (2, False, "group", 1.333333),
-        (2, True, None, 4),
-        (2, True, "group", 2.666667),
+        ([], False, None, 0),
+        ([], False, "group", 0),
+        ([], True, None, 0),
+        ([], True, "group", 0),
+        ([0.5], False, None, 0.5),
+        ([1], False, None, 1),
+        ([1], False, "group", 0.666667),
+        ([1], True, None, 2),
+        ([1], True, "group", 1.333333),
+        ([0.5, 0.5], False, None, 1),
+        ([1, 1], False, None, 2),
+        ([1, 1], False, "group", 1.333333),
+        ([1, 1], True, None, 4),
+        ([1, 1], True, "group", 2.666667),
     ],
 )
 def test_calculate_raw_importance(
-    number_of_relevant_descriptions, is_changed_letter, group, expected
+    descriptor_activations, is_changed_letter, group, expected
 ):
     object = WorkspaceObject(string=None, left_position=None, right_position=None)
     object.is_changed_letter = is_changed_letter
     object.group = None if group is None else SimpleNamespace(members=[object])
     object.descriptions = [
-        SimpleNamespace(is_relevant=lambda: True)
-        for _ in range(number_of_relevant_descriptions)
+        SimpleNamespace(
+            is_relevant=lambda: True, descriptor=SimpleNamespace(activation=activation)
+        )
+        for activation in descriptor_activations
     ]
 
     assert object.calculate_raw_importance() == pytest.approx(expected)

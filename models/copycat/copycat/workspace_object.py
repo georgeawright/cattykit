@@ -204,7 +204,15 @@ class WorkspaceObject:
         A function of the number and activation of relevant descriptions.
         Importance of changed objects is enhanced.
         Importance of grouped objects is diminished."""
-        result = min(3, len(self.get_relevant_descriptions()))
+        result = min(
+            3,
+            sum(
+                [
+                    description.descriptor.activation
+                    for description in self.get_relevant_descriptions()
+                ]
+            ),
+        )
         if self.is_changed_letter:
             result *= 2
         if self.group is not None:
