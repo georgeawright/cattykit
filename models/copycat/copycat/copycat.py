@@ -27,8 +27,8 @@ DESCRIPTION_TESTERS = {
     "length_is_four": lambda x: isinstance(x, Group) and len(x) == 4,
     "length_is_five": lambda x: isinstance(x, Group) and len(x) == 5,
     # STRING POSITION
-    "is_leftmost": lambda x: not x.spans_whole_string() and x.leftmost_in_string(),
-    "is_rightmost": lambda x: not x.spans_whole_string() and x.rightmost_in_string(),
+    "is_leftmost": lambda x: not x.spans_whole_string() and x.is_leftmost_in_string(),
+    "is_rightmost": lambda x: not x.spans_whole_string() and x.is_rightmost_in_string(),
     "is_middle": lambda x: (
         any(
             neighbour.group is None and neighbour.is_leftmost_in_string()
