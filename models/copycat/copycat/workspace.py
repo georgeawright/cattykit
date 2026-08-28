@@ -69,7 +69,6 @@ class Workspace:
             Dict[WorkspaceObject, List[Optional[Correspondence]]],
         ] = defaultdict(lambda: defaultdict(list))
         self._correspondences: Dict[WorkspaceObject, Optional[Correspondence]] = {}
-        self.unreplaced_objects: List[WorkspaceObject] = []
         self.replacements: List[Replacement] = []
         self.rule: Optional[Rule] = None
         self.translated_rule: Optional[Rule] = None
@@ -102,6 +101,11 @@ class Workspace:
     @property
     def objects(self):
         return self.initial_string.objects + self.target_string.objects
+
+    @property
+    def unreplaced_objects(self):
+        """A list of all letters in the initial string that don't have a replacement."""
+        [letter for letter in self.initial_string.letters if not letter.replacement]
 
     @property
     def proposed_bonds(self):
