@@ -29,7 +29,9 @@ class Correspondence(WorkspaceStructure):
         self.hash_id = next(Correspondence._next_id)
 
     def __repr__(self):
-        return f"{self.source} == {self.concept_mappings} ==> {self.target}"
+        return f"{self.source} ==> {self.target}\n" + "\n".join(
+            [f"  {mapping}" for mapping in self.concept_mappings]
+        )
 
     @property
     def direction_mapping(self) -> Optional["Slipnode"]:
