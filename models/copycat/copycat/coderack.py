@@ -252,7 +252,7 @@ class Coderack:
                     "few": 1,
                     "medium": 2,
                     "many": 3,
-                }[workspace.rough_number_of_unreplaced_objects]
+                }[workspace.rough_number_of_letters_without_replacement]
         elif structure_category == "correspondence":
             number = {
                 "few": 1,
