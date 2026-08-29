@@ -20,7 +20,7 @@ class DescriptionScout(Scout):
         proposed_description = Description(chosen_object, description_type, descriptor)
         self.slipnet.activate_node_from_workspace(descriptor.name)
         urgency_level = self.coderack.get_urgency_level_from_activation(
-            self.slipnet.get_node_activation(descriptor.name)
+            self.slipnet.get_node_activation(description_type.name)
         )
         self.coderack.post(
             DescriptionStrengthTester(
