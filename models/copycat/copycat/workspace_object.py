@@ -146,7 +146,7 @@ class WorkspaceObject:
         return [
             d
             for d in self.descriptions
-            if d.is_relevant() and self.is_distinguishing_by(d.descriptor)
+            if d.is_relevant() and self.is_distinguished_by(d.descriptor)
         ]
 
     def update_values(self):

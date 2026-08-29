@@ -399,8 +399,14 @@ class Workspace:
             obj
             for obj in self.ungrouped_objects
             if (
-                (obj.is_at_edge_of_string() and len(obj.bonds) == 0)
-                or (not obj.is_at_edge_of_string() and len(obj.bonds) < 2)
+                (
+                    obj.is_at_edge_of_string()
+                    and len(obj.outgoing_and_incoming_bonds) == 0
+                )
+                or (
+                    not obj.is_at_edge_of_string()
+                    and len(obj.outgoing_and_incoming_bonds) < 2
+                )
             )
         ]
 
