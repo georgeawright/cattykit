@@ -155,7 +155,7 @@ class RuleScout(Scout):
         choice = select_item_from_list(candidates, probabilities)
         if isinstance(choice, ExtrinsicDescription):
             related_descriptor = initial_description.descriptor.get_related_node(
-                choice.relation
+                choice.relation.name
             )
             if related_descriptor:
                 for d in modified_object.descriptions:
