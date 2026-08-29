@@ -102,8 +102,11 @@ class Group(WorkspaceObject, WorkspaceStructure):
     def is_string_spanning_group(self) -> bool:
         return self.spans_whole_string()
 
-    def has_description(self, description: "Description") -> bool:
-        return description in self.descriptions or description in self.bond_descriptions
+    def has_description(self, d: "Description") -> bool:
+        for description in self.descriptions + self.bond_descriptions:
+            if d.equates_to(description):
+                return True
+        return False
 
     def has_recursive_group_member(self, other_object) -> bool:
         if self == other_object:

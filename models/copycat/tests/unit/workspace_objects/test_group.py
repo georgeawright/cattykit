@@ -48,10 +48,12 @@ def test_has_description():
         facet=SimpleNamespace(name="test_facet"),
         descriptor=SimpleNamespace(name="test_descriptor"),
     )
+    description.equates_to = lambda d: d == description
     bond_description = SimpleNamespace(
         facet=SimpleNamespace(name="bond_facet"),
         descriptor=SimpleNamespace(name="test_descriptor"),
     )
+    bond_description.equates_to = lambda d: d == bond_description
     assert not group.has_description(description)
     assert not group.has_description(bond_description)
     group.descriptions.append(description)
