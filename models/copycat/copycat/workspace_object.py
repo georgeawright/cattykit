@@ -152,7 +152,7 @@ class WorkspaceObject:
         self.total_salience = self.calculate_total_salience()
 
     def spans_whole_string(self) -> bool:
-        return len(self) == len(self.string.letters)
+        return self.letter_span() == len(self.string.letters)
 
     def is_distinguished_by(self, descriptor: "Slipnode") -> bool:
         """True if no other object of the same type has the same descriptor."""

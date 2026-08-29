@@ -45,17 +45,20 @@ class Group(WorkspaceObject, WorkspaceStructure):
     def __len__(self):
         return len(self.objects)
 
+    def letter_span(self):
+        return len(self.letters)
+
     def equates_to(self, other) -> bool:
         if not isinstance(other, Group):
             return False
         return (
             self.left_position,
-            self.right_position,
+            len(self),
             self.group_category,
             self.direction_category,
         ) == (
             other.left_position,
-            other.right_position,
+            len(other),
             other.group_category,
             other.direction_category,
         )

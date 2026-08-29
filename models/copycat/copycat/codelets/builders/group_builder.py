@@ -47,7 +47,7 @@ class GroupBuilder(Builder):
         if bonds_to_be_flipped:
             fight_result = structure_beats_structures(
                 self.proposed_group,
-                len(self.proposed_group),
+                self.proposed_group.letter_span(),
                 bonds_to_be_flipped,
                 1,
                 temperature=temperature,

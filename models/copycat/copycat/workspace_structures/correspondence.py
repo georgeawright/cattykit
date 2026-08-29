@@ -54,9 +54,9 @@ class Correspondence(WorkspaceStructure):
             if mapping.is_slippage
         ]
 
-    def __len__(self):
+    def letter_span(self):
         """Returns the number of letters spanned by the objects."""
-        return len(self.source) + len(self.target)
+        return self.source.letter_span() + self.target.letter_span()
 
     def equates_to(self, other) -> bool:
         if not isinstance(other, Correspondence):

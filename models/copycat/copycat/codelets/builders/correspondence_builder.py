@@ -54,7 +54,7 @@ class CorrespondenceBuilder(Builder):
             # correspondences between small groups or letters
             fight_result = structure_beats_structures(
                 self.proposed_correspondence,
-                len(self.proposed_correspondence),
+                self.proposed_correspondence.letter_span(),
                 [incompatible_correspondence],
                 len(incompatible_correspondence),
                 temperature=temperature,

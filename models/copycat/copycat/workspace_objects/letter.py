@@ -17,6 +17,9 @@ class Letter(WorkspaceObject):
     def __len__(self):
         return 1
 
+    def letter_span(self):
+        return 1
+
     @property
     def letters(self):
         return [self]

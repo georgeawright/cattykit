@@ -44,11 +44,11 @@ class Bond(WorkspaceStructure):
         ]
         return f"{self.source} --{labels}--> {self.target}"
 
-    def __len__(self):
+    def letter_span(self):
         """Returns the number of letters spanned by the bond.
         2 if the objects are not groups,
         otherwise the sum of the lengths of the groups."""
-        return len(self.source) + len(self.target)
+        return self.source.letter_span() + self.target.letter_span()
 
     def equates_to(self, other) -> bool:
         if not isinstance(other, Bond):
