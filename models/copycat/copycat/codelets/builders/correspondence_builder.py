@@ -124,6 +124,7 @@ class CorrespondenceBuilder(Builder):
                 bond.left_object.right_bond = bond
                 bond.right_object.left_bond = bond
                 self.slipnet.activate_node_from_workspace(bond.bond_category.name)
+                self.slipnet.activate_node_from_workspace(bond.direction_category.name)
             self.workspace.target_string.add_group(self.proposed_correspondence.target)
             for obj in self.proposed_correspondence.target.objects:
                 obj.group = self.proposed_correspondence.target
