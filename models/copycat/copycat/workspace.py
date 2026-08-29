@@ -606,7 +606,7 @@ class Workspace:
             for _ in range(
                 coderack.number_of_codelets_to_post("translated-rule", workspace=self)
             ):
-                urgency_bin = 2 if temperature > 0.25 else 6
+                urgency_bin = 2 if temperature > 0.25 else 4
                 codelets.append(
                     RuleTranslator(
                         urgency_bin=urgency_bin,
