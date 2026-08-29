@@ -24,7 +24,7 @@ class ImportantObjectCorrespondenceScout(CorrespondenceScout):
         if self.source is None:
             return Fizzle(FizzleReason.NO_OBJECTS)
         source_description = (
-            self.source.choose_relevant_description_by_conceptual_depth()
+            self.source.choose_relevant_distinguishing_description_by_conceptual_depth()
         )
         if source_description is None:
             return Fizzle(FizzleReason.NO_RELEVANT_DESCRIPTIONS)

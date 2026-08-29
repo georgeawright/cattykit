@@ -142,6 +142,13 @@ class WorkspaceObject:
     def get_relevant_descriptions(self) -> List["Description"]:
         return [d for d in self.descriptions if d.is_relevant()]
 
+    def get_relevant_distinguishing_descriptions(self) -> List["Description"]:
+        return [
+            d
+            for d in self.descriptions
+            if d.is_relevant() and self.is_distinguishing_by(d.descriptor)
+        ]
+
     def update_values(self):
         self.raw_importance = self.calculate_raw_importance()
         self.intra_string_unhappiness = self.calculate_intra_string_unhappiness()
@@ -205,6 +212,17 @@ class WorkspaceObject:
         self,
     ) -> Union["Description", None]:
         relevant_descriptions = self.get_relevant_descriptions()
+        if len(relevant_descriptions) == 0:
+            return None
+        conceptual_depths = [
+            d.descriptor.conceptual_depth for d in relevant_descriptions
+        ]
+        return select_item_from_list(relevant_descriptions, conceptual_depths)
+
+    def choose_relevant_distinguishing_description_by_conceptual_depth(
+        self,
+    ) -> Union["Description", None]:
+        relevant_descriptions = self.get_relevant_distinguishing_descriptions()
         if len(relevant_descriptions) == 0:
             return None
         conceptual_depths = [

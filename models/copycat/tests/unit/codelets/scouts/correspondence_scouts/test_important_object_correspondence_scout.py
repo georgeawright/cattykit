@@ -92,14 +92,16 @@ def test_run():
 
     # initial string has object but object has no relevant descriptions
     workspace.initial_string.objects = [source]
-    source.choose_relevant_description_by_conceptual_depth = lambda: None
+    source.choose_relevant_distinguishing_description_by_conceptual_depth = lambda: None
     result = scout.run(temperature=0.0)
     assert isinstance(result, Fizzle)
     assert result.reason == FizzleReason.NO_RELEVANT_DESCRIPTIONS
 
     # object 1 has relevant description but no objects in target string have that descriptor
     description = SimpleNamespace(descriptor="descriptor")
-    source.choose_relevant_description_by_conceptual_depth = lambda: description
+    source.choose_relevant_distinguishing_description_by_conceptual_depth = (
+        lambda: description
+    )
     target.get_relevant_descriptions = lambda: []
     result = scout.run(temperature=0.0)
     assert isinstance(result, Fizzle)
@@ -170,7 +172,9 @@ def test_run():
     )
     source.descriptions = [description_1]
     target.descriptions = [description_2]
-    source.choose_relevant_description_by_conceptual_depth = lambda: description_1
+    source.choose_relevant_distinguishing_description_by_conceptual_depth = (
+        lambda: description_1
+    )
     relevant_descriptions = iter(
         ([SimpleNamespace(descriptor=successor_node)], target.descriptions)
     )
