@@ -17,6 +17,7 @@ class AnswerBuilder:
         self.amount_length_changed = 0
 
     def build(self):
+        self.workspace.snag_object = None
         objects_to_change = self._get_objects_to_change()
         description_type = self.workspace.translated_rule.replaced_description_type
         modified_letters = []
