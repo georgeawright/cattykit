@@ -159,8 +159,7 @@ class Slipnode:
         description_type_count = sum(
             1
             for obj in workspace_string.objects
-            for description in obj.descriptions
-            if description.facet == self
+            if self in [d.facet for d in obj.descriptions]
         )
         return (
             description_type_count / len(workspace_string.objects)
