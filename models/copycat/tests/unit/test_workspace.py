@@ -14,6 +14,9 @@ class MockString:
     def delete_bond(self, bond):
         self.called_delete_bond += 1
 
+    def get_bond_if_present(self, bond):
+        return getattr(self, "existing_bond", bond)
+
     def delete_group(self, group):
         self.called_delete_group += 1
 
@@ -81,6 +84,36 @@ def test_break_bond():
     target.incoming_bonds.append(bond)
     workspace.break_bond(bond)
     assert string.called_delete_bond == 1
+
+
+def test_break_bond_reconciles_to_existing_equivalent_bond():
+    workspace = Workspace(None, None, None, None)
+    string = MockString(objects=[])
+    source = MockObject(string=string)
+    target = MockObject(string=string)
+    existing_bond = SimpleNamespace(
+        source=source,
+        target=target,
+        is_sameness_bond=False,
+        left_object=source,
+        right_object=target,
+    )
+    source.outgoing_bonds.append(existing_bond)
+    target.incoming_bonds.append(existing_bond)
+    string.existing_bond = existing_bond
+    equivalent_bond = SimpleNamespace(
+        source=source,
+        target=target,
+        is_sameness_bond=False,
+        left_object=source,
+        right_object=target,
+    )
+
+    workspace.break_bond(equivalent_bond)
+
+    assert string.called_delete_bond == 1
+    assert source.outgoing_bonds == []
+    assert target.incoming_bonds == []
 
 
 def test_break_group():

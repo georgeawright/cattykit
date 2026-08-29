@@ -110,7 +110,7 @@ class GroupBuilder(Builder):
         for bond in self.proposed_group.bonds:
             if (
                 not workspace_string.contains_bond(bond)
-                and bond.get_flipped_version() not in workspace_string.bonds
+                and not workspace_string.contains_bond(bond.get_flipped_version())
             ):
                 return False
         return True
@@ -196,12 +196,25 @@ class GroupBuilder(Builder):
             )
             if flipped_bond:
                 self.workspace.break_bond(flipped_bond)
-                self.workspace.build_bond(bond)
+                self._build_bond(bond)
             else:
                 existing_bond = self.proposed_group.string.get_bond_if_present(bond)
                 if existing_bond and existing_bond != bond:
                     index = self.proposed_group.bonds.index(bond)
                     self.proposed_group.bonds[index] = existing_bond
+
+    def _build_bond(self, bond):
+        bond.string.add_bond(bond)
+        bond.source.outgoing_bonds.append(bond)
+        bond.target.incoming_bonds.append(bond)
+        if bond.bond_category == self.slipnet["sameness"]:
+            bond.target.outgoing_bonds.append(bond)
+            bond.source.incoming_bonds.append(bond)
+        bond.left_object.right_bond = bond
+        bond.right_object.left_bond = bond
+        self.slipnet.activate_node_from_workspace(bond.bond_category.name)
+        if bond.direction_category is not None:
+            self.slipnet.activate_node_from_workspace(bond.direction_category.name)
 
     def _build_group(self, temperature: float):
         string = self.proposed_group.string

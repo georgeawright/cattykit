@@ -341,6 +341,15 @@ class Workspace:
         return None
 
     def break_bond(self, bond):
+        # A group can retain a bond instance that is semantically equivalent to
+        # one subsequently rebuilt in the string.  The original Lisp calls
+        # `remove` with that stale identity; this silently leaves the canonical
+        # bond in its endpoint lists after its array entry has been cleared.
+        # Reconcile to the canonical instance here instead, so this port keeps
+        # its bond index, endpoint lists, and positional pointers consistent.
+        existing_bond = bond.source.string.get_bond_if_present(bond)
+        if existing_bond:
+            bond = existing_bond
         bond.source.string.delete_bond(bond)
         bond.source.outgoing_bonds.remove(bond)
         bond.target.incoming_bonds.remove(bond)

@@ -62,6 +62,27 @@ def test_has_description():
     assert group.has_description(bond_description)
 
 
+def test_get_bonds_to_be_flipped_uses_semantic_comparison_in_reverse_direction():
+    source = object()
+    target = object()
+    proposed_bond = Mock(source=source, target=target)
+    existing_reverse_bond = Mock()
+    existing_reverse_bond.get_flipped_version.return_value = Mock()
+    proposed_bond.equates_to.return_value = True
+    string = SimpleNamespace(
+        bonds_by_role={
+            source: {target: None},
+            target: {source: existing_reverse_bond},
+        }
+    )
+    group = Group(string, 0, 1, [], [proposed_bond], None, None, None)
+
+    assert group.get_bonds_to_be_flipped() == [existing_reverse_bond]
+    proposed_bond.equates_to.assert_called_once_with(
+        existing_reverse_bond.get_flipped_version.return_value
+    )
+
+
 @pytest.mark.parametrize(
     "descriptor, super_group_descriptors, sub_group_descriptors,"
     " other_group_descriptors, expected",
