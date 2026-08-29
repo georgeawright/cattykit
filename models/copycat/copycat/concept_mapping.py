@@ -177,6 +177,6 @@ class ConceptMapping:
             descriptor_1=self.descriptor_2,
             descriptor_2=self.descriptor_1,
             label=reverse_label,
-            object_1=self.object_2,
-            object_2=self.object_1,
+            object_1=self.object_1,
+            object_2=self.object_2,
         )
