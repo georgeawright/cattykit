@@ -149,7 +149,9 @@ class Slipnode:
             else workspace_string.groups
         )
         descriptor_count = sum(
-            1 for obj in relevant_objects if obj.has_description(self)
+            1
+            for obj in relevant_objects
+            if self in [d.descriptor for d in obj.descriptions]
         )
         return descriptor_count / len(relevant_objects) if relevant_objects else 0
 
