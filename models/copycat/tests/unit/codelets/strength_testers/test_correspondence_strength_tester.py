@@ -29,6 +29,8 @@ def test_run():
     class MockWorkspace:
         def __init__(self):
             self.objects = []
+            self.target_string = Mock()
+            self.target_string.get_group_if_present.return_value = False
             self.delete_proposed_correspondence_called = 0
 
         def delete_proposed_correspondence(self, proposed_correspondence):
@@ -57,9 +59,10 @@ def test_run():
     )
 
     # if object 1 no longer exists, should fizzle
-    workspace.contains_object = lambda x: False
+    workspace.contains_object = Mock(return_value=True)
     result = strength_tester.run(temperature=0.0)
     assert result == Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
+    workspace.contains_object.assert_not_called()
     assert slipnet.activate_called == 0
     assert coderack.post_called == 0
 
@@ -78,7 +81,6 @@ def test_run():
     assert coderack.post_called == 0
 
     # weak correspondence should not post a builder
-    workspace.contains_object = lambda x: True
     workspace.objects.append(proposed_correspondence.target)
     proposed_correspondence.total_strength = 0.0
     strength_tester.target_flipped = False
@@ -100,7 +102,8 @@ def test_run():
     # works when object 2 is flipped
     slipnet.activate_called = 0
     coderack.post_called = 0
-    workspace.objects.append(target_flipped)
+    workspace.objects = [proposed_correspondence.source, target_flipped]
+    workspace.target_string.get_group_if_present.return_value = target_flipped
     strength_tester.target_flipped = True
     result = strength_tester.run(temperature=0.0)
     assert result == Finish()

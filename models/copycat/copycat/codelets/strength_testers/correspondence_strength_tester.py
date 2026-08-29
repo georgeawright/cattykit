@@ -28,14 +28,19 @@ class CorrespondenceStrengthTester(StrengthTester):
         self.target_flipped = target_flipped
 
     def run(self, temperature: float) -> CodeletResult:
-        if not self.workspace.contains_object(self.proposed_correspondence.source):
+        source_exists = any(
+            obj is self.proposed_correspondence.source for obj in self.workspace.objects
+        )
+        target_exists = any(
+            obj is self.proposed_correspondence.target for obj in self.workspace.objects
+        )
+        if not source_exists:
             return Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
-        if not self.workspace.contains_object(
-            self.proposed_correspondence.target
-        ) and not (
+        if not target_exists and not (
             self.target_flipped
-            and self.proposed_correspondence.target.get_flipped_version()
-            in self.workspace.objects
+            and self.workspace.target_string.get_group_if_present(
+                self.proposed_correspondence.target.get_flipped_version()
+            )
         ):
             return Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
         self.proposed_correspondence.update_strength_values()
