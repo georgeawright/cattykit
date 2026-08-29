@@ -86,6 +86,9 @@ class BondBuilder(Builder):
         self.proposed_bond.left_object.right_bond = self.proposed_bond
         self.proposed_bond.right_object.left_bond = self.proposed_bond
         self.slipnet.activate_node_from_workspace(self.proposed_bond.bond_category.name)
+        self.slipnet.activate_node_from_workspace(
+            self.proposed_bond.direction_category.name
+        )
 
     def _get_incompatible_bonds(self) -> List[Bond]:
         incompatble_bonds = []
