@@ -229,4 +229,6 @@ class GroupBuilder(Builder):
     def _reconcile_bonds(self):
         """Prevent groups being built with bonds that have been replaced by equivalents"""
         for i, bond in enumerate(self.proposed_group.bonds):
-            self.proposed_group.bonds[i] = self.workspace.get_bond_if_present(bond)
+            self.proposed_group.bonds[
+                i
+            ] = self.proposed_group.string.get_bond_if_present(bond)
