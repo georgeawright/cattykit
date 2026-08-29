@@ -22,7 +22,8 @@ class Group(WorkspaceObject, WorkspaceStructure):
         bond_category: Slipnode,
         bond_facet: Optional[Slipnode] = None,
     ):
-        super().__init__(string, left_position, right_position)
+        WorkspaceObject.__init__(self, string, left_position, right_position)
+        WorkspaceStructure.__init__(self)
         self.objects = objects
         self.bonds = bonds
         self.group_category = group_category
