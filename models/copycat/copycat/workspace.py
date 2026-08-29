@@ -300,6 +300,10 @@ class Workspace:
         if self.logger is not None:
             self.logger.log(ModelEvent.create("copycat", kind, **data))
 
+    def contains_object(self, o: WorkspaceObject) -> bool:
+        """Returns True if the workspace contains an equivalent group."""
+        return self.contains_group if isinstance(o, Group) else o in self.letters
+
     def contains_group(self, g: Group) -> bool:
         """Returns True if the workspace contains an equivalent group."""
         for group in self.groups:
