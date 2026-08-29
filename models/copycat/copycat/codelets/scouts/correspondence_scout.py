@@ -114,13 +114,13 @@ class CorrespondenceScout(Scout):
         proposed_correspondence = Correspondence(
             self.workspace, source, target, concept_mappings
         )
-        distinguishing_mappings = proposed_correspondence.get_distinguishing_mappings()
-        for mapping in distinguishing_mappings:
+        for mapping in proposed_correspondence.concept_mappings:
             self.slipnet.activate_node_from_workspace(mapping.description_type_1.name)
             self.slipnet.activate_node_from_workspace(mapping.descriptor_1.name)
             self.slipnet.activate_node_from_workspace(mapping.description_type_2.name)
             self.slipnet.activate_node_from_workspace(mapping.descriptor_2.name)
         self.workspace.add_proposed_correspondence(proposed_correspondence)
+        distinguishing_mappings = proposed_correspondence.get_distinguishing_mappings()
         urgency = sum(mapping.strength for mapping in distinguishing_mappings) / len(
             distinguishing_mappings
         )
