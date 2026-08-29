@@ -56,7 +56,7 @@ class CorrespondenceBuilder(Builder):
                 self.proposed_correspondence,
                 self.proposed_correspondence.letter_span(),
                 [incompatible_correspondence],
-                len(incompatible_correspondence),
+                incompatible_correspondence.letter_span(),
                 temperature=temperature,
             )
             if not fight_result:

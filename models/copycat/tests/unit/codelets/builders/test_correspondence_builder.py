@@ -207,9 +207,9 @@ def test_fizzles_if_incompatible_correspondences_win():
     mapping_2 = Mock()
     mapping_1.is_relevant.return_value = True
 
-    correspondence = MagicMock()
+    correspondence = Mock()
     correspondence.total_strength = 0
-    correspondence.__len__.return_value = 2
+    correspondence.letter_span.return_value = 2
     correspondence.source = Mock()
     correspondence.source.correspondence = None
     correspondence.target = Mock()
@@ -217,10 +217,10 @@ def test_fizzles_if_incompatible_correspondences_win():
     correspondence.concept_mappings = [mapping_1, mapping_2]
     workspace.objects += [correspondence.source, correspondence.target]
 
-    incompatible_correspondence = MagicMock()
+    incompatible_correspondence = Mock()
     incompatible_correspondence.is_incompatible_argumentwise_with.return_value = True
     incompatible_correspondence.total_strength = 1
-    incompatible_correspondence.__len__.return_value = 10
+    incompatible_correspondence.letter_span.return_value = 10
     workspace.correspondences.append(incompatible_correspondence)
 
     builder = CorrespondenceBuilder(
@@ -412,9 +412,9 @@ def test_breaks_incompatible_structures_and_builds_correspondence():
     mapping_2 = Mock()
     mapping_1.is_relevant.return_value = True
 
-    correspondence = MagicMock()
+    correspondence = Mock()
     correspondence.total_strength = 1
-    correspondence.__len__.return_value = 4
+    correspondence.letter_span.return_value = 4
     correspondence.source = Mock()
     correspondence.source.is_changed_letter = True
     correspondence.source.correspondence = None
@@ -423,12 +423,14 @@ def test_breaks_incompatible_structures_and_builds_correspondence():
     correspondence.target.correspondence = None
     correspondence.target.get_relevant_descriptions = lambda: [Mock()]
     correspondence.concept_mappings = [mapping_1, mapping_2]
+    correspondence.get_relevant_distinguishing_mappings.return_value = [Mock()]
+    correspondence.accessory_concept_mappings = [Mock()]
     workspace.objects += [correspondence.source, correspondence.target]
 
-    incompatible_correspondence = MagicMock()
+    incompatible_correspondence = Mock()
     incompatible_correspondence.is_incompatible_argumentwise_with.return_value = True
     incompatible_correspondence.total_strength = 0
-    incompatible_correspondence.__len__.return_value = 10
+    incompatible_correspondence.letter_span.return_value = 10
     workspace.correspondences.append(incompatible_correspondence)
 
     source_bond = Mock()
