@@ -190,7 +190,7 @@ class Bond(WorkspaceStructure):
             if (
                 next_bond is not None
                 and next_bond.bond_category == self.bond_category
-                and next_bond.bond_facet == self.bond_facet
+                and next_bond.direction_category == self.direction_category
             ):
                 support_sum += 1
             right_object = left_object
@@ -204,7 +204,7 @@ class Bond(WorkspaceStructure):
             if (
                 next_bond is not None
                 and next_bond.bond_category == self.bond_category
-                and next_bond.bond_facet == self.bond_facet
+                and next_bond.direction_category == self.direction_category
             ):
                 support_sum += 1
             left_object = right_object
