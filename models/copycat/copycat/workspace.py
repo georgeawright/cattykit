@@ -302,7 +302,7 @@ class Workspace:
 
     def contains_object(self, o: WorkspaceObject) -> bool:
         """Returns True if the workspace contains an equivalent group."""
-        return self.contains_group if isinstance(o, Group) else o in self.letters
+        return self.contains_group(o) if isinstance(o, Group) else o in self.letters
 
     def contains_group(self, g: Group) -> bool:
         """Returns True if the workspace contains an equivalent group."""
