@@ -72,6 +72,9 @@ class MockWorkspaceString:
     def delete_proposed_group(self, group):
         self.delete_proposed_group_called += 1
 
+    def contains_bond(self, bond):
+        return bond in self.bonds
+
 
 def test_transfers_descriptions_and_fizzles_if_group_exists():
     workspace = MockWorkspace()
