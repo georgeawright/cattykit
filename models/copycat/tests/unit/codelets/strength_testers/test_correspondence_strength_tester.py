@@ -57,7 +57,7 @@ def test_run():
     )
 
     # if object 1 no longer exists, should fizzle
-    workspace.contains_group = lambda x: False
+    workspace.contains_object = lambda x: False
     result = strength_tester.run(temperature=0.0)
     assert result == Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
     assert slipnet.activate_called == 0
@@ -78,7 +78,7 @@ def test_run():
     assert coderack.post_called == 0
 
     # weak correspondence should not post a builder
-    workspace.contains_group = lambda x: True
+    workspace.contains_object = lambda x: True
     workspace.objects.append(proposed_correspondence.target)
     proposed_correspondence.total_strength = 0.0
     strength_tester.target_flipped = False

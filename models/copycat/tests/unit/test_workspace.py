@@ -164,19 +164,19 @@ def test_unbonded_objects():
     a = SimpleNamespace(
         spans_whole_string=lambda: False,
         group=None,
-        bonds=[],
+        outgoing_and_incoming_bonds=[],
         is_at_edge_of_string=lambda: True,
     )
     b = SimpleNamespace(
         spans_whole_string=lambda: False,
         group=None,
-        bonds=[],
+        outgoing_and_incoming_bonds=[],
         is_at_edge_of_string=lambda: False,
     )
     c = SimpleNamespace(
         spans_whole_string=lambda: False,
         group=None,
-        bonds=[],
+        outgoing_and_incoming_bonds=[],
         is_at_edge_of_string=lambda: True,
     )
     objects = [a, b, c]
@@ -185,12 +185,12 @@ def test_unbonded_objects():
     workspace = Workspace(initial_string, None, target_string, None)
     assert 3 == len(workspace.unbonded_objects)
     a_to_b = SimpleNamespace()
-    a.bonds.append(a_to_b)
-    b.bonds.append(a_to_b)
+    a.outgoing_and_incoming_bonds.append(a_to_b)
+    b.outgoing_and_incoming_bonds.append(a_to_b)
     assert 2 == len(workspace.unbonded_objects)
     b_to_c = SimpleNamespace()
-    b.bonds.append(b_to_c)
-    c.bonds.append(b_to_c)
+    b.outgoing_and_incoming_bonds.append(b_to_c)
+    c.outgoing_and_incoming_bonds.append(b_to_c)
     assert 0 == len(workspace.unbonded_objects)
 
 
