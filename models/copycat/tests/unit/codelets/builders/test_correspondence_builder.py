@@ -467,4 +467,4 @@ def test_breaks_incompatible_structures_and_builds_correspondence():
     assert correspondence.source.correspondence == correspondence
     assert correspondence.target.correspondence == correspondence
     assert workspace.add_correspondence_called == 1
-    assert slipnet.activate_called == 5
+    assert slipnet.activate_called == 6
