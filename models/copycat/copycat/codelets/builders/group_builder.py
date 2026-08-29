@@ -108,10 +108,9 @@ class GroupBuilder(Builder):
 
     def _all_bonds_still_exist(self, workspace_string: "WorkspaceString") -> bool:
         for bond in self.proposed_group.bonds:
-            if (
-                not workspace_string.contains_bond(bond)
-                and not workspace_string.contains_bond(bond.get_flipped_version())
-            ):
+            if not workspace_string.contains_bond(
+                bond
+            ) and not workspace_string.contains_bond(bond.get_flipped_version()):
                 return False
         return True
 
@@ -219,9 +218,15 @@ class GroupBuilder(Builder):
     def _build_group(self, temperature: float):
         string = self.proposed_group.string
         string.add_group(self.proposed_group)
+        self._reconcile_bonds()
         for obj in self.proposed_group.objects:
             obj.group = self.proposed_group
         for bond in self.proposed_group.bonds:
             bond.group = self.proposed_group
         for description in self.proposed_group.descriptions:
             self.slipnet.activate_node_from_workspace(description.descriptor.name)
+
+    def _reconcile_bonds(self):
+        """Prevent groups being built with bonds that have been replaced by equivalents"""
+        for i, bond in enumerate(self.proposed_group.bonds):
+            self.proposed_group.bonds[i] = self.workspace.get_bond_if_present(bond)

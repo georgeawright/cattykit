@@ -57,6 +57,9 @@ class MockWorkspace:
     def break_correspondence(self, correspondence):
         self.break_correspondence_called += 1
 
+    def get_bond_if_present(self, bond):
+        return Mock()
+
 
 class MockWorkspaceString:
     def __init__(self, groups):
