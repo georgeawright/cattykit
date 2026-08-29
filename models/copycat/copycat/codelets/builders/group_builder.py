@@ -109,7 +109,7 @@ class GroupBuilder(Builder):
     def _all_bonds_still_exist(self, workspace_string: "WorkspaceString") -> bool:
         for bond in self.proposed_group.bonds:
             if (
-                bond not in workspace_string.bonds
+                not workspace_string.contains_bond(bond)
                 and bond.get_flipped_version() not in workspace_string.bonds
             ):
                 return False

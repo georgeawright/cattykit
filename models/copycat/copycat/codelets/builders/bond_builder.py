@@ -35,7 +35,7 @@ class BondBuilder(Builder):
             or self.proposed_bond.target not in self.workspace.objects
         ):
             return Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
-        if self.proposed_bond in self.proposed_bond.string.bonds:
+        if self.proposed_bond.string.contains_bond(self.proposed_bond):
             return Fizzle(FizzleReason.STRUCTURE_ALREADY_EXISTS)
         self.proposed_bond.string.delete_proposed_bond(self.proposed_bond)
         incompatible_bonds = self._get_incompatible_bonds()

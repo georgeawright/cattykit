@@ -126,6 +126,13 @@ class WorkspaceString:
                 letter_category=letter.letter_category.name,
             )
 
+    def contains_bond(self, b) -> bool:
+        """Returns True if the string contains an equivalent bond."""
+        for bond in self.bonds:
+            if b.equates_to(bond):
+                return True
+        return False
+
     def add_proposed_bond(self, bond):
         """Add to a maintained list of proposed bonds between two nodes."""
         self.proposed_bonds_by_role[bond.source][bond.target].append(bond)
