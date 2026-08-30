@@ -218,7 +218,7 @@ def test_fizzles_if_incompatible_correspondences_win():
     workspace.objects += [correspondence.source, correspondence.target]
 
     incompatible_correspondence = Mock()
-    incompatible_correspondence.is_incompatible_argumentwise_with.return_value = True
+    correspondence.is_incompatible_argumentwise_with.return_value = True
     incompatible_correspondence.total_strength = 1
     incompatible_correspondence.letter_span.return_value = 10
     workspace.correspondences.append(incompatible_correspondence)
@@ -428,7 +428,7 @@ def test_breaks_incompatible_structures_and_builds_correspondence():
     workspace.objects += [correspondence.source, correspondence.target]
 
     incompatible_correspondence = Mock()
-    incompatible_correspondence.is_incompatible_argumentwise_with.return_value = True
+    correspondence.is_incompatible_argumentwise_with.return_value = True
     incompatible_correspondence.total_strength = 0
     incompatible_correspondence.letter_span.return_value = 10
     workspace.correspondences.append(incompatible_correspondence)

@@ -161,13 +161,14 @@ class CorrespondenceBuilder(Builder):
         return False
 
     def _get_incompatible_correspondences(self):
+        proposed = self.proposed_correspondence
         return [
             c
             for c in self.workspace.correspondences
-            if c.is_incompatible_argumentwise_with(self.proposed_correspondence)
-            or c.is_incompatible_structurally_with(self.proposed_correspondence)
-            or c.is_incompatible_conceptually_with(self.proposed_correspondence)
-            or c.is_incompatible_boundarywise_with(self.proposed_correspondence)
+            if proposed.is_incompatible_argumentwise_with(c)
+            or proposed.is_incompatible_structurally_with(c)
+            or proposed.is_incompatible_conceptually_with(c)
+            or proposed.is_incompatible_boundarywise_with(c)
         ]
 
     def _get_incompatible_bond(self) -> Optional[Bond]:

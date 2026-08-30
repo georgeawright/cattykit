@@ -39,7 +39,7 @@ def test_is_incompatible_conceptually_with():
     mapping_1.is_incompatible_with = lambda other: other != mapping_2
 
     mapping_3 = SimpleNamespace()
-    mapping_3.is_distinguishing = lambda: True
+    mapping_3.is_distinguishing = lambda: False
 
     correspondence_1 = Correspondence(
         None,
@@ -106,18 +106,29 @@ def test_is_incompatible_structurally_with():
     assert correspondence_1.is_incompatible_structurally_with(correspondence_3) is False
     assert correspondence_3.is_incompatible_structurally_with(correspondence_1) is False
 
-    correspondence_4 = Correspondence(
+    group_correspondence = Correspondence(
         None, source=group_a_b, target=group_i_i, concept_mappings=[]
     )
-    letter_a_2.group = group_a_b
-    letter_b.group = group_a_b
-    letter_i_2.group = group_i_i
-    letter_j.group = group_i_j
-    correspondence_5 = Correspondence(
-        None, source=letter_a_2, target=letter_i_1, concept_mappings=[]
+    incompatible_member_correspondence = Correspondence(
+        None, source=letter_a_1, target=letter_j, concept_mappings=[]
+    )
+    letter_a_1.correspondence = incompatible_member_correspondence
+    assert (
+        group_correspondence.is_incompatible_structurally_with(
+            incompatible_member_correspondence
+        )
+        is True
     )
 
-    assert correspondence_4.is_incompatible_structurally_with(correspondence_5) is True
+    unrelated_correspondence = Correspondence(
+        None, source=letter_a_2, target=letter_i_2, concept_mappings=[]
+    )
+    assert (
+        group_correspondence.is_incompatible_structurally_with(
+            unrelated_correspondence
+        )
+        is False
+    )
 
 
 def test_is_incompatible_boundarywise_with():
@@ -125,13 +136,13 @@ def test_is_incompatible_boundarywise_with():
     opposite_category = SimpleNamespace(name="opposite")
     identity_mapping = SimpleNamespace(
         label=identity_category,
-        description_type_1=SimpleNamespace(name="direction-category"),
-        description_type_2=SimpleNamespace(name="direction-category"),
+        description_type_1=SimpleNamespace(name="direction_category"),
+        description_type_2=SimpleNamespace(name="direction_category"),
     )
     opposite_mapping = SimpleNamespace(
         label=opposite_category,
-        description_type_1=SimpleNamespace(name="direction-category"),
-        description_type_2=SimpleNamespace(name="direction-category"),
+        description_type_1=SimpleNamespace(name="direction_category"),
+        description_type_2=SimpleNamespace(name="direction_category"),
     )
 
     source_left = SimpleNamespace()
@@ -204,11 +215,24 @@ def test_is_incompatible_boundarywise_with():
         group_correspondence_identity.is_incompatible_boundarywise_with(
             left_correspondence_opposite
         )
-        is False
+        is True
     )
     assert (
         group_correspondence_identity.is_incompatible_boundarywise_with(
             right_correspondence_opposite
+        )
+        is True
+    )
+
+    unrelated_correspondence = Correspondence(
+        None,
+        source=SimpleNamespace(),
+        target=SimpleNamespace(),
+        concept_mappings=[],
+    )
+    assert (
+        group_correspondence_identity.is_incompatible_boundarywise_with(
+            unrelated_correspondence
         )
         is False
     )

@@ -96,39 +96,52 @@ class Correspondence(WorkspaceStructure):
 
     def is_incompatible_argumentwise_with(self, other: Correspondence) -> bool:
         """Self and other share objects."""
-        return self.source == other.source or self.target == other.target
+        return self.source is other.source or self.target is other.target
 
     def is_incompatible_conceptually_with(self, other: Correspondence) -> bool:
         """Self has a concept mapping incompatible with other's concept mappings."""
-        for mapping_1 in self.get_distinguishing_mappings():
-            for mapping_2 in other.get_distinguishing_mappings():
+        for mapping_1 in self.concept_mappings:
+            for mapping_2 in other.concept_mappings:
                 if mapping_1.is_incompatible_with(mapping_2):
                     return True
         return False
 
     def is_incompatible_structurally_with(self, other: Correspondence) -> bool:
-        """Self and other connect objects in one group to objects in different groups."""
+        """Return whether group membership makes ``other`` incompatible with self."""
         from copycat.workspace_objects import Group, Letter
 
-        def _args_match(arg_1, arg_2):
-            # same object
-            if arg_1 == arg_2:
-                return True
-            # arg 2 is in arg 1
-            if isinstance(arg_1, Group) and arg_2 in arg_1.objects:
-                return True
-            # arg 1 is in arg 2
-            if isinstance(arg_2, Group) and arg_1 in arg_2.objects:
-                return True
-            # arg 1 and arg 2 are in the same group
-            if arg_1.group is not None and arg_1.group == arg_2.group:
-                return True
-            return False
+        def _is_member(obj, group: Group) -> bool:
+            return any(obj is member for member in group.objects)
 
-        return not (
-            _args_match(self.source, other.source)
-            and _args_match(self.target, other.target)
-        )
+        if isinstance(self.source, Group):
+            for member in self.source.objects:
+                if member.correspondence is not other:
+                    continue
+                if isinstance(self.target, Letter) or not _is_member(
+                    other.target, self.target
+                ):
+                    return True
+
+        if isinstance(self.target, Group):
+            for member in self.target.objects:
+                if member.correspondence is not other:
+                    continue
+                if isinstance(self.source, Letter) or not _is_member(
+                    other.source, self.source
+                ):
+                    return True
+
+        source_group = self.source.group
+        if source_group is not None and source_group.correspondence is other:
+            if self.target.group is None or self.target.group is not other.target:
+                return True
+
+        target_group = self.target.group
+        if target_group is not None and target_group.correspondence is other:
+            if self.source.group is None or self.source.group is not other.source:
+                return True
+
+        return False
 
     def is_incompatible_boundarywise_with(self, other: Correspondence) -> bool:
         """Self is between string-spanning groups and other is between member objects
@@ -140,28 +153,19 @@ class Correspondence(WorkspaceStructure):
             and other is not None
         ):
             return False
-        return not (
-            (
-                other == self.source.left_object.correspondence
-                and other.target == self.target.left_object
-                and self.direction_mapping.name == "identity"
-            )
-            or (
-                other == self.source.left_object.correspondence
-                and other.target == self.target.right_object
-                and self.direction_mapping.name == "opposite"
-            )
-            or (
-                other == self.source.right_object.correspondence
-                and other.target == self.target.right_object
-                and self.direction_mapping.name == "identity"
-            )
-            or (
-                other == self.source.right_object.correspondence
-                and other.target == self.target.left_object
-                and self.direction_mapping.name == "opposite"
-            )
-        )
+        left_correspondence = self.source.left_object.correspondence
+        right_correspondence = self.source.right_object.correspondence
+        if self.direction_mapping.name == "identity":
+            if other is left_correspondence:
+                return other.target is not self.target.left_object
+            if other is right_correspondence:
+                return other.target is not self.target.right_object
+        elif self.direction_mapping.name == "opposite":
+            if other is left_correspondence:
+                return other.target is not self.target.right_object
+            if other is right_correspondence:
+                return other.target is not self.target.left_object
+        return False
 
     def calculate_internal_strength(self) -> float:
         relevant_distinguishing_mappings = self.get_relevant_distinguishing_mappings()
