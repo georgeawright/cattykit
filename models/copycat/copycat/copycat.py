@@ -43,10 +43,10 @@ DESCRIPTION_TESTERS = {
     "is_whole": lambda x: isinstance(x, Group) and x.spans_whole_string(),
     # ALPHABETIC POSITION
     "is_first": lambda x: (lambda d: d.name == "a" if d is not None else False)(
-        x.descriptor_with_facet_name("letter_category")
+        x.get_descriptor_with_facet_name("letter_category")
     ),
     "is_last": lambda x: (lambda d: d.name == "z" if d is not None else False)(
-        x.descriptor_with_facet_name("letter_category")
+        x.get_descriptor_with_facet_name("letter_category")
     ),
     # OBJECT TYPE
     "is_letter_object": lambda x: isinstance(x, Letter),
