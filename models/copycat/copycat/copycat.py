@@ -500,6 +500,13 @@ class Copycat:
             for description in self.workspace.snag_object.descriptions:
                 self.slipnet.unclamp_node(description.descriptor.name)
             self.workspace.snag_object.salience_is_clamped = False
+            self.logger.log(
+                ModelEvent.create(
+                    "copycat",
+                    "snag_ended",
+                    time=self.coderack.number_of_codelets_run,
+                )
+            )
 
     def _clamp_initially_clamped_nodes(self):
         for node in self.initially_clamped_nodes:

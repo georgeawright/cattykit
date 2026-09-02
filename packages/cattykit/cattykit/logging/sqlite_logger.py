@@ -61,6 +61,13 @@ class SQLiteLogger:
                 number_of_snags INTEGER NOT NULL DEFAULT 0
             );
 
+            CREATE TABLE IF NOT EXISTS snags (
+                id INTEGER PRIMARY KEY,
+                run_id INTEGER NOT NULL REFERENCES runs(id),
+                snag_start INTEGER NOT NULL,
+                snag_end INTEGER
+            );
+
             CREATE TABLE IF NOT EXISTS codelets (
                 id INTEGER PRIMARY KEY,
                 run_id INTEGER NOT NULL REFERENCES runs(id),
@@ -353,6 +360,15 @@ class SQLiteLogger:
             self._connection.execute(
                 "UPDATE runs SET number_of_snags = number_of_snags + 1 WHERE id = ?",
                 (run_id,),
+            )
+            self._connection.execute(
+                "INSERT INTO snags (run_id, snag_start) VALUES (?, ?)",
+                (run_id, data.get("time")),
+            )
+        elif event.kind == "snag_ended":
+            self._connection.execute(
+                "UPDATE snags SET snag_end = ? WHERE run_id = ? AND snag_end IS NULL",
+                (data.get("time"), run_id),
             )
         elif event.kind in {"codelet_selected", "codelet_started"}:
             cursor = self._connection.execute(
