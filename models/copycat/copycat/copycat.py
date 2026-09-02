@@ -17,7 +17,7 @@ from .snag_exception import SnagException
 from .workspace import Workspace
 from .workspace_objects import Group, Letter
 from .workspace_structure import WorkspaceStructure
-from .workspace_structures import Bond, Description
+from .workspace_structures import Bond, Correspondence, Description, Rule
 
 DESCRIPTION_TESTERS = {
     # LENGTH
@@ -485,22 +485,13 @@ class Copycat:
     def _probabilistically_unsnag(self):
         """Check if new structures have been made since snag
         and probabilistically end snag."""
-        new_structure_list = [
+        new_structures = [
             structure
             for structure in self.workspace.structures
             if not isinstance(structure, Bond)
-            and not any(
-                [
-                    structure.equates_to(snag_structure)
-                    for snag_structure in self.snag_structures
-                ]
-            )
+            and not self._structure_in_snag_structures(structure)
         ]
-        unclamp_probability = (
-            max([s.total_strength for s in new_structure_list])
-            if new_structure_list
-            else 0
-        )
+        unclamp_probability = max((s.total_strength for s in new_structures), default=0)
         if unclamp_probability > random.random():
             self.snag_condition = False
             self.clamp_temperature = False
@@ -542,3 +533,28 @@ class Copycat:
 
     def delete_answer(self):
         pass
+
+    def _structure_in_snag_structures(self, structure: WorkspaceStructure) -> bool:
+        for old in self.snag_structures:
+            if isinstance(structure, Group) and isinstance(old, Group):
+                if (
+                    old.left_object is structure.left_object
+                    and old.right_object is structure.right_object
+                    and old.group_category is structure.group_category
+                    and old.direction_category is structure.direction_category
+                ):
+                    return True
+            elif isinstance(structure, Correspondence) and isinstance(
+                old, Correspondence
+            ):
+                if (
+                    old.source is structure.source
+                    and old.target is structure.target
+                    and len(old.get_relevant_distinguishing_mappings())
+                    >= len(structure.get_relevant_distinguishing_mappings())
+                ):
+                    return True
+            elif isinstance(structure, Rule) and isinstance(old, Rule):
+                if old.equates_to(structure):
+                    return True
+        return False
