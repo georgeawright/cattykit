@@ -330,7 +330,10 @@ class Copycat:
                         time=self.coderack.number_of_codelets_run,
                     )
                 )
+                rule = self.workspace.rule
+                translated_rule = self.workspace.translated_rule
                 self.handle_snag()
+                self._log_rule_changes(None, rule, translated_rule)
 
     def _log_answer_letters(self, previous_answer_letters) -> None:
         """Record the answer-string replacement produced by AnswerBuilder."""
@@ -418,9 +421,10 @@ class Copycat:
 
     def _log_rule_changes(self, codelet, rule, translated_rule) -> None:
         """Record rule state, which is owned by Copycat rather than a component."""
-        proposed_rule = getattr(codelet, "proposed_rule", None)
-        if proposed_rule is not None:
-            self._log_rule("rule_proposed", proposed_rule)
+        if codelet is not None:
+            proposed_rule = getattr(codelet, "proposed_rule", None)
+            if proposed_rule is not None:
+                self._log_rule("rule_proposed", proposed_rule)
         if self.workspace.rule is not rule:
             if rule is not None:
                 self._log_rule("rule_destroyed", rule)
@@ -459,10 +463,13 @@ class Copycat:
         )
 
     def _update_temperature(self):
-        if self.clamp_temperature:
-            return
-        rule_weakness = self.workspace.rule.total_weakness if self.workspace.rule else 1
-        self.temperature = self.workspace.total_unhappiness * 0.8 + rule_weakness * 0.2
+        if not self.clamp_temperature:
+            rule_weakness = (
+                self.workspace.rule.total_weakness if self.workspace.rule else 1
+            )
+            self.temperature = (
+                self.workspace.total_unhappiness * 0.8 + rule_weakness * 0.2
+            )
         time = 0 if self.coderack is None else self.coderack.number_of_codelets_run
         self.logger.log(
             ModelEvent.create(
