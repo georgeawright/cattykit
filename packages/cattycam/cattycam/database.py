@@ -74,6 +74,10 @@ def run_overview_series(database: str | Path, run_id: int) -> dict[str, list[tup
                UNION ALL SELECT creation_time, destruction_time FROM groups WHERE run_id = ?""",
             (run_id, run_id),
         ).fetchall()
+        snags = connection.execute(
+            "SELECT snag_start, snag_end FROM snags WHERE run_id = ? ORDER BY snag_start",
+            (run_id,),
+        ).fetchall()
 
     coderack: list[tuple] = []
     temperature: list[tuple] = []
@@ -98,12 +102,17 @@ def run_overview_series(database: str | Path, run_id: int) -> dict[str, list[tup
             for creation_time, destruction_time in rows
         )
 
+    all_times = sorted(times)
     return {
         "coderack": coderack,
         "temperature": temperature,
         "workspace": [
             (time, live_count(objects, time) + live_count(structures, time))
-            for time in sorted(times)
+            for time in all_times
+        ],
+        "snags": [
+            (start, end if end is not None else (all_times[-1] if all_times else start))
+            for start, end in snags
         ],
     }
 

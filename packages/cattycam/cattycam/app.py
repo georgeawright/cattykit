@@ -14,7 +14,7 @@ from urllib.parse import urlencode
 import param
 import pandas as pd
 import panel as pn
-from bokeh.models import ColumnDataSource, FactorRange, FixedTicker, Label, LabelSet, Range1d, Span
+from bokeh.models import BoxAnnotation, ColumnDataSource, FactorRange, FixedTicker, Label, LabelSet, Range1d, Span
 from bokeh.plotting import figure
 
 # Panel executes a served file as a script, rather than as a package module.
@@ -762,15 +762,17 @@ def _run_overview(
                 series["coderack"],
                 "Number of codelets on coderack",
                 codelet_time,
+                series["snags"],
             ),
             _line_chart(
                 "Temperature",
                 series["temperature"],
                 "Temperature",
                 codelet_time,
+                series["snags"],
                 value_formatter=lambda value: f"{float(value):.2f}",
             ),
-            _workspace_chart(series["workspace"], codelet_time),
+            _workspace_chart(series["workspace"], codelet_time, series["snags"]),
             sizing_mode="stretch_width",
         ),
         sizing_mode="stretch_width",
@@ -782,6 +784,7 @@ def _line_chart(
     values: list[tuple],
     y_axis_label: str,
     codelet_time: pn.widgets.EditableIntSlider,
+    snags: list[tuple[int, int]],
     value_formatter=str,
 ) -> pn.viewable.Viewable:
     if not values:
@@ -795,12 +798,13 @@ def _line_chart(
         toolbar_location=None,
     )
     chart.line(*zip(*values), line_width=2)
+    _add_snag_bands(chart, snags)
     _add_time_marker(chart, codelet_time, values, value_formatter)
     return chart
 
 
 def _workspace_chart(
-    values: list[tuple], codelet_time: pn.widgets.EditableIntSlider
+    values: list[tuple], codelet_time: pn.widgets.EditableIntSlider, snags: list[tuple[int, int]]
 ) -> pn.viewable.Viewable:
     if not values:
         return pn.pane.Alert("No workspace data was logged.", alert_type="info")
@@ -814,8 +818,23 @@ def _workspace_chart(
         toolbar_location=None,
     )
     chart.line(times, totals, line_width=2, color="#1f77b4")
+    _add_snag_bands(chart, snags)
     _add_time_marker(chart, codelet_time, values, str)
     return chart
+
+
+def _add_snag_bands(chart, snags: list[tuple[int, int]]) -> None:
+    """Shade time intervals during which Copycat was in a snag condition."""
+    for start, end in snags:
+        chart.add_layout(
+            BoxAnnotation(
+                left=start,
+                right=end,
+                fill_color="#9ca3af",
+                fill_alpha=0.22,
+                level="underlay",
+            )
+        )
 
 
 def _add_time_marker(

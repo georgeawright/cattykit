@@ -73,6 +73,9 @@ def test_run_overview_series_uses_attribute_and_lifecycle_history(tmp_path) -> N
                 f"CREATE TABLE {table} "
                 "(run_id INTEGER, creation_time INTEGER, destruction_time INTEGER)"
             )
+        connection.execute(
+            "CREATE TABLE snags (run_id INTEGER, snag_start INTEGER, snag_end INTEGER)"
+        )
         connection.executemany(
             "INSERT INTO attribute_values "
             "(run_id, time, object_id, attribute, value_json) VALUES (?, ?, ?, ?, ?)",
@@ -83,11 +86,13 @@ def test_run_overview_series_uses_attribute_and_lifecycle_history(tmp_path) -> N
         )
         connection.execute("INSERT INTO letters VALUES (1, 0, NULL)")
         connection.execute("INSERT INTO bonds VALUES (1, 1, 2)")
+        connection.execute("INSERT INTO snags VALUES (1, 1, 2)")
 
     assert run_overview_series(database, 1) == {
         "coderack": [(1, 12)],
         "temperature": [(2, 0.5)],
         "workspace": [(0, 2), (1, 3), (2, 2)],
+        "snags": [(1, 2)],
     }
 
 
