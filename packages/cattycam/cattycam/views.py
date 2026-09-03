@@ -71,6 +71,7 @@ def _problem_overview(model: str, problem: str, runs: pd.DataFrame) -> pn.Column
         if not measured_temperatures.empty
         else "—"
     )
+    total_snags = runs["number_of_snags"].sum()
 
     def statistic(value: float) -> str:
         return "—" if pd.isna(value) else f"{value:.2f}"
@@ -82,6 +83,7 @@ def _problem_overview(model: str, problem: str, runs: pd.DataFrame) -> pn.Column
         f"<li>Final temperature: mean {statistic(temperatures.mean())}, stdev {statistic(temperatures.std())}</li>"
         f"<li>Most common solution: {html.escape(str(most_common_solution))}</li>"
         f"<li>Solution with lowest temperature: {html.escape(str(lowest_temperature_solution))}</li>"
+        f"<li>Total snags: {total_snags}</li>"
         "</ul>"
     )
     source = ColumnDataSource(
