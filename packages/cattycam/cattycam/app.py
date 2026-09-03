@@ -6,6 +6,7 @@ Run with ``panel serve cattycam/app.py --show --args path/to/history.sqlite``.
 from __future__ import annotations
 
 import html
+import math
 import sys
 from pathlib import Path
 from typing import Any
@@ -16,6 +17,7 @@ import pandas as pd
 import panel as pn
 from bokeh.models import BoxAnnotation, ColumnDataSource, FactorRange, FixedTicker, Label, LabelSet, Range1d, Span
 from bokeh.plotting import figure
+from bokeh.transform import jitter
 
 # Panel executes a served file as a script, rather than as a package module.
 # Add the source-package root so this works with ``panel serve cattycam/app.py``.
@@ -706,23 +708,16 @@ def _problem_overview(model: str, problem: str, runs: pd.DataFrame) -> pn.Column
         {
             "solution": solution_summary["solution"].astype(str).tolist(),
             "frequency": solution_summary["frequency"].tolist(),
-            "label": [
-                f"T {statistic(temperature)}, C {statistic(codelets_run)}"
-                for temperature, codelets_run in zip(
-                    solution_summary["mean_temperature"],
-                    solution_summary["mean_codelets"],
-                    strict=True,
-                )
-            ],
+            "label": [str(frequency) for frequency in solution_summary["frequency"]],
         }
     )
     solution_count = len(solution_summary)
-    maximum_frequency = max(source.data["frequency"])
+    total_frequency = sum(source.data["frequency"])
     padding_factors = ["\u00a0" * (index + 1) for index in range(10 - solution_count)]
     chart = figure(
-        title="Solution frequency",
+        title=f"{str(model).capitalize()} Solution frequency for problem {problem}",
         x_range=FactorRange(*source.data["solution"], *padding_factors),
-        y_range=Range1d(0, maximum_frequency * 1.25),
+        y_range=Range1d(0, total_frequency * 1.08),
         x_axis_label="Solution",
         y_axis_label="Runs",
         height=360,
@@ -737,20 +732,128 @@ def _problem_overview(model: str, problem: str, runs: pd.DataFrame) -> pn.Column
             text="label",
             y_offset=8,
             text_align="center",
+            text_baseline="bottom",
             text_font_size="9px",
             source=source,
         )
     )
-    chart.yaxis.ticker = FixedTicker(ticks=list(range(maximum_frequency + 1)))
+    target_y_tick_step = total_frequency / 4
+    magnitude = 10 ** math.floor(math.log10(target_y_tick_step))
+    normalized_step = target_y_tick_step / magnitude
+    y_tick_step = max(
+        1,
+        int(
+            next(
+                multiplier * magnitude
+                for multiplier in (1, 2, 5, 10)
+                if normalized_step <= multiplier
+            )
+        ),
+    )
+    y_ticks = list(range(0, total_frequency + 1, y_tick_step))
+    if y_ticks[-1] != total_frequency:
+        y_ticks.append(total_frequency)
+    chart.yaxis.ticker = FixedTicker(ticks=y_ticks)
     chart.xaxis.major_label_orientation = 0
+    chart.background_fill_color = "white"
+    chart.grid.grid_line_color = None
+    codelet_chart = _solution_codelets_chart(
+        model, problem, solution_runs, source.data["solution"], padding_factors
+    )
     return pn.Column(
         f"## Runs of {model} on problem {problem}",
         statistics,
         chart,
+        codelet_chart,
         "### Runs",
         _run_group_table(runs, list(runs.columns), collapsed=False),
         sizing_mode="stretch_width",
     )
+
+
+def _solution_codelets_chart(
+    model: str,
+    problem: str,
+    solution_runs: pd.DataFrame,
+    solutions: list[str],
+    padding_factors: list[str],
+) -> pn.viewable.Viewable:
+    """Plot individual run lengths and boxplots for the ordered solutions."""
+    runs = solution_runs.assign(
+        codelets=pd.to_numeric(solution_runs["number_of_codelets_run"], errors="coerce")
+    ).dropna(subset=["codelets"])
+    if runs.empty:
+        return pn.pane.Alert("No codelet-run data was logged.", alert_type="info")
+
+    boxplot_rows = []
+    for solution in solutions:
+        values = runs.loc[runs["solution"] == solution, "codelets"]
+        q1, median, q3 = values.quantile([0.25, 0.5, 0.75])
+        iqr = q3 - q1
+        lower = values[values >= q1 - 1.5 * iqr].min()
+        upper = values[values <= q3 + 1.5 * iqr].max()
+        standard_deviation = values.std()
+        boxplot_rows.append(
+            {
+                "solution": solution,
+                "q1": q1,
+                "median": median,
+                "q3": q3,
+                "lower": lower,
+                "upper": upper,
+                "label_y": upper,
+                "label": (
+                    f"mean {values.mean():.2f}, stdev "
+                    f"{'—' if pd.isna(standard_deviation) else f'{standard_deviation:.2f}'}"
+                ),
+            }
+        )
+    boxes = ColumnDataSource(pd.DataFrame(boxplot_rows))
+    maximum = max(runs["codelets"].max(), boxes.data["upper"][-1])
+    chart = figure(
+        title=f"{str(model).capitalize()} Codelets run by solution for problem {problem}",
+        x_range=FactorRange(*solutions, *padding_factors),
+        y_range=Range1d(0, maximum * 1.1),
+        x_axis_label="Solution",
+        y_axis_label="Codelets run",
+        height=360,
+        sizing_mode="stretch_width",
+        toolbar_location=None,
+    )
+    point_source = ColumnDataSource(
+        {
+            "solution": runs["solution"].astype(str).tolist(),
+            "codelets": runs["codelets"].tolist(),
+        }
+    )
+    chart.scatter(
+        x=jitter("solution", width=0.36, range=chart.x_range),
+        y="codelets",
+        source=point_source,
+        size=7,
+        fill_color="#1E88E5",
+        fill_alpha=0.65,
+        line_color=None,
+    )
+    chart.segment(x0="solution", y0="lower", x1="solution", y1="upper", source=boxes, line_color="#374151")
+    chart.vbar(x="solution", bottom="q1", top="q3", width=0.48, source=boxes, fill_color="#c7d2fe", fill_alpha=0.65, line_color="#374151")
+    chart.scatter(x="solution", y="median", source=boxes, marker="dash", size=20, line_width=2, line_color="#111827")
+    chart.add_layout(
+        LabelSet(
+            x="solution",
+            y="label_y",
+            text="label",
+            y_offset=8,
+            text_align="center",
+            text_baseline="bottom",
+            text_font_size="9px",
+            source=boxes,
+        )
+    )
+    chart.xaxis.major_label_orientation = 0
+    chart.background_fill_color = "white"
+    chart.grid.grid_line_color = None
+    return chart
 def _run_overview(
     series: dict[str, list[tuple]], codelet_time: pn.widgets.EditableIntSlider
 ) -> pn.Column:
