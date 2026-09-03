@@ -293,8 +293,18 @@ class Copycat:
             )
 
     def run(self):
+        """
+        Unlike the original Copycat, this implementation has a limit of 99k codelets.
+        This prevents infinite loops during development.
+        Mitchell 1993 reports slowest performance on problem abc->abd==>xyz:
+        mean codelets = 3,208; standard error of 88.3 over 1,000 runs (= stdev 2,792)
+        According to Cantelli's inequality, this means that
+        (without assumptions regarding distribution)
+        fewer than 0.1% of runs on that problem should have lengths above 91,454 codelets
+        """
+
         while True:
-            if self.coderack.number_of_codelets_run > 9999:
+            if self.coderack.number_of_codelets_run > 99_000:
                 break
             if self.coderack.number_of_codelets_run % self.time_step_length == 0:
                 self.update()
