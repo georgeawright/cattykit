@@ -50,7 +50,11 @@ def _run_group_table(
 def _problem_overview(model: str, problem: str, runs: pd.DataFrame) -> pn.Column:
     """Build the aggregate view for one model/problem pair."""
     codelets = pd.to_numeric(runs["number_of_codelets_run"], errors="coerce")
+    codelets_mean = codelets.mean()
+    codelets_stderr = codelets.std() / math.sqrt(len(codelets))
     temperatures = pd.to_numeric(runs["final_temperature"], errors="coerce")
+    temperatures_mean = temperatures.mean()
+    temperatures_stderr = temperatures.std() / math.sqrt(len(temperatures))
     solution_runs = runs.assign(solution=runs["solution"].fillna("—")).copy()
     solution_summary = (
         solution_runs.groupby("solution", sort=True)
@@ -71,7 +75,9 @@ def _problem_overview(model: str, problem: str, runs: pd.DataFrame) -> pn.Column
         if not measured_temperatures.empty
         else "—"
     )
-    total_snags = runs["number_of_snags"].sum()
+    snags = pd.to_numeric(runs["number_of_snags"], errors="coerce")
+    snags_mean = snags.mean()
+    snags_stderr = snags.std() / math.sqrt(len(snags))
 
     def statistic(value: float) -> str:
         return "—" if pd.isna(value) else f"{value:.2f}"
@@ -79,11 +85,11 @@ def _problem_overview(model: str, problem: str, runs: pd.DataFrame) -> pn.Column
     statistics = pn.pane.HTML(
         "<ul>"
         f"<li>Number of runs: {len(runs)}</li>"
-        f"<li>Codelets run: mean {statistic(codelets.mean())}, stdev {statistic(codelets.std())}</li>"
-        f"<li>Final temperature: mean {statistic(temperatures.mean())}, stdev {statistic(temperatures.std())}</li>"
+        f"<li>Codelets run: mean {statistic(codelets_mean)}, standard error {statistic(codelets_stderr)}</li>"
+        f"<li>Final temperature: mean {statistic(temperatures_mean)}, stdev {statistic(temperatures_stderr)}</li>"
         f"<li>Most common solution: {html.escape(str(most_common_solution))}</li>"
         f"<li>Solution with lowest temperature: {html.escape(str(lowest_temperature_solution))}</li>"
-        f"<li>Total snags: {total_snags}</li>"
+        f"<li>Snags: mean {statistic(snags_mean)}, stdev {statistic(snags_stderr)}</li>"
         "</ul>"
     )
     source = ColumnDataSource(

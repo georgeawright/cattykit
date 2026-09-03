@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from typing import Any
 
 import pandas as pd
@@ -56,7 +57,7 @@ def _solution_metric_boxplot_chart(
         iqr = q3 - q1
         lower = values[values >= q1 - 1.5 * iqr].min()
         upper = values[values <= q3 + 1.5 * iqr].max()
-        standard_deviation = values.std()
+        standard_error = values.std() / math.sqrt(values.count())
 
         boxplot_rows.append(
             {
@@ -68,8 +69,8 @@ def _solution_metric_boxplot_chart(
                 "upper": upper,
                 "label_y": upper,
                 "label": (
-                    f"mean {values.mean():.2f}, stdev "
-                    f"{'—' if pd.isna(standard_deviation) else f'{standard_deviation:.2f}'}"
+                    f"mean {values.mean():.2f}, std error "
+                    f"{'—' if pd.isna(standard_error) else f'{standard_error:.2f}'}"
                 ),
             }
         )
