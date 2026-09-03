@@ -10,7 +10,7 @@ _CONFIG_DIRECTORY = (
 
 
 def main() -> None:
-    random.seed(1)
+    random.seed(2)
     logger = SQLiteLogger("history.sqlite")
     copycat = Copycat.from_json(
         str(_CONFIG_DIRECTORY / "slipnet.json"),
@@ -18,7 +18,7 @@ def main() -> None:
         str(_CONFIG_DIRECTORY / "hyperparameters.json"),
         logger=logger,
     )
-    result = copycat.solve("abc -> abd ==> ijk -> ?")
+    result = copycat.solve("abc -> abd ==> xyz -> ?")
     print(result)
     logger.close()
 
