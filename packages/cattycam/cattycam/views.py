@@ -8,7 +8,7 @@ import panel as pn
 from bokeh.models import ColumnDataSource, FactorRange, FixedTicker, LabelSet, Range1d
 from bokeh.plotting import figure
 
-from .charts import _solution_codelets_chart
+from .charts import _solution_codelets_chart, _solution_temperature_chart
 
 
 def _run_group_table(
@@ -140,11 +140,15 @@ def _problem_overview(model: str, problem: str, runs: pd.DataFrame) -> pn.Column
     codelet_chart = _solution_codelets_chart(
         model, problem, solution_runs, source.data["solution"], padding_factors
     )
+    temperature_chart = _solution_temperature_chart(
+        model, problem, solution_runs, source.data["solution"], padding_factors
+    )
     return pn.Column(
         f"## Runs of {model} on problem {problem}",
         statistics,
         chart,
         codelet_chart,
+        temperature_chart,
         "### Runs",
         _run_group_table(runs, list(runs.columns), collapsed=False),
         sizing_mode="stretch_width",
