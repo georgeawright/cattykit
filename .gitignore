@@ -11,3 +11,5 @@ dist/
 *.sqlite
 *.sqlite-journal
 notes/
+
+tmp/
