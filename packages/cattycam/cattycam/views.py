@@ -86,10 +86,10 @@ def _problem_overview(model: str, problem: str, runs: pd.DataFrame) -> pn.Column
         "<ul>"
         f"<li>Number of runs: {len(runs)}</li>"
         f"<li>Codelets run: mean {statistic(codelets_mean)}, standard error {statistic(codelets_stderr)}</li>"
-        f"<li>Final temperature: mean {statistic(temperatures_mean)}, stdev {statistic(temperatures_stderr)}</li>"
+        f"<li>Final temperature: mean {statistic(temperatures_mean)}, standard error {statistic(temperatures_stderr)}</li>"
         f"<li>Most common solution: {html.escape(str(most_common_solution))}</li>"
         f"<li>Solution with lowest temperature: {html.escape(str(lowest_temperature_solution))}</li>"
-        f"<li>Snags: mean {statistic(snags_mean)}, stdev {statistic(snags_stderr)}</li>"
+        f"<li>Snags: mean {statistic(snags_mean)}, standard error {statistic(snags_stderr)}</li>"
         "</ul>"
     )
     source = ColumnDataSource(
