@@ -27,7 +27,9 @@ jobs:
         run: python -m pip install --upgrade pip uv
 
       - name: Run Cattykit tests
-        run: uv run python -m pytest packages/cattykit/tests/
+        working-directory: packages/cattykit
+        run: uv run python -m pytest tests/
 
       - name: Run Cattycam tests
-        run: uv run python -m pytest packages/cattycam/tests/
+        working-directory: packages/cattycam
+        run: uv run python -m pytest tests/
