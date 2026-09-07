@@ -33,3 +33,7 @@ jobs:
       - name: Run Cattycam tests
         working-directory: packages/cattycam
         run: uv run python -m pytest tests/
+
+      - name: Run Copycat tests
+        working-directory: models/copycat
+	run: uv run python -m pytest tests/unit
