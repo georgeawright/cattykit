@@ -31,4 +31,3 @@ jobs:
 
     - name: Run Cattycam tests
       run: uv run python -m pytest packages/cattycam/tests/
-    
