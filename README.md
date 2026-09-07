@@ -1,5 +1,7 @@
 # Cattykit
 
+[![Tests](https://github.com/georgeawright/cattykit/actions/workflows/test.yml/badge.svg)](https://github.com/georgeawright/cattykit/actions/workflows/test.yml)
+
 Cattykit (in development) is a framework for implementing artificial intelligence models based on components from the cognitive models of the Fluid Analogies Research Group described in Hofstadter _et al_ 1995. Their models are typically built with similar components, including: a shared _workspace_, _slipnet_, _coderack_, and _codelets_.
 
 Models solve problems represented by graph-like structures in a workspace which is incrementally edited by micro-agents called _codelets_ that propose, build, and destroy new structures. The _slipnet_ keeps track of concepts relevant to the structures present in the workspace and encourages codelets that continue their construction. The _coderack_ is a stochastic scheduler of codelets, which are selected according to urgency. All processes in each model occur with a degree of randomness mediated by its _temperature_ which (unlike the related concept used in language model decoding and simulated annealing) is a measure of workspace quality constantly adjusted by the model itself.
