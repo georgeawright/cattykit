@@ -78,6 +78,9 @@ class MockWorkspaceString:
     def contains_bond(self, bond):
         return bond in self.bonds
 
+    def get_bond_if_present(self, bond):
+        return bond if bond in self.bonds else None
+
 
 def test_transfers_descriptions_and_fizzles_if_group_exists():
     workspace = MockWorkspace()
