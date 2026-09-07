@@ -64,3 +64,8 @@ For more detailed examples see the [`examples`](examples/) directory.
 
 * Hofstadter, D. R., et al. (1995). Fluid Concepts and Creative Analogies: Computer Models of the Fundamental Mechanisms of Thought. Basic Books. [doi:10.5555/218753](https://dl.acm.org/doi/10.5555/218753)
 * Mitchell, M (1993). Analogy-Making as Perception: A Computer Model. The MIT Press. [doi:10.5555/152203](https://dl.acm.org/doi/book/10.5555/152203)
+
+## License
+
+Cattykit is licensed under the GNU Affero General Public License v3.0 or later.
+See [LICENSE](LICENSE) for details.
