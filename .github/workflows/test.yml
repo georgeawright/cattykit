@@ -36,4 +36,4 @@ jobs:
 
       - name: Run Copycat tests
         working-directory: models/copycat
-	run: uv run python -m pytest tests/unit
+        run: uv run python -m pytest tests/unit
