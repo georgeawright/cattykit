@@ -5,7 +5,7 @@ description = "A framework for implementing artificial intelligence models using
 readme = "README.md"
 authors = [{name="George Alexander Wright", email="me@georgeaw.com"}]
 license = {file="LICENSE"}
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
