@@ -122,7 +122,6 @@ class Coderack:
         )
         chosen_codelet = random.choice(chosen_urgency_bin.codelets)
         self._remove(chosen_codelet, discard_proposal=False)
-        self.number_of_codelets_run += 1
         if self.logger is not None:
             self.logger.log(
                 ModelEvent.create(

@@ -414,6 +414,7 @@ class Copycat:
         rule = self.workspace.rule
         translated_rule = self.workspace.translated_rule
         result = codelet.run(self.temperature)
+        self.coderack.number_of_codelets_run += 1
         self._log_rule_changes(codelet, rule, translated_rule)
         data = {
             "codelet": type(codelet).__name__,
