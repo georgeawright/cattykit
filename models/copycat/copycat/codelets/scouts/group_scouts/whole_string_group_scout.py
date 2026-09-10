@@ -65,12 +65,15 @@ class WholeStringGroupScout(GroupScout):
         objects = [first_bond.left_object]
         bonds = []
         next_bond = first_bond
-        next_object = first_bond.get_object(direction)
         while next_bond is not None:
             next_object = next_bond.get_object(direction)
             bonds.append(next_bond)
             objects.append(next_object)
-            next_bond = next_bond.choose_neighbour(direction)
+            next_bond = (
+                next_object.right_bond
+                if direction.name == "right"
+                else next_object.left_bond
+            )
         return bonds, objects
 
     def _get_possible_group_bonds(
