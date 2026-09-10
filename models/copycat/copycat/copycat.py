@@ -478,7 +478,7 @@ class Copycat:
     def _update_temperature(self):
         if not self.clamp_temperature:
             rule_weakness = (
-                self.workspace.rule.total_weakness if self.workspace.rule else 1
+                1 - self.workspace.rule.total_strength if self.workspace.rule else 1
             )
             self.temperature = (
                 self.workspace.total_unhappiness * 0.8 + rule_weakness * 0.2
