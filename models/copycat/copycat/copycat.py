@@ -256,7 +256,7 @@ class Copycat:
             if len(string) == 3:
                 string.letters[1].add_description(
                     Description(
-                        letter,
+                        string.letters[1],
                         self.slipnet["string_position_category"],
                         self.slipnet["middle"],
                     )
