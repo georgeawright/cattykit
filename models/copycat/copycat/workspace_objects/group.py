@@ -124,10 +124,7 @@ class Group(WorkspaceObject, WorkspaceStructure):
         )
 
     def overlaps_with(self, other_group: Group) -> bool:
-        return not (
-            self.right_position <= other_group.left_position
-            or self.left_position >= other_group.right_position
-        )
+        return set(self.objects) & set(other_group.objects) != set()
 
     def get_flipped_version(self) -> Group:
         from copycat.workspace_structures import Description
