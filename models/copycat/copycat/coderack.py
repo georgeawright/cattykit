@@ -116,10 +116,14 @@ class Coderack:
             self._remove(codelet)
 
     def choose(self, temperature: float):
-        chosen_urgency_bin = select_item_from_list(
-            self._urgency_bins,
-            [urgency_bin.total_urgency for urgency_bin in self._urgency_bins],
-        )
+        urgency_bin_weights = self.get_urgency_bin_weights(temperature)
+        weights = [
+            len(urgency_bin) * urgency_bin_weight
+            for urgency_bin, urgency_bin_weight in zip(
+                self._urgency_bins, urgency_bin_weights
+            )
+        ]
+        chosen_urgency_bin = select_item_from_list(self._urgency_bins, weights)
         chosen_codelet = random.choice(chosen_urgency_bin.codelets)
         self._remove(chosen_codelet, discard_proposal=False)
         if self.logger is not None:
