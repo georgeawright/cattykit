@@ -323,6 +323,7 @@ class Copycat:
                 answer_builder.build()
                 self._log_answer_letters(previous_answer_letters)
                 self.found_answer = True
+                self.update()
                 self.logger.log(
                     ModelEvent.create(
                         "copycat",
