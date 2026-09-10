@@ -203,7 +203,7 @@ class Group(WorkspaceObject, WorkspaceStructure):
             * bond_facet_factor
         )
         length_component = {1: 0.05, 2: 0.2, 3: 0.6}.get(len(self), 0.9)
-        bond_component_weight = bond_component**0.98
+        bond_component_weight = (100 * bond_component) ** 0.98 / 100
         length_component_weight = 1 - bond_component_weight
         return (
             bond_component * bond_component_weight
