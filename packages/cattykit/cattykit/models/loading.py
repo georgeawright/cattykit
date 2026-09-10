@@ -30,7 +30,7 @@ ModelSourceKind = Literal["name", "url", "path"]
 
 OFFICIAL_MODEL_SOURCES: dict[str, str] = {
     "copycat": (
-        "git+https://github.com/georgeawright/resurrected-copycat.git"
+        "git+https://github.com/georgeawright/cattykit.git"
         "#subdirectory=models/copycat"
     ),
 }
