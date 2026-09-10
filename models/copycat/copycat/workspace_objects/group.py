@@ -242,15 +242,13 @@ class Group(WorkspaceObject, WorkspaceStructure):
         slot_sum = 0
         support_sum = 0
         # Loop leftwards looking for groups.
-        right_object = self.leftmost_letter
+        right_object = self.left_object
         left_object = right_object.choose_left_neighbour()
-        # might need to be fixed
         left_object = (
             left_object
             if left_object is None or isinstance(left_object, Group)
             else left_object.group
         )
-        # TODO: fix left neighbour choice
         while left_object is not None:
             slot_sum += 1
             next_group = left_object if isinstance(left_object, Group) else None
@@ -264,7 +262,7 @@ class Group(WorkspaceObject, WorkspaceStructure):
             right_object = left_object
             left_object = right_object.choose_left_neighbour()
         # Loop rightwards looking for groups.
-        left_object = self.rightmost_letter
+        left_object = self.right_object
         right_object = left_object.choose_right_neighbour()
         right_object = (
             right_object
@@ -276,8 +274,6 @@ class Group(WorkspaceObject, WorkspaceStructure):
             next_group = right_object if isinstance(right_object, Group) else None
             if (
                 next_group is not None
-                and not self.has_sub_group(next_group)
-                and not next_group.has_sub_group(self)
                 and not self.overlaps_with(next_group)
                 and next_group.group_category == self.group_category
                 and next_group.direction_category == self.direction_category
