@@ -118,12 +118,7 @@ class Coderack:
     def choose(self, temperature: float):
         chosen_urgency_bin = select_item_from_list(
             self._urgency_bins,
-            [
-                urgency_bin.total_urgency * urgency_bin_weight
-                for urgency_bin, urgency_bin_weight in zip(
-                    self._urgency_bins, self.get_urgency_bin_weights(temperature)
-                )
-            ],
+            [urgency_bin.total_urgency for urgency_bin in self._urgency_bins],
         )
         chosen_codelet = random.choice(chosen_urgency_bin.codelets)
         self._remove(chosen_codelet, discard_proposal=False)
