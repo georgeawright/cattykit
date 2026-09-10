@@ -68,7 +68,6 @@ def _solution_metric_boxplot_chart(
                 "q3": q3,
                 "lower": lower,
                 "upper": upper,
-                "label_y": upper,
                 "label": (
                     f"mean {values.mean():.2f}, std error "
                     f"{'—' if pd.isna(standard_error) else f'{standard_error:.2f}'}"
@@ -93,6 +92,7 @@ def _solution_metric_boxplot_chart(
         if fixed_y_range is not None
         else Range1d(min(0, minimum - padding), maximum + padding)
     )
+    boxes.data["label_y"] = [y_range.end] * len(boxplot_rows)
     chart = figure(
         title=(
             f"{str(model).capitalize()} "
@@ -159,10 +159,10 @@ def _solution_metric_boxplot_chart(
             x="solution",
             y="label_y",
             text="label",
-            y_offset=8,
+            y_offset=-8,
             text_align="center",
-            text_baseline="bottom",
-            text_font_size="9px",
+            text_baseline="top",
+            text_font_size="11px",
             source=boxes,
         )
     )
