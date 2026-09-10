@@ -123,7 +123,7 @@ class Rule(WorkspaceStructure):
         diff_term = 1 - depth_diff
         rule_strength = np.average(
             [depth_term, diff_term, shared_descriptor_term],
-            weights=[0.18, 0.12, shared_descriptor_weight],
+            weights=[18, 12, shared_descriptor_weight],
         )
         return min(rule_strength, 1.0)
 
