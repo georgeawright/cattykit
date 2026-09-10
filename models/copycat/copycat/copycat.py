@@ -261,6 +261,9 @@ class Copycat:
                         self.slipnet["middle"],
                     )
                 )
+        for obj in self.workspace.objects:
+            for description in obj.descriptions:
+                self.slipnet.activate_node_from_workspace(description.descriptor.name)
 
     def _post_initial_codelets(self):
         for _ in range(2 * len(self.workspace.objects)):
