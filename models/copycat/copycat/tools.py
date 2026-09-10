@@ -36,15 +36,13 @@ def select_item_from_list(items, weights):
 def select_items_from_list(items, weights, k):
     if k > len(items):
         raise ValueError("Cannot select more items than are available.")
-
-    weights = [weight + 1e-5 for weight in weights]
+    if sum(weights) == 0:
+        weights = [1] * len(weights)
     if k == 1:
         return random.choices(items, weights=weights, k=1)
-
     remaining_items = list(items)
     remaining_weights = list(weights)
     selected_items = []
-
     for _ in range(k):
         selected_item = random.choices(
             remaining_items,
