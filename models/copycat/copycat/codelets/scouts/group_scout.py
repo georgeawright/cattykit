@@ -37,6 +37,9 @@ class GroupScout(Scout):
         )
         self._add_descriptions_to_group(proposed_group, temperature)
         string.add_proposed_group(proposed_group)
+        self.slipnet.activate_node_from_workspace(bond_category.name)
+        if direction is not None:
+            self.slipnet.activate_node_from_workspace(direction.name)
         urgency = bond_category.bond_degree_of_association
         urgency_bin = self.coderack.get_urgency_level_from_activation(urgency)
         self.coderack.post(
