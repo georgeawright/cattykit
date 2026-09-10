@@ -43,7 +43,7 @@ class Coderack:
     def create(cls, number_of_bins: int, max_population: int) -> Coderack:
         urgency_bins = [CoderackBin(i + 1) for i in range(number_of_bins)]
         urgency_temperature_lookup_table = [
-            [URGENCY_TEMPERATURE_FUNCTION(u, t) for u in range(number_of_bins)]
+            [round(URGENCY_TEMPERATURE_FUNCTION(u, t)) for u in range(number_of_bins)]
             for t in range(101)
         ]
         return cls(urgency_bins, urgency_temperature_lookup_table, max_population)
