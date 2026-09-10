@@ -29,6 +29,7 @@ def _solution_metric_boxplot_chart(
     value_label: str,
     title_metric: str | None = None,
     empty_message: str | None = None,
+    fixed_y_range: tuple[float, float] | None = None,
 ) -> pn.viewable.Viewable:
     """Plot per-run values and boxplots for a numeric metric, grouped by solution."""
     if value_column not in solution_runs.columns:
@@ -87,13 +88,18 @@ def _solution_metric_boxplot_chart(
     minimum = min(runs[value_key].min(), min(boxes.data["lower"]))
     padding = max((maximum - minimum) * 0.1, abs(maximum) * 0.05, 1.0)
 
+    y_range = (
+        Range1d(*fixed_y_range)
+        if fixed_y_range is not None
+        else Range1d(min(0, minimum - padding), maximum + padding)
+    )
     chart = figure(
         title=(
             f"{str(model).capitalize()} "
             f"{title_metric or value_label} by solution for problem {problem}"
         ),
         x_range=FactorRange(*solutions, *padding_factors),
-        y_range=Range1d(min(0, minimum - padding), maximum + padding),
+        y_range=y_range,
         x_axis_label="Solution",
         y_axis_label=value_label,
         height=360,
@@ -205,6 +211,7 @@ def _solution_temperature_chart(
         value_label="Final temperature",
         title_metric="final temperature",
         empty_message="No final-temperature data was logged.",
+        fixed_y_range=(0, 1),
     )
 
 
