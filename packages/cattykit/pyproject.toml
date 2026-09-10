@@ -1,6 +1,6 @@
 [project]
 name = "cattykit"
-version = "0.1.0"
+version = "0.1.1"
 description = "A framework for implementing artificial intelligence models using components from the cognitive models of the Fluid Analogies Research Group"
 readme = "README.md"
 authors = [{name="George Alexander Wright", email="me@georgeaw.com"}]
