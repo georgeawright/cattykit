@@ -27,9 +27,8 @@ class RuleBuilder(Builder):
         self.proposed_rule = proposed_rule
 
     def run(self, temperature: float) -> CodeletResult:
-        if (
-            self.workspace.rule is not None
-            and self.workspace.rule == self.proposed_rule
+        if self.workspace.rule is not None and self.workspace.rule.equates_to(
+            self.proposed_rule
         ):
             self._activate_rule_description_nodes()
             return Fizzle(FizzleReason.RULE_ALREADY_EXISTS)
