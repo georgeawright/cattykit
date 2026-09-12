@@ -56,7 +56,12 @@ class GroupBuilder(Builder):
                 return Fizzle(FizzleReason.INCOMPATIBLE_STRUCTURES_WON)
         incompatible_groups = self._get_incompatible_groups()
         for incompatible_group in incompatible_groups:
-            if incompatible_group.group_category == self.proposed_group.group_category:
+            if (
+                incompatible_group.direction_category
+                == self.proposed_group.direction_category
+                and incompatible_group.group_category
+                == self.proposed_group.group_category
+            ):
                 # this is because shorter sameness groups are weaker than longer ones
                 # and there is no group-extender codelet
                 proposed_group_weight = len(self.proposed_group)
