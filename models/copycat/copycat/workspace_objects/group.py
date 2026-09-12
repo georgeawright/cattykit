@@ -54,12 +54,12 @@ class Group(WorkspaceObject, WorkspaceStructure):
             return False
         return (
             self.left_position,
-            len(self),
+            self.right_position,
             self.group_category,
             self.direction_category,
         ) == (
             other.left_position,
-            len(other),
+            other.right_position,
             other.group_category,
             other.direction_category,
         )
