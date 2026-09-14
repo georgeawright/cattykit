@@ -246,7 +246,9 @@ class Group(WorkspaceObject, WorkspaceStructure):
         left_object = right_object.choose_left_neighbour()
         left_object = (
             left_object
-            if left_object is None or isinstance(left_object, Group)
+            if left_object is None
+            or isinstance(left_object, Group)
+            or left_object.group is None
             else left_object.group
         )
         while left_object is not None:
@@ -266,7 +268,9 @@ class Group(WorkspaceObject, WorkspaceStructure):
         right_object = left_object.choose_right_neighbour()
         right_object = (
             right_object
-            if right_object is None or isinstance(right_object, Group)
+            if right_object is None
+            or isinstance(right_object, Group)
+            or right_object.group is None
             else right_object.group
         )
         while right_object is not None:
