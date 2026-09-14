@@ -149,7 +149,7 @@ class Workspace:
     @property
     def structures(self):
         """Returns a list of structures (bonds, groups, correspondences, and rules"""
-        structures = self.bonds + self.correspondences + self.groups
+        structures = self.bonds + self.groups + self.correspondences
         if self.rule is not None:
             structures.append(self.rule)
         return structures
