@@ -209,4 +209,4 @@ class Bond(WorkspaceStructure):
                 support_sum += 1
             left_object = right_object
             right_object = right_object.choose_right_neighbour()
-        return 0.0 if slot_sum == 0 else support_sum / slot_sum
+        return 1.0 if slot_sum == 0 else support_sum / slot_sum
