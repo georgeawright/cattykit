@@ -229,7 +229,13 @@ class WorkspaceString:
 
     def choose_from_leftmost_objects(self):
         """Returns one of the leftmost objects probabilistically."""
-        leftmost_objects = [obj for obj in self.objects if obj.is_leftmost_in_string()]
+        leftmost_objects = [
+            obj
+            for obj in self.objects
+            if (lambda x: x is not None and x.name == "leftmost")(
+                obj.get_descriptor_with_facet_name("string_position_category")
+            )
+        ]
         weights = [obj.relative_importance for obj in leftmost_objects]
         try:
             return select_item_from_list(leftmost_objects, weights)
