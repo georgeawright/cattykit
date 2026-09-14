@@ -232,7 +232,6 @@ class Slipnet:
         """Clamp a node at full activation."""
         index = self.node_index_lookup[node_id]
         self.clamped_nodes[index] = True
-        self.node_activations[index] = 1.0
         self[node_id].clamped = True
 
     def unclamp_node(self, node_id: str):
