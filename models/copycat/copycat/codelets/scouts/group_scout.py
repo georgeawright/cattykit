@@ -197,16 +197,8 @@ class GroupScout(Scout):
             return self.slipnet["whole"]
         if group.is_leftmost_in_string():
             return self.slipnet["leftmost"]
-        if self._is_middle_in_string(group):
+        if group.is_middle_in_string():
             return self.slipnet["middle"]
         if group.is_rightmost_in_string():
             return self.slipnet["rightmost"]
         return None
-
-    @staticmethod
-    def _is_middle_in_string(group: Group) -> bool:
-        return any(
-            neighbour.is_leftmost_in_string() for neighbour in group.left_neighbours
-        ) and any(
-            neighbour.is_rightmost_in_string() for neighbour in group.right_neighbours
-        )

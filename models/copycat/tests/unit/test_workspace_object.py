@@ -3,6 +3,7 @@ from types import SimpleNamespace
 import pytest
 
 from copycat.workspace_object import WorkspaceObject
+from copycat.workspace_objects import Group
 
 
 def test_has_description():
@@ -80,6 +81,45 @@ def test_left_and_right_neighbours():
     assert g1.choose_neighbour() in {l3, g2}
     assert set(g2.neighbours) == {l2, g1}
     assert g2.choose_neighbour() in {l2, g1}
+
+
+def test_is_middle_in_string_with_ungrouped_neighbours():
+    string = SimpleNamespace(letters=[])
+    left = WorkspaceObject(string=string, left_position=0, right_position=0)
+    middle = WorkspaceObject(string=string, left_position=1, right_position=1)
+    right = WorkspaceObject(string=string, left_position=2, right_position=2)
+    string.letters = [left, middle, right]
+    string.objects = [left, middle, right]
+
+    assert middle.is_middle_in_string()
+    assert not left.is_middle_in_string()
+    assert not right.is_middle_in_string()
+
+
+def test_is_middle_in_string_with_neighbours_in_same_enclosing_group():
+    string = SimpleNamespace(letters=[])
+    letters = [
+        WorkspaceObject(string=string, left_position=i, right_position=i)
+        for i in range(6)
+    ]
+    string.letters = letters
+    left = Group(string, 0, 1, letters[0:2], [], None, None, None)
+    middle = Group(string, 2, 3, letters[2:4], [], None, None, None)
+    right = Group(string, 4, 5, letters[4:6], [], None, None, None)
+    enclosing = Group(string, 0, 5, [left, middle, right], [], None, None, None)
+    for letter in letters[0:2]:
+        letter.group = left
+    for letter in letters[2:4]:
+        letter.group = middle
+    for letter in letters[4:6]:
+        letter.group = right
+    for group in (left, middle, right):
+        group.group = enclosing
+    string.objects = letters + [left, middle, right, enclosing]
+
+    assert middle.ungrouped_left_neighbour() is left
+    assert middle.ungrouped_right_neighbour() is right
+    assert middle.is_middle_in_string()
 
 
 def test_choose_relevant_description_by_activation():

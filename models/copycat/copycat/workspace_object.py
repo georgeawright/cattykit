@@ -101,6 +101,48 @@ class WorkspaceObject:
     def is_at_edge_of_string(self) -> bool:
         return self.is_leftmost_in_string() or self.is_rightmost_in_string()
 
+    def ungrouped_left_neighbour(self) -> Union[WorkspaceObject, None]:
+        """Return the Lisp Copycat notion of an ungrouped left neighbour.
+
+        A neighbour is usable when it is not in a group, or when its group also
+        contains this object (possibly through nested subgroups).
+        """
+        if self.is_leftmost_in_string():
+            return None
+        return next(
+            (
+                neighbour
+                for neighbour in self.left_neighbours
+                if neighbour.group is None
+                or neighbour.group.has_recursive_group_member(self)
+            ),
+            None,
+        )
+
+    def ungrouped_right_neighbour(self) -> Union[WorkspaceObject, None]:
+        """Return the Lisp Copycat notion of an ungrouped right neighbour."""
+        if self.is_rightmost_in_string():
+            return None
+        return next(
+            (
+                neighbour
+                for neighbour in self.right_neighbours
+                if neighbour.group is None
+                or neighbour.group.has_recursive_group_member(self)
+            ),
+            None,
+        )
+
+    def is_middle_in_string(self) -> bool:
+        left_neighbour = self.ungrouped_left_neighbour()
+        right_neighbour = self.ungrouped_right_neighbour()
+        return (
+            left_neighbour is not None
+            and right_neighbour is not None
+            and left_neighbour.is_leftmost_in_string()
+            and right_neighbour.is_rightmost_in_string()
+        )
+
     def has_description(self, description: "Description") -> bool:
         return any([description.equates_to(d) for d in self.descriptions])
 
