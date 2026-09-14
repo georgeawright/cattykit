@@ -1,7 +1,7 @@
 import random
 from typing import List
 
-from copycat.workspace_structures import Correspondence
+from copycat.workspace_structures import Correspondence, Description
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.scout import Scout
 from copycat.codelets.strength_testers import CorrespondenceStrengthTester
@@ -87,6 +87,99 @@ class CorrespondenceScout(Scout):
             and not self.slipnet["opposite"].is_active()
         ):
             self.target = self.target.get_flipped_version()
+            self.target.descriptions = []
+            self.target.bond_descriptions = []
+            if self.target.spans_whole_string():
+                self.target.add_description(
+                    Description(
+                        self.target,
+                        self.slipnet["string_position_category"],
+                        self.slipnet["whole"],
+                    )
+                )
+            self.target.add_description(
+                Description(
+                    self.target,
+                    self.slipnet["object_category"],
+                    self.slipnet["group"],
+                )
+            )
+            if not self.target.spans_whole_string():
+                if self.target.is_leftmost_in_string():
+                    string_position = self.slipnet["leftmost"]
+                elif self.target.is_middle_in_string():
+                    string_position = self.slipnet["middle"]
+                elif self.target.is_rightmost_in_string():
+                    string_position = self.slipnet["rightmost"]
+                else:
+                    string_position = None
+                if string_position is not None:
+                    self.target.add_description(
+                        Description(
+                            self.target,
+                            self.slipnet["string_position_category"],
+                            string_position,
+                        )
+                    )
+            if self.target.group_category == self.slipnet["sameness_group"] and (
+                not self.target.bonds
+                or self.target.bonds[0].bond_facet == self.slipnet["letter_category"]
+            ):
+                self.target.add_description(
+                    Description(
+                        self.target,
+                        self.slipnet["letter_category"],
+                        self.target.left_object.get_descriptor(
+                            self.slipnet["letter_category"]
+                        ),
+                    )
+                )
+            self.target.add_description(
+                Description(
+                    self.target,
+                    self.slipnet["group_category"],
+                    self.target.group_category,
+                )
+            )
+            if self.target.direction_category is not None:
+                self.target.add_description(
+                    Description(
+                        self.target,
+                        self.slipnet["direction_category"],
+                        self.target.direction_category,
+                    )
+                )
+            if self.target.bonds:
+                self.target.bond_facet = self.target.bonds[0].bond_facet
+                self.target.add_description(
+                    Description(
+                        self.target,
+                        self.slipnet["bond_facet"],
+                        self.target.bond_facet,
+                    )
+                )
+            self.target.add_description(
+                Description(
+                    self.target,
+                    self.slipnet["bond_category"],
+                    self.target.bond_category,
+                )
+            )
+            group_length = len(self.target)
+            if 1 <= group_length <= len(self.slipnet.numbers):
+                base_probability = 0.5 ** (
+                    group_length**3 * (1 - self.slipnet["length"].activation)
+                )
+                if random.random() < temperature_adjust_probability(
+                    base_probability, temperature
+                ):
+                    self.target.add_description(
+                        Description(
+                            self.target,
+                            self.slipnet["length"],
+                            self.slipnet.numbers[group_length - 1],
+                        )
+                    )
             concept_mappings = self.slipnet.get_concept_mappings(
                 self.source,
                 self.target,
