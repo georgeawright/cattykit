@@ -8,65 +8,66 @@ from .workspace_objects_and_structures.workspace_object import WorkspaceObject
 class ConceptMapping:
     def __init__(
         self,
-        description_type_1: Slipnode,
-        description_type_2: Slipnode,
-        descriptor_1: Slipnode,
-        descriptor_2: Slipnode,
+        source_facet: Slipnode,
+        target_facet: Slipnode,
+        source_descriptor: Slipnode,
+        target_descriptor: Slipnode,
         label: Optional[Slipnode],
-        object_1: Optional[WorkspaceObject] = None,
-        object_2: Optional[WorkspaceObject] = None,
+        source: Optional[WorkspaceObject] = None,
+        target: Optional[WorkspaceObject] = None,
     ):
-        self.description_type_1 = description_type_1
-        self.description_type_2 = description_type_2
-        self.descriptor_1 = descriptor_1
-        self.descriptor_2 = descriptor_2
+        self.source_facet = source_facet
+        self.target_facet = target_facet
+        self.source_descriptor = source_descriptor
+        self.target_descriptor = target_descriptor
         self.label = label
-        self.object_1 = object_1
-        self.object_2 = object_2
+        self.source = source
+        self.target = target
 
     def __repr__(self):
         return (
-            f"{self.description_type_1}-{self.descriptor_1}"
+            f"{self.source_facet}-{self.source_descriptor}"
             f"++{self.label}++>"
-            f"{self.description_type_2}-{self.descriptor_2}"
+            f"{self.target_facet}-{self.target_descriptor}"
         )
 
     def __eq__(self, other):
         if not isinstance(other, ConceptMapping):
             return NotImplemented
         return (
-            self.description_type_1,
-            self.description_type_2,
-            self.descriptor_1,
-            self.descriptor_2,
+            self.source_facet,
+            self.target_facet,
+            self.source_descriptor,
+            self.target_descriptor,
             self.label,
-            self.object_1,
-            self.object_2,
+            self.source,
+            self.target,
         ) == (
-            other.description_type_1,
-            other.description_type_2,
-            other.descriptor_1,
-            other.descriptor_2,
+            other.source_facet,
+            other.target_facet,
+            other.source_descriptor,
+            other.target_descriptor,
             other.label,
-            other.object_1,
-            other.object_2,
+            other.source,
+            other.target,
         )
 
     @property
     def degree_of_assocation(self) -> float:
         """assumes both descriptors in the mapping are connected in the slipnet
         by at most one slip link. Requires generalization."""
-        if self.descriptor_1 == self.descriptor_2:
+        if self.source_descriptor == self.target_descriptor:
             return 1.0
-        for link in self.descriptor_1.lateral_sliplinks:
-            if link.target == self.descriptor_2:
+        for link in self.source_descriptor.lateral_sliplinks:
+            if link.target == self.target_descriptor:
                 return link.degree_of_association
         return 0.0
 
     @property
     def conceptual_depth(self) -> float:
         return (
-            self.descriptor_1.conceptual_depth + self.descriptor_2.conceptual_depth
+            self.source_descriptor.conceptual_depth
+            + self.target_descriptor.conceptual_depth
         ) / 2
 
     @property
@@ -95,22 +96,25 @@ class ConceptMapping:
         return self.label is not None and self.label.name == "opposite"
 
     def is_relevant(self) -> bool:
-        return (
-            self.description_type_1.is_active() and self.description_type_2.is_active()
-        )
+        return self.source_facet.is_active() and self.target_facet.is_active()
 
     def is_distinguishing(self) -> bool:
         # in Copycat a "whole -> whole" mapping is not distinguishing,
         # the original source code states that a more general definition is desirable
-        if self.descriptor_1.name == "whole" and self.descriptor_2.name == "whole":
+        if (
+            self.source_descriptor.name == "whole"
+            and self.target_descriptor.name == "whole"
+        ):
             return False
-        descriptor_1_is_distinguishing = self.object_1.is_distinguished_by(
-            self.descriptor_1
+        source_descriptor_is_distinguishing = self.source.is_distinguished_by(
+            self.source_descriptor
         )
-        descriptor_2_is_distinguishing = self.object_2.is_distinguished_by(
-            self.descriptor_2
+        target_descriptor_is_distinguishing = self.target.is_distinguished_by(
+            self.target_descriptor
         )
-        return descriptor_1_is_distinguishing and descriptor_2_is_distinguishing
+        return (
+            source_descriptor_is_distinguishing and target_descriptor_is_distinguishing
+        )
 
     def supports(self, other: ConceptMapping) -> bool:
         """Concept-mappings (a -> b) and (c -> d) support each other
@@ -121,13 +125,13 @@ class ConceptMapping:
         Slipnet distances are not considered, only links.
         According to original source, this should be changed eventually."""
         if (
-            self.descriptor_1 == other.descriptor_1
-            and self.descriptor_2 == other.descriptor_2
+            self.source_descriptor == other.source_descriptor
+            and self.target_descriptor == other.target_descriptor
         ):
             return True
         if not (
-            self.descriptor_1.is_related_to(other.descriptor_1)
-            or self.descriptor_2.is_related_to(other.descriptor_2)
+            self.source_descriptor.is_related_to(other.source_descriptor)
+            or self.target_descriptor.is_related_to(other.target_descriptor)
         ):
             return False
         if self.label is None or other.label is None:
@@ -144,8 +148,8 @@ class ConceptMapping:
         Slipnet distances are not considered, only slipnet links.
         According to original source, this should be changed eventually."""
         if not (
-            self.descriptor_1.is_related_to(other.descriptor_1)
-            or self.descriptor_2.is_related_to(other.descriptor_2)
+            self.source_descriptor.is_related_to(other.source_descriptor)
+            or self.target_descriptor.is_related_to(other.target_descriptor)
         ):
             return False
         if self.label is None or other.label is None:
@@ -154,29 +158,29 @@ class ConceptMapping:
 
     def contradicts(self, other: ConceptMapping) -> bool:
         return (
-            self.descriptor_1 == other.descriptor_1
-            and self.descriptor_2 != other.descriptor_2
+            self.source_descriptor == other.source_descriptor
+            and self.target_descriptor != other.target_descriptor
         ) or (
-            self.descriptor_2 == other.descriptor_2
-            and self.descriptor_1 != other.descriptor_1
+            self.target_descriptor == other.target_descriptor
+            and self.source_descriptor != other.source_descriptor
         )
 
     def get_symmetric_version(self) -> Optional[ConceptMapping]:
         if self.label is not None and self.label.name == "identity":
             return self
         reverse_label = None
-        for link in self.descriptor_2.outgoing_links:
-            if link.target == self.descriptor_1:
+        for link in self.target_descriptor.outgoing_links:
+            if link.target == self.source_descriptor:
                 reverse_label = link.label
                 break
         if reverse_label != self.label:
             return None
         return ConceptMapping(
-            description_type_1=self.description_type_2,
-            description_type_2=self.description_type_1,
-            descriptor_1=self.descriptor_2,
-            descriptor_2=self.descriptor_1,
+            source_facet=self.target_facet,
+            target_facet=self.source_facet,
+            source_descriptor=self.target_descriptor,
+            target_descriptor=self.source_descriptor,
             label=reverse_label,
-            object_1=self.object_1,
-            object_2=self.object_2,
+            source=self.source,
+            target=self.target,
         )

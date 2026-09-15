@@ -6,40 +6,40 @@ from copycat.concept_mapping import ConceptMapping
 
 
 @pytest.mark.parametrize(
-    "descriptor_1_name, descriptor_2_name, degree_of_association, expected",
+    "source_descriptor_name, target_descriptor_name, degree_of_association, expected",
     [
         ("same_descriptor", "same_descriptor", None, 1.0),
-        ("descriptor_1", "descriptor_2", 0.5, 0.5),
-        ("descriptor_1", "descriptor_2", 0.0, 0.0),
+        ("source_descriptor", "target_descriptor", 0.5, 0.5),
+        ("source_descriptor", "target_descriptor", 0.0, 0.0),
     ],
 )
 def test_degree_of_association(
-    descriptor_1_name, descriptor_2_name, degree_of_association, expected
+    source_descriptor_name, target_descriptor_name, degree_of_association, expected
 ):
     slipnodes = {
         name: SimpleNamespace(name=name)
-        for name in [descriptor_1_name, descriptor_2_name]
+        for name in [source_descriptor_name, target_descriptor_name]
     }
-    slipnodes[descriptor_1_name].lateral_sliplinks = [
+    slipnodes[source_descriptor_name].lateral_sliplinks = [
         SimpleNamespace(
-            target=slipnodes[descriptor_2_name],
+            target=slipnodes[target_descriptor_name],
             degree_of_association=degree_of_association,
         )
     ]
     concept_mapping = ConceptMapping(
-        description_type_1=None,
-        description_type_2=None,
-        descriptor_1=slipnodes[descriptor_1_name],
-        descriptor_2=slipnodes[descriptor_2_name],
+        source_facet=None,
+        target_facet=None,
+        source_descriptor=slipnodes[source_descriptor_name],
+        target_descriptor=slipnodes[target_descriptor_name],
         label=None,
-        object_1=None,
-        object_2=None,
+        source=None,
+        target=None,
     )
     assert expected == concept_mapping.degree_of_assocation
 
 
 @pytest.mark.parametrize(
-    "descriptor_1_depth, descriptor_2_depth, expected",
+    "source_descriptor_depth, target_descriptor_depth, expected",
     [
         (1.0, 1.0, 1.0),
         (1.0, 0.0, 0.5),
@@ -47,70 +47,70 @@ def test_degree_of_association(
         (0.0, 0.0, 0.0),
     ],
 )
-def test_conceptual_depth(descriptor_1_depth, descriptor_2_depth, expected):
-    descriptor_1 = SimpleNamespace(conceptual_depth=descriptor_1_depth)
-    descriptor_2 = SimpleNamespace(conceptual_depth=descriptor_2_depth)
+def test_conceptual_depth(source_descriptor_depth, target_descriptor_depth, expected):
+    source_descriptor = SimpleNamespace(conceptual_depth=source_descriptor_depth)
+    target_descriptor = SimpleNamespace(conceptual_depth=target_descriptor_depth)
     concept_mapping = ConceptMapping(
-        description_type_1=None,
-        description_type_2=None,
-        descriptor_1=descriptor_1,
-        descriptor_2=descriptor_2,
+        source_facet=None,
+        target_facet=None,
+        source_descriptor=source_descriptor,
+        target_descriptor=target_descriptor,
         label=None,
-        object_1=None,
-        object_2=None,
+        source=None,
+        target=None,
     )
     assert expected == concept_mapping.conceptual_depth
 
 
 @pytest.mark.parametrize(
-    "descriptor_1_name, descriptor_2_name, "
-    "descriptor_1_depth, descriptor_2_depth, "
+    "source_descriptor_name, target_descriptor_name, "
+    "source_descriptor_depth, target_descriptor_depth, "
     "degree_of_association, expected",
     [
         ("same_descriptor", "same_descriptor", 1.0, 1.0, None, 1.0),
-        ("descriptor_1", "descriptor_2", 1.0, 1.0, 1.0, 1.0),
-        ("descriptor_1", "descriptor_2", 1.0, 1.0, 0.5, 1.0),
-        ("descriptor_1", "descriptor_2", 1.0, 1.0, 0.0, 0.0),
-        ("descriptor_1", "descriptor_2", 1.0, 0.0, 0.5, 0.625),
-        ("descriptor_1", "descriptor_2", 0.0, 1.0, 0.5, 0.625),
-        ("descriptor_1", "descriptor_2", 0.0, 0.0, 0.5, 0.5),
+        ("source_descriptor", "target_descriptor", 1.0, 1.0, 1.0, 1.0),
+        ("source_descriptor", "target_descriptor", 1.0, 1.0, 0.5, 1.0),
+        ("source_descriptor", "target_descriptor", 1.0, 1.0, 0.0, 0.0),
+        ("source_descriptor", "target_descriptor", 1.0, 0.0, 0.5, 0.625),
+        ("source_descriptor", "target_descriptor", 0.0, 1.0, 0.5, 0.625),
+        ("source_descriptor", "target_descriptor", 0.0, 0.0, 0.5, 0.5),
     ],
 )
 def test_strength(
-    descriptor_1_name,
-    descriptor_2_name,
-    descriptor_1_depth,
-    descriptor_2_depth,
+    source_descriptor_name,
+    target_descriptor_name,
+    source_descriptor_depth,
+    target_descriptor_depth,
     degree_of_association,
     expected,
 ):
     slipnodes = {
         name: SimpleNamespace(name=name, conceptual_depth=depth)
         for name, depth in [
-            (descriptor_1_name, descriptor_1_depth),
-            (descriptor_2_name, descriptor_2_depth),
+            (source_descriptor_name, source_descriptor_depth),
+            (target_descriptor_name, target_descriptor_depth),
         ]
     }
-    slipnodes[descriptor_1_name].lateral_sliplinks = [
+    slipnodes[source_descriptor_name].lateral_sliplinks = [
         SimpleNamespace(
-            target=slipnodes[descriptor_2_name],
+            target=slipnodes[target_descriptor_name],
             degree_of_association=degree_of_association,
         )
     ]
     concept_mapping = ConceptMapping(
-        description_type_1=None,
-        description_type_2=None,
-        descriptor_1=slipnodes[descriptor_1_name],
-        descriptor_2=slipnodes[descriptor_2_name],
+        source_facet=None,
+        target_facet=None,
+        source_descriptor=slipnodes[source_descriptor_name],
+        target_descriptor=slipnodes[target_descriptor_name],
         label=None,
-        object_1=None,
-        object_2=None,
+        source=None,
+        target=None,
     )
     assert expected == concept_mapping.strength
 
 
 @pytest.mark.parametrize(
-    "description_type_1_activated, description_type_2_activated, expected",
+    "source_facet_activated, target_facet_activated, expected",
     [
         (True, True, True),
         (True, False, False),
@@ -118,28 +118,26 @@ def test_strength(
         (False, False, False),
     ],
 )
-def test_is_relevant(
-    description_type_1_activated, description_type_2_activated, expected
-):
-    description_type_1 = SimpleNamespace()
-    description_type_1.is_active = lambda: description_type_1_activated
-    description_type_2 = SimpleNamespace()
-    description_type_2.is_active = lambda: description_type_2_activated
+def test_is_relevant(source_facet_activated, target_facet_activated, expected):
+    source_facet = SimpleNamespace()
+    source_facet.is_active = lambda: source_facet_activated
+    target_facet = SimpleNamespace()
+    target_facet.is_active = lambda: target_facet_activated
     concept_mapping = ConceptMapping(
-        description_type_1=description_type_1,
-        description_type_2=description_type_2,
-        descriptor_1=None,
-        descriptor_2=None,
+        source_facet=source_facet,
+        target_facet=target_facet,
+        source_descriptor=None,
+        target_descriptor=None,
         label=None,
-        object_1=None,
-        object_2=None,
+        source=None,
+        target=None,
     )
     assert expected == concept_mapping.is_relevant()
 
 
 @pytest.mark.parametrize(
-    "descriptor_1_name, descriptor_2_name, "
-    "object_1_distinguished_by_descriptor, object_2_distinguished_by_descriptor, "
+    "source_descriptor_name, target_descriptor_name, "
+    "source_distinguished_by_descriptor, target_distinguished_by_descriptor, "
     "expected",
     [
         ("whole", "whole", True, True, False),
@@ -161,37 +159,37 @@ def test_is_relevant(
     ],
 )
 def test_is_distinguishing(
-    descriptor_1_name,
-    descriptor_2_name,
-    object_1_distinguished_by_descriptor,
-    object_2_distinguished_by_descriptor,
+    source_descriptor_name,
+    target_descriptor_name,
+    source_distinguished_by_descriptor,
+    target_distinguished_by_descriptor,
     expected,
 ):
-    descriptor_1 = SimpleNamespace(name=descriptor_1_name)
-    descriptor_2 = SimpleNamespace(name=descriptor_2_name)
-    object_1 = SimpleNamespace()
-    object_1.is_distinguished_by = lambda d: (
-        object_1_distinguished_by_descriptor if d == descriptor_1 else False
+    source_descriptor = SimpleNamespace(name=source_descriptor_name)
+    target_descriptor = SimpleNamespace(name=target_descriptor_name)
+    source = SimpleNamespace()
+    source.is_distinguished_by = lambda d: (
+        source_distinguished_by_descriptor if d == source_descriptor else False
     )
-    object_2 = SimpleNamespace()
-    object_2.is_distinguished_by = lambda d: (
-        object_2_distinguished_by_descriptor if d == descriptor_2 else False
+    target = SimpleNamespace()
+    target.is_distinguished_by = lambda d: (
+        target_distinguished_by_descriptor if d == target_descriptor else False
     )
     concept_mapping = ConceptMapping(
-        description_type_1=None,
-        description_type_2=None,
-        descriptor_1=descriptor_1,
-        descriptor_2=descriptor_2,
+        source_facet=None,
+        target_facet=None,
+        source_descriptor=source_descriptor,
+        target_descriptor=target_descriptor,
         label=None,
-        object_1=object_1,
-        object_2=object_2,
+        source=source,
+        target=target,
     )
     assert expected == concept_mapping.is_distinguishing()
 
 
 @pytest.mark.parametrize(
-    "self_descriptor_1, self_descriptor_2, "
-    "other_descriptor_1, other_descriptor_2, "
+    "self_source_descriptor, self_target_descriptor, "
+    "other_source_descriptor, other_target_descriptor, "
     "related_1, related_2, "
     "self_label, other_label, "
     "expected",
@@ -202,10 +200,10 @@ def test_is_distinguishing(
     ],
 )
 def test_supports(
-    self_descriptor_1,
-    self_descriptor_2,
-    other_descriptor_1,
-    other_descriptor_2,
+    self_source_descriptor,
+    self_target_descriptor,
+    other_source_descriptor,
+    other_target_descriptor,
     related_1,
     related_2,
     self_label,
@@ -215,45 +213,45 @@ def test_supports(
     slipnodes = {
         name: SimpleNamespace(name=name)
         for name in [
-            self_descriptor_1,
-            self_descriptor_2,
-            other_descriptor_1,
-            other_descriptor_2,
+            self_source_descriptor,
+            self_target_descriptor,
+            other_source_descriptor,
+            other_target_descriptor,
             self_label,
             other_label,
         ]
     }
-    slipnodes[self_descriptor_1].is_related_to = (
-        lambda other: related_1 if other.name == other_descriptor_1 else False
+    slipnodes[self_source_descriptor].is_related_to = (
+        lambda other: related_1 if other.name == other_source_descriptor else False
     )
-    slipnodes[self_descriptor_2].is_related_to = (
-        lambda other: related_2 if other.name == other_descriptor_2 else False
+    slipnodes[self_target_descriptor].is_related_to = (
+        lambda other: related_2 if other.name == other_target_descriptor else False
     )
     self_concept_mapping = ConceptMapping(
-        description_type_1=None,
-        description_type_2=None,
-        descriptor_1=slipnodes[self_descriptor_1],
-        descriptor_2=slipnodes[self_descriptor_2],
+        source_facet=None,
+        target_facet=None,
+        source_descriptor=slipnodes[self_source_descriptor],
+        target_descriptor=slipnodes[self_target_descriptor],
         label=slipnodes[self_label] if self_label is not None else None,
-        object_1=None,
-        object_2=None,
+        source=None,
+        target=None,
     )
     other_concept_mapping = ConceptMapping(
-        description_type_1=None,
-        description_type_2=None,
-        descriptor_1=slipnodes[other_descriptor_1],
-        descriptor_2=slipnodes[other_descriptor_2],
+        source_facet=None,
+        target_facet=None,
+        source_descriptor=slipnodes[other_source_descriptor],
+        target_descriptor=slipnodes[other_target_descriptor],
         label=slipnodes[other_label] if other_label is not None else None,
-        object_1=None,
-        object_2=None,
+        source=None,
+        target=None,
     )
 
     assert expected == self_concept_mapping.supports(other_concept_mapping)
 
 
 @pytest.mark.parametrize(
-    "self_descriptor_1, self_descriptor_2, "
-    "other_descriptor_1, other_descriptor_2, "
+    "self_source_descriptor, self_target_descriptor, "
+    "other_source_descriptor, other_target_descriptor, "
     "related_1, related_2, "
     "self_label, other_label, "
     "expected",
@@ -267,10 +265,10 @@ def test_supports(
     ],
 )
 def test_is_incompatible_with(
-    self_descriptor_1,
-    self_descriptor_2,
-    other_descriptor_1,
-    other_descriptor_2,
+    self_source_descriptor,
+    self_target_descriptor,
+    other_source_descriptor,
+    other_target_descriptor,
     related_1,
     related_2,
     self_label,
@@ -280,37 +278,37 @@ def test_is_incompatible_with(
     slipnodes = {
         name: SimpleNamespace(name=name)
         for name in [
-            self_descriptor_1,
-            self_descriptor_2,
-            other_descriptor_1,
-            other_descriptor_2,
+            self_source_descriptor,
+            self_target_descriptor,
+            other_source_descriptor,
+            other_target_descriptor,
             self_label,
             other_label,
         ]
     }
-    slipnodes[self_descriptor_1].is_related_to = (
-        lambda other: related_1 if other.name == other_descriptor_1 else False
+    slipnodes[self_source_descriptor].is_related_to = (
+        lambda other: related_1 if other.name == other_source_descriptor else False
     )
-    slipnodes[self_descriptor_2].is_related_to = (
-        lambda other: related_2 if other.name == other_descriptor_2 else False
+    slipnodes[self_target_descriptor].is_related_to = (
+        lambda other: related_2 if other.name == other_target_descriptor else False
     )
     self_concept_mapping = ConceptMapping(
-        description_type_1=None,
-        description_type_2=None,
-        descriptor_1=slipnodes[self_descriptor_1],
-        descriptor_2=slipnodes[self_descriptor_2],
+        source_facet=None,
+        target_facet=None,
+        source_descriptor=slipnodes[self_source_descriptor],
+        target_descriptor=slipnodes[self_target_descriptor],
         label=slipnodes[self_label] if self_label is not None else None,
-        object_1=None,
-        object_2=None,
+        source=None,
+        target=None,
     )
     other_concept_mapping = ConceptMapping(
-        description_type_1=None,
-        description_type_2=None,
-        descriptor_1=slipnodes[other_descriptor_1],
-        descriptor_2=slipnodes[other_descriptor_2],
+        source_facet=None,
+        target_facet=None,
+        source_descriptor=slipnodes[other_source_descriptor],
+        target_descriptor=slipnodes[other_target_descriptor],
         label=slipnodes[other_label] if other_label is not None else None,
-        object_1=None,
-        object_2=None,
+        source=None,
+        target=None,
     )
 
     assert expected == self_concept_mapping.is_incompatible_with(other_concept_mapping)

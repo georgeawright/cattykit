@@ -169,8 +169,8 @@ class Slipnode:
             else 0
         )
 
-    def apply_slippages(self, slippages: list) -> Slipnode:
+    def apply_slippages(self, slippages: list["ConceptMapping"]) -> Slipnode:
         for slippage in slippages:
-            if slippage.descriptor_1 == self:
-                return slippage.descriptor_2
+            if slippage.source_descriptor == self:
+                return slippage.target_descriptor
         return self

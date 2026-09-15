@@ -250,7 +250,7 @@ class Slipnet:
         target: "WorkspaceObject",
         source_descriptions=None,
         target_descriptions=None,
-    ) -> List[ConceptMapping]:
+    ) -> list[ConceptMapping]:
         source_descriptions = (
             source.descriptions if source_descriptions is None else source_descriptions
         )
@@ -260,20 +260,24 @@ class Slipnet:
         mappings = []
         for m in [
             ConceptMapping(
-                description_type_1=desc_1.facet,
-                description_type_2=desc_2.facet,
-                descriptor_1=desc_1.descriptor,
-                descriptor_2=desc_2.descriptor,
-                label=self.get_label_node(desc_1.descriptor, desc_2.descriptor),
-                object_1=source,
-                object_2=target,
+                source_facet=source_description.facet,
+                target_facet=target_description.facet,
+                source_descriptor=source_description.descriptor,
+                target_descriptor=target_description.descriptor,
+                label=self.get_label_node(
+                    source_description.descriptor, target_description.descriptor
+                ),
+                source=source,
+                target=target,
             )
-            for desc_1 in source_descriptions
-            for desc_2 in target_descriptions
-            if desc_1.facet == desc_2.facet
+            for source_description in source_descriptions
+            for target_description in target_descriptions
+            if source_description.facet == target_description.facet
             and (
-                desc_1.descriptor == desc_2.descriptor
-                or desc_1.descriptor.is_sliplinked_to(desc_2.descriptor)
+                source_description.descriptor == target_description.descriptor
+                or source_description.descriptor.is_sliplinked_to(
+                    target_description.descriptor
+                )
             )
         ]:
             if m in mappings:

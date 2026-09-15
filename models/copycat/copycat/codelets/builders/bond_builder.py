@@ -143,7 +143,7 @@ class BondBuilder(Builder):
             (
                 mapping
                 for mapping in correspondence.concept_mappings
-                if mapping.description_type_1.name == "string_position_category"
+                if mapping.source_facet.name == "string_position_category"
             ),
             None,
         )
@@ -166,15 +166,15 @@ class BondBuilder(Builder):
         if other_bond is None or other_bond.direction_category is None:
             return False
         bond_concept_mapping = ConceptMapping(
-            description_type_1=self.slipnet["direction_category"],
-            description_type_2=self.slipnet["direction_category"],
-            descriptor_1=self.proposed_bond.direction_category,
-            descriptor_2=other_bond.direction_category,
+            source_facet=self.slipnet["direction_category"],
+            target_facet=self.slipnet["direction_category"],
+            source_descriptor=self.proposed_bond.direction_category,
+            target_descriptor=other_bond.direction_category,
             label=self.slipnet.get_label_node(
                 self.proposed_bond.direction_category, other_bond.direction_category
             ),
-            object_1=None,
-            object_2=None,
+            source=None,
+            target=None,
         )
         if bond_concept_mapping.is_incompatible_with(
             string_position_category_concept_mapping

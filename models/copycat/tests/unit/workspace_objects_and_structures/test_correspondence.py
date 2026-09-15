@@ -133,13 +133,13 @@ def test_is_incompatible_boundarywise_with():
     opposite_category = SimpleNamespace(name="opposite")
     identity_mapping = SimpleNamespace(
         label=identity_category,
-        description_type_1=SimpleNamespace(name="direction_category"),
-        description_type_2=SimpleNamespace(name="direction_category"),
+        source_facet=SimpleNamespace(name="direction_category"),
+        target_facet=SimpleNamespace(name="direction_category"),
     )
     opposite_mapping = SimpleNamespace(
         label=opposite_category,
-        description_type_1=SimpleNamespace(name="direction_category"),
-        description_type_2=SimpleNamespace(name="direction_category"),
+        source_facet=SimpleNamespace(name="direction_category"),
+        target_facet=SimpleNamespace(name="direction_category"),
     )
 
     source_left = SimpleNamespace()

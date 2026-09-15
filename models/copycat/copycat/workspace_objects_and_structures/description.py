@@ -50,10 +50,10 @@ class Description(WorkspaceStructure):
         new_facet = self.facet
         new_descriptor = self.descriptor
         for slippage in slippages:
-            if slippage.descriptor_1 == self.facet:
-                new_facet = slippage.descriptor_2
-            if slippage.descriptor_1 == self.descriptor:
-                new_descriptor = slippage.descriptor_2
+            if slippage.source_descriptor == self.facet:
+                new_facet = slippage.target_descriptor
+            if slippage.source_descriptor == self.descriptor:
+                new_descriptor = slippage.target_descriptor
         return Description(argument, new_facet, new_descriptor)
 
     def _local_support(self) -> float:

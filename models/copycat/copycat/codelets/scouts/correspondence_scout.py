@@ -70,7 +70,7 @@ class CorrespondenceScout(Scout):
         possible_opposite_concept_mappings = [
             mapping
             for mapping in distinguishing_concept_mappings
-            if mapping.description_type_1.name
+            if mapping.source_facet.name
             not in ["string_position_category", "bond_facet"]
         ]
         target_flipped = False
@@ -78,7 +78,7 @@ class CorrespondenceScout(Scout):
             self.source.is_string_spanning_group()
             and self.target.is_string_spanning_group()
             and any(
-                mapping.description_type_1.name == "direction_category"
+                mapping.source_facet.name == "direction_category"
                 for mapping in possible_opposite_concept_mappings
             )
             and all(
@@ -208,10 +208,10 @@ class CorrespondenceScout(Scout):
             self.workspace, source, target, concept_mappings
         )
         for mapping in proposed_correspondence.concept_mappings:
-            self.slipnet.activate_node_from_workspace(mapping.description_type_1.name)
-            self.slipnet.activate_node_from_workspace(mapping.descriptor_1.name)
-            self.slipnet.activate_node_from_workspace(mapping.description_type_2.name)
-            self.slipnet.activate_node_from_workspace(mapping.descriptor_2.name)
+            self.slipnet.activate_node_from_workspace(mapping.source_facet.name)
+            self.slipnet.activate_node_from_workspace(mapping.source_descriptor.name)
+            self.slipnet.activate_node_from_workspace(mapping.target_facet.name)
+            self.slipnet.activate_node_from_workspace(mapping.target_descriptor.name)
         self.workspace.add_proposed_correspondence(proposed_correspondence)
         distinguishing_mappings = proposed_correspondence.get_distinguishing_mappings()
         urgency = sum(mapping.strength for mapping in distinguishing_mappings) / len(

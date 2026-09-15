@@ -193,10 +193,10 @@ class CorrespondenceBuilder(Builder):
         ):
             return None
         bond_concept_mapping = ConceptMapping(
-            description_type_1=self.slipnet["direction_category"],
-            description_type_2=self.slipnet["direction_category"],
-            descriptor_1=source_bond.direction_category,
-            descriptor_2=target_bond.direction_category,
+            source_facet=self.slipnet["direction_category"],
+            target_facet=self.slipnet["direction_category"],
+            source_descriptor=source_bond.direction_category,
+            target_descriptor=target_bond.direction_category,
             label=self.slipnet.get_label_node(
                 source_bond.direction_category, target_bond.direction_category
             ),
@@ -212,7 +212,7 @@ class CorrespondenceBuilder(Builder):
         if not self.workspace.rule:
             return None
         proposed_mapping_descriptors = [
-            m.descriptor_1 for m in self.proposed_correspondence.concept_mappings
+            m.source_descriptor for m in self.proposed_correspondence.concept_mappings
         ]
         if self.workspace.rule.descriptor_1 in proposed_mapping_descriptors:
             return None
