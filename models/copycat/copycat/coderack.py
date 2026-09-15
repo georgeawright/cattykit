@@ -26,7 +26,7 @@ class Coderack:
         urgency_bins: list,
         urgency_lookup_table: list,
         max_population: int,
-        logger: ModelLogger | None = None,
+        logger: ModelLogger,
     ):
         self._urgency_bins = urgency_bins
         self.urgency_lookup_table = urgency_lookup_table
@@ -35,22 +35,22 @@ class Coderack:
         self.codelets_to_post = []
         self.logger = logger
 
-    def set_logger(self, logger: ModelLogger) -> None:
-        """Attach the logger used to record coderack state changes."""
-        self.logger = logger
-
     @classmethod
-    def create(cls, number_of_bins: int, max_population: int) -> Coderack:
+    def create(
+        cls, number_of_bins: int, max_population: int, logger: ModelLogger
+    ) -> Coderack:
         urgency_bins = [CoderackBin(i + 1) for i in range(number_of_bins)]
         urgency_temperature_lookup_table = [
             [round(URGENCY_TEMPERATURE_FUNCTION(u, t)) for u in range(number_of_bins)]
             for t in range(101)
         ]
-        return cls(urgency_bins, urgency_temperature_lookup_table, max_population)
+        return cls(urgency_bins, urgency_temperature_lookup_table, max_population, logger)
 
     @classmethod
-    def from_json(cls, json_data: dict) -> Coderack:
-        return cls.create(json_data["number_of_bins"], json_data["max_population"])
+    def from_json(cls, json_data: dict, logger: ModelLogger) -> Coderack:
+        return cls.create(
+            json_data["number_of_bins"], json_data["max_population"], logger
+        )
 
     @property
     def codelets(self):
@@ -135,37 +135,33 @@ class Coderack:
         chosen_urgency_bin = select_item_from_list(self._urgency_bins, weights)
         chosen_codelet = random.choice(chosen_urgency_bin.codelets)
         self._remove(chosen_codelet, discard_proposal=False)
-        if self.logger is not None:
-            self.logger.log(
-                ModelEvent.create(
-                    "copycat",
-                    "attribute_updated",
-                    object_id="coderack",
-                    attribute="number_of_codelets_on_coderack",
-                    value=self.population,
-                )
+        self.logger.log(
+            ModelEvent.create(
+                "copycat",
+                "attribute_updated",
+                object_id="coderack",
+                attribute="number_of_codelets_on_coderack",
+                value=self.population,
             )
+        )
         return chosen_codelet
 
     def _post(self, codelet):
         self.get_urgency_bin(codelet.urgency_bin).add(codelet)
         codelet.birth_time = self.number_of_codelets_run
-        if self.logger is not None:
-            self.logger.log(
-                ModelEvent.create(
-                    "copycat",
-                    "codelet_posted",
-                    codelet_id=f"codelet:{codelet.hash_id}",
-                    codelet_type=type(codelet).__name__,
-                    urgency_bin=codelet.urgency_bin,
-                    birth_time=codelet.birth_time,
-                    arguments={
-                        "proposed_structure": getattr(
-                            codelet, "proposed_structure", None
-                        )
-                    },
-                )
+        self.logger.log(
+            ModelEvent.create(
+                "copycat",
+                "codelet_posted",
+                codelet_id=f"codelet:{codelet.hash_id}",
+                codelet_type=type(codelet).__name__,
+                urgency_bin=codelet.urgency_bin,
+                birth_time=codelet.birth_time,
+                arguments={
+                    "proposed_structure": getattr(codelet, "proposed_structure", None)
+                },
             )
+        )
 
     def _remove(self, codelet, discard_proposal: bool = True):
         """Remove codelet from coderack and
@@ -174,14 +170,13 @@ class Coderack:
         self.get_urgency_bin(codelet.urgency_bin).remove(codelet)
         if not discard_proposal:
             return
-        if self.logger is not None:
-            self.logger.log(
-                ModelEvent.create(
-                    "copycat",
-                    "codelet_removed",
-                    codelet_id=f"codelet:{codelet.hash_id}",
-                )
+        self.logger.log(
+            ModelEvent.create(
+                "copycat",
+                "codelet_removed",
+                codelet_id=f"codelet:{codelet.hash_id}",
             )
+        )
         if isinstance(codelet, (BondStrengthTester, BondBuilder)):
             try:  # arguments of bond might have been deleted
                 codelet.proposed_bond.string.delete_proposed_bond(

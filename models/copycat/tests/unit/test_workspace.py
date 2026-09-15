@@ -1,7 +1,17 @@
 from types import SimpleNamespace
 from typing import NamedTuple
+from unittest.mock import Mock
 
 from copycat import Workspace
+
+
+def create_workspace(initial_string, modified_string, target_string, answer_string):
+    workspace = Workspace(
+        initial_string, modified_string, target_string, answer_string, Mock()
+    )
+    workspace._log = Mock()
+    workspace._log_correspondence = Mock()
+    return workspace
 
 
 class MockString:
@@ -41,7 +51,7 @@ class MockCorrespondence(NamedTuple):
 
 
 def test_add_and_delete_proposed_correspondence():
-    workspace = Workspace(None, None, None, None)
+    workspace = create_workspace(None, None, None, None)
     assert 0 == len(workspace.proposed_correspondences)
     source = MockObject()
     target = MockObject()
@@ -53,7 +63,7 @@ def test_add_and_delete_proposed_correspondence():
 
 
 def test_add_get_and_break_correspondence():
-    workspace = Workspace(None, None, None, None)
+    workspace = create_workspace(None, None, None, None)
     assert 0 == len(workspace.correspondences)
     source = MockObject()
     target = MockObject()
@@ -69,7 +79,7 @@ def test_add_get_and_break_correspondence():
 
 
 def test_break_bond():
-    workspace = Workspace(None, None, None, None)
+    workspace = create_workspace(None, None, None, None)
     string = MockString(objects=[])
     source = MockObject(string=string)
     target = MockObject(string=string)
@@ -87,7 +97,7 @@ def test_break_bond():
 
 
 def test_break_bond_reconciles_to_existing_equivalent_bond():
-    workspace = Workspace(None, None, None, None)
+    workspace = create_workspace(None, None, None, None)
     string = MockString(objects=[])
     source = MockObject(string=string)
     target = MockObject(string=string)
@@ -117,7 +127,7 @@ def test_break_bond_reconciles_to_existing_equivalent_bond():
 
 
 def test_break_group():
-    workspace = Workspace(None, None, None, None)
+    workspace = create_workspace(None, None, None, None)
     string = MockString(objects=[])
     left_object = MockObject(string=string)
     right_object = MockObject(string=string)
@@ -160,7 +170,7 @@ def test_letters_without_replacement():
     c = SimpleNamespace(replacement=None)
     letters = [a, b, c]
     initial_string = SimpleNamespace(letters=letters)
-    workspace = Workspace(initial_string, None, None, None)
+    workspace = create_workspace(initial_string, None, None, None)
     assert 3 == len(workspace.letters_without_replacement)
     a.replacement = SimpleNamespace()
     assert 2 == len(workspace.letters_without_replacement)
@@ -177,7 +187,7 @@ def test_ungrouped_objects():
     objects = [a, b, c]
     initial_string = SimpleNamespace(objects=objects)
     target_string = SimpleNamespace(objects=[])
-    workspace = Workspace(initial_string, None, target_string, None)
+    workspace = create_workspace(initial_string, None, target_string, None)
     assert 3 == len(workspace.ungrouped_objects)
     ab = SimpleNamespace(spans_whole_string=False, group=None)
     a.group = ab
@@ -215,7 +225,7 @@ def test_unbonded_objects():
     objects = [a, b, c]
     initial_string = SimpleNamespace(objects=objects)
     target_string = SimpleNamespace(objects=[])
-    workspace = Workspace(initial_string, None, target_string, None)
+    workspace = create_workspace(initial_string, None, target_string, None)
     assert 3 == len(workspace.unbonded_objects)
     a_to_b = SimpleNamespace()
     a.outgoing_and_incoming_bonds.append(a_to_b)
@@ -236,7 +246,7 @@ def test_uncorresponded_objects():
     y = SimpleNamespace(correspondence=None)
     z = SimpleNamespace(correspondence=None)
     target_string = SimpleNamespace(objects=[x, y, z])
-    workspace = Workspace(initial_string, None, target_string, None)
+    workspace = create_workspace(initial_string, None, target_string, None)
     assert 6 == len(workspace.uncorresponded_objects)
     a_to_z = SimpleNamespace()
     a.correspondence = a_to_z

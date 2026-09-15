@@ -8,7 +8,7 @@ from .tools import select_item_from_list, temperature_adjust
 
 
 class WorkspaceString:
-    def __init__(self, string_id: str = "unknown", logger: ModelLogger | None = None):
+    def __init__(self, string_id: str, logger: ModelLogger):
         self.string_id = string_id
         self.logger = logger
         self.letters = []
@@ -84,16 +84,15 @@ class WorkspaceString:
                 obj.relative_importance = 0
             else:
                 obj.relative_importance = obj.raw_importance / total_raw_importance
-            if self.logger is not None:
-                self.logger.log(
-                    ModelEvent.create(
-                        "copycat",
-                        "attribute_updated",
-                        object_id=_object_id(obj),
-                        attribute="relative_importance",
-                        value=obj.relative_importance,
-                    )
+            self.logger.log(
+                ModelEvent.create(
+                    "copycat",
+                    "attribute_updated",
+                    object_id=_object_id(obj),
+                    attribute="relative_importance",
+                    value=obj.relative_importance,
                 )
+            )
 
     def update_intra_string_unhappiness(self):
         self.intra_string_unhappiness = (
@@ -101,30 +100,28 @@ class WorkspaceString:
             if self.objects
             else 0
         )
-        if self.logger is not None:
-            self.logger.log(
-                ModelEvent.create(
-                    "copycat",
-                    "attribute_updated",
-                    object_id=f"string:{self.string_id}",
-                    attribute="intra_string_unhappiness",
-                    value=self.intra_string_unhappiness,
-                )
+        self.logger.log(
+            ModelEvent.create(
+                "copycat",
+                "attribute_updated",
+                object_id=f"string:{self.string_id}",
+                attribute="intra_string_unhappiness",
+                value=self.intra_string_unhappiness,
             )
+        )
 
     def empty(self):
         self.__init__(self.string_id, self.logger)
 
     def add_letter(self, letter):
         self.letters.append(letter)
-        if self.logger is not None:
-            self._log(
-                "letter_created",
-                letter_id=f"letter:{letter.hash_id}",
-                string_id=self.string_id,
-                position=letter.left_position,
-                letter_category=letter.letter_category.name,
-            )
+        self._log(
+            "letter_created",
+            letter_id=f"letter:{letter.hash_id}",
+            string_id=self.string_id,
+            position=letter.left_position,
+            letter_category=letter.letter_category.name,
+        )
 
     def contains_bond(self, b) -> bool:
         """Returns True if the string contains an equivalent bond."""
@@ -193,8 +190,6 @@ class WorkspaceString:
         self._log_structure("group_destroyed", group)
 
     def _log_structure(self, kind: str, structure: object) -> None:
-        if self.logger is None:
-            return
         data = (
             _bond_data(structure)
             if kind.startswith("bond_")
@@ -203,8 +198,6 @@ class WorkspaceString:
         self._log(kind, **data)
 
     def _log(self, kind: str, **data: object) -> None:
-        if self.logger is None:
-            return
         entity = kind.rsplit("_", maxsplit=1)[0]
         identifier = f"{entity}_id"
         if identifier not in data:

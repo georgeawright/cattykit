@@ -195,18 +195,16 @@ class WorkspaceObject:
             self.bond_descriptions.append(description)
         else:
             self.descriptions.append(description)
-        logger = self.string.logger
-        if logger is not None:
-            logger.log(
-                ModelEvent.create(
-                    "copycat",
-                    "description_created",
-                    description_id=f"description:{description.hash_id}",
-                    object_id=f"{type(self).__name__.lower()}:{self.hash_id}",
-                    facet=description.facet.name,
-                    descriptor=description.descriptor.name,
-                )
+        self.string.logger.log(
+            ModelEvent.create(
+                "copycat",
+                "description_created",
+                description_id=f"description:{description.hash_id}",
+                object_id=f"{type(self).__name__.lower()}:{self.hash_id}",
+                facet=description.facet.name,
+                descriptor=description.descriptor.name,
             )
+        )
 
     def has_recursive_group_member(self, other_object) -> bool:
         return self == other_object

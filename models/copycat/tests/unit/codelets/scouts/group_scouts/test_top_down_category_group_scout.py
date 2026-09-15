@@ -104,8 +104,8 @@ def test_run(monkeypatch):
         }
     )
 
-    initial_string = WorkspaceString()
-    target_string = WorkspaceString()
+    initial_string = WorkspaceString("initial", Mock())
+    target_string = WorkspaceString("target", Mock())
     initial_string.intra_string_unhappiness = 1.0
     target_string.intra_string_unhappiness = 0.0
     initial_string.distribution_of_bond_counts = [2]
@@ -284,6 +284,7 @@ def test_run(monkeypatch):
     b.group = None
     bond_facet = SimpleNamespace(name="letter_category")
     a_to_b = SimpleNamespace(
+        hash_id=1,
         bond_category=successor,
         bond_facet=bond_facet,
         direction_category=right,
@@ -291,6 +292,7 @@ def test_run(monkeypatch):
         right_object=b,
     )
     b_to_c = SimpleNamespace(
+        hash_id=2,
         bond_category=successor,
         bond_facet=bond_facet,
         direction_category=right,
@@ -344,7 +346,7 @@ def test_run(monkeypatch):
 
     # An oppositely directed predecessor bond is included in flipped form.
     slipnet.activate_called = 0
-    flipped_b_to_c = SimpleNamespace(name="flipped-b-to-c")
+    flipped_b_to_c = SimpleNamespace(name="flipped-b-to-c", hash_id=3)
     b_to_c.bond_category = predecessor
     b_to_c.direction_category = left
     b_to_c.get_flipped_version = lambda: flipped_b_to_c

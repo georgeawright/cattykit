@@ -60,7 +60,7 @@ class Copycat:
         time_step_length: int,
         initially_clamped_nodes: list[str],
         initial_slipnode_clamp_time: int,
-        logger: ModelLogger | None = None,
+        logger: ModelLogger,
     ):
         self.slipnet = slipnet
         self.coderack = coderack
@@ -75,10 +75,7 @@ class Copycat:
         self.snag_structures: list[WorkspaceStructure] = []
         self.last_snag_time: Optional[int] = None
         self.clamp_temperature = False
-        self.logger = logger if logger is not None else NullLogger()
-        for component in (self.workspace, self.slipnet, self.coderack):
-            if component is not None and hasattr(component, "set_logger"):
-                component.set_logger(self.logger)
+        self.logger = logger
 
     def close(self) -> None:
         """Copycat owns no resources"""
@@ -91,6 +88,7 @@ class Copycat:
         hyperparameters_file: str,
         logger: ModelLogger | None = None,
     ):
+        logger = logger if logger is not None else NullLogger()
         with open(hyperparameters_file) as f:
             hyperparameters = json.load(f)
         with open(slipnet_json_file) as f:
@@ -104,11 +102,12 @@ class Copycat:
                 "full_activation_probability_exponent"
             ],
             initially_clamped_nodes=hyperparameters["initially_clamped_nodes"],
+            logger=logger,
         )
         with open(coderack_json_file) as f:
             coderack_json = json.load(f)
-        coderack = Coderack.from_json(coderack_json)
-        workspace = Workspace.setup()
+        coderack = Coderack.from_json(coderack_json, logger)
+        workspace = Workspace.setup(logger)
         return cls(
             slipnet,
             coderack=coderack,

@@ -28,7 +28,7 @@ class Slipnet:
         full_activation_threshold: float,
         # probability(jumping to full activation) = activation ** exponent
         full_activation_probability_exponent: int,
-        logger: ModelLogger | None = None,
+        logger: ModelLogger,
     ):
         self.nodes = nodes
         self.adjacency_table = adjacency_table
@@ -43,15 +43,12 @@ class Slipnet:
         self.full_activation_probability_exponent = full_activation_probability_exponent
         self.logger = logger
 
-    def set_logger(self, logger: ModelLogger) -> None:
-        """Attach the logger used to record slipnet state changes."""
-        self.logger = logger
-
     @classmethod
     def create(
         cls,
         nodes: List[Slipnode],
         links: List[Sliplink],
+        logger: ModelLogger,
         workspace_activation: float = 1.0,
         full_activation_threshold: float = 0.50,
         full_activation_probability_exponent: int = 3,
@@ -89,6 +86,7 @@ class Slipnet:
             workspace_activation,
             full_activation_threshold,
             full_activation_probability_exponent,
+            logger,
         )
 
     @classmethod
@@ -100,6 +98,7 @@ class Slipnet:
         full_activation_threshold: float,
         full_activation_probability_exponent: int,
         initially_clamped_nodes: List[str],
+        logger: ModelLogger,
     ):
         nodes = {
             node_data["name"]: Slipnode(
@@ -133,11 +132,12 @@ class Slipnet:
             for link_data in json_data["links"]
         ]
         slipnet = cls.create(
-            list(nodes.values()),
-            links,
-            workspace_activation,
-            full_activation_threshold,
-            full_activation_probability_exponent,
+            nodes=list(nodes.values()),
+            links=links,
+            logger=logger,
+            workspace_activation=workspace_activation,
+            full_activation_threshold=full_activation_threshold,
+            full_activation_probability_exponent=full_activation_probability_exponent,
         )
         for node in initially_clamped_nodes:
             slipnet.clamp_node(node)
@@ -168,22 +168,20 @@ class Slipnet:
         """Record the slipnet topology once at the beginning of a run."""
         links: list[Sliplink] = []
         for node in self.nodes:
-            if self.logger is not None:
-                self.logger.log(
-                    ModelEvent.create(
+            self.logger.log(
+                ModelEvent.create(
                         "copycat",
                         "slipnode_initialized",
                         name=node.name,
                         conceptual_depth=node.conceptual_depth,
                         intrinsic_link_length=node.intrinsic_link_length,
                         shrunk_link_length=node.shrunk_link_length,
-                    )
                 )
+            )
             links.extend(node.outgoing_links)
         for link in links:
-            if self.logger is not None:
-                self.logger.log(
-                    ModelEvent.create(
+            self.logger.log(
+                ModelEvent.create(
                         "copycat",
                         "sliplink_initialized",
                         source=link.source.name,
@@ -195,8 +193,8 @@ class Slipnet:
                         is_has_property_link=link.is_has_property_link,
                         is_lateral_sliplink=link.is_lateral_sliplink,
                         is_lateral_non_sliplink=link.is_lateral_non_sliplink,
-                    )
                 )
+            )
 
     def update_activations(self) -> None:
         """Recomputes activations according to:
@@ -217,16 +215,15 @@ class Slipnet:
         self._probabilistically_activate_nodes()
         for node in self.nodes:
             node.activation = self.node_activations[self.node_index_lookup[node.name]]
-            if self.logger is not None:
-                self.logger.log(
-                    ModelEvent.create(
+            self.logger.log(
+                ModelEvent.create(
                         "copycat",
                         "attribute_updated",
                         object_id=f"slipnode:{node.name}",
                         attribute="activation",
                         value=float(node.activation),
-                    )
                 )
+            )
 
     def clamp_node(self, node_id: str):
         """Clamp a node at full activation."""

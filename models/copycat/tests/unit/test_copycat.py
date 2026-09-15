@@ -1,4 +1,5 @@
 from types import SimpleNamespace
+from unittest.mock import Mock
 
 import pytest
 
@@ -54,6 +55,6 @@ def test_update_temperature(rule_strength, workspace_unhappiness, expected):
         total_unhappiness=workspace_unhappiness,
         rule=SimpleNamespace(total_strength=rule_strength),
     )
-    copycat = Copycat(None, None, workspace, None, None, None)
+    copycat = Copycat(None, None, workspace, None, None, None, Mock())
     copycat._update_temperature()
     assert copycat.temperature == pytest.approx(expected)

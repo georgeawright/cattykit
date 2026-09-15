@@ -1,4 +1,5 @@
 from types import SimpleNamespace
+from unittest.mock import Mock
 
 import numpy as np
 import pytest
@@ -25,7 +26,17 @@ def test_get_node_activation():
     node_index_lookup = {node.name: index for index, node in enumerate(nodes)}
     node_activations = np.array([node.activation for node in nodes])
     slipnet = Slipnet(
-        nodes, None, node_index_lookup, node_activations, None, None, None, 1.0, 0.5, 3
+        nodes,
+        None,
+        node_index_lookup,
+        node_activations,
+        None,
+        None,
+        None,
+        1.0,
+        0.5,
+        3,
+        Mock(),
     )
 
     assert 1.0 == slipnet.get_node_activation("cat")
@@ -148,7 +159,7 @@ def test_update_activations_no_jumping(
     links = [cat_is_a_animal, dog_is_a_animal]
 
     # full activation threshold is 1 so there is no probabilistic jumping
-    slipnet = Slipnet.create(nodes, links, full_activation_threshold=1.0)
+    slipnet = Slipnet.create(nodes, links, Mock(), full_activation_threshold=1.0)
 
     slipnet.node_activations[slipnet.node_index_lookup["cat"]] = start_state["cat"]
     slipnet.node_activations[slipnet.node_index_lookup["dog"]] = start_state["dog"]
@@ -189,6 +200,7 @@ def test_activate_node_from_workspace():
         1.0,
         0.5,
         3,
+        Mock(),
     )
     slipnet.activate_node_from_workspace("cat")
 
@@ -219,7 +231,7 @@ def test_get_top_down_codelets_instantiates_configured_codelets():
             codelets=["TopDownDescriptionScout"],
         ),
     ]
-    slipnet = Slipnet.create(nodes, [])
+    slipnet = Slipnet.create(nodes, [], Mock())
     slipnet.node_activations.fill(1.0)
     for node in slipnet.nodes:
         node.activation = 1.0

@@ -41,7 +41,7 @@ class Workspace:
         modified_string: WorkspaceString,
         target_string: WorkspaceString,
         answer_string: WorkspaceString,
-        logger: ModelLogger | None = None,
+        logger: ModelLogger,
     ):
         """
         The workspace contains:
@@ -62,14 +62,6 @@ class Workspace:
         self.target_string = target_string
         self.answer_string = answer_string
         self.logger = logger
-        for workspace_string in (
-            initial_string,
-            modified_string,
-            target_string,
-            answer_string,
-        ):
-            if workspace_string is not None:
-                workspace_string.logger = logger
         self._proposed_correspondences: Dict[
             WorkspaceObject,
             Dict[WorkspaceObject, List[Optional[Correspondence]]],
@@ -80,25 +72,15 @@ class Workspace:
         self.translated_rule: Optional[Rule] = None
         self.snag_object: Optional[WorkspaceObject] = None
 
-    def set_logger(self, logger: ModelLogger) -> None:
-        """Attach the logger used to record workspace mutations."""
-        self.logger = logger
-        for workspace_string in (
-            self.initial_string,
-            self.modified_string,
-            self.target_string,
-            self.answer_string,
-        ):
-            if workspace_string is not None:
-                workspace_string.logger = logger
-
     @classmethod
-    def setup(cls):
-        initial_string = WorkspaceString("initial")
-        modified_string = WorkspaceString("modified")
-        target_string = WorkspaceString("target")
-        answer_string = WorkspaceString("answer")
-        return cls(initial_string, modified_string, target_string, answer_string)
+    def setup(cls, logger: ModelLogger):
+        initial_string = WorkspaceString("initial", logger)
+        modified_string = WorkspaceString("modified", logger)
+        target_string = WorkspaceString("target", logger)
+        answer_string = WorkspaceString("answer", logger)
+        return cls(
+            initial_string, modified_string, target_string, answer_string, logger
+        )
 
     @property
     def letters(self):
@@ -297,47 +279,44 @@ class Workspace:
         self.target_string.update_relative_importances()
         self.initial_string.update_intra_string_unhappiness()
         self.target_string.update_intra_string_unhappiness()
-        if self.logger is not None:
-            for attribute, value in (
-                ("intra_string_unhappiness", self.intra_string_unhappiness),
-                ("inter_string_unhappiness", self.inter_string_unhappiness),
-                ("total_unhappiness", self.total_unhappiness),
-            ):
-                self.logger.log(
-                    ModelEvent.create(
-                        "copycat",
-                        "attribute_updated",
-                        object_id="workspace",
-                        attribute=attribute,
-                        value=value,
-                    )
+        for attribute, value in (
+            ("intra_string_unhappiness", self.intra_string_unhappiness),
+            ("inter_string_unhappiness", self.inter_string_unhappiness),
+            ("total_unhappiness", self.total_unhappiness),
+        ):
+            self.logger.log(
+                ModelEvent.create(
+                    "copycat",
+                    "attribute_updated",
+                    object_id="workspace",
+                    attribute=attribute,
+                    value=value,
                 )
+            )
 
     def _update_strength_values(self):
         for structure in self.structures:
             structure.update_strength_values()
-            if self.logger is not None:
-                for attribute in (
+            for attribute in (
                     "internal_strength",
                     "external_strength",
                     "total_strength",
                     "total_weakness",
-                ):
-                    self.logger.log(
+            ):
+                self.logger.log(
                         ModelEvent.create(
                             "copycat",
                             "attribute_updated",
                             object_id=_object_id(structure),
                             attribute=attribute,
                             value=getattr(structure, attribute),
-                        )
                     )
+                )
 
     def _update_object_values(self):
         for obj in self.objects:
             obj.update_values()
-            if self.logger is not None:
-                for attribute in (
+            for attribute in (
                     "raw_importance",
                     "intra_string_unhappiness",
                     "inter_string_unhappiness",
@@ -345,16 +324,16 @@ class Workspace:
                     "intra_string_salience",
                     "inter_string_salience",
                     "total_salience",
-                ):
-                    self.logger.log(
+            ):
+                self.logger.log(
                         ModelEvent.create(
                             "copycat",
                             "attribute_updated",
                             object_id=_object_id(obj),
                             attribute=attribute,
                             value=getattr(obj, attribute),
-                        )
                     )
+                )
 
     def add_proposed_correspondence(self, c: Correspondence):
         """Add to a maintained list of proposed correspondences between two objects."""
@@ -370,9 +349,8 @@ class Workspace:
         """Add the only correspondence between two objects."""
         self._correspondences[c.source] = c
         self._log_correspondence("correspondence_created", c)
-        if self.logger is not None:
-            for index, mapping in enumerate(c.concept_mappings):
-                self._log(
+        for index, mapping in enumerate(getattr(c, "concept_mappings", [])):
+            self._log(
                     "concept_mapping_created",
                     concept_mapping_id=f"correspondence:{c.hash_id}:mapping:{index}",
                     correspondence_id=f"correspondence:{c.hash_id}",
@@ -381,7 +359,7 @@ class Workspace:
                     initial_descriptor=mapping.descriptor_1.name,
                     target_descriptor=mapping.descriptor_2.name,
                     label=None if mapping.label is None else mapping.label.name,
-                )
+            )
 
     def break_correspondence(self, c: Correspondence):
         c.source.correspondence = None
@@ -415,8 +393,6 @@ class Workspace:
             self.delete_proposed_correspondence(correspondence)
 
     def _log_correspondence(self, kind: str, correspondence: Correspondence) -> None:
-        if self.logger is None:
-            return
         self._log(
             kind,
             correspondence_id=f"correspondence:{correspondence.hash_id}",
@@ -425,8 +401,7 @@ class Workspace:
         )
 
     def _log(self, kind: str, **data: object) -> None:
-        if self.logger is not None:
-            self.logger.log(ModelEvent.create("copycat", kind, **data))
+        self.logger.log(ModelEvent.create("copycat", kind, **data))
 
     def contains_object(self, o: WorkspaceObject) -> bool:
         """Returns True if the workspace contains an equivalent group."""
