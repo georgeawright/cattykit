@@ -142,8 +142,8 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
     }
     const rule = data.snapshot.rule
     if (rule) {
-      const secondHalf = rule.relation || rule.descriptor_2 || '—'
-      const ruleText = `Replace ${rule.replaced_description_type || '—'} of ${rule.descriptor || '—'} ${rule.object_category || '—'} by ${secondHalf}`
+      const secondHalf = rule.relation || rule.target_descriptor || '—'
+      const ruleText = `Replace ${rule.replaced_facet || '—'} of ${rule.source_descriptor || '—'} ${rule.source_object_category || '—'} by ${secondHalf}`
       const modifiedBox = layout.modified
       ctx.font = '12px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
       const ruleWidth = Math.min(modifiedBox[2] - 12, ctx.measureText(ruleText).width + 16)
@@ -155,8 +155,8 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
     }
     const translatedRule = data.snapshot.translated_rule
     if (translatedRule) {
-      const secondHalf = translatedRule.relation || translatedRule.descriptor_2 || '—'
-      const ruleText = `Replace ${translatedRule.replaced_description_type || '—'} of ${translatedRule.descriptor || '—'} ${translatedRule.object_category || '—'} by ${secondHalf}`
+      const secondHalf = translatedRule.relation || translatedRule.target_descriptor || '—'
+      const ruleText = `Replace ${translatedRule.replaced_facet || '—'} of ${translatedRule.source_descriptor || '—'} ${translatedRule.source_object_category || '—'} by ${secondHalf}`
       const answerBox = layout.answer
       ctx.font = '12px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
       const ruleWidth = Math.min(answerBox[2] - 12, ctx.measureText(ruleText).width + 16)

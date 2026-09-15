@@ -179,9 +179,9 @@ def test_sqlite_logger_records_translated_rules_separately(tmp_path) -> None:
             "copycat",
             "translated_rule_created",
             rule_id="rule:translated:1",
-            object_category_1="letter",
-            descriptor_1="rightmost",
-            replaced_description_type="letter_category",
+            source_object_category="letter",
+            source_descriptor="rightmost",
+            replaced_facet="letter_category",
             relation="successor",
             time=4,
         )
@@ -190,7 +190,7 @@ def test_sqlite_logger_records_translated_rules_separately(tmp_path) -> None:
 
     with sqlite3.connect(database) as connection:
         translated_rule = connection.execute(
-            "SELECT rule_id, descriptor_1, relation, creation_time FROM translated_rules"
+            "SELECT rule_id, source_descriptor, relation, creation_time FROM translated_rules"
         ).fetchone()
 
     assert translated_rule == ("rule:translated:1", "rightmost", "successor", 4)
@@ -331,9 +331,9 @@ def test_sqlite_logger_populates_typed_workspace_tables(tmp_path) -> None:
             "concept_mapping_created",
             concept_mapping_id="mapping-1",
             correspondence_id="correspondence-1",
-            description_type_1="letter_category",
-            description_type_2="letter_category",
-            initial_descriptor="a",
+            source_facet="letter_category",
+            target_facet="letter_category",
+            source_descriptor="a",
             target_descriptor="b",
             label="successor",
         )
@@ -351,7 +351,7 @@ def test_sqlite_logger_populates_typed_workspace_tables(tmp_path) -> None:
             "SELECT object_id, member_order FROM group_members ORDER BY member_order"
         ).fetchall()
         mapping = connection.execute(
-            "SELECT correspondence_id, initial_descriptor, target_descriptor, label "
+            "SELECT correspondence_id, source_descriptor, target_descriptor, label "
             "FROM concept_mappings"
         ).fetchone()
 

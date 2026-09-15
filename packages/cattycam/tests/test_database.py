@@ -190,19 +190,19 @@ def test_workspace_snapshot_includes_built_and_proposed_entities(tmp_path) -> No
         connection.execute(
             "CREATE TABLE concept_mappings "
             "(id INTEGER PRIMARY KEY, run_id INTEGER, correspondence_id TEXT, "
-            "description_type_1 TEXT, description_type_2 TEXT, initial_descriptor TEXT, "
+            "source_facet TEXT, target_facet TEXT, source_descriptor TEXT, "
             "target_descriptor TEXT, label TEXT)"
         )
         connection.execute(
             "CREATE TABLE rules "
-            "(id INTEGER PRIMARY KEY, run_id INTEGER, rule_id TEXT, object_category_1 TEXT, "
-            "descriptor_1 TEXT, replaced_description_type TEXT, descriptor_2 TEXT, relation TEXT, "
+            "(id INTEGER PRIMARY KEY, run_id INTEGER, rule_id TEXT, source_object_category TEXT, "
+            "source_descriptor TEXT, replaced_facet TEXT, target_descriptor TEXT, relation TEXT, "
             "proposal_time INTEGER, creation_time INTEGER, destruction_time INTEGER)"
         )
         connection.execute(
             "CREATE TABLE translated_rules "
-            "(id INTEGER PRIMARY KEY, run_id INTEGER, rule_id TEXT, object_category_1 TEXT, "
-            "descriptor_1 TEXT, replaced_description_type TEXT, descriptor_2 TEXT, relation TEXT, "
+            "(id INTEGER PRIMARY KEY, run_id INTEGER, rule_id TEXT, source_object_category TEXT, "
+            "source_descriptor TEXT, replaced_facet TEXT, target_descriptor TEXT, relation TEXT, "
             "proposal_time INTEGER, creation_time INTEGER, destruction_time INTEGER)"
         )
         connection.executemany(
@@ -257,12 +257,12 @@ def test_workspace_snapshot_includes_built_and_proposed_entities(tmp_path) -> No
         {"facet": "object_category", "descriptor": "letter"}
     ]
     assert snapshot["rule"] == {
-        "id": "rule:1", "object_category": "letter", "descriptor": "a",
-        "replaced_description_type": "letter_category", "descriptor_2": "b", "relation": None,
+        "id": "rule:1", "source_object_category": "letter", "source_descriptor": "a",
+        "replaced_facet": "letter_category", "target_descriptor": "b", "relation": None,
     }
     assert snapshot["translated_rule"] == {
-        "id": "rule:translated:1", "object_category": "letter", "descriptor": "a",
-        "replaced_description_type": "letter_category", "descriptor_2": "b", "relation": None,
+        "id": "rule:translated:1", "source_object_category": "letter", "source_descriptor": "a",
+        "replaced_facet": "letter_category", "target_descriptor": "b", "relation": None,
     }
 
 

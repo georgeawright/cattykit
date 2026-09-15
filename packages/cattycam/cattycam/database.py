@@ -207,14 +207,14 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
             (run_id, time, time, time),
         ).fetchall()
         mappings = connection.execute(
-            """SELECT correspondence_id, description_type_1, description_type_2,
-                      initial_descriptor, target_descriptor, label
+            """SELECT correspondence_id, source_facet, target_facet,
+                      source_descriptor, target_descriptor, label
                FROM concept_mappings WHERE run_id = ? ORDER BY id""",
             (run_id,),
         ).fetchall()
         rules = connection.execute(
-            """SELECT rule_id, object_category_1, descriptor_1,
-                      replaced_description_type, descriptor_2, relation
+            """SELECT rule_id, source_object_category, source_descriptor,
+                      replaced_facet, target_descriptor, relation
                FROM rules WHERE run_id = ?
                AND (proposal_time <= ? OR creation_time <= ?)
                AND (destruction_time IS NULL OR destruction_time > ?)
@@ -222,8 +222,8 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
             (run_id, time, time, time),
         ).fetchall()
         translated_rules = connection.execute(
-            """SELECT rule_id, object_category_1, descriptor_1,
-                      replaced_description_type, descriptor_2, relation
+            """SELECT rule_id, source_object_category, source_descriptor,
+                      replaced_facet, target_descriptor, relation
                FROM translated_rules WHERE run_id = ?
                AND creation_time <= ?
                AND (destruction_time IS NULL OR destruction_time > ?)
@@ -269,14 +269,14 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
                 "proposed": creation is None,
                 "mappings": [
                     {
-                        "source": initial_descriptor,
+                        "source": source_descriptor,
                         "target": target_descriptor,
                         "label": label,
-                        "source_type": description_type_1,
-                        "target_type": description_type_2,
+                        "source_type": source_facet,
+                        "target_type": target_facet,
                     }
-                    for mapping_correspondence_id, description_type_1, description_type_2,
-                    initial_descriptor, target_descriptor, label in mappings
+                    for mapping_correspondence_id, source_facet, target_facet,
+                    source_descriptor, target_descriptor, label in mappings
                     if mapping_correspondence_id == correspondence_id
                 ],
             }
@@ -302,10 +302,10 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
         "rule": (
             {
                 "id": rule[0],
-                "object_category": rule[1],
-                "descriptor": rule[2],
-                "replaced_description_type": rule[3],
-                "descriptor_2": rule[4],
+                "source_object_category": rule[1],
+                "source_descriptor": rule[2],
+                "replaced_facet": rule[3],
+                "target_descriptor": rule[4],
                 "relation": rule[5],
             }
             if rules
@@ -314,10 +314,10 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
         "translated_rule": (
             {
                 "id": translated_rule[0],
-                "object_category": translated_rule[1],
-                "descriptor": translated_rule[2],
-                "replaced_description_type": translated_rule[3],
-                "descriptor_2": translated_rule[4],
+                "source_object_category": translated_rule[1],
+                "source_descriptor": translated_rule[2],
+                "replaced_facet": translated_rule[3],
+                "target_descriptor": translated_rule[4],
                 "relation": translated_rule[5],
             }
             if translated_rule

@@ -189,9 +189,9 @@ class SQLiteLogger:
                 run_id INTEGER NOT NULL REFERENCES runs(id),
                 concept_mapping_id TEXT NOT NULL,
                 correspondence_id TEXT,
-                description_type_1 TEXT,
-                description_type_2 TEXT,
-                initial_descriptor TEXT,
+                source_facet TEXT,
+                target_facet TEXT,
+                source_descriptor TEXT,
                 target_descriptor TEXT,
                 label TEXT,
                 UNIQUE(run_id, concept_mapping_id)
@@ -215,12 +215,12 @@ class SQLiteLogger:
                 run_id INTEGER NOT NULL REFERENCES runs(id),
                 rule_id TEXT NOT NULL,
                 parent_codelet_id TEXT,
-                object_category_1 TEXT,
-                descriptor_1_facet TEXT,
-                descriptor_1 TEXT,
-                object_category_2 TEXT,
-                descriptor_2 TEXT,
-                replaced_description_type TEXT,
+                source_object_category TEXT,
+                source_facet TEXT,
+                source_descriptor TEXT,
+                target_object_category TEXT,
+                target_descriptor TEXT,
+                replaced_facet TEXT,
                 relation TEXT,
                 proposal_time INTEGER,
                 creation_time INTEGER,
@@ -233,12 +233,12 @@ class SQLiteLogger:
                 run_id INTEGER NOT NULL REFERENCES runs(id),
                 rule_id TEXT NOT NULL,
                 parent_codelet_id TEXT,
-                object_category_1 TEXT,
-                descriptor_1_facet TEXT,
-                descriptor_1 TEXT,
-                object_category_2 TEXT,
-                descriptor_2 TEXT,
-                replaced_description_type TEXT,
+                source_object_category TEXT,
+                source_facet TEXT,
+                source_descriptor TEXT,
+                target_object_category TEXT,
+                target_descriptor TEXT,
+                replaced_facet TEXT,
                 relation TEXT,
                 proposal_time INTEGER,
                 creation_time INTEGER,
@@ -297,6 +297,42 @@ class SQLiteLogger:
             """
         )
         self._ensure_column("codelets", "removal_time", "INTEGER")
+        for table in ("rules", "translated_rules"):
+            for column in (
+                "source_object_category",
+                "source_facet",
+                "source_descriptor",
+                "target_object_category",
+                "target_descriptor",
+                "replaced_facet",
+            ):
+                self._ensure_column(table, column, "TEXT")
+        for column in (
+            "source_facet",
+            "target_facet",
+            "source_descriptor",
+        ):
+            self._ensure_column("concept_mappings", column, "TEXT")
+        for table in ("rules", "translated_rules"):
+            self._migrate_legacy_columns(
+                table,
+                {
+                    "object_category_1": "source_object_category",
+                    "descriptor_1_facet": "source_facet",
+                    "descriptor_1": "source_descriptor",
+                    "object_category_2": "target_object_category",
+                    "descriptor_2": "target_descriptor",
+                    "replaced_description_type": "replaced_facet",
+                },
+            )
+        self._migrate_legacy_columns(
+            "concept_mappings",
+            {
+                "description_type_1": "source_facet",
+                "description_type_2": "target_facet",
+                "initial_descriptor": "source_descriptor",
+            },
+        )
 
     def _ensure_column(self, table: str, column: str, definition: str) -> None:
         """Add a schema column when opening a history database from an older logger."""
@@ -307,6 +343,20 @@ class SQLiteLogger:
             self._connection.execute(
                 f"ALTER TABLE {table} ADD COLUMN {column} {definition}"
             )
+
+    def _migrate_legacy_columns(
+        self, table: str, renamed_columns: Mapping[str, str]
+    ) -> None:
+        """Copy values from pre-source/target column names when they exist."""
+        columns = {
+            row[1] for row in self._connection.execute(f"PRAGMA table_info({table})")
+        }
+        for old_name, new_name in renamed_columns.items():
+            if old_name in columns:
+                self._connection.execute(
+                    f"UPDATE {table} SET {new_name} = {old_name} "
+                    f"WHERE {new_name} IS NULL"
+                )
 
     @staticmethod
     def _json(value: Any) -> str:
@@ -611,22 +661,22 @@ class SQLiteLogger:
             ),
             "rules": (
                 "parent_codelet_id",
-                "object_category_1",
-                "descriptor_1_facet",
-                "descriptor_1",
-                "object_category_2",
-                "descriptor_2",
-                "replaced_description_type",
+                "source_object_category",
+                "source_facet",
+                "source_descriptor",
+                "target_object_category",
+                "target_descriptor",
+                "replaced_facet",
                 "relation",
             ),
             "translated_rules": (
                 "parent_codelet_id",
-                "object_category_1",
-                "descriptor_1_facet",
-                "descriptor_1",
-                "object_category_2",
-                "descriptor_2",
-                "replaced_description_type",
+                "source_object_category",
+                "source_facet",
+                "source_descriptor",
+                "target_object_category",
+                "target_descriptor",
+                "replaced_facet",
                 "relation",
             ),
         }
@@ -677,23 +727,23 @@ class SQLiteLogger:
         self._connection.execute(
             """INSERT INTO concept_mappings
                (run_id, concept_mapping_id, correspondence_id,
-                description_type_1, description_type_2,
-                initial_descriptor, target_descriptor, label)
+                source_facet, target_facet,
+                source_descriptor, target_descriptor, label)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                ON CONFLICT(run_id, concept_mapping_id) DO UPDATE SET
                correspondence_id = excluded.correspondence_id,
-               description_type_1 = excluded.description_type_1,
-               description_type_2 = excluded.description_type_2,
-               initial_descriptor = excluded.initial_descriptor,
+               source_facet = excluded.source_facet,
+               target_facet = excluded.target_facet,
+               source_descriptor = excluded.source_descriptor,
                target_descriptor = excluded.target_descriptor,
                label = excluded.label""",
             (
                 run_id,
                 str(data["concept_mapping_id"]),
                 data.get("correspondence_id"),
-                data.get("description_type_1"),
-                data.get("description_type_2"),
-                data.get("initial_descriptor"),
+                data.get("source_facet"),
+                data.get("target_facet"),
+                data.get("source_descriptor"),
                 data.get("target_descriptor"),
                 data.get("label"),
             ),
