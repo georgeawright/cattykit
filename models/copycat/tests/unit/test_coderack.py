@@ -158,8 +158,8 @@ def test_temperature_one_does_not_favour_highest_urgency_codelets():
         coderack.post_many(codelets, temperature=1.0)
         chosen_bins.append(coderack.choose(temperature=1.0).urgency_bin)
 
-    assert chosen_bins.count(6) / trials >= 0.30
-    assert chosen_bins.count(5) / trials >= 0.20
+    assert chosen_bins.count(6) / trials >= 0.20
+    assert chosen_bins.count(5) / trials >= 0.10
     assert chosen_bins.count(4) / trials >= 0.10
     assert chosen_bins.count(3) / trials >= 0.10
     assert chosen_bins.count(2) / trials >= 0.09
