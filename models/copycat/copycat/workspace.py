@@ -530,12 +530,12 @@ class Workspace:
                 if getattr(rule, attribute) is None
                 else getattr(rule, attribute).name
                 for attribute in (
-                    "object_category_1",
-                    "descriptor_1_facet",
-                    "descriptor_1",
-                    "object_category_2",
-                    "descriptor_2",
-                    "replaced_description_type",
+                    "source_object_category",
+                    "source_facet",
+                    "source_descriptor",
+                    "target_object_category",
+                    "target_descriptor",
+                    "replaced_facet",
                     "relation",
                 )
             },
