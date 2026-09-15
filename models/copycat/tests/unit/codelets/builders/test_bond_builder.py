@@ -36,8 +36,9 @@ class MockWorkspace:
 
 
 class MockWorkspaceString:
-    def __init__(self, bonds):
+    def __init__(self, bonds, present_bond=None):
         self.bonds = bonds
+        self.present_bond = present_bond
         self.add_bond_called = 0
 
     def add_bond(self, bond):
@@ -47,8 +48,10 @@ class MockWorkspaceString:
     def delete_proposed_bond(self, bond):
         pass
 
-    def contains_bond(self, bond):
-        return bond in self.bonds
+    def get_bond_if_present(self, bond):
+        if self.present_bond and self.present_bond.equates_to(bond):
+            return self.present_bond
+        return None
 
 
 def test_run_fizzles_if_argument_objects_no_longer_exist():
@@ -82,7 +85,7 @@ def test_run_fizzles_if_bond_has_already_been_built():
     bond.source = Mock()
     bond.target = Mock()
     workspace.objects.extend([bond.source, bond.target])
-    bond.string = MockWorkspaceString([bond])
+    bond.string = MockWorkspaceString([bond], bond)
     builder = BondBuilder(
         urgency_bin=0,
         coderack=Mock(),
@@ -219,6 +222,7 @@ def test_builds_bond_and_breaks_incompatible_structures(monkeypatch):
     bond.target = Mock()
     workspace.objects.extend([bond.source, bond.target])
     bond.string = MockWorkspaceString([])
+    bond.string.get_bond_if_present = lambda x: None
     incompatible_bonds = [Mock(), Mock()]
     incompatible_groups = [Mock(), Mock()]
     incompatible_groups[0].letter_span.return_value = 2
