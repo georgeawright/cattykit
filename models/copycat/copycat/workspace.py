@@ -23,6 +23,7 @@ from .workspace_objects_and_structures import (
     Correspondence,
     Description,
     Group,
+    Letter,
     Replacement,
     Rule,
     WorkspaceObject,
@@ -81,6 +82,94 @@ class Workspace:
         return cls(
             initial_string, modified_string, target_string, answer_string, logger
         )
+
+    def initialize(self, problem: str, slipnet) -> None:
+        """Populate the workspace and its initial descriptions for one problem."""
+        initial_and_modified, target_and_answer = problem.split("==>")
+        initial_value, modified_value = initial_and_modified.split("->")
+        target_value, answer_value = target_and_answer.split("->")
+        values = {
+            "initial": initial_value.strip(),
+            "modified": modified_value.strip(),
+            "target": target_value.strip(),
+            "answer": answer_value.split("?")[0].strip(),
+        }
+
+        for string_id, value in values.items():
+            workspace_string = getattr(self, f"{string_id}_string")
+            for position, character in enumerate(value):
+                workspace_string.add_letter(
+                    Letter(workspace_string, slipnet[character], position)
+                )
+            self._log(
+                "string_initialized",
+                string_id=string_id,
+                role=string_id,
+                value=value,
+            )
+
+        self.initial_string.distribution_of_bond_counts = list(
+            range(len(values["initial"]))
+        )
+        self.target_string.distribution_of_bond_counts = list(
+            range(len(values["target"]))
+        )
+
+        for workspace_string in (
+            self.initial_string,
+            self.modified_string,
+            self.target_string,
+        ):
+            for letter in workspace_string.letters:
+                letter.add_description(
+                    Description(
+                        letter,
+                        slipnet["object_category"],
+                        slipnet["letter"],
+                    )
+                )
+                letter.add_description(
+                    Description(
+                        letter,
+                        slipnet["letter_category"],
+                        letter.letter_category,
+                    )
+                )
+            if len(workspace_string) > 1:
+                workspace_string.letters[0].add_description(
+                    Description(
+                        workspace_string.letters[0],
+                        slipnet["string_position_category"],
+                        slipnet["leftmost"],
+                    )
+                )
+                workspace_string.letters[-1].add_description(
+                    Description(
+                        workspace_string.letters[-1],
+                        slipnet["string_position_category"],
+                        slipnet["rightmost"],
+                    )
+                )
+            else:
+                workspace_string.letters[0].add_description(
+                    Description(
+                        workspace_string.letters[0],
+                        slipnet["string_position_category"],
+                        slipnet["single"],
+                    )
+                )
+            if len(workspace_string) == 3:
+                workspace_string.letters[1].add_description(
+                    Description(
+                        workspace_string.letters[1],
+                        slipnet["string_position_category"],
+                        slipnet["middle"],
+                    )
+                )
+
+        for workspace_object in self.objects:
+            for description in workspace_object.descriptions:
+                slipnet.activate_node_from_workspace(description.descriptor.name)
 
     @property
     def letters(self):

@@ -164,24 +164,23 @@ class Slipnet:
     def get_node_activation(self, node_id):
         return self.node_activations[self.node_index_lookup[node_id]]
 
-    def log_definition(self) -> None:
-        """Record the slipnet topology once at the beginning of a run."""
-        links: list[Sliplink] = []
+    def initialize(self) -> None:
+        """Record the network definition and calculate initial activations."""
         for node in self.nodes:
             self.logger.log(
                 ModelEvent.create(
-                        "copycat",
-                        "slipnode_initialized",
-                        name=node.name,
-                        conceptual_depth=node.conceptual_depth,
-                        intrinsic_link_length=node.intrinsic_link_length,
-                        shrunk_link_length=node.shrunk_link_length,
+                    "copycat",
+                    "slipnode_initialized",
+                    name=node.name,
+                    conceptual_depth=node.conceptual_depth,
+                    intrinsic_link_length=node.intrinsic_link_length,
+                    shrunk_link_length=node.shrunk_link_length,
                 )
             )
-            links.extend(node.outgoing_links)
-        for link in links:
-            self.logger.log(
-                ModelEvent.create(
+        for node in self.nodes:
+            for link in node.outgoing_links:
+                self.logger.log(
+                    ModelEvent.create(
                         "copycat",
                         "sliplink_initialized",
                         source=link.source.name,
@@ -193,8 +192,9 @@ class Slipnet:
                         is_has_property_link=link.is_has_property_link,
                         is_lateral_sliplink=link.is_lateral_sliplink,
                         is_lateral_non_sliplink=link.is_lateral_non_sliplink,
+                    )
                 )
-            )
+        self.update_activations()
 
     def update_activations(self) -> None:
         """Recomputes activations according to:

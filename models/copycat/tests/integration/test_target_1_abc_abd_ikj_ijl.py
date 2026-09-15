@@ -68,8 +68,7 @@ def test_single_run(monkeypatch):
     assert active_node_count == 2
 
     # add problem to workspace
-    copycat._add_letters_to_workspace("abc -> abd ==> ijk -> ?")
-    copycat._add_initial_descriptions_to_workspace()
+    copycat.workspace.initialize("abc -> abd ==> ijk -> ?", copycat.slipnet)
 
     # each string should have letter category and position descriptions
     assert {

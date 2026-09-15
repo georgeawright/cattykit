@@ -18,7 +18,6 @@ from .workspace import Workspace
 from .workspace_objects_and_structures import (
     Bond,
     Correspondence,
-    Description,
     Group,
     Letter,
     Rule,
@@ -131,11 +130,7 @@ class Copycat:
             )
         )
         try:
-            self._add_letters_to_workspace(string)
-            self._add_initial_descriptions_to_workspace()
-            self._post_initial_codelets()
-            self.slipnet.log_definition()
-            self.slipnet.update_activations()
+            self.initialize(string)
             self.run()
             return "".join(
                 [
@@ -155,141 +150,11 @@ class Copycat:
                 )
             )
 
-    def _add_letters_to_workspace(self, string: str):
-        """
-        Initialize workspace with a problem (e.g. "abc -> abd ==> ijk -> ?")
-        """
-        initial_and_modified, target_and_answer = string.split("==>")
-        initial_string, modified_string = initial_and_modified.split("->")
-        target_string, answer_string = target_and_answer.split("->")
-        answer_string = answer_string.split("?")[0]
-        for i, char in enumerate(initial_string.strip()):
-            self.workspace.initial_string.add_letter(
-                Letter(
-                    string=self.workspace.initial_string,
-                    letter_category=self.slipnet[char],
-                    string_position=i,
-                )
-            )
-        self.workspace.initial_string.distribution_of_bond_counts = [
-            i for i in range(len(initial_string.strip()))
-        ]
-        for i, char in enumerate(modified_string.strip()):
-            self.workspace.modified_string.add_letter(
-                Letter(self.workspace.modified_string, self.slipnet[char], i)
-            )
-        for i, char in enumerate(target_string.strip()):
-            self.workspace.target_string.add_letter(
-                Letter(self.workspace.target_string, self.slipnet[char], i)
-            )
-        self.workspace.target_string.distribution_of_bond_counts = [
-            i for i in range(len(target_string.strip()))
-        ]
-        for i, char in enumerate(answer_string.strip()):
-            self.workspace.answer_string.add_letter(
-                Letter(self.workspace.answer_string, self.slipnet[char], i)
-            )
-        for role, value in (
-            ("initial", initial_string.strip()),
-            ("modified", modified_string.strip()),
-            ("target", target_string.strip()),
-            ("answer", answer_string.strip()),
-        ):
-            self.logger.log(
-                ModelEvent.create(
-                    "copycat",
-                    "string_initialized",
-                    string_id=role,
-                    role=role,
-                    value=value,
-                )
-            )
-
-    def _add_initial_descriptions_to_workspace(self):
-        for string in [
-            self.workspace.initial_string,
-            self.workspace.modified_string,
-            self.workspace.target_string,
-        ]:
-            for letter in string.letters:
-                letter.add_description(
-                    Description(
-                        letter,
-                        self.slipnet["object_category"],
-                        self.slipnet["letter"],
-                    )
-                )
-                letter.add_description(
-                    Description(
-                        letter,
-                        self.slipnet["letter_category"],
-                        letter.letter_category,
-                    )
-                )
-            if len(string) > 1:
-                string.letters[0].add_description(
-                    Description(
-                        string.letters[0],
-                        self.slipnet["string_position_category"],
-                        self.slipnet["leftmost"],
-                    )
-                )
-                string.letters[-1].add_description(
-                    Description(
-                        string.letters[-1],
-                        self.slipnet["string_position_category"],
-                        self.slipnet["rightmost"],
-                    )
-                )
-            else:
-                string.letters[0].add_description(
-                    Description(
-                        string.letters[0],
-                        self.slipnet["string_position_category"],
-                        self.slipnet["single"],
-                    )
-                )
-            if len(string) == 3:
-                string.letters[1].add_description(
-                    Description(
-                        string.letters[1],
-                        self.slipnet["string_position_category"],
-                        self.slipnet["middle"],
-                    )
-                )
-        for obj in self.workspace.objects:
-            for description in obj.descriptions:
-                self.slipnet.activate_node_from_workspace(description.descriptor.name)
-
-    def _post_initial_codelets(self):
-        for _ in range(2 * len(self.workspace.objects)):
-            self.coderack.post(
-                BottomUpBondScout(
-                    urgency_bin=1,
-                    coderack=self.coderack,
-                    workspace=self.workspace,
-                    slipnet=self.slipnet,
-                ),
-                self.temperature,
-            )
-            self.coderack.post(
-                ReplacementFinder(
-                    urgency_bin=1,
-                    coderack=self.coderack,
-                    workspace=self.workspace,
-                    slipnet=self.slipnet,
-                ),
-                self.temperature,
-            )
-            self.coderack.post(
-                BottomUpCorrespondenceScout(
-                    urgency_bin=1,
-                    coderack=self.coderack,
-                    workspace=self.workspace,
-                    slipnet=self.slipnet,
-                ),
-                self.temperature,
-            )
+    def initialize(self, string: str):
+        """Initialize Copycat's components for one analogy problem."""
+        self.workspace.initialize(string, self.slipnet)
+        self._post_initial_codelets()
+        self.slipnet.initialize()
 
     def run(self):
         """
@@ -344,6 +209,36 @@ class Copycat:
                 translated_rule = self.workspace.translated_rule
                 self.handle_snag()
                 self._log_rule_changes(None, rule, translated_rule)
+
+    def _post_initial_codelets(self):
+        for _ in range(2 * len(self.workspace.objects)):
+            self.coderack.post(
+                BottomUpBondScout(
+                    urgency_bin=1,
+                    coderack=self.coderack,
+                    workspace=self.workspace,
+                    slipnet=self.slipnet,
+                ),
+                self.temperature,
+            )
+            self.coderack.post(
+                ReplacementFinder(
+                    urgency_bin=1,
+                    coderack=self.coderack,
+                    workspace=self.workspace,
+                    slipnet=self.slipnet,
+                ),
+                self.temperature,
+            )
+            self.coderack.post(
+                BottomUpCorrespondenceScout(
+                    urgency_bin=1,
+                    coderack=self.coderack,
+                    workspace=self.workspace,
+                    slipnet=self.slipnet,
+                ),
+                self.temperature,
+            )
 
     def _log_answer_letters(self, previous_answer_letters) -> None:
         """Record the answer-string replacement produced by AnswerBuilder."""

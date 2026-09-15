@@ -22,9 +22,8 @@ def test_copycat_logs_initial_workspace_and_slipnet_state(tmp_path) -> None:
     logger.log(
         ModelEvent.create("copycat", "run_started", problem="abc -> abd ==> ijk")
     )
-    copycat._add_letters_to_workspace("abc -> abd ==> ijk -> ?")
-    copycat._add_initial_descriptions_to_workspace()
-    copycat.slipnet.log_definition()
+    copycat.workspace.initialize("abc -> abd ==> ijk -> ?", copycat.slipnet)
+    copycat.slipnet.initialize()
     copycat.workspace.update()
     copycat.slipnet.update_activations()
     logger.close()
@@ -62,8 +61,7 @@ def test_workspace_logs_the_structure_a_codelet_builds(tmp_path, monkeypatch) ->
         str(CONFIG_DIRECTORY / "hyperparameters.json"),
         logger=logger,
     )
-    copycat._add_letters_to_workspace("abc -> abd ==> ijk -> ?")
-    copycat._add_initial_descriptions_to_workspace()
+    copycat.workspace.initialize("abc -> abd ==> ijk -> ?", copycat.slipnet)
     codelet = ReplacementFinder(
         urgency_bin=2,
         coderack=copycat.coderack,

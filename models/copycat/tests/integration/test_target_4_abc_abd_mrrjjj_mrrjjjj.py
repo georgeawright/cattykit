@@ -56,8 +56,7 @@ def test_single_run(monkeypatch):
     copycat = Copycat.from_json(
         SLIPNET_JSON_FILE, CODERACK_JSON_FILE, HYPERPARAMETERS_FILE
     )
-    copycat._add_letters_to_workspace("abc -> abd ==> mrrjjj -> ?")
-    copycat._add_initial_descriptions_to_workspace()
+    copycat.workspace.initialize("abc -> abd ==> mrrjjj -> ?", copycat.slipnet)
     copycat._post_initial_codelets()
 
     selected_codelet = [None]
