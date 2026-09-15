@@ -2,7 +2,7 @@ from types import SimpleNamespace
 import pytest
 
 
-from copycat.workspace_structures import Description
+from copycat.workspace_objects_and_structures import Description
 
 
 @pytest.mark.parametrize(

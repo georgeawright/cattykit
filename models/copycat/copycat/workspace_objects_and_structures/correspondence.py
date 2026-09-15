@@ -3,8 +3,10 @@ import itertools
 from typing import List, Optional
 
 from copycat.concept_mapping import ConceptMapping
-from copycat.workspace_objects import Letter
-from copycat.workspace_structure import WorkspaceStructure
+
+from .workspace_structure import WorkspaceStructure
+from .group import Group
+from .letter import Letter
 
 
 class Correspondence(WorkspaceStructure):
@@ -108,7 +110,6 @@ class Correspondence(WorkspaceStructure):
 
     def is_incompatible_structurally_with(self, other: Correspondence) -> bool:
         """Return whether group membership makes ``other`` incompatible with self."""
-        from copycat.workspace_objects import Group, Letter
 
         def _is_member(obj, group: Group) -> bool:
             return any(obj is member for member in group.objects)

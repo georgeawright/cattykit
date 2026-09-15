@@ -107,6 +107,14 @@ class Coderack:
             * (1 + urgency_bin_weights[-1] - urgency_bin_weights[codelet.urgency_bin])
             for codelet in self.codelets
         ]
+        # The Lisp implementation calculates this probability list once, then
+        # repeatedly indexes the shrinking codelet list with selections from the
+        # unchanged probability list.  After the first removal, probabilities
+        # can therefore refer to different codelets (or to an index beyond the
+        # shortened list).  Here weights are removed together with their
+        # codelets, giving conventional weighted sampling without replacement.
+        # Reproducing the Lisp's exact run-length distribution may require
+        # reproducing its unusual stale-probability-list behaviour instead.
         codelets_to_remove = select_items_from_list(
             self.codelets,
             removal_probabilities,

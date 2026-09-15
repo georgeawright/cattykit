@@ -6,7 +6,8 @@ import numpy as np
 
 from copycat.concept_mapping import ConceptMapping
 from copycat.slipnode import Slipnode
-from copycat.workspace_structure import WorkspaceStructure
+
+from .workspace_structure import WorkspaceStructure
 
 
 class Rule(WorkspaceStructure):

@@ -3,7 +3,8 @@ import itertools
 from typing import List
 
 from copycat.slipnode import Slipnode
-from copycat.workspace_structure import WorkspaceStructure
+
+from .workspace_structure import WorkspaceStructure
 
 
 class Description(WorkspaceStructure):

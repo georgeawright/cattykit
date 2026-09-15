@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from copycat.workspace_objects import Letter
+from copycat.workspace_objects_and_structures import Letter
 
 
 @pytest.mark.parametrize(

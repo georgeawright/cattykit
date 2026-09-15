@@ -3,7 +3,7 @@ from typing import Optional
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.scouts.description_scout import DescriptionScout
 from copycat.tools import select_item_from_list
-from copycat.workspace_object import WorkspaceObject
+from copycat.workspace_objects_and_structures import WorkspaceObject
 
 
 class BottomUpDescriptionScout(DescriptionScout):

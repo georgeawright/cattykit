@@ -18,10 +18,16 @@ from .codelets import (
 )
 from .tools import describe_count, select_item_from_list, temperature_adjust
 from .workspace_string import WorkspaceString
-from .workspace_object import WorkspaceObject
-from .workspace_objects import Group
-from .workspace_structure import WorkspaceStructure
-from .workspace_structures import Bond, Correspondence, Description, Replacement, Rule
+from .workspace_objects_and_structures import (
+    Bond,
+    Correspondence,
+    Description,
+    Group,
+    Replacement,
+    Rule,
+    WorkspaceObject,
+    WorkspaceStructure,
+)
 
 
 def _object_id(obj: object) -> str:

@@ -4,8 +4,7 @@ from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.builder import Builder
 from copycat.concept_mapping import ConceptMapping
 from copycat.tools import structure_beats_structures
-from copycat.workspace_objects import Group, Letter
-from copycat.workspace_structures import Bond, Correspondence
+from copycat.workspace_objects_and_structures import Bond, Correspondence, Group, Letter
 
 
 class CorrespondenceBuilder(Builder):

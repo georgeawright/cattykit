@@ -5,7 +5,7 @@ import numpy as np
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelet import Codelet
 from copycat.tools import select_item_from_list
-from copycat.workspace_structures import Rule
+from copycat.workspace_objects_and_structures import Rule
 
 
 class RuleTranslator(Codelet):

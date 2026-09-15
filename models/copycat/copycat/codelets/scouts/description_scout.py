@@ -1,8 +1,7 @@
 from copycat.codelets.scout import Scout
 from copycat.codelets.strength_testers import DescriptionStrengthTester
 from copycat.slipnode import Slipnode
-from copycat.workspace_object import WorkspaceObject
-from copycat.workspace_structures.description import Description
+from copycat.workspace_objects_and_structures import Description, WorkspaceObject
 
 
 class DescriptionScout(Scout):

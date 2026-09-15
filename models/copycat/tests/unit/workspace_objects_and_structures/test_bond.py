@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from copycat.workspace_structures import Bond
+from copycat.workspace_objects_and_structures import Bond
 
 
 class MockLetter:

@@ -4,7 +4,7 @@ from copycat.codelets.scout import Scout
 from copycat.codelets.strength_testers import BondStrengthTester
 from copycat.slipnode import Slipnode
 from copycat.tools import select_item_from_list
-from copycat.workspace_structures.bond import Bond
+from copycat.workspace_objects_and_structures import Bond
 
 
 class BondScout(Scout):

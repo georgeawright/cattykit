@@ -2,8 +2,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from copycat.workspace_object import WorkspaceObject
-from copycat.workspace_objects import Group
+from copycat.workspace_objects_and_structures import Group, WorkspaceObject
 
 
 def test_has_description():

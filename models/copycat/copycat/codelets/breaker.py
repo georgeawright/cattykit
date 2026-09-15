@@ -2,8 +2,7 @@ import random
 
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelet import Codelet
-from copycat.workspace_objects import Group
-from copycat.workspace_structures import Bond, Correspondence, Rule
+from copycat.workspace_objects_and_structures import Bond, Correspondence, Group, Rule
 from copycat.tools import temperature_adjust_probability
 
 

@@ -2,8 +2,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from copycat.workspace_objects import Group, Letter
-from copycat.workspace_structures import Correspondence
+from copycat.workspace_objects_and_structures import Correspondence, Group, Letter
 
 
 def test_is_incompatible_argumentwise_with():
@@ -124,9 +123,7 @@ def test_is_incompatible_structurally_with():
         None, source=letter_a_2, target=letter_i_2, concept_mappings=[]
     )
     assert (
-        group_correspondence.is_incompatible_structurally_with(
-            unrelated_correspondence
-        )
+        group_correspondence.is_incompatible_structurally_with(unrelated_correspondence)
         is False
     )
 

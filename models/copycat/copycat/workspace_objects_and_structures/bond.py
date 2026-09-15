@@ -2,8 +2,9 @@ from __future__ import annotations
 import itertools
 from typing import Optional
 
-from copycat.workspace_structure import WorkspaceStructure
 from copycat.tools import select_item_from_list
+
+from .workspace_structure import WorkspaceStructure
 
 
 class Bond(WorkspaceStructure):

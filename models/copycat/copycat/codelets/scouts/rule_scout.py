@@ -5,8 +5,12 @@ from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.scout import Scout
 from copycat.codelets.strength_testers import RuleStrengthTester
 from copycat.tools import select_item_from_list, temperature_adjust_list
-from copycat.workspace_object import WorkspaceObject
-from copycat.workspace_structures import Description, ExtrinsicDescription, Rule
+from copycat.workspace_objects_and_structures import (
+    Description,
+    ExtrinsicDescription,
+    Rule,
+    WorkspaceObject,
+)
 
 
 class RuleScout(Scout):

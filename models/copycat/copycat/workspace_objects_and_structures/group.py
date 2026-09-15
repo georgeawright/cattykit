@@ -3,8 +3,9 @@ import itertools
 from typing import List, Optional
 
 from copycat.slipnet import Slipnode
-from copycat.workspace_object import WorkspaceObject
-from copycat.workspace_structure import WorkspaceStructure
+
+from .workspace_object import WorkspaceObject
+from .workspace_structure import WorkspaceStructure
 
 
 class Group(WorkspaceObject, WorkspaceStructure):

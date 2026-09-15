@@ -1,6 +1,6 @@
 from copycat.codelets.builder import Builder
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
-from copycat.workspace_structures import Description
+from copycat.workspace_objects_and_structures import Description
 
 
 class DescriptionBuilder(Builder):

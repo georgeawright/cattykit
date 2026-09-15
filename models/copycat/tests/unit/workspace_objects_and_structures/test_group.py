@@ -3,8 +3,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from copycat.workspace_object import WorkspaceObject
-from copycat.workspace_objects import Group
+from copycat.workspace_objects_and_structures import Group, WorkspaceObject
 
 
 class MockLetter:

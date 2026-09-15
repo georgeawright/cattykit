@@ -3,8 +3,7 @@ from typing import List, Optional, Tuple
 
 from copycat.codelets.scout import Scout
 from copycat.codelets.strength_testers import GroupStrengthTester
-from copycat.workspace_objects import Group
-from copycat.workspace_structures import Description
+from copycat.workspace_objects_and_structures import Description, Group
 from copycat.tools import select_item_from_list, temperature_adjust_probability
 
 

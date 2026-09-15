@@ -4,9 +4,12 @@ from copycat.slipnet import Slipnet
 from copycat.slipnode import Slipnode
 from copycat.snag_exception import SnagException
 from copycat.workspace import Workspace
-from copycat.workspace_object import WorkspaceObject
-from copycat.workspace_objects import Group, Letter
-from copycat.workspace_structures import Description
+from copycat.workspace_objects_and_structures import (
+    Description,
+    Group,
+    Letter,
+    WorkspaceObject,
+)
 
 
 class AnswerBuilder:

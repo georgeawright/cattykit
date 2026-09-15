@@ -5,7 +5,7 @@ import pytest
 from copycat.codelet_result import Finish, Fizzle, FizzleReason
 from copycat.codelets.scouts import RuleScout
 from copycat.codelets.strength_testers import RuleStrengthTester
-from copycat.workspace_structures import ExtrinsicDescription
+from copycat.workspace_objects_and_structures import ExtrinsicDescription
 
 
 class MockCoderack:

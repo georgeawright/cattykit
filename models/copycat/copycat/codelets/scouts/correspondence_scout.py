@@ -1,12 +1,12 @@
 import random
 from typing import List
 
-from copycat.workspace_structures import Correspondence, Description
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.scout import Scout
 from copycat.codelets.strength_testers import CorrespondenceStrengthTester
 from copycat.concept_mapping import ConceptMapping
 from copycat.tools import temperature_adjust_probability
+from copycat.workspace_objects_and_structures import Correspondence, Description
 
 
 class CorrespondenceScout(Scout):

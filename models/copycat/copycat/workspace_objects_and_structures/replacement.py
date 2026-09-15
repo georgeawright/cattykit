@@ -1,6 +1,6 @@
 import itertools
 
-from copycat.workspace_structure import WorkspaceStructure
+from .workspace_structure import WorkspaceStructure
 
 
 class Replacement(WorkspaceStructure):

@@ -4,7 +4,7 @@ from typing import Optional
 from copycat.codelets.scouts.bond_scout import BondScout
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.slipnet import Slipnode
-from copycat.workspace_structures.bond import Bond
+from copycat.workspace_objects_and_structures import Bond
 
 
 class BottomUpBondScout(BondScout):

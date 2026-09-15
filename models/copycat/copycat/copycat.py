@@ -15,9 +15,15 @@ from .coderack import Coderack
 from .slipnet import Slipnet
 from .snag_exception import SnagException
 from .workspace import Workspace
-from .workspace_objects import Group, Letter
-from .workspace_structure import WorkspaceStructure
-from .workspace_structures import Bond, Correspondence, Description, Rule
+from .workspace_objects_and_structures import (
+    Bond,
+    Correspondence,
+    Description,
+    Group,
+    Letter,
+    Rule,
+    WorkspaceStructure,
+)
 
 DESCRIPTION_TESTERS = {
     # LENGTH

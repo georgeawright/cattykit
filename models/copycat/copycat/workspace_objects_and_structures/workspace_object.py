@@ -4,7 +4,8 @@ from typing import List, Union
 
 from cattykit.logging import ModelEvent
 
-from .tools import select_item_from_list
+from copycat.tools import select_item_from_list
+
 from .workspace_structure import WorkspaceStructure
 
 

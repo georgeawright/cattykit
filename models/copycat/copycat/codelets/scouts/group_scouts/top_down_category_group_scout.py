@@ -5,7 +5,7 @@ from copycat.codelets.scouts.group_scout import GroupScout
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.slipnode import Slipnode
 from copycat.tools import select_item_from_list, temperature_adjust_probability
-from copycat.workspace_objects import Group
+from copycat.workspace_objects_and_structures import Group
 
 
 class TopDownCategoryGroupScout(GroupScout):

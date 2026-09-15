@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import List, Optional
 
 from .slipnode import Slipnode
-from .workspace_object import WorkspaceObject
+from .workspace_objects_and_structures.workspace_object import WorkspaceObject
 
 
 class ConceptMapping:

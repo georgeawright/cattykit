@@ -2,8 +2,11 @@ import random
 
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelet import Codelet
-from copycat.workspace_objects import Letter
-from copycat.workspace_structures import ExtrinsicDescription, Replacement
+from copycat.workspace_objects_and_structures import (
+    ExtrinsicDescription,
+    Letter,
+    Replacement,
+)
 
 
 class ReplacementFinder(Codelet):

@@ -4,7 +4,7 @@ from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.builders.correspondence_builder import CorrespondenceBuilder
 from copycat.codelets.strength_tester import StrengthTester
 from copycat.tools import temperature_adjust_probability
-from copycat.workspace_objects import Group
+from copycat.workspace_objects_and_structures import Group
 
 
 class CorrespondenceStrengthTester(StrengthTester):

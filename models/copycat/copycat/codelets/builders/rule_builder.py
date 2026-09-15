@@ -1,7 +1,7 @@
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.builder import Builder
 from copycat.tools import structure_beats_structures
-from copycat.workspace_structures import Rule
+from copycat.workspace_objects_and_structures import Rule
 
 
 class RuleBuilder(Builder):

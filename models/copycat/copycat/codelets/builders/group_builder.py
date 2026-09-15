@@ -5,8 +5,7 @@ from copycat.codelets.builder import Builder
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.concept_mapping import ConceptMapping
 from copycat.tools import structure_beats_structures
-from copycat.workspace_objects import Group
-from copycat.workspace_structures import Description
+from copycat.workspace_objects_and_structures import Description, Group
 
 
 class GroupBuilder(Builder):

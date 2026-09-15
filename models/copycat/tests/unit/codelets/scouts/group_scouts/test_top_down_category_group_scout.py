@@ -4,7 +4,7 @@ from unittest.mock import Mock
 from copycat.codelets.scouts.group_scouts import TopDownCategoryGroupScout
 from copycat.codelets.strength_testers import GroupStrengthTester
 from copycat.codelet_result import Finish, Fizzle, FizzleReason
-from copycat.workspace_objects import Group, Letter
+from copycat.workspace_objects_and_structures import Group, Letter
 from copycat.workspace_string import WorkspaceString
 
 
