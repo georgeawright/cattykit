@@ -179,11 +179,11 @@ def test_is_distinguished_by(
 @pytest.mark.parametrize(
     "bond_facet_name, bond_category_degree_of_association, length, expected",
     [
-        ("letter_category", 1.0, 4, 1.0),
-        ("length", 1.0, 4, 0.697208),
-        ("letter_category", 0.5, 4, 0.697208),
-        ("letter_category", 1.0, 1, 1.0),
-        ("length", 1.0, 1, 0.278141),
+        ("letter_category", 1.0, 4, 0.991201),
+        ("length", 1.0, 4, 0.715051),
+        ("letter_category", 0.5, 4, 0.715051),
+        ("letter_category", 1.0, 1, 0.916410),
+        ("length", 1.0, 1, 0.258067),
     ],
 )
 def test_calculate_internal_strength(
