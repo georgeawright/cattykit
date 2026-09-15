@@ -25,6 +25,7 @@ def test_fizzles_if_rule_already_exist():
     workspace = MockWorkspace()
     rule = Mock()
     workspace.rule = rule
+    workspace.rule.equates_to = lambda x: True
     builder = RuleBuilder(Mock(), Mock(), workspace, slipnet, rule)
     result = builder.run(temperature=0.0)
 
@@ -36,6 +37,7 @@ def test_fizzles_if_existing_rule_wins(monkeypatch):
     slipnet = MockSlipnet()
     workspace = MockWorkspace()
     workspace.rule = Mock()
+    workspace.rule.equates_to = lambda x: False
     rule = Mock()
     builder = RuleBuilder(Mock(), Mock(), workspace, slipnet, rule)
     monkeypatch.setattr(
@@ -51,6 +53,7 @@ def test_replaces_rule_if_existing_rule_loses(monkeypatch):
     slipnet = MockSlipnet()
     workspace = MockWorkspace()
     workspace.rule = Mock()
+    workspace.rule.equates_to = lambda x: False
     rule = Mock()
     builder = RuleBuilder(Mock(), Mock(), workspace, slipnet, rule)
     monkeypatch.setattr(
