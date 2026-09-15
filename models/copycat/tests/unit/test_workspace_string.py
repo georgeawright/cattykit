@@ -200,6 +200,16 @@ def test_choose_from_leftmost_objects():
     workspace_string.add_letter(b)
     workspace_string.add_letter(c)
     workspace_string.add_group(abc)
+    a.get_descriptor_with_facet_name = (
+        lambda x: SimpleNamespace(name="leftmost")
+        if x == "string_position_category"
+        else None
+    )
+    abc.get_descriptor_with_facet_name = (
+        lambda x: SimpleNamespace(name="leftmost")
+        if x == "string_position_category"
+        else None
+    )
     assert workspace_string.choose_from_leftmost_objects() in (a, abc)
 
 
