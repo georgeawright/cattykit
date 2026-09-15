@@ -22,7 +22,7 @@ class AnswerBuilder:
     def build(self):
         self.workspace.snag_object = None
         objects_to_change = self._get_objects_to_change()
-        description_type = self.workspace.translated_rule.replaced_description_type
+        description_type = self.workspace.translated_rule.replaced_facet
         modified_letters = []
         for obj in self.workspace.target_string.objects:
             if obj in objects_to_change:
