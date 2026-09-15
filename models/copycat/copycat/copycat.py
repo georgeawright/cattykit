@@ -205,10 +205,7 @@ class Copycat:
                         time=self.coderack.number_of_codelets_run,
                     )
                 )
-                rule = self.workspace.rule
-                translated_rule = self.workspace.translated_rule
                 self.handle_snag()
-                self._log_rule_changes(None, rule, translated_rule)
 
     def _post_initial_codelets(self):
         for _ in range(2 * len(self.workspace.objects)):
@@ -302,11 +299,9 @@ class Copycat:
                 time=self.coderack.number_of_codelets_run,
             )
         )
-        rule = self.workspace.rule
-        translated_rule = self.workspace.translated_rule
         result = codelet.run(self.temperature)
         self.coderack.number_of_codelets_run += 1
-        self._log_rule_changes(codelet, rule, translated_rule)
+        self._log_rule_proposal(codelet)
         data = {
             "codelet": type(codelet).__name__,
             "urgency_bin": codelet.urgency_bin,
@@ -325,48 +320,10 @@ class Copycat:
             )
         )
 
-    def _log_rule_changes(self, codelet, rule, translated_rule) -> None:
-        """Record rule state, which is owned by Copycat rather than a component."""
-        if codelet is not None:
-            proposed_rule = getattr(codelet, "proposed_rule", None)
-            if proposed_rule is not None:
-                self._log_rule("rule_proposed", proposed_rule)
-        if self.workspace.rule is not rule:
-            if rule is not None:
-                self._log_rule("rule_destroyed", rule)
-            if self.workspace.rule is not None:
-                self._log_rule("rule_created", self.workspace.rule)
-        if self.workspace.translated_rule is not translated_rule:
-            if translated_rule is not None:
-                self._log_rule("translated_rule_destroyed", translated_rule)
-            if self.workspace.translated_rule is not None:
-                self._log_rule(
-                    "translated_rule_created", self.workspace.translated_rule
-                )
-
-    def _log_rule(self, kind: str, rule) -> None:
-        self.logger.log(
-            ModelEvent.create(
-                "copycat",
-                kind,
-                rule_id=f"rule:{rule.hash_id}",
-                time=self.coderack.number_of_codelets_run,
-                **{
-                    attribute: None
-                    if getattr(rule, attribute) is None
-                    else getattr(rule, attribute).name
-                    for attribute in (
-                        "object_category_1",
-                        "descriptor_1_facet",
-                        "descriptor_1",
-                        "object_category_2",
-                        "descriptor_2",
-                        "replaced_description_type",
-                        "relation",
-                    )
-                },
-            )
-        )
+    def _log_rule_proposal(self, codelet) -> None:
+        proposed_rule = getattr(codelet, "proposed_rule", None)
+        if proposed_rule is not None:
+            self.workspace.propose_rule(proposed_rule)
 
     def _update_temperature(self):
         if not self.clamp_temperature:

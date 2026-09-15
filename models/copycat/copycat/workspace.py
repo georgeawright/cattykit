@@ -69,8 +69,8 @@ class Workspace:
         ] = defaultdict(lambda: defaultdict(list))
         self._correspondences: Dict[WorkspaceObject, Optional[Correspondence]] = {}
         self.replacements: List[Replacement] = []
-        self.rule: Optional[Rule] = None
-        self.translated_rule: Optional[Rule] = None
+        self._rule: Optional[Rule] = None
+        self._translated_rule: Optional[Rule] = None
         self.snag_object: Optional[WorkspaceObject] = None
 
     @classmethod
@@ -178,6 +178,34 @@ class Workspace:
     @property
     def objects(self):
         return self.initial_string.objects + self.target_string.objects
+
+    @property
+    def rule(self) -> Optional[Rule]:
+        return self._rule
+
+    @rule.setter
+    def rule(self, value: Optional[Rule]) -> None:
+        if value is self._rule:
+            return
+        if self._rule is not None:
+            self._log_rule("rule_destroyed", self._rule)
+        self._rule = value
+        if value is not None:
+            self._log_rule("rule_created", value)
+
+    @property
+    def translated_rule(self) -> Optional[Rule]:
+        return self._translated_rule
+
+    @translated_rule.setter
+    def translated_rule(self, value: Optional[Rule]) -> None:
+        if value is self._translated_rule:
+            return
+        if self._translated_rule is not None:
+            self._log_rule("translated_rule_destroyed", self._translated_rule)
+        self._translated_rule = value
+        if value is not None:
+            self._log_rule("translated_rule_created", value)
 
     @property
     def unreplaced_objects(self):
@@ -387,18 +415,18 @@ class Workspace:
         for structure in self.structures:
             structure.update_strength_values()
             for attribute in (
-                    "internal_strength",
-                    "external_strength",
-                    "total_strength",
-                    "total_weakness",
+                "internal_strength",
+                "external_strength",
+                "total_strength",
+                "total_weakness",
             ):
                 self.logger.log(
-                        ModelEvent.create(
-                            "copycat",
-                            "attribute_updated",
-                            object_id=_object_id(structure),
-                            attribute=attribute,
-                            value=getattr(structure, attribute),
+                    ModelEvent.create(
+                        "copycat",
+                        "attribute_updated",
+                        object_id=_object_id(structure),
+                        attribute=attribute,
+                        value=getattr(structure, attribute),
                     )
                 )
 
@@ -406,21 +434,21 @@ class Workspace:
         for obj in self.objects:
             obj.update_values()
             for attribute in (
-                    "raw_importance",
-                    "intra_string_unhappiness",
-                    "inter_string_unhappiness",
-                    "total_unhappiness",
-                    "intra_string_salience",
-                    "inter_string_salience",
-                    "total_salience",
+                "raw_importance",
+                "intra_string_unhappiness",
+                "inter_string_unhappiness",
+                "total_unhappiness",
+                "intra_string_salience",
+                "inter_string_salience",
+                "total_salience",
             ):
                 self.logger.log(
-                        ModelEvent.create(
-                            "copycat",
-                            "attribute_updated",
-                            object_id=_object_id(obj),
-                            attribute=attribute,
-                            value=getattr(obj, attribute),
+                    ModelEvent.create(
+                        "copycat",
+                        "attribute_updated",
+                        object_id=_object_id(obj),
+                        attribute=attribute,
+                        value=getattr(obj, attribute),
                     )
                 )
 
@@ -440,14 +468,14 @@ class Workspace:
         self._log_correspondence("correspondence_created", c)
         for index, mapping in enumerate(getattr(c, "concept_mappings", [])):
             self._log(
-                    "concept_mapping_created",
-                    concept_mapping_id=f"correspondence:{c.hash_id}:mapping:{index}",
-                    correspondence_id=f"correspondence:{c.hash_id}",
-                    description_type_1=mapping.description_type_1.name,
-                    description_type_2=mapping.description_type_2.name,
-                    initial_descriptor=mapping.descriptor_1.name,
-                    target_descriptor=mapping.descriptor_2.name,
-                    label=None if mapping.label is None else mapping.label.name,
+                "concept_mapping_created",
+                concept_mapping_id=f"correspondence:{c.hash_id}:mapping:{index}",
+                correspondence_id=f"correspondence:{c.hash_id}",
+                description_type_1=mapping.description_type_1.name,
+                description_type_2=mapping.description_type_2.name,
+                initial_descriptor=mapping.descriptor_1.name,
+                target_descriptor=mapping.descriptor_2.name,
+                label=None if mapping.label is None else mapping.label.name,
             )
 
     def break_correspondence(self, c: Correspondence):
@@ -473,6 +501,10 @@ class Workspace:
     def delete_translated_rule(self):
         self.translated_rule = None
 
+    def propose_rule(self, rule: Rule) -> None:
+        """Record a rule proposal before it becomes workspace state."""
+        self._log_rule("rule_proposed", rule)
+
     def delete_proposed_structures(self):
         for bond in self.proposed_bonds:
             bond.string.delete_proposed_bond(bond)
@@ -487,6 +519,26 @@ class Workspace:
             correspondence_id=f"correspondence:{correspondence.hash_id}",
             source_id=_object_id(correspondence.source),
             target_id=_object_id(correspondence.target),
+        )
+
+    def _log_rule(self, kind: str, rule: Rule) -> None:
+        self._log(
+            kind,
+            rule_id=f"rule:{rule.hash_id}",
+            **{
+                attribute: None
+                if getattr(rule, attribute) is None
+                else getattr(rule, attribute).name
+                for attribute in (
+                    "object_category_1",
+                    "descriptor_1_facet",
+                    "descriptor_1",
+                    "object_category_2",
+                    "descriptor_2",
+                    "replaced_description_type",
+                    "relation",
+                )
+            },
         )
 
     def _log(self, kind: str, **data: object) -> None:

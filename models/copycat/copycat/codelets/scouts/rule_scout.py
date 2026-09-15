@@ -67,9 +67,9 @@ class RuleScout(Scout):
             and modified_object is None
             and modified_description is None
         ):
-            proposed_rule = Rule(self.workspace)
+            self.proposed_rule = Rule(self.workspace)
         elif isinstance(modified_description, ExtrinsicDescription):
-            proposed_rule = Rule(
+            self.proposed_rule = Rule(
                 self.workspace,
                 source_object_category=initial_object.get_descriptor(
                     object_category_node
@@ -83,7 +83,7 @@ class RuleScout(Scout):
                 relation=modified_description.relation,
             )
         else:
-            proposed_rule = Rule(
+            self.proposed_rule = Rule(
                 self.workspace,
                 source_object_category=initial_object.get_descriptor(
                     object_category_node
@@ -96,7 +96,7 @@ class RuleScout(Scout):
                 replaced_facet=modified_description.facet,
                 target_descriptor=modified_description.descriptor,
             )
-        self.proposed_rule = proposed_rule
+        self.workspace.propose_rule(self.proposed_rule)
         if initial_description is None:
             urgency = 1.0
         else:
@@ -111,7 +111,7 @@ class RuleScout(Scout):
                 coderack=self.coderack,
                 slipnet=self.slipnet,
                 workspace=self.workspace,
-                proposed_rule=proposed_rule,
+                proposed_rule=self.proposed_rule,
             ),
             temperature=temperature,
         )
