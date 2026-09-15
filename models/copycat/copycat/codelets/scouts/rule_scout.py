@@ -71,22 +71,30 @@ class RuleScout(Scout):
         elif isinstance(modified_description, ExtrinsicDescription):
             proposed_rule = Rule(
                 self.workspace,
-                object_category_1=initial_object.get_descriptor(object_category_node),
-                descriptor_1_facet=initial_description.facet,
-                descriptor_1=initial_description.descriptor,
-                object_category_2=modified_object.get_descriptor(object_category_node),
-                replaced_description_type=modified_description.description_type_related,
+                source_object_category=initial_object.get_descriptor(
+                    object_category_node
+                ),
+                source_facet=initial_description.facet,
+                source_descriptor=initial_description.descriptor,
+                target_object_category=modified_object.get_descriptor(
+                    object_category_node
+                ),
+                replaced_facet=modified_description.description_type_related,
                 relation=modified_description.relation,
             )
         else:
             proposed_rule = Rule(
                 self.workspace,
-                object_category_1=initial_object.get_descriptor(object_category_node),
-                descriptor_1_facet=initial_description.facet,
-                descriptor_1=initial_description.descriptor,
-                object_category_2=modified_object.get_descriptor(object_category_node),
-                replaced_description_type=modified_description.facet,
-                descriptor_2=modified_description.descriptor,
+                source_object_category=initial_object.get_descriptor(
+                    object_category_node
+                ),
+                source_facet=initial_description.facet,
+                source_descriptor=initial_description.descriptor,
+                target_object_category=modified_object.get_descriptor(
+                    object_category_node
+                ),
+                replaced_facet=modified_description.facet,
+                target_descriptor=modified_description.descriptor,
             )
         self.proposed_rule = proposed_rule
         if initial_description is None:

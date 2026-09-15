@@ -28,12 +28,12 @@ def test_makes_translated_rule_null_rule_if_rule_has_no_change():
 
     assert result == Finish()
     assert workspace.translated_rule is not None
-    assert workspace.translated_rule.object_category_1 is None
-    assert workspace.translated_rule.descriptor_1_facet is None
-    assert workspace.translated_rule.descriptor_1 is None
-    assert workspace.translated_rule.object_category_2 is None
-    assert workspace.translated_rule.descriptor_2 is None
-    assert workspace.translated_rule.replaced_description_type is None
+    assert workspace.translated_rule.source_object_category is None
+    assert workspace.translated_rule.source_facet is None
+    assert workspace.translated_rule.source_descriptor is None
+    assert workspace.translated_rule.target_object_category is None
+    assert workspace.translated_rule.target_descriptor is None
+    assert workspace.translated_rule.replaced_facet is None
     assert workspace.translated_rule.relation is None
 
 

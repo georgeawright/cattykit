@@ -70,12 +70,12 @@ def test_proposes_null_rule_if_there_are_no_changed_letters():
     follow_up = coderack.posted_codelets[0]
     assert isinstance(follow_up, RuleStrengthTester)
     proposed_rule = follow_up.proposed_rule
-    assert proposed_rule.object_category_1 is None
-    assert proposed_rule.descriptor_1_facet is None
-    assert proposed_rule.descriptor_1 is None
-    assert proposed_rule.object_category_2 is None
-    assert proposed_rule.descriptor_2 is None
-    assert proposed_rule.replaced_description_type is None
+    assert proposed_rule.source_object_category is None
+    assert proposed_rule.source_facet is None
+    assert proposed_rule.source_descriptor is None
+    assert proposed_rule.target_object_category is None
+    assert proposed_rule.target_descriptor is None
+    assert proposed_rule.replaced_facet is None
     assert proposed_rule.relation is None
 
 
@@ -160,13 +160,13 @@ def test_proposes_relation_rule_if_modified_description_is_extrinsic():
     follow_up = coderack.posted_codelets[0]
     assert isinstance(follow_up, RuleStrengthTester)
     proposed_rule = follow_up.proposed_rule
-    assert proposed_rule.object_category_1 is not None
-    assert proposed_rule.descriptor_1_facet is not None
-    assert proposed_rule.descriptor_1 is not None
-    assert proposed_rule.object_category_2 is not None
-    assert proposed_rule.replaced_description_type is not None
+    assert proposed_rule.source_object_category is not None
+    assert proposed_rule.source_facet is not None
+    assert proposed_rule.source_descriptor is not None
+    assert proposed_rule.target_object_category is not None
+    assert proposed_rule.replaced_facet is not None
     assert proposed_rule.relation is not None
-    assert proposed_rule.descriptor_2 is None
+    assert proposed_rule.target_descriptor is None
 
 
 def test_proposes_non_relation_rule_if_modified_description_is_not_extrinsic():
@@ -201,10 +201,10 @@ def test_proposes_non_relation_rule_if_modified_description_is_not_extrinsic():
     follow_up = coderack.posted_codelets[0]
     assert isinstance(follow_up, RuleStrengthTester)
     proposed_rule = follow_up.proposed_rule
-    assert proposed_rule.object_category_1 is not None
-    assert proposed_rule.descriptor_1_facet is not None
-    assert proposed_rule.descriptor_1 is not None
-    assert proposed_rule.object_category_2 is not None
-    assert proposed_rule.replaced_description_type is not None
-    assert proposed_rule.descriptor_2 is not None
+    assert proposed_rule.source_object_category is not None
+    assert proposed_rule.source_facet is not None
+    assert proposed_rule.source_descriptor is not None
+    assert proposed_rule.target_object_category is not None
+    assert proposed_rule.replaced_facet is not None
+    assert proposed_rule.target_descriptor is not None
     assert proposed_rule.relation is None

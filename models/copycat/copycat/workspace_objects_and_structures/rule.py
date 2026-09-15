@@ -16,31 +16,31 @@ class Rule(WorkspaceStructure):
     def __init__(
         self,
         workspace: "Workspace",
-        object_category_1: Optional[Slipnode] = None,
-        descriptor_1_facet: Optional[Slipnode] = None,
-        descriptor_1: Optional[Slipnode] = None,
-        object_category_2: Optional[Slipnode] = None,
-        descriptor_2: Optional[Slipnode] = None,
-        replaced_description_type: Optional[Slipnode] = None,
+        source_object_category: Optional[Slipnode] = None,
+        source_facet: Optional[Slipnode] = None,
+        source_descriptor: Optional[Slipnode] = None,
+        target_object_category: Optional[Slipnode] = None,
+        target_descriptor: Optional[Slipnode] = None,
+        replaced_facet: Optional[Slipnode] = None,
         relation: Optional[Slipnode] = None,
     ):
         super().__init__()
         self.workspace = workspace
-        self.object_category_1 = object_category_1
-        self.descriptor_1_facet = descriptor_1_facet
-        self.descriptor_1 = descriptor_1
-        self.object_category_2 = object_category_2
-        self.descriptor_2 = descriptor_2
-        self.replaced_description_type = replaced_description_type
+        self.source_object_category = source_object_category
+        self.source_facet = source_facet
+        self.source_descriptor = source_descriptor
+        self.target_object_category = target_object_category
+        self.target_descriptor = target_descriptor
+        self.replaced_facet = replaced_facet
         self.relation = relation
         self.hash_id = next(Rule._next_id)
 
     def __repr__(self):
-        rule_second_half = self.relation if self.relation else self.descriptor_2
+        rule_second_half = self.relation if self.relation else self.target_descriptor
         return (
             f"Replace "
-            f"{self.replaced_description_type} of "
-            f"{self.descriptor_1} {self.object_category_1}"
+            f"{self.replaced_facet} of "
+            f"{self.source_descriptor} {self.source_object_category}"
             f" by {rule_second_half}"
         )
 
@@ -48,20 +48,20 @@ class Rule(WorkspaceStructure):
         if not isinstance(other, Rule):
             return False
         return (
-            self.object_category_1,
-            self.descriptor_1_facet,
-            self.descriptor_1,
-            self.object_category_2,
-            self.descriptor_2,
-            self.replaced_description_type,
+            self.source_object_category,
+            self.source_facet,
+            self.source_descriptor,
+            self.target_object_category,
+            self.target_descriptor,
+            self.replaced_facet,
             self.relation,
         ) == (
-            other.object_category_1,
-            other.descriptor_1_facet,
-            other.descriptor_1,
-            other.object_category_2,
-            other.descriptor_2,
-            other.replaced_description_type,
+            other.source_object_category,
+            other.source_facet,
+            other.source_descriptor,
+            other.target_object_category,
+            other.target_descriptor,
+            other.replaced_facet,
             other.relation,
         )
 
@@ -69,7 +69,7 @@ class Rule(WorkspaceStructure):
         return self.relation is not None
 
     def specifies_change(self) -> bool:
-        return self.descriptor_1 is not None
+        return self.source_descriptor is not None
 
     def apply_slippages(self, slippages: List[ConceptMapping]) -> Rule:
         def _slip(slipnode):
@@ -77,23 +77,23 @@ class Rule(WorkspaceStructure):
 
         return Rule(
             self.workspace,
-            _slip(self.object_category_1),
-            _slip(self.descriptor_1_facet),
-            _slip(self.descriptor_1),
-            _slip(self.object_category_2),
-            _slip(self.descriptor_2),
-            _slip(self.replaced_description_type),
+            _slip(self.source_object_category),
+            _slip(self.source_facet),
+            _slip(self.source_descriptor),
+            _slip(self.target_object_category),
+            _slip(self.target_descriptor),
+            _slip(self.replaced_facet),
             _slip(self.relation),
         )
 
     def calculate_internal_strength(self) -> float:
         if not self.specifies_change():
             return 1.0
-        source_depth = self.descriptor_1.conceptual_depth
+        source_depth = self.source_descriptor.conceptual_depth
         target_depth = (
             self.relation.conceptual_depth
             if self.expresses_relation()
-            else self.descriptor_2.conceptual_depth
+            else self.target_descriptor.conceptual_depth
         )
         source_changed_object = next(
             obj
@@ -110,12 +110,12 @@ class Rule(WorkspaceStructure):
                 ).descriptor
                 for d in source_correspondee.get_relevant_descriptions()
             ]
-            if self.descriptor_1 not in slipped_descriptors:
+            if self.source_descriptor not in slipped_descriptors:
                 # rule cannot be made
                 return 0.0
             shared_descriptor_term = 1.0
         shared_descriptor_weight = (
-            (1 - self.descriptor_1.conceptual_depth) * 10
+            (1 - self.source_descriptor.conceptual_depth) * 10
         ) ** 1.4
         depth_diff = abs(source_depth - target_depth)
         depth_mean = (source_depth + target_depth) / 2
