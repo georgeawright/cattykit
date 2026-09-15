@@ -431,7 +431,7 @@ def test_single_run(monkeypatch):
     assert copycat.coderack.number_of_codelets_run == 112
     assert a.correspondence is m_group.correspondence
     assert ("letter", "group") in {
-        (mapping.descriptor_1.name, mapping.descriptor_2.name)
+        (mapping.source_descriptor.name, mapping.target_descriptor.name)
         for mapping in a.correspondence.concept_mappings
     }
 
@@ -612,15 +612,15 @@ def test_single_run(monkeypatch):
     assert copycat.coderack.number_of_codelets_run == 127
     assert initial_group.correspondence is target_group.correspondence
     assert ("letter_category", "length") in {
-        (slippage.descriptor_1.name, slippage.descriptor_2.name)
+        (slippage.source_descriptor.name, slippage.target_descriptor.name)
         for slippage in copycat.workspace.slippages
     }
     assert {
-        (mapping.descriptor_1.name, mapping.descriptor_2.name)
+        (mapping.source_descriptor.name, mapping.target_descriptor.name)
         for mapping in initial_group.correspondence.concept_mappings
     }.issuperset({("three", "three")})
     assert ("successor", "successor") in {
-        (mapping.descriptor_1.name, mapping.descriptor_2.name)
+        (mapping.source_descriptor.name, mapping.target_descriptor.name)
         for mapping in initial_group.correspondence.accessory_concept_mappings
     }
 
@@ -673,7 +673,8 @@ def test_single_run(monkeypatch):
     assert codelet.run(temperature=0.0) == Finish()
     assert copycat.coderack.number_of_codelets_run == 131
     assert (
-        selected_codelet[0].proposed_rule.descriptor_1 is copycat.slipnet["rightmost"]
+        selected_codelet[0].proposed_rule.source_descriptor
+        is copycat.slipnet["rightmost"]
     )
     assert (
         selected_codelet[0].proposed_rule.replaced_description_type
@@ -707,7 +708,8 @@ def test_single_run(monkeypatch):
         copycat.workspace.translated_rule.object_category_1 is copycat.slipnet["group"]
     )
     assert (
-        copycat.workspace.translated_rule.descriptor_1 is copycat.slipnet["rightmost"]
+        copycat.workspace.translated_rule.source_descriptor
+        is copycat.slipnet["rightmost"]
     )
     assert (
         copycat.workspace.translated_rule.replaced_description_type

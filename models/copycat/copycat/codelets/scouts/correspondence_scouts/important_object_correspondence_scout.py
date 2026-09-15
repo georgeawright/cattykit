@@ -30,9 +30,9 @@ class ImportantObjectCorrespondenceScout(CorrespondenceScout):
         source_descriptor = source_description.descriptor
         target_descriptor = next(
             (
-                slippage.descriptor_2
+                slippage.target_descriptor
                 for slippage in self.workspace.slippages
-                if slippage.descriptor_1 == source_descriptor
+                if slippage.source_descriptor == source_descriptor
             ),
             source_descriptor,
         )

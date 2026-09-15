@@ -51,10 +51,10 @@ class CorrespondenceStrengthTester(StrengthTester):
             self.workspace.delete_proposed_correspondence(self.proposed_correspondence)
             return Fizzle(FizzleReason.PROPOSED_STRUCTURE_TOO_WEAK)
         for mapping in self.proposed_correspondence.concept_mappings:
-            self.slipnet.activate_node_from_workspace(mapping.description_type_1.name)
-            self.slipnet.activate_node_from_workspace(mapping.descriptor_1.name)
-            self.slipnet.activate_node_from_workspace(mapping.description_type_2.name)
-            self.slipnet.activate_node_from_workspace(mapping.descriptor_2.name)
+            self.slipnet.activate_node_from_workspace(mapping.source_facet.name)
+            self.slipnet.activate_node_from_workspace(mapping.source_descriptor.name)
+            self.slipnet.activate_node_from_workspace(mapping.target_facet.name)
+            self.slipnet.activate_node_from_workspace(mapping.target_descriptor.name)
         urgency = self.proposed_correspondence.total_strength
         urgency_bin = self.coderack.get_urgency_level_from_activation(urgency)
         self.coderack.post(

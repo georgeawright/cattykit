@@ -44,16 +44,16 @@ class AnswerBuilder:
         if not self.workspace.translated_rule.specifies_change():
             return []
         objects_to_change = []
-        rule_facet = self.workspace.translated_rule.descriptor_1_facet
-        rule_descriptor = self.workspace.translated_rule.descriptor_1
-        rule_obj_category = self.workspace.translated_rule.object_category_1
+        rule_facet = self.workspace.translated_rule.source_facet
+        rule_descriptor = self.workspace.translated_rule.source_descriptor
+        rule_obj_category = self.workspace.translated_rule.source_object_category
         for obj in self.workspace.target_string.objects:
             if obj.get_descriptor(self.slipnet["object_category"]) != rule_obj_category:
                 continue
             if obj.get_descriptor(rule_facet) == rule_descriptor:
                 objects_to_change.append(obj)
                 continue
-            tester = self.workspace.translated_rule.descriptor_1.description_tester
+            tester = self.workspace.translated_rule.source_descriptor.description_tester
             if tester is not None and tester(obj):
                 description = Description(obj, rule_facet, rule_descriptor)
                 obj.add_description(description)

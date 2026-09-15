@@ -471,10 +471,10 @@ class Workspace:
                 "concept_mapping_created",
                 concept_mapping_id=f"correspondence:{c.hash_id}:mapping:{index}",
                 correspondence_id=f"correspondence:{c.hash_id}",
-                description_type_1=mapping.description_type_1.name,
-                description_type_2=mapping.description_type_2.name,
-                initial_descriptor=mapping.descriptor_1.name,
-                target_descriptor=mapping.descriptor_2.name,
+                source_facet=mapping.source_facet.name,
+                target_facet=mapping.target_facet.name,
+                source_descriptor=mapping.source_descriptor.name,
+                target_descriptor=mapping.target_descriptor.name,
                 label=None if mapping.label is None else mapping.label.name,
             )
 

@@ -214,7 +214,7 @@ class CorrespondenceBuilder(Builder):
         proposed_mapping_descriptors = [
             m.source_descriptor for m in self.proposed_correspondence.concept_mappings
         ]
-        if self.workspace.rule.descriptor_1 in proposed_mapping_descriptors:
+        if self.workspace.rule.source_descriptor in proposed_mapping_descriptors:
             return None
         slippages = [
             d.apply_slippages(self.workspace.slippages)
@@ -223,7 +223,7 @@ class CorrespondenceBuilder(Builder):
                 for d in self.proposed_correspondence.target.relevant_descriptions
             ]
         ]
-        if self.workspace.rule.descriptor_1 in slippages:
+        if self.workspace.rule.source_descriptor in slippages:
             return None
         return self.workspace.rule
 

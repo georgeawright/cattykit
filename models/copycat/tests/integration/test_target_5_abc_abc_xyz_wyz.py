@@ -295,7 +295,7 @@ def test_single_run(monkeypatch):
     assert copycat.coderack.number_of_codelets_run == 97
     assert initial_group.correspondence is first_target_group.correspondence
     assert ("successor", "successor") in {
-        (mapping.descriptor_1.name, mapping.descriptor_2.name)
+        (mapping.source_descriptor.name, mapping.target_descriptor.name)
         for mapping in initial_group.correspondence.accessory_concept_mappings
     }
 
@@ -356,7 +356,7 @@ def test_single_run(monkeypatch):
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
     assert copycat.coderack.number_of_codelets_run == 102
-    assert copycat.workspace.rule.descriptor_1 is copycat.slipnet["rightmost"]
+    assert copycat.workspace.rule.source_descriptor is copycat.slipnet["rightmost"]
     assert copycat.workspace.rule.relation is copycat.slipnet["successor"]
 
     selected_codelet[0] = RuleTranslator(
@@ -368,7 +368,8 @@ def test_single_run(monkeypatch):
     assert codelet.run(temperature=0.0) == Finish()
     assert copycat.coderack.number_of_codelets_run == 103
     assert (
-        copycat.workspace.translated_rule.descriptor_1 is copycat.slipnet["rightmost"]
+        copycat.workspace.translated_rule.source_descriptor
+        is copycat.slipnet["rightmost"]
     )
     assert copycat.workspace.translated_rule.relation is copycat.slipnet["successor"]
 
@@ -546,7 +547,7 @@ def test_single_run(monkeypatch):
     assert copycat.coderack.number_of_codelets_run == 118
     assert c.correspondence is x.correspondence
     assert ("rightmost", "leftmost") in {
-        (mapping.descriptor_1.name, mapping.descriptor_2.name)
+        (mapping.source_descriptor.name, mapping.target_descriptor.name)
         for mapping in c.correspondence.concept_mappings
     }
 
@@ -600,7 +601,7 @@ def test_single_run(monkeypatch):
     assert copycat.coderack.number_of_codelets_run == 121
     assert initial_group.correspondence is target_group.correspondence
     assert {
-        (mapping.descriptor_1.name, mapping.descriptor_2.name)
+        (mapping.source_descriptor.name, mapping.target_descriptor.name)
         for mapping in initial_group.correspondence.concept_mappings
     }.issuperset(
         {
@@ -609,7 +610,7 @@ def test_single_run(monkeypatch):
         }
     )
     assert ("successor", "predecessor") in {
-        (mapping.descriptor_1.name, mapping.descriptor_2.name)
+        (mapping.source_descriptor.name, mapping.target_descriptor.name)
         for mapping in initial_group.correspondence.accessory_concept_mappings
     }
 
@@ -663,7 +664,7 @@ def test_single_run(monkeypatch):
     assert copycat.coderack.number_of_codelets_run == 124
     assert c.correspondence is x.correspondence
     assert ("rightmost", "leftmost") in {
-        (mapping.descriptor_1.name, mapping.descriptor_2.name)
+        (mapping.source_descriptor.name, mapping.target_descriptor.name)
         for mapping in c.correspondence.concept_mappings
     }
 
@@ -703,7 +704,8 @@ def test_single_run(monkeypatch):
     assert codelet.run(temperature=0.0) == Finish()
     assert copycat.coderack.number_of_codelets_run == 126
     assert (
-        selected_codelet[0].proposed_rule.descriptor_1 is copycat.slipnet["rightmost"]
+        selected_codelet[0].proposed_rule.source_descriptor
+        is copycat.slipnet["rightmost"]
     )
     assert selected_codelet[0].proposed_rule.relation is copycat.slipnet["successor"]
     assert any(
@@ -729,7 +731,10 @@ def test_single_run(monkeypatch):
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
     assert copycat.coderack.number_of_codelets_run == 128
-    assert copycat.workspace.translated_rule.descriptor_1 is copycat.slipnet["leftmost"]
+    assert (
+        copycat.workspace.translated_rule.source_descriptor
+        is copycat.slipnet["leftmost"]
+    )
     assert copycat.workspace.translated_rule.relation is copycat.slipnet["predecessor"]
     assert AnswerBuilder(copycat.slipnet, copycat.workspace).build() is None
     assert [

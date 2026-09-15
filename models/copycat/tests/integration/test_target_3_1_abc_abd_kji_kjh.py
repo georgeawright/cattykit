@@ -300,7 +300,7 @@ def test_single_run(monkeypatch):
     assert copycat.coderack.number_of_codelets_run == 97
     assert initial_group.correspondence is target_group.correspondence
     assert {
-        (mapping.descriptor_1.name, mapping.descriptor_2.name)
+        (mapping.source_descriptor.name, mapping.target_descriptor.name)
         for mapping in initial_group.correspondence.concept_mappings
     }.issuperset(
         {
@@ -309,7 +309,7 @@ def test_single_run(monkeypatch):
         }
     )
     assert ("predecessor", "successor") in {
-        (mapping.descriptor_1.name, mapping.descriptor_2.name)
+        (mapping.source_descriptor.name, mapping.target_descriptor.name)
         for mapping in initial_group.correspondence.accessory_concept_mappings
     }
 
@@ -375,7 +375,7 @@ def test_single_run(monkeypatch):
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
     assert copycat.coderack.number_of_codelets_run == 102
-    assert copycat.workspace.rule.descriptor_1 is copycat.slipnet["rightmost"]
+    assert copycat.workspace.rule.source_descriptor is copycat.slipnet["rightmost"]
     assert (
         copycat.workspace.rule.replaced_description_type
         is copycat.slipnet["letter_category"]
@@ -390,7 +390,8 @@ def test_single_run(monkeypatch):
     assert codelet.run(temperature=0.0) == Finish()
     assert copycat.coderack.number_of_codelets_run == 103
     assert (
-        copycat.workspace.translated_rule.descriptor_1 is copycat.slipnet["rightmost"]
+        copycat.workspace.translated_rule.source_descriptor
+        is copycat.slipnet["rightmost"]
     )
     assert copycat.workspace.translated_rule.relation is copycat.slipnet["predecessor"]
     assert AnswerBuilder(copycat.slipnet, copycat.workspace).build() is None

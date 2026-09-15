@@ -698,11 +698,12 @@ def test_single_run(monkeypatch):
         if isinstance(c, RuleStrengthTester) and c.birth_time == 106
     )
     assert (
-        selected_codelet[0].proposed_rule.descriptor_1_facet
+        selected_codelet[0].proposed_rule.source_descriptor_facet
         is copycat.slipnet["string_position_category"]
     )
     assert (
-        selected_codelet[0].proposed_rule.descriptor_1 is copycat.slipnet["rightmost"]
+        selected_codelet[0].proposed_rule.source_descriptor
+        is copycat.slipnet["rightmost"]
     )
     assert (
         selected_codelet[0].proposed_rule.replaced_description_type
@@ -724,10 +725,10 @@ def test_single_run(monkeypatch):
     assert copycat.coderack.number_of_codelets_run == 108
     # RIGHTMOST locates the letter to change; LETTER_CATEGORY is what changes.
     assert (
-        copycat.workspace.rule.descriptor_1_facet
+        copycat.workspace.rule.source_descriptor_facet
         is copycat.slipnet["string_position_category"]
     )
-    assert copycat.workspace.rule.descriptor_1 is copycat.slipnet["rightmost"]
+    assert copycat.workspace.rule.source_descriptor is copycat.slipnet["rightmost"]
     assert (
         copycat.workspace.rule.replaced_description_type
         is copycat.slipnet["letter_category"]

@@ -308,7 +308,7 @@ def test_single_run(monkeypatch):
     assert copycat.coderack.number_of_codelets_run == 97
     assert initial_group.correspondence is target_group.correspondence
     assert {
-        (mapping.descriptor_1.name, mapping.descriptor_2.name)
+        (mapping.source_descriptor.name, mapping.target_descriptor.name)
         for mapping in initial_group.correspondence.concept_mappings
     }.issuperset(
         {
@@ -317,7 +317,7 @@ def test_single_run(monkeypatch):
         }
     )
     assert ("successor", "successor") in {
-        (mapping.descriptor_1.name, mapping.descriptor_2.name)
+        (mapping.source_descriptor.name, mapping.target_descriptor.name)
         for mapping in initial_group.correspondence.accessory_concept_mappings
     }
 
@@ -371,7 +371,7 @@ def test_single_run(monkeypatch):
     assert copycat.coderack.number_of_codelets_run == 100
     assert c.correspondence is k.correspondence
     assert ("rightmost", "leftmost") in {
-        (mapping.descriptor_1.name, mapping.descriptor_2.name)
+        (mapping.source_descriptor.name, mapping.target_descriptor.name)
         for mapping in c.correspondence.concept_mappings
     }
 
@@ -437,7 +437,7 @@ def test_single_run(monkeypatch):
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
     assert copycat.coderack.number_of_codelets_run == 105
-    assert copycat.workspace.rule.descriptor_1 is copycat.slipnet["rightmost"]
+    assert copycat.workspace.rule.source_descriptor is copycat.slipnet["rightmost"]
     assert (
         copycat.workspace.rule.replaced_description_type
         is copycat.slipnet["letter_category"]
@@ -451,7 +451,10 @@ def test_single_run(monkeypatch):
     assert codelet is selected_codelet[0]
     assert codelet.run(temperature=0.0) == Finish()
     assert copycat.coderack.number_of_codelets_run == 106
-    assert copycat.workspace.translated_rule.descriptor_1 is copycat.slipnet["leftmost"]
+    assert (
+        copycat.workspace.translated_rule.source_descriptor
+        is copycat.slipnet["leftmost"]
+    )
     assert copycat.workspace.translated_rule.relation is copycat.slipnet["successor"]
     assert AnswerBuilder(copycat.slipnet, copycat.workspace).build() is None
     assert [
