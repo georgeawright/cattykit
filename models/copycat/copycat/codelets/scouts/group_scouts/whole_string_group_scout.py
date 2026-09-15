@@ -33,7 +33,7 @@ class WholeStringGroupScout(GroupScout):
             direction=self.slipnet["right"], first_bond=first_bond
         )
         if not (
-            objects[0].is_leftmost_in_string() and objects[-1].is_rightmost_in_string()
+            objects[0].is_leftmost_in_string and objects[-1].is_rightmost_in_string
         ):
             return Fizzle(FizzleReason.BONDS_DO_NOT_SPAN_STRING)
         chosen_bond = select_item_from_list(bonds, [1] * len(bonds))

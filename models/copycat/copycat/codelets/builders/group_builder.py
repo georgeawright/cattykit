@@ -46,7 +46,7 @@ class GroupBuilder(Builder):
         if bonds_to_be_flipped:
             fight_result = structure_beats_structures(
                 self.proposed_group,
-                self.proposed_group.letter_span(),
+                self.proposed_group.letter_span,
                 bonds_to_be_flipped,
                 1,
                 temperature=temperature,
@@ -150,9 +150,9 @@ class GroupBuilder(Builder):
             return False
         other_obj = correspondence.get_other_object(obj)
         other_bond = None
-        if other_obj.is_leftmost_in_string():
+        if other_obj.is_leftmost_in_string:
             other_bond = other_obj.right_bond
-        elif other_obj.is_rightmost_in_string():
+        elif other_obj.is_rightmost_in_string:
             other_bond = other_obj.left_bond
         if other_bond is None or other_bond.direction_category is None:
             return False

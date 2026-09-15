@@ -90,9 +90,9 @@ def test_is_middle_in_string_with_ungrouped_neighbours():
     string.letters = [left, middle, right]
     string.objects = [left, middle, right]
 
-    assert middle.is_middle_in_string()
-    assert not left.is_middle_in_string()
-    assert not right.is_middle_in_string()
+    assert middle.is_middle_in_string
+    assert not left.is_middle_in_string
+    assert not right.is_middle_in_string
 
 
 def test_is_middle_in_string_with_neighbours_in_same_enclosing_group():
@@ -116,23 +116,17 @@ def test_is_middle_in_string_with_neighbours_in_same_enclosing_group():
         group.group = enclosing
     string.objects = letters + [left, middle, right, enclosing]
 
-    assert middle.ungrouped_left_neighbour() is left
-    assert middle.ungrouped_right_neighbour() is right
-    assert middle.is_middle_in_string()
+    assert middle.ungrouped_left_neighbour is left
+    assert middle.ungrouped_right_neighbour is right
+    assert middle.is_middle_in_string
 
 
 def test_choose_relevant_description_by_activation():
     object = WorkspaceObject(string=None, left_position=None, right_position=None)
     object.descriptions = [
-        SimpleNamespace(
-            is_relevant=lambda: True, descriptor=SimpleNamespace(activation=0.5)
-        ),
-        SimpleNamespace(
-            is_relevant=lambda: True, descriptor=SimpleNamespace(activation=0.8)
-        ),
-        SimpleNamespace(
-            is_relevant=lambda: False, descriptor=SimpleNamespace(activation=1.0)
-        ),
+        SimpleNamespace(is_relevant=True, descriptor=SimpleNamespace(activation=0.5)),
+        SimpleNamespace(is_relevant=True, descriptor=SimpleNamespace(activation=0.8)),
+        SimpleNamespace(is_relevant=False, descriptor=SimpleNamespace(activation=1.0)),
     ]
     assert object.choose_relevant_description_by_activation() in [
         object.descriptions[0],
@@ -167,7 +161,7 @@ def test_calculate_raw_importance(
     object.group = None if group is None else SimpleNamespace(members=[object])
     object.descriptions = [
         SimpleNamespace(
-            is_relevant=lambda: True, descriptor=SimpleNamespace(activation=activation)
+            is_relevant=True, descriptor=SimpleNamespace(activation=activation)
         )
         for activation in descriptor_activations
     ]

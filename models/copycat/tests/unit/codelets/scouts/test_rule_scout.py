@@ -30,7 +30,7 @@ class MockSlipnet:
 
 def test_fizzles_if_not_all_initial_string_letters_have_replacements():
     workspace = Mock()
-    workspace.all_replacements_found.return_value = False
+    workspace.all_replacements_found = False
 
     rule_scout = RuleScout(
         urgency_bin=0, coderack=Mock(), workspace=workspace, slipnet=Mock()
@@ -42,7 +42,7 @@ def test_fizzles_if_not_all_initial_string_letters_have_replacements():
 
 def test_raises_exception_if_more_than_one_changed_letter():
     workspace = Mock()
-    workspace.all_replacements_found.return_value = True
+    workspace.all_replacements_found = True
     workspace.initial_string.get_changed_objects.return_value = [Mock(), Mock()]
 
     rule_scout = RuleScout(
@@ -57,7 +57,7 @@ def test_proposes_null_rule_if_there_are_no_changed_letters():
     slipnet = MockSlipnet()
 
     workspace = Mock()
-    workspace.all_replacements_found.return_value = True
+    workspace.all_replacements_found = True
     workspace.initial_string.get_changed_objects.return_value = []
 
     rule_scout = RuleScout(
@@ -84,7 +84,7 @@ def test_fizzles_if_there_is_no_initial_object_description():
     slipnet = MockSlipnet()
 
     workspace = Mock()
-    workspace.all_replacements_found.return_value = True
+    workspace.all_replacements_found = True
 
     initial_object = Mock()
     initial_object.rule_initial_string_descriptions = []
@@ -103,7 +103,7 @@ def test_fizzles_if_there_is_no_modified_object_description():
     slipnet = MockSlipnet()
 
     workspace = Mock()
-    workspace.all_replacements_found.return_value = True
+    workspace.all_replacements_found = True
 
     initial_object = Mock()
     initial_description = Mock()
@@ -130,7 +130,7 @@ def test_proposes_relation_rule_if_modified_description_is_extrinsic():
     slipnet = MockSlipnet()
 
     workspace = Mock()
-    workspace.all_replacements_found.return_value = True
+    workspace.all_replacements_found = True
 
     initial_object = Mock()
     initial_description = Mock()
@@ -174,7 +174,7 @@ def test_proposes_non_relation_rule_if_modified_description_is_not_extrinsic():
     slipnet = MockSlipnet()
 
     workspace = Mock()
-    workspace.all_replacements_found.return_value = True
+    workspace.all_replacements_found = True
 
     initial_object = Mock()
     initial_description = Mock()

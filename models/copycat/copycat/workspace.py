@@ -160,12 +160,134 @@ class Workspace:
             structures.append(self.rule)
         return structures
 
+    @property
     def all_replacements_found(self) -> bool:
         """True if all letters in the initial string have a replacement."""
         for letter in self.initial_string.letters:
             if letter.replacement is None:
                 return False
         return True
+
+    @property
+    def letters_without_replacement(self) -> list:
+        return [
+            letter
+            for letter in self.initial_string.letters
+            if letter.replacement is None
+        ]
+
+    @property
+    def ungrouped_objects(self) -> list:
+        return [
+            obj
+            for obj in self.objects
+            if not obj.spans_whole_string and obj.group is None
+        ]
+
+    @property
+    def unbonded_objects(self) -> list:
+        return [
+            obj
+            for obj in self.ungrouped_objects
+            if (
+                (obj.is_at_edge_of_string and len(obj.outgoing_and_incoming_bonds) == 0)
+                or (
+                    not obj.is_at_edge_of_string
+                    and len(obj.outgoing_and_incoming_bonds) < 2
+                )
+            )
+        ]
+
+    @property
+    def ungrouped_bonds(self) -> list:
+        return [
+            bond
+            for bond in self.bonds
+            if bond.source.group is None or bond.target.group is None
+        ]
+
+    @property
+    def uncorresponded_objects(self) -> list:
+        return [obj for obj in self.objects if obj.correspondence is None]
+
+    @property
+    def rough_number_of_letters_without_replacement(self):
+        return describe_count(len(self.letters_without_replacement))
+
+    @property
+    def rough_number_of_ungrouped_objects(self):
+        return describe_count(len(self.ungrouped_objects))
+
+    @property
+    def rough_number_of_unbonded_objects(self):
+        return describe_count(len(self.unbonded_objects))
+
+    @property
+    def rough_number_of_uncorresponded_objects(self):
+        return describe_count(len(self.uncorresponded_objects))
+
+    @property
+    def rough_importance_of_uncorresponded_objects(self):
+        max_importance = max(
+            [obj.relative_importance for obj in self.uncorresponded_objects] + [0]
+        )
+        return describe_count(round(max_importance * 10, 0))
+
+    @property
+    def slippages(self) -> list:
+        return list(
+            itertools.chain.from_iterable(
+                [correspondence.slippages for correspondence in self.correspondences]
+            )
+        )
+
+    @property
+    def intra_string_unhappiness(self) -> float:
+        """Returns average of intra-string unhappiness of objects in the workspace
+        weighted by the relative importance of each object in its string."""
+        return min(
+            1,
+            sum(
+                [
+                    obj.relative_importance * obj.intra_string_unhappiness
+                    for obj in self.objects
+                ]
+            )
+            # divided by 2 as there a 2 strings each with total unhappiness  1
+            / 2,
+        )
+
+    @property
+    def inter_string_unhappiness(self) -> float:
+        """Returns average of inter-string unhappiness of objects in the workspace
+        weighted by the relative importance of each object in its string."""
+        return min(
+            1,
+            sum(
+                [
+                    obj.relative_importance * obj.inter_string_unhappiness
+                    for obj in self.objects
+                ]
+            )
+            # divided by 2 as there a 2 strings each with total unhappiness  1
+            / 2,
+        )
+
+    @property
+    def total_unhappiness(self):
+        """Returns average of the total unhappiness of objects in the workspace
+        weighted by the relative importance of each object in its string."""
+        return min(
+            1,
+            sum(
+                [
+                    obj.relative_importance * obj.total_unhappiness
+                    for obj in self.objects
+                ]
+            )
+            # divided by 2 as there a 2 strings each with total unhappiness  1
+            / 2,
+        )
 
     def update(self):
         """Update values for structures and objects."""
@@ -177,8 +299,8 @@ class Workspace:
         self.target_string.update_intra_string_unhappiness()
         if self.logger is not None:
             for attribute, value in (
-                ("intra_string_unhappiness", self.intra_string_unhappiness()),
-                ("inter_string_unhappiness", self.inter_string_unhappiness()),
+                ("intra_string_unhappiness", self.intra_string_unhappiness),
+                ("inter_string_unhappiness", self.inter_string_unhappiness),
                 ("total_unhappiness", self.total_unhappiness),
             ):
                 self.logger.log(
@@ -395,128 +517,6 @@ class Workspace:
         """Return an object probabilistically according to temperature and method."""
         weights = [temperature_adjust(method(obj), temperature) for obj in self.objects]
         return select_item_from_list(self.objects, weights)
-
-    @property
-    def letters_without_replacement(self) -> list:
-        return [
-            letter
-            for letter in self.initial_string.letters
-            if letter.replacement is None
-        ]
-
-    @property
-    def ungrouped_objects(self) -> list:
-        return [
-            obj
-            for obj in self.objects
-            if not obj.spans_whole_string() and obj.group is None
-        ]
-
-    @property
-    def unbonded_objects(self) -> list:
-        return [
-            obj
-            for obj in self.ungrouped_objects
-            if (
-                (
-                    obj.is_at_edge_of_string()
-                    and len(obj.outgoing_and_incoming_bonds) == 0
-                )
-                or (
-                    not obj.is_at_edge_of_string()
-                    and len(obj.outgoing_and_incoming_bonds) < 2
-                )
-            )
-        ]
-
-    @property
-    def ungrouped_bonds(self) -> list:
-        return [
-            bond
-            for bond in self.bonds
-            if bond.source.group is None or bond.target.group is None
-        ]
-
-    @property
-    def uncorresponded_objects(self) -> list:
-        return [obj for obj in self.objects if obj.correspondence is None]
-
-    @property
-    def rough_number_of_letters_without_replacement(self):
-        return describe_count(len(self.letters_without_replacement))
-
-    @property
-    def rough_number_of_ungrouped_objects(self):
-        return describe_count(len(self.ungrouped_objects))
-
-    @property
-    def rough_number_of_unbonded_objects(self):
-        return describe_count(len(self.unbonded_objects))
-
-    @property
-    def rough_number_of_uncorresponded_objects(self):
-        return describe_count(len(self.uncorresponded_objects))
-
-    @property
-    def rough_importance_of_uncorresponded_objects(self):
-        max_importance = max(
-            [obj.relative_importance for obj in self.uncorresponded_objects] + [0]
-        )
-        return describe_count(round(max_importance * 10, 0))
-
-    @property
-    def slippages(self) -> list:
-        return list(
-            itertools.chain.from_iterable(
-                [correspondence.slippages for correspondence in self.correspondences]
-            )
-        )
-
-    def intra_string_unhappiness(self):
-        """Returns average of intra-string unhappiness of objects in the workspace
-        weighted by the relative importance of each object in its string."""
-        return min(
-            1,
-            sum(
-                [
-                    obj.relative_importance * obj.intra_string_unhappiness
-                    for obj in self.objects
-                ]
-            )
-            # divided by 2 as there a 2 strings each with total unhappiness  1
-            / 2,
-        )
-
-    def inter_string_unhappiness(self):
-        """Returns average of inter-string unhappiness of objects in the workspace
-        weighted by the relative importance of each object in its string."""
-        return min(
-            1,
-            sum(
-                [
-                    obj.relative_importance * obj.inter_string_unhappiness
-                    for obj in self.objects
-                ]
-            )
-            # divided by 2 as there a 2 strings each with total unhappiness  1
-            / 2,
-        )
-
-    @property
-    def total_unhappiness(self):
-        """Returns average of the total unhappiness of objects in the workspace
-        weighted by the relative importance of each object in its string."""
-        return min(
-            1,
-            sum(
-                [
-                    obj.relative_importance * obj.total_unhappiness
-                    for obj in self.objects
-                ]
-            )
-            # divided by 2 as there a 2 strings each with total unhappiness  1
-            / 2,
-        )
 
     def get_bottom_up_codelets(
         self, slipnet: "Slipnet", coderack: "Coderack", temperature: float

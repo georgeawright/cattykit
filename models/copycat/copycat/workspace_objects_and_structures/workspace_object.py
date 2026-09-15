@@ -1,6 +1,6 @@
 from __future__ import annotations
 import random
-from typing import List, Union
+from typing import List, Optional, Union
 
 from cattykit.logging import ModelEvent
 
@@ -66,7 +66,7 @@ class WorkspaceObject:
         return [
             d
             for d in self.descriptions
-            if d.facet.is_active()
+            if d.facet.is_active
             and self.is_distinguished_by(d.descriptor)
             and not (d.facet.name == "object_category")
         ]
@@ -76,39 +76,47 @@ class WorkspaceObject:
         return [
             d
             for d in self.descriptions
-            if d.facet.is_active()
+            if d.facet.is_active
             and self.is_distinguished_by(d.descriptor)
             and d.facet.name != "string_position_category"
             and d.facet.name != "object_category"
         ]
 
-    def distance_from(self, other_object) -> int:
-        """Returns the number of letters between this object and another object."""
-        if self.string != other_object.string:
-            raise ValueError("Objects are not in the same string.")
-        if self.right_position < other_object.left_position:
-            return other_object.left_position - self.right_position
-        elif other_object.right_position < self.left_position:
-            return self.left_position - other_object.right_position
-        else:
-            return 0
-
+    @property
     def is_leftmost_in_string(self) -> bool:
         return self.left_position == 0
 
+    @property
     def is_rightmost_in_string(self) -> bool:
         return self.right_position == len(self.string.letters) - 1
 
+    @property
     def is_at_edge_of_string(self) -> bool:
-        return self.is_leftmost_in_string() or self.is_rightmost_in_string()
+        return self.is_leftmost_in_string or self.is_rightmost_in_string
 
+    @property
+    def is_middle_in_string(self) -> bool:
+        left_neighbour = self.ungrouped_left_neighbour
+        right_neighbour = self.ungrouped_right_neighbour
+        return (
+            left_neighbour is not None
+            and right_neighbour is not None
+            and left_neighbour.is_leftmost_in_string
+            and right_neighbour.is_rightmost_in_string
+        )
+
+    @property
+    def spans_whole_string(self) -> bool:
+        return self.letter_span == len(self.string.letters)
+
+    @property
     def ungrouped_left_neighbour(self) -> Union[WorkspaceObject, None]:
         """Return the Lisp Copycat notion of an ungrouped left neighbour.
 
         A neighbour is usable when it is not in a group, or when its group also
         contains this object (possibly through nested subgroups).
         """
-        if self.is_leftmost_in_string():
+        if self.is_leftmost_in_string:
             return None
         return next(
             (
@@ -120,9 +128,10 @@ class WorkspaceObject:
             None,
         )
 
+    @property
     def ungrouped_right_neighbour(self) -> Union[WorkspaceObject, None]:
         """Return the Lisp Copycat notion of an ungrouped right neighbour."""
-        if self.is_rightmost_in_string():
+        if self.is_rightmost_in_string:
             return None
         return next(
             (
@@ -134,15 +143,35 @@ class WorkspaceObject:
             None,
         )
 
-    def is_middle_in_string(self) -> bool:
-        left_neighbour = self.ungrouped_left_neighbour()
-        right_neighbour = self.ungrouped_right_neighbour()
-        return (
-            left_neighbour is not None
-            and right_neighbour is not None
-            and left_neighbour.is_leftmost_in_string()
-            and right_neighbour.is_rightmost_in_string()
-        )
+    @property
+    def relevant_descriptions(self) -> List["Description"]:
+        return [d for d in self.descriptions if d.is_relevant]
+
+    @property
+    def relevant_distinguishing_descriptions(self) -> List["Description"]:
+        return [
+            d
+            for d in self.descriptions
+            if d.is_relevant and self.is_distinguished_by(d.descriptor)
+        ]
+
+    @property
+    def correspondee(self) -> Optional[WorkspaceObject]:
+        """Returns the object in the other string that corresponds to this one, if any."""
+        if self.correspondence is None:
+            return None
+        return self.correspondence.get_other_object(self)
+
+    def distance_from(self, other_object) -> int:
+        """Returns the number of letters between this object and another object."""
+        if self.string != other_object.string:
+            raise ValueError("Objects are not in the same string.")
+        if self.right_position < other_object.left_position:
+            return other_object.left_position - self.right_position
+        elif other_object.right_position < self.left_position:
+            return self.left_position - other_object.right_position
+        else:
+            return 0
 
     def has_description(self, description: "Description") -> bool:
         return any([description.equates_to(d) for d in self.descriptions])
@@ -162,7 +191,7 @@ class WorkspaceObject:
         return None
 
     def add_description(self, description: "Description"):
-        if description.is_bond_description():
+        if description.is_bond_description:
             self.bond_descriptions.append(description)
         else:
             self.descriptions.append(description)
@@ -182,16 +211,6 @@ class WorkspaceObject:
     def has_recursive_group_member(self, other_object) -> bool:
         return self == other_object
 
-    def get_relevant_descriptions(self) -> List["Description"]:
-        return [d for d in self.descriptions if d.is_relevant()]
-
-    def get_relevant_distinguishing_descriptions(self) -> List["Description"]:
-        return [
-            d
-            for d in self.descriptions
-            if d.is_relevant() and self.is_distinguished_by(d.descriptor)
-        ]
-
     def update_values(self):
         self.raw_importance = self.calculate_raw_importance()
         self.intra_string_unhappiness = self.calculate_intra_string_unhappiness()
@@ -200,9 +219,6 @@ class WorkspaceObject:
         self.intra_string_salience = self.calculate_intra_string_salience()
         self.inter_string_salience = self.calculate_inter_string_salience()
         self.total_salience = self.calculate_total_salience()
-
-    def spans_whole_string(self) -> bool:
-        return self.letter_span() == len(self.string.letters)
 
     def is_distinguished_by(self, descriptor: "Slipnode") -> bool:
         """True if no other object of the same type has the same descriptor."""
@@ -245,7 +261,7 @@ class WorkspaceObject:
             return None
 
     def choose_relevant_description_by_activation(self) -> Union["Description", None]:
-        relevant_descriptions = self.get_relevant_descriptions()
+        relevant_descriptions = self.relevant_descriptions
         if len(relevant_descriptions) == 0:
             return None
         activations = [d.descriptor.activation for d in relevant_descriptions]
@@ -254,7 +270,7 @@ class WorkspaceObject:
     def choose_relevant_description_by_conceptual_depth(
         self,
     ) -> Union["Description", None]:
-        relevant_descriptions = self.get_relevant_descriptions()
+        relevant_descriptions = self.relevant_descriptions
         if len(relevant_descriptions) == 0:
             return None
         conceptual_depths = [
@@ -265,19 +281,13 @@ class WorkspaceObject:
     def choose_relevant_distinguishing_description_by_conceptual_depth(
         self,
     ) -> Union["Description", None]:
-        relevant_descriptions = self.get_relevant_distinguishing_descriptions()
-        if len(relevant_descriptions) == 0:
+        relevant_descriptions = self.relevant_distinguishing_descriptions
+        if len(self.relevant_distinguishing_descriptions) == 0:
             return None
         conceptual_depths = [
             d.descriptor.conceptual_depth for d in relevant_descriptions
         ]
         return select_item_from_list(relevant_descriptions, conceptual_depths)
-
-    def get_correspondee(self) -> Optional[WorkspaceObject]:
-        """Returns the object in the other string that corresponds to this one, if any."""
-        if self.correspondence is None:
-            return None
-        return self.correspondence.get_other_object(self)
 
     def calculate_raw_importance(self) -> float:
         """Returns raw (not relative) importance of the object.
@@ -289,7 +299,7 @@ class WorkspaceObject:
             sum(
                 [
                     description.descriptor.activation
-                    for description in self.get_relevant_descriptions()
+                    for description in self.relevant_descriptions
                 ]
             ),
         )
@@ -315,14 +325,14 @@ class WorkspaceObject:
         """Represents how well the object fits into the structure of its string.
         It is a function of the strength of the bonds/group involving the object.
         Bonds have a third the weight of groups."""
-        if self.spans_whole_string():
+        if self.spans_whole_string:
             return 1.0
         if self.group is not None:
             return self.group.total_strength
         bonds = self.incoming_bonds + self.outgoing_bonds
         if not bonds:
             return 0.0
-        if self.is_leftmost_in_string() or self.is_rightmost_in_string():
+        if self.is_leftmost_in_string or self.is_rightmost_in_string:
             return bonds[0].total_strength / 3
         return sum(bond.total_strength for bond in bonds) / 6
 

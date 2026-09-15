@@ -475,7 +475,7 @@ def test_single_run(monkeypatch):
     assert codelet.run(temperature=0.0) == Finish()
     assert copycat.coderack.number_of_codelets_run == 91
     initial_group = copycat.workspace.initial_string.groups[0]
-    assert initial_group.spans_whole_string()
+    assert initial_group.spans_whole_string
 
     # Give the initial group its successor-group description before attempting
     # any group correspondence.
@@ -558,7 +558,7 @@ def test_single_run(monkeypatch):
     assert codelet.run(temperature=0.0) == Finish()
     assert copycat.coderack.number_of_codelets_run == 97
     target_group = copycat.workspace.target_string.groups[0]
-    assert target_group.spans_whole_string()
+    assert target_group.spans_whole_string
 
     # Give the target group the matching successor-group description.
     monkeypatch.setattr(copycat.workspace, "choose_object", lambda *_: target_group)

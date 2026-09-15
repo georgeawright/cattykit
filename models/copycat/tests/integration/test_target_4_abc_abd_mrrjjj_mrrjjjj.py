@@ -525,7 +525,7 @@ def test_single_run(monkeypatch):
     assert codelet.run(temperature=0.0) == Finish()
     assert copycat.coderack.number_of_codelets_run == 121
     initial_group = copycat.workspace.initial_string.groups[-1]
-    assert initial_group.spans_whole_string()
+    assert initial_group.spans_whole_string
 
     # Build the target whole-string group from the two length bonds.  This
     # assertion deliberately exercises nested groups; a letter-count-only
@@ -570,7 +570,7 @@ def test_single_run(monkeypatch):
     target_group = next(
         group
         for group in copycat.workspace.target_string.groups
-        if group.spans_whole_string()
+        if group.spans_whole_string
     )
 
     chosen_items[:] = [initial_group, target_group]

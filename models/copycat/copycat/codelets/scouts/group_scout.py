@@ -72,9 +72,9 @@ class GroupScout(Scout):
         return chosen_string
 
     def _choose_direction(self, chosen_object):
-        if chosen_object.is_leftmost_in_string():
+        if chosen_object.is_leftmost_in_string:
             return self.slipnet["right"]
-        elif chosen_object.is_rightmost_in_string():
+        elif chosen_object.is_rightmost_in_string:
             return self.slipnet["left"]
         left = self.slipnet["left"]
         right = self.slipnet["right"]
@@ -192,12 +192,12 @@ class GroupScout(Scout):
         group.add_description(description)
 
     def _get_string_position(self, group: Group):
-        if group.spans_whole_string():
+        if group.spans_whole_string:
             return self.slipnet["whole"]
-        if group.is_leftmost_in_string():
+        if group.is_leftmost_in_string:
             return self.slipnet["leftmost"]
-        if group.is_middle_in_string():
+        if group.is_middle_in_string:
             return self.slipnet["middle"]
-        if group.is_rightmost_in_string():
+        if group.is_rightmost_in_string:
             return self.slipnet["rightmost"]
         return None

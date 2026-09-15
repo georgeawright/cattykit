@@ -120,9 +120,9 @@ def test_strength(
 )
 def test_is_relevant(source_facet_activated, target_facet_activated, expected):
     source_facet = SimpleNamespace()
-    source_facet.is_active = lambda: source_facet_activated
+    source_facet.is_active = source_facet_activated
     target_facet = SimpleNamespace()
-    target_facet.is_active = lambda: target_facet_activated
+    target_facet.is_active = target_facet_activated
     concept_mapping = ConceptMapping(
         source_facet=source_facet,
         target_facet=target_facet,
@@ -132,7 +132,7 @@ def test_is_relevant(source_facet_activated, target_facet_activated, expected):
         source=None,
         target=None,
     )
-    assert expected == concept_mapping.is_relevant()
+    assert expected == concept_mapping.is_relevant
 
 
 @pytest.mark.parametrize(
@@ -184,7 +184,7 @@ def test_is_distinguishing(
         source=source,
         target=target,
     )
-    assert expected == concept_mapping.is_distinguishing()
+    assert expected == concept_mapping.is_distinguishing
 
 
 @pytest.mark.parametrize(

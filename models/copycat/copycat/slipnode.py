@@ -55,7 +55,7 @@ class Slipnode:
         """The degree of association encoded in the links this node labels."""
         return (
             1 - self.shrunk_link_length
-            if self.is_active()
+            if self.is_active
             else 1 - self.intrinsic_link_length
         )
 
@@ -81,8 +81,18 @@ class Slipnode:
             return None
         return self.category_links[0].target
 
+    @property
     def is_active(self) -> bool:
         return self.activation >= 1.0
+
+    @property
+    def is_directed(self) -> bool:
+        return self.name in (
+            "predecessor",
+            "successor",
+            "predecessor_group",
+            "successor_group",
+        )
 
     def get_related_node(self, relationship_name: str) -> Optional[Slipnode]:
         if relationship_name == "identity":
@@ -106,14 +116,6 @@ class Slipnode:
             if link.target == other:
                 return True
         return False
-
-    def is_directed(self) -> bool:
-        return self.name in (
-            "predecessor",
-            "successor",
-            "predecessor_group",
-            "successor_group",
-        )
 
     def get_similar_has_property_links(self, temperature: float) -> List["Sliplink"]:
         return [

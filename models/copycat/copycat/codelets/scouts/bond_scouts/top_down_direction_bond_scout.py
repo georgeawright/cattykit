@@ -70,7 +70,7 @@ class TopDownDirectionBondScout(BondScout):
         if source_descriptor is None or target_descriptor is None:
             return Fizzle(FizzleReason.NO_DESCRIPTORS_FOR_BOND_FACET)
         bond_category = self._get_bond_category(source_descriptor, target_descriptor)
-        if bond_category is None or not bond_category.is_directed():
+        if bond_category is None or not bond_category.is_directed:
             return Fizzle(FizzleReason.NO_DIRECTED_BOND_CATEGORY)
         self.propose_bond(
             source,

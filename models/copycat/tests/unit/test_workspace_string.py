@@ -186,9 +186,9 @@ def test_add_get_and_delete_group():
 
 def test_choose_from_leftmost_objects():
     workspace_string = WorkspaceString()
-    a = Mock(id="a", is_leftmost_in_string=lambda: True, relative_importance=0.1)
-    b = Mock(id="b", is_leftmost_in_string=lambda: False, relative_importance=0.1)
-    c = Mock(id="c", is_leftmost_in_string=lambda: False, relative_importance=0.1)
+    a = Mock(id="a", is_leftmost_in_string=True, relative_importance=0.1)
+    b = Mock(id="b", is_leftmost_in_string=False, relative_importance=0.1)
+    c = Mock(id="c", is_leftmost_in_string=False, relative_importance=0.1)
     abc = Mock(
         left_object=a,
         left_position=0,
@@ -219,13 +219,13 @@ def test_get_local_bond_category_relevance():
     assert workspace_string.get_local_bond_category_relevance(category) == 0.0
 
     bond = SimpleNamespace(bond_category=category)
-    object_1 = SimpleNamespace(right_bond=bond, spans_whole_string=lambda: False)
-    object_2 = SimpleNamespace(right_bond=None, spans_whole_string=lambda: False)
+    object_1 = SimpleNamespace(right_bond=bond, spans_whole_string=False)
+    object_2 = SimpleNamespace(right_bond=None, spans_whole_string=False)
     workspace_string.add_letter(object_1)
     workspace_string.add_letter(object_2)
     assert workspace_string.get_local_bond_category_relevance(category) == 1.0
 
-    object_3 = SimpleNamespace(right_bond=None, spans_whole_string=lambda: False)
+    object_3 = SimpleNamespace(right_bond=None, spans_whole_string=False)
     workspace_string.add_letter(object_3)
     assert workspace_string.get_local_bond_category_relevance(category) == 0.5
 
@@ -236,12 +236,12 @@ def test_get_local_direction_category_relevance():
     assert workspace_string.get_local_direction_category_relevance(category) == 0.0
 
     bond = SimpleNamespace(direction_category=category)
-    object_1 = SimpleNamespace(right_bond=bond, spans_whole_string=lambda: False)
-    object_2 = SimpleNamespace(right_bond=None, spans_whole_string=lambda: False)
+    object_1 = SimpleNamespace(right_bond=bond, spans_whole_string=False)
+    object_2 = SimpleNamespace(right_bond=None, spans_whole_string=False)
     workspace_string.add_letter(object_1)
     workspace_string.add_letter(object_2)
     assert workspace_string.get_local_direction_category_relevance(category) == 1.0
 
-    object_3 = SimpleNamespace(right_bond=None, spans_whole_string=lambda: False)
+    object_3 = SimpleNamespace(right_bond=None, spans_whole_string=False)
     workspace_string.add_letter(object_3)
     assert workspace_string.get_local_direction_category_relevance(category) == 0.5

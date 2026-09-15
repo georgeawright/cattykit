@@ -17,6 +17,7 @@ class Letter(WorkspaceObject):
     def __len__(self):
         return 1
 
+    @property
     def letter_span(self):
         return 1
 
@@ -24,12 +25,13 @@ class Letter(WorkspaceObject):
     def letters(self):
         return [self]
 
+    @property
+    def is_string_spanning_group(self) -> bool:
+        return False
+
     def _is_distinguished_by(self, descriptor: "Slipnode") -> bool:
         other_objects = [o for o in self.string.letters if o != self]
         other_descriptors = []
         for o in other_objects:
             other_descriptors += [d.descriptor for d in o.descriptions]
         return descriptor not in other_descriptors
-
-    def is_string_spanning_group(self) -> bool:
-        return False

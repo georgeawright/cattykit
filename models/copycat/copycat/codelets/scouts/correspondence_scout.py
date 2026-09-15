@@ -30,17 +30,15 @@ class CorrespondenceScout(Scout):
         if isinstance(objects_or_fizzle, Fizzle):
             return objects_or_fizzle
         # According to original code, this probably isn't right.
-        if (
-            self.source.spans_whole_string() and not self.target.spans_whole_string()
-        ) or (
-            self.target.spans_whole_string() and not self.source.spans_whole_string()
+        if (self.source.spans_whole_string and not self.target.spans_whole_string) or (
+            self.target.spans_whole_string and not self.source.spans_whole_string
         ):
             return Fizzle(FizzleReason.INCOMPATIBLE_OBJECT_SPANS)
         concept_mappings = self.slipnet.get_concept_mappings(
             self.source,
             self.target,
-            self.source.get_relevant_descriptions(),
-            self.target.get_relevant_descriptions(),
+            self.source.relevant_descriptions,
+            self.target.relevant_descriptions,
         )
         concept_mappings_possible = any(
             random.random()
@@ -50,7 +48,7 @@ class CorrespondenceScout(Scout):
         if not concept_mappings_possible:
             return Fizzle(FizzleReason.NO_CONCEPT_MAPPINGS)
         distinguishing_concept_mappings = [
-            mapping for mapping in concept_mappings if mapping.is_distinguishing()
+            mapping for mapping in concept_mappings if mapping.is_distinguishing
         ]
         if not distinguishing_concept_mappings:
             return Fizzle(FizzleReason.NO_DISTINGUISHING_CONCEPT_MAPPINGS)
@@ -75,8 +73,8 @@ class CorrespondenceScout(Scout):
         ]
         target_flipped = False
         if (
-            self.source.is_string_spanning_group()
-            and self.target.is_string_spanning_group()
+            self.source.is_string_spanning_group
+            and self.target.is_string_spanning_group
             and any(
                 mapping.source_facet.name == "direction_category"
                 for mapping in possible_opposite_concept_mappings
@@ -84,12 +82,12 @@ class CorrespondenceScout(Scout):
             and all(
                 mapping.is_opposite for mapping in possible_opposite_concept_mappings
             )
-            and not self.slipnet["opposite"].is_active()
+            and not self.slipnet["opposite"].is_active
         ):
             self.target = self.target.get_flipped_version()
             self.target.descriptions = []
             self.target.bond_descriptions = []
-            if self.target.spans_whole_string():
+            if self.target.spans_whole_string:
                 self.target.add_description(
                     Description(
                         self.target,
@@ -104,12 +102,12 @@ class CorrespondenceScout(Scout):
                     self.slipnet["group"],
                 )
             )
-            if not self.target.spans_whole_string():
-                if self.target.is_leftmost_in_string():
+            if not self.target.spans_whole_string:
+                if self.target.is_leftmost_in_string:
                     string_position = self.slipnet["leftmost"]
-                elif self.target.is_middle_in_string():
+                elif self.target.is_middle_in_string:
                     string_position = self.slipnet["middle"]
-                elif self.target.is_rightmost_in_string():
+                elif self.target.is_rightmost_in_string:
                     string_position = self.slipnet["rightmost"]
                 else:
                     string_position = None
@@ -183,8 +181,8 @@ class CorrespondenceScout(Scout):
             concept_mappings = self.slipnet.get_concept_mappings(
                 self.source,
                 self.target,
-                self.source.get_relevant_descriptions(),
-                self.target.get_relevant_descriptions(),
+                self.source.relevant_descriptions,
+                self.target.relevant_descriptions,
             )
             target_flipped = True
         self.propose_correspondence(
@@ -213,7 +211,7 @@ class CorrespondenceScout(Scout):
             self.slipnet.activate_node_from_workspace(mapping.target_facet.name)
             self.slipnet.activate_node_from_workspace(mapping.target_descriptor.name)
         self.workspace.add_proposed_correspondence(proposed_correspondence)
-        distinguishing_mappings = proposed_correspondence.get_distinguishing_mappings()
+        distinguishing_mappings = proposed_correspondence.distinguishing_mappings
         urgency = sum(mapping.strength for mapping in distinguishing_mappings) / len(
             distinguishing_mappings
         )

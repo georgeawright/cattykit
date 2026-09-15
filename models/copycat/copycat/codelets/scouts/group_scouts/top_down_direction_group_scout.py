@@ -27,7 +27,7 @@ class TopDownDirectionGroupScout(GroupScout):
         chosen_object = workspace_string.choose_object(
             temperature, lambda x: x.intra_string_salience
         )
-        if chosen_object.spans_whole_string():
+        if chosen_object.spans_whole_string:
             return Fizzle(FizzleReason.OBJECT_SPANS_WHOLE_STRING)
         direction = self._choose_direction(chosen_object)
         number_of_bonds = self._choose_number_of_bonds(workspace_string)

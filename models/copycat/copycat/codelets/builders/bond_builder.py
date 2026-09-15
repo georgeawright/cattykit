@@ -60,7 +60,7 @@ class BondBuilder(Builder):
                 self.proposed_bond,
                 1,
                 incompatible_groups,
-                max(group.letter_span() for group in incompatible_groups),
+                max(group.letter_span for group in incompatible_groups),
                 temperature=temperature,
             )
             if not fight_result:
@@ -124,13 +124,13 @@ class BondBuilder(Builder):
         if self.proposed_bond.direction_category is None:
             return []
         incompatible_correspondences = []
-        if self.proposed_bond.is_leftmost_in_string():
+        if self.proposed_bond.is_leftmost_in_string:
             correspondence = self.proposed_bond.left_object.correspondence
             if correspondence is not None and self._correspondence_is_incompatible(
                 correspondence
             ):
                 incompatible_correspondences.append(correspondence)
-        if self.proposed_bond.is_rightmost_in_string():
+        if self.proposed_bond.is_rightmost_in_string:
             correspondence = self.proposed_bond.right_object.correspondence
             if correspondence is not None and self._correspondence_is_incompatible(
                 correspondence
@@ -157,9 +157,9 @@ class BondBuilder(Builder):
             other_object = correspondence.get_other_object(
                 self.proposed_bond.right_object
             )
-        if other_object.is_leftmost_in_string():
+        if other_object.is_leftmost_in_string:
             other_bond = other_object.right_bond
-        elif other_object.is_rightmost_in_string():
+        elif other_object.is_rightmost_in_string:
             other_bond = other_object.left_bond
         else:
             return False

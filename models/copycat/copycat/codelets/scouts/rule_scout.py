@@ -20,7 +20,7 @@ class RuleScout(Scout):
     with urgency a function of the conceptual depth of the descriptions."""
 
     def run(self, temperature: float) -> CodeletResult:
-        if not self.workspace.all_replacements_found():
+        if not self.workspace.all_replacements_found:
             return Fizzle(FizzleReason.NOT_ALL_REPLACEMENTS_FOUND)
         changed_objects = self.workspace.initial_string.get_changed_objects()
         if len(changed_objects) > 1:
@@ -134,7 +134,7 @@ class RuleScout(Scout):
             return initial_object.rule_initial_string_descriptions
         initial_descriptions = []
         relevant_target_descriptions = (
-            initial_object.correspondence.target.get_relevant_descriptions()
+            initial_object.correspondence.target.relevant_descriptions
         )
         for d in initial_object.rule_initial_string_descriptions:
             slipped_d = d.apply_slippages(

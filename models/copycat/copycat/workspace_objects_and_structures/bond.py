@@ -45,26 +45,12 @@ class Bond(WorkspaceStructure):
         ]
         return f"{self.source} --{labels}--> {self.target}"
 
+    @property
     def letter_span(self):
         """Returns the number of letters spanned by the bond.
         2 if the objects are not groups,
         otherwise the sum of the lengths of the groups."""
         return self.source.letter_span() + self.target.letter_span()
-
-    def equates_to(self, other) -> bool:
-        if not isinstance(other, Bond):
-            return False
-        return (
-            self.source,
-            self.target,
-            self.bond_category,
-            self.direction_category,
-        ) == (
-            other.source,
-            other.target,
-            other.bond_category,
-            other.direction_category,
-        )
 
     @property
     def importance(self) -> float:
@@ -86,15 +72,32 @@ class Bond(WorkspaceStructure):
     def salience(self) -> float:
         return (self.importance + self.unhappiness) / 2
 
+    @property
     def is_leftmost_in_string(self) -> bool:
         return self.left_object.left_position == 0
 
+    @property
     def is_rightmost_in_string(self) -> bool:
         return self.right_object.right_position == len(self.string) - 1
 
+    def equates_to(self, other) -> bool:
+        if not isinstance(other, Bond):
+            return False
+        return (
+            self.source,
+            self.target,
+            self.bond_category,
+            self.direction_category,
+        ) == (
+            other.source,
+            other.target,
+            other.bond_category,
+            other.direction_category,
+        )
+
     def choose_neighbour(self, direction: "Slipnode") -> Optional[Bond]:
         if direction.name == "left":
-            if self.is_leftmost_in_string():
+            if self.is_leftmost_in_string:
                 return None
             neighbours = [
                 self.string.bonds_by_position[obj][self.left_object]
@@ -102,7 +105,7 @@ class Bond(WorkspaceStructure):
                 if self.string.bonds_by_position[obj][self.left_object] is not None
             ]
         elif direction.name == "right":
-            if self.is_rightmost_in_string():
+            if self.is_rightmost_in_string:
                 return None
             neighbours = [
                 self.string.bonds_by_position[self.right_object][obj]

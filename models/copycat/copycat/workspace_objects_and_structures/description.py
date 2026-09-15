@@ -26,16 +26,18 @@ class Description(WorkspaceStructure):
     def conceptual_depth(self):
         return self.descriptor.conceptual_depth
 
+    @property
+    def is_relevant(self) -> bool:
+        return self.facet.is_active
+
+    @property
+    def is_bond_description(self) -> bool:
+        return self.facet.name in ("bond_category", "bond_facet")
+
     def equates_to(self, other) -> bool:
         if not isinstance(other, Description):
             return False
         return (self.facet, self.descriptor) == (other.facet, other.descriptor)
-
-    def is_relevant(self) -> bool:
-        return self.facet.is_active()
-
-    def is_bond_description(self) -> bool:
-        return self.facet.name in ("bond_category", "bond_facet")
 
     def calculate_internal_strength(self) -> float:
         return self.descriptor.conceptual_depth

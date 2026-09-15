@@ -53,9 +53,9 @@ class CorrespondenceBuilder(Builder):
             # correspondences between small groups or letters
             fight_result = structure_beats_structures(
                 self.proposed_correspondence,
-                self.proposed_correspondence.letter_span(),
+                self.proposed_correspondence.letter_span,
                 [incompatible_correspondence],
-                incompatible_correspondence.letter_span(),
+                incompatible_correspondence.letter_span,
                 temperature=temperature,
             )
             if not fight_result:
@@ -155,7 +155,7 @@ class CorrespondenceBuilder(Builder):
 
     def _not_all_concept_mappings_relevant(self):
         for mapping in self.proposed_correspondence.concept_mappings:
-            if not mapping.is_relevant():
+            if not mapping.is_relevant:
                 return True
         return False
 
@@ -173,16 +173,16 @@ class CorrespondenceBuilder(Builder):
     def _get_incompatible_bond(self) -> Optional[Bond]:
         source_bond = (
             self.proposed_correspondence.source.right_bond
-            if self.proposed_correspondence.source.is_leftmost_in_string()
+            if self.proposed_correspondence.source.is_leftmost_in_string
             else self.proposed_correspondence.source.left_bond
-            if self.proposed_correspondence.source.is_rightmost_in_string()
+            if self.proposed_correspondence.source.is_rightmost_in_string
             else None
         )
         target_bond = (
             self.proposed_correspondence.target.right_bond
-            if self.proposed_correspondence.target.is_leftmost_in_string()
+            if self.proposed_correspondence.target.is_leftmost_in_string
             else self.proposed_correspondence.target.left_bond
-            if self.proposed_correspondence.target.is_rightmost_in_string()
+            if self.proposed_correspondence.target.is_rightmost_in_string
             else None
         )
         if not (
@@ -220,7 +220,7 @@ class CorrespondenceBuilder(Builder):
             d.apply_slippages(self.workspace.slippages)
             for d in [
                 d.descriptor
-                for d in self.proposed_correspondence.target.get_relevant_descriptions()
+                for d in self.proposed_correspondence.target.relevant_descriptions
             ]
         ]
         if self.workspace.rule.descriptor_1 in slippages:
@@ -236,7 +236,7 @@ class CorrespondenceBuilder(Builder):
         )
         self.workspace.add_correspondence(self.proposed_correspondence)
         for mapping in (
-            self.proposed_correspondence.get_relevant_distinguishing_mappings()
+            self.proposed_correspondence.relevant_distinguishing_mappings
             + self.proposed_correspondence.accessory_concept_mappings
         ):
             if not mapping.is_slippage:

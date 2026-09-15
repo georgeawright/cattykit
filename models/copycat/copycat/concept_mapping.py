@@ -95,9 +95,11 @@ class ConceptMapping:
     def is_opposite(self) -> bool:
         return self.label is not None and self.label.name == "opposite"
 
+    @property
     def is_relevant(self) -> bool:
-        return self.source_facet.is_active() and self.target_facet.is_active()
+        return self.source_facet.is_active and self.target_facet.is_active
 
+    @property
     def is_distinguishing(self) -> bool:
         # in Copycat a "whole -> whole" mapping is not distinguishing,
         # the original source code states that a more general definition is desirable

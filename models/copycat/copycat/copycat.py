@@ -33,11 +33,11 @@ DESCRIPTION_TESTERS = {
     "length_is_four": lambda x: isinstance(x, Group) and len(x) == 4,
     "length_is_five": lambda x: isinstance(x, Group) and len(x) == 5,
     # STRING POSITION
-    "is_leftmost": lambda x: not x.spans_whole_string() and x.is_leftmost_in_string(),
-    "is_rightmost": lambda x: not x.spans_whole_string() and x.is_rightmost_in_string(),
-    "is_middle": lambda x: x.is_middle_in_string(),
-    "is_single": lambda x: isinstance(x, Letter) and x.spans_whole_string(),
-    "is_whole": lambda x: isinstance(x, Group) and x.spans_whole_string(),
+    "is_leftmost": lambda x: not x.spans_whole_string and x.is_leftmost_in_string,
+    "is_rightmost": lambda x: not x.spans_whole_string and x.is_rightmost_in_string,
+    "is_middle": lambda x: x.is_middle_in_string,
+    "is_single": lambda x: isinstance(x, Letter) and x.spans_whole_string,
+    "is_whole": lambda x: isinstance(x, Group) and x.spans_whole_string,
     # ALPHABETIC POSITION
     "is_first": lambda x: (lambda d: d.name == "a" if d is not None else False)(
         x.get_descriptor_with_facet_name("letter_category")
@@ -308,7 +308,7 @@ class Copycat:
                 break
             if self.coderack.number_of_codelets_run % self.time_step_length == 0:
                 self.update()
-            if self.coderack.is_empty():
+            if self.coderack.is_empty:
                 self._clamp_initially_clamped_nodes()
                 self._post_initial_codelets()
             self.step()
@@ -562,8 +562,8 @@ class Copycat:
                 if (
                     old.source is structure.source
                     and old.target is structure.target
-                    and len(old.get_relevant_distinguishing_mappings())
-                    >= len(structure.get_relevant_distinguishing_mappings())
+                    and len(old.relevant_distinguishing_mappings)
+                    >= len(structure.relevant_distinguishing_mappings)
                 ):
                     return True
             elif isinstance(structure, Rule) and isinstance(old, Rule):

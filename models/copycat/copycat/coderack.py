@@ -64,6 +64,7 @@ class Coderack:
     def population(self) -> int:
         return sum([len(urgency_bin) for urgency_bin in self._urgency_bins])
 
+    @property
     def is_empty(self) -> bool:
         return self.population == 0
 
@@ -213,13 +214,13 @@ class Coderack:
         if structure_category == "description":
             probability = temperature**2
         elif structure_category == "bond":
-            probability = workspace.intra_string_unhappiness()
+            probability = workspace.intra_string_unhappiness
         elif structure_category == "group":
-            probability = workspace.intra_string_unhappiness()
+            probability = workspace.intra_string_unhappiness
         elif structure_category == "replacement":
             probability = 1 if workspace.unreplaced_objects else 0
         elif structure_category == "correspondence":
-            probability = workspace.inter_string_unhappiness()
+            probability = workspace.inter_string_unhappiness
         elif structure_category == "rule":
             probability = 1 if workspace.rule is None else workspace.rule.total_weakness
         elif structure_category == "translated-rule":

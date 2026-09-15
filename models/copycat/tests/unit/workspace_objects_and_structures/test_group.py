@@ -220,7 +220,7 @@ def test_external_strength_is_one_if_spans_whole_string_else_local_support(
         letter.letters = [letter]
     group = Group(string, 0, 1, letters, [], None, None, None)
 
-    assert spans == group.spans_whole_string()
+    assert spans == group.spans_whole_string
     if spans:
         assert group.calculate_external_strength() == pytest.approx(expected)
     else:

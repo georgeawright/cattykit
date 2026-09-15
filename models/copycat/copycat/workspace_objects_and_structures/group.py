@@ -47,26 +47,12 @@ class Group(WorkspaceObject, WorkspaceStructure):
     def __len__(self):
         return len(self.objects)
 
-    def letter_span(self):
-        return len(self.letters)
-
-    def equates_to(self, other) -> bool:
-        if not isinstance(other, Group):
-            return False
-        return (
-            self.left_position,
-            self.right_position,
-            self.group_category,
-            self.direction_category,
-        ) == (
-            other.left_position,
-            other.right_position,
-            other.group_category,
-            other.direction_category,
-        )
-
     def __contains__(self):
         pass
+
+    @property
+    def letter_span(self):
+        return len(self.letters)
 
     @property
     def letters(self):
@@ -101,8 +87,24 @@ class Group(WorkspaceObject, WorkspaceStructure):
         # TODO this should be set statically on creation
         return max(self.objects, key=lambda o: o.right_position)
 
+    @property
     def is_string_spanning_group(self) -> bool:
-        return self.spans_whole_string()
+        return self.spans_whole_string
+
+    def equates_to(self, other) -> bool:
+        if not isinstance(other, Group):
+            return False
+        return (
+            self.left_position,
+            self.right_position,
+            self.group_category,
+            self.direction_category,
+        ) == (
+            other.left_position,
+            other.right_position,
+            other.group_category,
+            other.direction_category,
+        )
 
     def has_description(self, d: "Description") -> bool:
         for description in self.descriptions + self.bond_descriptions:
@@ -209,7 +211,7 @@ class Group(WorkspaceObject, WorkspaceStructure):
         )
 
     def calculate_external_strength(self) -> float:
-        return 1 if self.spans_whole_string() else self._local_support()
+        return 1 if self.spans_whole_string else self._local_support()
 
     def _local_support(self) -> float:
         number_of_local_supporting_groups = self._number_of_local_supporting_groups()

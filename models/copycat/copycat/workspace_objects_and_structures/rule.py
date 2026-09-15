@@ -100,7 +100,7 @@ class Rule(WorkspaceStructure):
             for obj in self.workspace.initial_string.objects
             if obj.is_changed_letter
         )
-        source_correspondee = source_changed_object.get_correspondee()
+        source_correspondee = source_changed_object.correspondee
         if source_correspondee is None:
             shared_descriptor_term = 0
         else:
@@ -108,7 +108,7 @@ class Rule(WorkspaceStructure):
                 d.apply_slippages(
                     source_correspondee, self.workspace.slippages
                 ).descriptor
-                for d in source_correspondee.get_relevant_descriptions()
+                for d in source_correspondee.relevant_descriptions
             ]
             if self.source_descriptor not in slipped_descriptors:
                 # rule cannot be made

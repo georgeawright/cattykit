@@ -36,6 +36,11 @@ class Correspondence(WorkspaceStructure):
         )
 
     @property
+    def letter_span(self):
+        """Returns the number of letters spanned by the objects."""
+        return self.source.letter_span + self.target.letter_span
+
+    @property
     def direction_mapping(self) -> Optional["Slipnode"]:
         return next(
             (
@@ -56,9 +61,19 @@ class Correspondence(WorkspaceStructure):
             if mapping.is_slippage
         ]
 
-    def letter_span(self):
-        """Returns the number of letters spanned by the objects."""
-        return self.source.letter_span() + self.target.letter_span()
+    @property
+    def relevant_mappings(self) -> List[ConceptMapping]:
+        return [m for m in self.concept_mappings if m.is_relevant]
+
+    @property
+    def distinguishing_mappings(self) -> List[ConceptMapping]:
+        return [m for m in self.concept_mappings if m.is_distinguishing]
+
+    @property
+    def relevant_distinguishing_mappings(self) -> List[ConceptMapping]:
+        return [
+            m for m in self.concept_mappings if m.is_relevant and m.is_distinguishing
+        ]
 
     def equates_to(self, other) -> bool:
         if not isinstance(other, Correspondence):
@@ -90,8 +105,8 @@ class Correspondence(WorkspaceStructure):
             return False
         if self.is_incompatible_conceptually_with(other):
             return False
-        for mapping_1 in self.get_distinguishing_mappings():
-            for mapping_2 in other.get_distinguishing_mappings():
+        for mapping_1 in self.distinguishing_mappings:
+            for mapping_2 in other.distinguishing_mappings:
                 if mapping_1.supports(mapping_2):
                     return True
         return False
@@ -148,8 +163,8 @@ class Correspondence(WorkspaceStructure):
         """Self is between string-spanning groups and other is between member objects
         from the boundaries of the groups with incompatible directions."""
         if not (
-            self.source.is_string_spanning_group()
-            and self.target.is_string_spanning_group()
+            self.source.is_string_spanning_group
+            and self.target.is_string_spanning_group
             and self.direction_mapping is not None
             and other is not None
         ):
@@ -169,7 +184,7 @@ class Correspondence(WorkspaceStructure):
         return False
 
     def calculate_internal_strength(self) -> float:
-        relevant_distinguishing_mappings = self.get_relevant_distinguishing_mappings()
+        relevant_distinguishing_mappings = self.relevant_distinguishing_mappings
         if not relevant_distinguishing_mappings:
             return 0.0
         average_strength = sum(
@@ -185,24 +200,11 @@ class Correspondence(WorkspaceStructure):
             average_strength * internal_coherence_factor * number_of_mappings_factor,
         )
 
-    def get_relevant_mappings(self) -> List[ConceptMapping]:
-        return [m for m in self.concept_mappings if m.is_relevant()]
-
-    def get_distinguishing_mappings(self) -> List[ConceptMapping]:
-        return [m for m in self.concept_mappings if m.is_distinguishing()]
-
-    def get_relevant_distinguishing_mappings(self) -> List[ConceptMapping]:
-        return [
-            m
-            for m in self.concept_mappings
-            if m.is_relevant() and m.is_distinguishing()
-        ]
-
     def is_internally_coherent(self) -> bool:
         """Returns True if there is any pair of relevant-distinguishing mappings
         that support each other.
         According to original source code, this isn't quite right."""
-        relevant_distinguishing_mappings = self.get_relevant_distinguishing_mappings()
+        relevant_distinguishing_mappings = self.relevant_distinguishing_mappings
         for i, mapping in enumerate(relevant_distinguishing_mappings):
             for other_mapping in relevant_distinguishing_mappings[i + 1 :]:
                 if mapping.supports(other_mapping):
@@ -220,8 +222,8 @@ class Correspondence(WorkspaceStructure):
         This returns the sum of the strengths of supporting correspondences up to 1.
         If one of the objects is the single letter in its string, then the support is 1.
         """
-        if (isinstance(self.source, Letter) and self.source.spans_whole_string()) or (
-            isinstance(self.target, Letter) and self.target.spans_whole_string()
+        if (isinstance(self.source, Letter) and self.source.spans_whole_string) or (
+            isinstance(self.target, Letter) and self.target.spans_whole_string
         ):
             return 1.0
         support_sum = 0.0

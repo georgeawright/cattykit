@@ -137,9 +137,7 @@ def test_run(monkeypatch):
     )
 
     # The chosen object already spans the whole string.
-    initial_string.choose_object.return_value = SimpleNamespace(
-        spans_whole_string=lambda: True
-    )
+    initial_string.choose_object.return_value = SimpleNamespace(spans_whole_string=True)
     result = scout.run(temperature=0.0)
     assert result == Fizzle(FizzleReason.OBJECT_SPANS_WHOLE_STRING)
     assert coderack.post_called == 0

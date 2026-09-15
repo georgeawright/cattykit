@@ -13,10 +13,10 @@ from copycat.workspace_objects_and_structures import Description
     ],
 )
 def test_is_relevant(is_active, expected):
-    facet = SimpleNamespace(is_active=lambda: is_active)
+    facet = SimpleNamespace(is_active=is_active)
     description = Description(argument_object=None, facet=facet, descriptor=None)
 
-    assert expected == description.is_relevant()
+    assert expected == description.is_relevant
 
 
 @pytest.mark.parametrize(
@@ -32,7 +32,7 @@ def test_is_bond_description(facet_name, expected):
     facet = SimpleNamespace(name=facet_name)
     description = Description(argument_object=None, facet=facet, descriptor=None)
 
-    assert expected == description.is_bond_description()
+    assert expected == description.is_bond_description
 
 
 @pytest.mark.parametrize(

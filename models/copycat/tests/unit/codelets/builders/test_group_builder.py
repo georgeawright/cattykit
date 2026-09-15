@@ -265,8 +265,8 @@ def test_breaks_incompatible_structures_flips_bonds_and_builds_group():
     proposed_group.left_object = Mock()
     proposed_group.right_object = Mock()
     proposed_group.left_object.get_descriptor.return_value = slipnet["i"]
-    proposed_group.spans_whole_string.return_value = False
-    proposed_group.is_leftmost_in_string.return_value = True
+    proposed_group.spans_whole_string = False
+    proposed_group.is_leftmost_in_string = True
     proposed_group.group_category = slipnet["sameness_group"]
     proposed_group.direction_category = None
     proposed_group.bond_category = slipnet["sameness"]
@@ -278,7 +278,7 @@ def test_breaks_incompatible_structures_flips_bonds_and_builds_group():
     bond_2.bond_facet = slipnet["letter_category"]
 
     def add_description(description):
-        if description.is_bond_description():
+        if description.is_bond_description:
             proposed_group.bond_descriptions.append(description)
         else:
             proposed_group.descriptions.append(description)

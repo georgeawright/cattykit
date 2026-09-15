@@ -481,7 +481,7 @@ def test_single_run(monkeypatch):
     assert codelet.run(temperature=0.0) == Finish()
     assert copycat.coderack.number_of_codelets_run == 113
     target_group = copycat.workspace.target_string.groups[-1]
-    assert target_group.spans_whole_string()
+    assert target_group.spans_whole_string
 
     # Whole initial-string successor group: scout, strength tester, builder.
     chosen_items[:] = [copycat.workspace.initial_string, a]
