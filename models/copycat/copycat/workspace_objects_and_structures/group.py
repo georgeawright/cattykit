@@ -4,6 +4,7 @@ from typing import List, Optional
 
 from copycat.slipnet import Slipnode
 
+from .description import Description
 from .workspace_object import WorkspaceObject
 from .workspace_structure import WorkspaceStructure
 
@@ -130,8 +131,6 @@ class Group(WorkspaceObject, WorkspaceStructure):
         return set(self.objects) & set(other_group.objects) != set()
 
     def get_flipped_version(self) -> Group:
-        from copycat.workspace_structures import Description
-
         if self.group_category.name not in ("predecessor_group", "successor_group"):
             return self
         flipped_group_category = self.group_category.get_related_node("opposite")
