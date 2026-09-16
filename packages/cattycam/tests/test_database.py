@@ -129,23 +129,23 @@ def test_codelet_history_filters_by_time_and_orders_newest_first(tmp_path) -> No
             "CREATE TABLE codelets "
             "(id INTEGER PRIMARY KEY, run_id INTEGER, codelet_id TEXT, "
             "parent_codelet_id TEXT, run_time INTEGER, codelet_type TEXT, "
-            "urgency_bin INTEGER, result TEXT, fizzle_reason TEXT)"
+            "urgency_bin INTEGER, time_taken INTEGER, result TEXT, fizzle_reason TEXT)"
         )
         connection.executemany(
             "INSERT INTO codelets "
             "(run_id, codelet_id, parent_codelet_id, run_time, codelet_type, "
-            "urgency_bin, result, fizzle_reason) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            "urgency_bin, time_taken, result, fizzle_reason) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
             [
-                (1, "codelet:1", None, 1, "Scout", 2, "fizzle", "no match"),
-                (1, "codelet:2", "codelet:1", 3, "Builder", 4, "finish", None),
-                (1, "codelet:3", None, 4, "Later", 6, "finish", None),
-                (2, "codelet:4", None, 5, "Other run", 7, "finish", None),
+                (1, "codelet:1", None, 1, "Scout", 2, 125_000_000, "fizzle", "no match"),
+                (1, "codelet:2", "codelet:1", 3, "Builder", 4, 250_000_000, "finish", None),
+                (1, "codelet:3", None, 4, "Later", 6, 500_000_000, "finish", None),
+                (2, "codelet:4", None, 5, "Other run", 7, 750_000_000, "finish", None),
             ],
         )
 
     assert codelet_history(database, 1, time=3) == [
-        ("codelet:2", "codelet:1", 3, "Builder", 4, "finish", None),
-        ("codelet:1", None, 1, "Scout", 2, "fizzle", "no match"),
+        ("codelet:2", "codelet:1", 3, "Builder", 4, 250_000_000, "finish", None),
+        ("codelet:1", None, 1, "Scout", 2, 125_000_000, "fizzle", "no match"),
     ]
     assert codelet_types(database, 1) == {
         "codelet:1": "Scout",

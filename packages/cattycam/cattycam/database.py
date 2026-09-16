@@ -133,12 +133,14 @@ def coderack_codelets(
 
 def codelet_history(
     database: str | Path, run_id: int, time: int
-) -> list[tuple[str, str | None, int, str, int | None, str | None, str | None]]:
+) -> list[
+    tuple[str, str | None, int, str, int | None, int | None, str | None, str | None]
+]:
     """Return completed codelets up to a selected time, newest first."""
     with sqlite3.connect(database) as connection:
         return connection.execute(
             """SELECT codelet_id, parent_codelet_id, run_time, codelet_type,
-                      urgency_bin, result, fizzle_reason
+                      urgency_bin, time_taken, result, fizzle_reason
                FROM codelets WHERE run_id = ?
                AND run_time IS NOT NULL AND run_time <= ?
                ORDER BY run_time DESC, id DESC""",

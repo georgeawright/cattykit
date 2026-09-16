@@ -93,13 +93,19 @@ def test_sqlite_logger_creates_the_cattycam_schema(tmp_path) -> None:
     }
 
 
-def test_sqlite_logger_populates_cattycam_run_history(tmp_path) -> None:
+def test_sqlite_logger_populates_cattycam_run_history(tmp_path, monkeypatch) -> None:
     database = tmp_path / "cattycam.sqlite"
     logger = SQLiteLogger(database, "copycat")
+    monkeypatch.setattr(
+        "cattykit.logging.sqlite_logger.perf_counter_ns", lambda: 10_000_000_000
+    )
 
     logger.log("run_started", problem="abc -> abd ==> ijk -> ?", seed=1234)
     logger.log("string_initialized", string_id="initial", role="initial", value="abc")
     logger.log("codelet_selected", codelet_id="c-1", codelet_type="BottomUpBondScout", urgency_bin=2, birth_time=0, time=1)
+    monkeypatch.setattr(
+        "cattykit.logging.sqlite_logger.perf_counter_ns", lambda: 10_125_000_000
+    )
     logger.log("codelet_finished", codelet_id="c-1", outcome="fizzle", reason="no_bond", time=1)
     logger.log("snag_encountered", time=2)
     logger.log("answer_found", answer="ijl", time=3)
@@ -115,13 +121,13 @@ def test_sqlite_logger_populates_cattycam_run_history(tmp_path) -> None:
             "SELECT string_id, role, value FROM strings"
         ).fetchone()
         codelet = connection.execute(
-            "SELECT codelet_id, codelet_type, urgency_bin, birth_time, run_time, "
+            "SELECT codelet_id, codelet_type, urgency_bin, birth_time, run_time, time_taken, "
             "result, fizzle_reason FROM codelets"
         ).fetchone()
 
     assert run == ("abc -> abd ==> ijk -> ?", 1234, "ijl", 0.25, 3, 1)
     assert string == ("initial", "initial", "abc")
-    assert codelet == ("c-1", "BottomUpBondScout", 2, 0, 1, "fizzle", "no_bond")
+    assert codelet == ("c-1", "BottomUpBondScout", 2, 0, 1, 125_000_000, "fizzle", "no_bond")
 
 
 def test_sqlite_logger_records_git_metadata_for_each_run(tmp_path, monkeypatch) -> None:
@@ -142,27 +148,6 @@ def test_sqlite_logger_records_git_metadata_for_each_run(tmp_path, monkeypatch) 
         ).fetchone()
 
     assert run == (99, "0123456789abcdef", 1)
-
-
-def test_sqlite_logger_migrates_existing_runs_with_reproducibility_columns(
-    tmp_path,
-) -> None:
-    database = tmp_path / "cattycam.sqlite"
-    with sqlite3.connect(database) as connection:
-        connection.execute(
-            "CREATE TABLE runs (id INTEGER PRIMARY KEY, model TEXT NOT NULL, "
-            "run_time TEXT NOT NULL)"
-        )
-
-    logger = SQLiteLogger(database, "copycat")
-    logger.close()
-
-    with sqlite3.connect(database) as connection:
-        columns = {
-            row[1] for row in connection.execute("PRAGMA table_info(runs)")
-        }
-
-    assert {"seed", "commit_hash", "has_uncommitted_changes"} <= columns
 
 
 def test_sqlite_logger_attaches_its_codelet_time_to_untimed_events(tmp_path) -> None:

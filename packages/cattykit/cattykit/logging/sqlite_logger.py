@@ -4,6 +4,7 @@ import json
 import sqlite3
 import subprocess
 from collections.abc import Mapping
+from time import perf_counter_ns
 from pathlib import Path
 from typing import Any
 from datetime import UTC, datetime
@@ -23,15 +24,30 @@ class SQLiteLogger(LoggerIdentifiers):
         self._connection.commit()
         self._codelets_run = 0
         self._active_codelet_id: str | None = None
+        self._codelet_selection_times: dict[str, int] = {}
 
     def log(self, kind: str, **data: object) -> None:
         """Record an event using the logger's current codelet-time cursor."""
         data = self.event_data(kind, data)
+        if kind == "codelet_selected" and isinstance(
+            codelet_id := data.get("codelet_id"), str
+        ):
+            self._codelet_selection_times[codelet_id] = perf_counter_ns()
+        elif kind == "codelet_finished":
+            codelet_id = data.get("codelet_id")
+            selected_at = (
+                self._codelet_selection_times.pop(codelet_id, None)
+                if isinstance(codelet_id, str)
+                else None
+            )
+            if selected_at is not None:
+                data["time_taken"] = perf_counter_ns() - selected_at
         self._update_codelet_time(kind, data)
         if data.get("time") is None:
             data["time"] = self._codelets_run
         if kind == "run_started":
             self._active_codelet_id = None
+            self._codelet_selection_times.clear()
         elif kind != "codelet_selected" and self._active_codelet_id is not None:
             data.setdefault("parent_codelet_id", self._active_codelet_id)
         self._record_event(kind, datetime.now(UTC).isoformat(), data)
@@ -85,6 +101,7 @@ class SQLiteLogger(LoggerIdentifiers):
                 birth_time INTEGER,
                 run_time INTEGER,
                 removal_time INTEGER,
+                time_taken INTEGER,
                 result TEXT,
                 fizzle_reason TEXT
             );
@@ -302,74 +319,6 @@ class SQLiteLogger(LoggerIdentifiers):
                 ON correspondences(run_id, correspondence_id);
             """
         )
-        self._ensure_column("codelets", "removal_time", "INTEGER")
-        self._ensure_column("runs", "seed", "INTEGER")
-        self._ensure_column("runs", "commit_hash", "TEXT")
-        self._ensure_column(
-            "runs",
-            "has_uncommitted_changes",
-            "INTEGER NOT NULL DEFAULT 0",
-        )
-        for table in ("rules", "translated_rules"):
-            for column in (
-                "source_object_category",
-                "source_facet",
-                "source_descriptor",
-                "target_object_category",
-                "target_descriptor",
-                "replaced_facet",
-            ):
-                self._ensure_column(table, column, "TEXT")
-        for column in (
-            "source_facet",
-            "target_facet",
-            "source_descriptor",
-        ):
-            self._ensure_column("concept_mappings", column, "TEXT")
-        for table in ("rules", "translated_rules"):
-            self._migrate_legacy_columns(
-                table,
-                {
-                    "object_category_1": "source_object_category",
-                    "descriptor_1_facet": "source_facet",
-                    "descriptor_1": "source_descriptor",
-                    "object_category_2": "target_object_category",
-                    "descriptor_2": "target_descriptor",
-                    "replaced_description_type": "replaced_facet",
-                },
-            )
-        self._migrate_legacy_columns(
-            "concept_mappings",
-            {
-                "description_type_1": "source_facet",
-                "description_type_2": "target_facet",
-                "initial_descriptor": "source_descriptor",
-            },
-        )
-
-    def _ensure_column(self, table: str, column: str, definition: str) -> None:
-        """Add a schema column when opening a history database from an older logger."""
-        columns = {
-            row[1] for row in self._connection.execute(f"PRAGMA table_info({table})")
-        }
-        if column not in columns:
-            self._connection.execute(
-                f"ALTER TABLE {table} ADD COLUMN {column} {definition}"
-            )
-
-    def _migrate_legacy_columns(
-        self, table: str, renamed_columns: Mapping[str, str]
-    ) -> None:
-        """Copy values from pre-source/target column names when they exist."""
-        columns = {
-            row[1] for row in self._connection.execute(f"PRAGMA table_info({table})")
-        }
-        for old_name, new_name in renamed_columns.items():
-            if old_name in columns:
-                self._connection.execute(
-                    f"UPDATE {table} SET {new_name} = {old_name} "
-                    f"WHERE {new_name} IS NULL"
-                )
 
     @staticmethod
     def _json(value: Any) -> str:
@@ -409,9 +358,7 @@ class SQLiteLogger(LoggerIdentifiers):
         elif kind == "codelet_selected":
             self._codelets_run += 1
 
-    def _record_event(
-        self, kind: str, timestamp: str, data: Mapping[str, Any]
-    ) -> None:
+    def _record_event(self, kind: str, timestamp: str, data: Mapping[str, Any]) -> None:
         if kind == "run_started":
             commit_hash, has_uncommitted_changes = self._git_metadata()
             cursor = self._connection.execute(
@@ -610,13 +557,15 @@ class SQLiteLogger(LoggerIdentifiers):
 
     def _finish_codelet(self, run_id: int, data: Mapping[str, Any]) -> None:
         cursor = self._connection.execute(
-            """UPDATE codelets SET result = ?, fizzle_reason = ?, run_time = ?
+            """UPDATE codelets SET result = ?, fizzle_reason = ?, run_time = ?,
+               time_taken = ?
                WHERE id = (SELECT id FROM codelets WHERE run_id = ?
                AND codelet_id = ? AND result IS NULL ORDER BY id DESC LIMIT 1)""",
             (
                 data.get("outcome", data.get("result")),
                 data.get("reason", data.get("fizzle_reason")),
                 data.get("time"),
+                data.get("time_taken"),
                 run_id,
                 data.get("codelet_id"),
             ),
@@ -624,8 +573,8 @@ class SQLiteLogger(LoggerIdentifiers):
         if cursor.rowcount == 0:
             self._connection.execute(
                 """INSERT INTO codelets (run_id, codelet_id, codelet_type, urgency_bin,
-                   arguments_json, run_time, result, fizzle_reason)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                   arguments_json, run_time, time_taken, result, fizzle_reason)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (
                     run_id,
                     data.get("codelet_id"),
@@ -633,6 +582,7 @@ class SQLiteLogger(LoggerIdentifiers):
                     data.get("urgency_bin"),
                     self._json(data.get("arguments", {})),
                     data.get("time"),
+                    data.get("time_taken"),
                     data.get("outcome", data.get("result")),
                     data.get("reason", data.get("fizzle_reason")),
                 ),

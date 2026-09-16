@@ -137,6 +137,12 @@ def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.View
             f"hsl({hue} 42% {max(42, lightness - 22)}%)",
         )
 
+    def duration_label(time_taken: int | None, result: str | None) -> str:
+        outcome = "fizzled" if result == "fizzle" else "finished"
+        if time_taken is None:
+            return f"{outcome} in — milliseconds"
+        return f"{outcome} in {time_taken / 1_000_000:.3f} milliseconds"
+
     cards = "".join(
         "<div style='display:flex; gap:6px; min-height:76px; margin-bottom:8px;'>"
         f"<div style='width:42px; flex:0 0 42px; font-weight:600;'>{run_time}</div>"
@@ -147,12 +153,13 @@ def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.View
         f"<span>{html.escape(codelet_type)} {codelet_id.removeprefix('codelet:')}</span>"
         f"<span>{urgency_bin if urgency_bin is not None else ''}</span>"
         "</div><div style='margin-top:4px;'>"
-        f"{html.escape(result or '')} {html.escape(fizzle_reason or '')}"
+        f"{duration_label(time_taken, result)}"
+        f"{' · ' + html.escape(fizzle_reason) if result == 'fizzle' and fizzle_reason else ''}"
         "</div><div style='margin-top:4px; font-size:0.9em; color:#4c4c4c;'>"
         f"Parent codelet: {codelet_label(parent_id)} · "
         f"Child codelet: {', '.join(codelet_label(child) for child in children_by_parent.get(codelet_id, [])) or '—'}"
         "</div></div></div>"
-        for codelet_id, parent_id, run_time, codelet_type, urgency_bin, result, fizzle_reason in codelets
+        for codelet_id, parent_id, run_time, codelet_type, urgency_bin, time_taken, result, fizzle_reason in codelets
     )
     return pn.pane.HTML(
         cards,
