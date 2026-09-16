@@ -2,7 +2,7 @@ from collections import defaultdict
 import random
 from typing import Dict, List
 
-from cattykit.logging import ModelEvent, ModelLogger
+from cattykit.logging import ModelLogger
 
 from .tools import select_item_from_list, temperature_adjust
 
@@ -85,13 +85,7 @@ class WorkspaceString:
             else:
                 obj.relative_importance = obj.raw_importance / total_raw_importance
             self.logger.log(
-                ModelEvent.create(
-                    "copycat",
-                    "attribute_updated",
-                    object=obj,
-                    attribute="relative_importance",
-                    value=obj.relative_importance,
-                )
+                "attribute_updated", object=obj, attribute="relative_importance"
             )
 
     def update_intra_string_unhappiness(self):
@@ -101,13 +95,7 @@ class WorkspaceString:
             else 0
         )
         self.logger.log(
-            ModelEvent.create(
-                "copycat",
-                "attribute_updated",
-                object=self,
-                attribute="intra_string_unhappiness",
-                value=self.intra_string_unhappiness,
-            )
+            "attribute_updated", object=self, attribute="intra_string_unhappiness"
         )
 
     def empty(self):
@@ -115,9 +103,7 @@ class WorkspaceString:
 
     def add_letter(self, letter):
         self.letters.append(letter)
-        self.logger.log(
-            ModelEvent.create("copycat", "letter_created", letter=letter)
-        )
+        self.logger.log("letter_created", letter=letter)
 
     def contains_bond(self, b) -> bool:
         """Returns True if the string contains an equivalent bond."""
@@ -129,12 +115,12 @@ class WorkspaceString:
     def add_proposed_bond(self, bond):
         """Add to a maintained list of proposed bonds between two nodes."""
         self.proposed_bonds_by_role[bond.source][bond.target].append(bond)
-        self.logger.log(ModelEvent.create("copycat", "bond_proposed", bond=bond))
+        self.logger.log("bond_proposed", bond=bond)
 
     def delete_proposed_bond(self, bond):
         """Delete from a maintained list of proposed bonds between two objects."""
         self.proposed_bonds_by_role[bond.source][bond.target].remove(bond)
-        self.logger.log(ModelEvent.create("copycat", "bond_destroyed", bond=bond))
+        self.logger.log("bond_destroyed", bond=bond)
 
     def add_bond(self, bond):
         """Add the only bond between two objects."""
@@ -143,7 +129,7 @@ class WorkspaceString:
         if bond.bond_category.name == "sameness":
             self.bonds_by_role[bond.target][bond.source] = bond
             self.bonds_by_position[bond.left_object][bond.right_object] = bond
-        self.logger.log(ModelEvent.create("copycat", "bond_created", bond=bond))
+        self.logger.log("bond_created", bond=bond)
 
     def delete_bond(self, bond):
         """Delete the only bond between two objects."""
@@ -152,7 +138,7 @@ class WorkspaceString:
         if bond.bond_category.name == "sameness":
             self.bonds_by_role[bond.target][bond.source] = None
             self.bonds_by_position[bond.left_object][bond.right_object] = None
-        self.logger.log(ModelEvent.create("copycat", "bond_destroyed", bond=bond))
+        self.logger.log("bond_destroyed", bond=bond)
 
     def get_bond_if_present(self, bond):
         """Return the equivalent bond if it is already in the string, else False."""
@@ -164,26 +150,26 @@ class WorkspaceString:
     def add_proposed_group(self, group):
         """Add to a list of proposed groups spanning from one object to another."""
         self._proposed_groups[group.left_object][group.right_object].append(group)
-        self.logger.log(ModelEvent.create("copycat", "group_proposed", group=group))
+        self.logger.log("group_proposed", group=group)
 
     def delete_proposed_group(self, group):
         """Delete from a list of proposed bonds spanning from one object to another."""
         self._proposed_groups[group.left_object][group.right_object].remove(group)
-        self.logger.log(ModelEvent.create("copycat", "group_destroyed", group=group))
+        self.logger.log("group_destroyed", group=group)
 
     def add_group(self, group):
         """Add the only group spanning from one object to another."""
         self._groups[group.left_object] = group
         self.object_positions[group.left_position].append(group)
         self.object_positions[group.right_position].append(group)
-        self.logger.log(ModelEvent.create("copycat", "group_created", group=group))
+        self.logger.log("group_created", group=group)
 
     def delete_group(self, group):
         """Delete the only group spanning from one object to another."""
         self._groups[group.left_object] = None
         self.object_positions[group.left_position].remove(group)
         self.object_positions[group.right_position].remove(group)
-        self.logger.log(ModelEvent.create("copycat", "group_destroyed", group=group))
+        self.logger.log("group_destroyed", group=group)
 
     def get_group_if_present(self, group):
         """Return the equivalent group if it is already in the string, else False."""

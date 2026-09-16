@@ -11,7 +11,7 @@ def test_logs_answer_letters_created_by_answer_builder():
     events = []
     copycat = Copycat.__new__(Copycat)
     copycat.coderack = SimpleNamespace(number_of_codelets_run=12)
-    copycat.logger = SimpleNamespace(log=events.append)
+    copycat.logger = SimpleNamespace(log=lambda kind, **data: events.append((kind, data)))
     old_letter = SimpleNamespace(hash_id=1)
     new_letter = SimpleNamespace(
         hash_id=2,
@@ -24,15 +24,12 @@ def test_logs_answer_letters_created_by_answer_builder():
 
     copycat._log_answer_letters([old_letter])
 
-    assert [(event.kind, event.data) for event in events] == [
-        ("letter_destroyed", {"letter_id": "letter:1", "time": 12}),
+    assert events == [
+        ("letter_destroyed", {"letter": old_letter, "time": 12}),
         (
             "letter_created",
             {
-                "letter_id": "letter:2",
-                "string_id": "answer",
-                "position": 0,
-                "letter_category": "l",
+                "letter": new_letter,
                 "time": 12,
             },
         ),

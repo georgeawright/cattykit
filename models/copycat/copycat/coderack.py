@@ -1,7 +1,7 @@
 from __future__ import annotations
 import random
 
-from cattykit.logging import ModelEvent, ModelLogger
+from cattykit.logging import ModelLogger
 
 from .coderack_bin import CoderackBin
 from .codelet_result import Finish, Fizzle
@@ -74,12 +74,7 @@ class Coderack:
     def run_next_codelet(self, temperature: float):
         codelet = self.choose(temperature)
         self.logger.log(
-            ModelEvent.create(
-                "copycat",
-                "codelet_selected",
-                codelet=codelet,
-                time=self.number_of_codelets_run,
-            )
+            "codelet_selected", codelet=codelet, time=self.number_of_codelets_run
         )
         result = codelet.run(temperature)
         self.number_of_codelets_run += 1
@@ -91,7 +86,7 @@ class Coderack:
         }
         if isinstance(result, Fizzle):
             data["reason"] = result.reason.value
-        self.logger.log(ModelEvent.create("copycat", "codelet_finished", **data))
+        self.logger.log("codelet_finished", **data)
 
     def get_urgency_bin(self, urgency_level):
         return self._urgency_bins[urgency_level]
@@ -161,26 +156,16 @@ class Coderack:
         chosen_codelet = random.choice(chosen_urgency_bin.codelets)
         self._remove(chosen_codelet, discard_proposal=False)
         self.logger.log(
-            ModelEvent.create(
-                "copycat",
-                "attribute_updated",
-                object_id="coderack",
-                attribute="number_of_codelets_on_coderack",
-                value=self.population,
-            )
+            "attribute_updated",
+            object=self,
+            attribute="population",
         )
         return chosen_codelet
 
     def _post(self, codelet):
         self.get_urgency_bin(codelet.urgency_bin).add(codelet)
         codelet.birth_time = self.number_of_codelets_run
-        self.logger.log(
-            ModelEvent.create(
-                "copycat",
-                "codelet_posted",
-                codelet=codelet,
-            )
-        )
+        self.logger.log("codelet_posted", codelet=codelet)
 
     def _remove(self, codelet, discard_proposal: bool = True):
         """Remove codelet from coderack and
@@ -189,13 +174,7 @@ class Coderack:
         self.get_urgency_bin(codelet.urgency_bin).remove(codelet)
         if not discard_proposal:
             return
-        self.logger.log(
-            ModelEvent.create(
-                "copycat",
-                "codelet_removed",
-                codelet=codelet,
-            )
-        )
+        self.logger.log("codelet_removed", codelet=codelet)
         if isinstance(codelet, (BondStrengthTester, BondBuilder)):
             try:  # arguments of bond might have been deleted
                 codelet.proposed_bond.string.delete_proposed_bond(

@@ -41,9 +41,7 @@ class TopDownDescriptionScout(DescriptionScout):
             self.slipnet.get_node_activation(descriptor.name)
             for descriptor in possible_descriptors
         ]
-        chosen_descriptor = select_item_from_list(
-            possible_descriptors, weights
-        )
+        chosen_descriptor = select_item_from_list(possible_descriptors, weights)
         self.propose_description(
             chosen_object,
             self.description_type,

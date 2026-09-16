@@ -2,7 +2,6 @@ from __future__ import annotations
 import random
 from typing import List, Optional, Union
 
-from cattykit.logging import ModelEvent
 
 from copycat.tools import select_item_from_list
 
@@ -195,13 +194,7 @@ class WorkspaceObject:
             self.bond_descriptions.append(description)
         else:
             self.descriptions.append(description)
-        self.string.logger.log(
-            ModelEvent.create(
-                "copycat",
-                "description_created",
-                description=description,
-            )
-        )
+        self.string.logger.log("description_created", description=description)
 
     def has_recursive_group_member(self, other_object) -> bool:
         return self == other_object

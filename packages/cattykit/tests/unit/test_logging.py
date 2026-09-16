@@ -4,7 +4,7 @@ import json
 import sqlite3
 from io import StringIO
 
-from cattykit.logging import ModelEvent, NullLogger, PrintLogger, SQLiteLogger
+from cattykit.logging import NullLogger, PrintLogger, SQLiteLogger
 
 
 def test_logger_assigns_serial_identifiers_to_domain_objects() -> None:
@@ -13,11 +13,12 @@ def test_logger_assigns_serial_identifiers_to_domain_objects() -> None:
 
     class Letter:
         hash_id = 3
+        value = 1
 
     class Slipnode:
         name = "letter_category"
 
-    logger = NullLogger()
+    logger = NullLogger("copycat")
 
     assert logger.codelet_id(Codelet()) == "codelet:7"
     assert logger.object_id(Letter()) == "letter:3"
@@ -25,17 +26,17 @@ def test_logger_assigns_serial_identifiers_to_domain_objects() -> None:
 
 
 def test_null_logger_discards_events() -> None:
-    logger = NullLogger()
+    logger = NullLogger("copycat")
 
-    logger.log(ModelEvent.create("test", "started"))
+    logger.log("started")
     logger.close()
 
 
 def test_print_logger_writes_json_to_its_stream() -> None:
     stream = StringIO()
-    logger = PrintLogger(stream)
+    logger = PrintLogger("test", stream)
 
-    logger.log(ModelEvent.create("test", "started", seed=1234))
+    logger.log("started", seed=1234)
 
     event = json.loads(stream.getvalue())
 
@@ -48,22 +49,19 @@ def test_print_logger_writes_json_to_its_stream() -> None:
 def test_print_logger_serializes_domain_objects() -> None:
     class Letter:
         hash_id = 3
+        value = 1
 
     stream = StringIO()
-    logger = PrintLogger(stream)
+    logger = PrintLogger("test", stream)
 
-    logger.log(
-        ModelEvent.create(
-            "copycat", "attribute_updated", object=Letter(), attribute="value", value=1
-        )
-    )
+    logger.log("attribute_updated", object=Letter(), attribute="value")
 
     assert json.loads(stream.getvalue())["data"]["object_id"] == "letter:3"
 
 
 def test_sqlite_logger_creates_the_cattycam_schema(tmp_path) -> None:
     database = tmp_path / "cattycam.sqlite"
-    logger = SQLiteLogger(database)
+    logger = SQLiteLogger(database, "copycat")
     logger.close()
 
     with sqlite3.connect(database) as connection:
@@ -97,50 +95,15 @@ def test_sqlite_logger_creates_the_cattycam_schema(tmp_path) -> None:
 
 def test_sqlite_logger_populates_cattycam_run_history(tmp_path) -> None:
     database = tmp_path / "cattycam.sqlite"
-    logger = SQLiteLogger(database)
+    logger = SQLiteLogger(database, "copycat")
 
-    logger.log(
-        ModelEvent.create(
-            "copycat", "run_started", problem="abc -> abd ==> ijk -> ?", seed=1234
-        )
-    )
-    logger.log(
-        ModelEvent.create(
-            "copycat",
-            "string_initialized",
-            string_id="initial",
-            role="initial",
-            value="abc",
-        )
-    )
-    logger.log(
-        ModelEvent.create(
-            "copycat",
-            "codelet_selected",
-            codelet_id="c-1",
-            codelet_type="BottomUpBondScout",
-            urgency_bin=2,
-            birth_time=0,
-            time=1,
-        )
-    )
-    logger.log(
-        ModelEvent.create(
-            "copycat",
-            "codelet_finished",
-            codelet_id="c-1",
-            outcome="fizzle",
-            reason="no_bond",
-            time=1,
-        )
-    )
-    logger.log(ModelEvent.create("copycat", "snag_encountered", time=2))
-    logger.log(ModelEvent.create("copycat", "answer_found", answer="ijl", time=3))
-    logger.log(
-        ModelEvent.create(
-            "copycat", "run_finished", codelets_run=3, temperature=0.25, time=3
-        )
-    )
+    logger.log("run_started", problem="abc -> abd ==> ijk -> ?", seed=1234)
+    logger.log("string_initialized", string_id="initial", role="initial", value="abc")
+    logger.log("codelet_selected", codelet_id="c-1", codelet_type="BottomUpBondScout", urgency_bin=2, birth_time=0, time=1)
+    logger.log("codelet_finished", codelet_id="c-1", outcome="fizzle", reason="no_bond", time=1)
+    logger.log("snag_encountered", time=2)
+    logger.log("answer_found", answer="ijl", time=3)
+    logger.log("run_finished", codelets_run=3, temperature=0.25, time=3)
     logger.close()
 
     with sqlite3.connect(database) as connection:
@@ -168,9 +131,9 @@ def test_sqlite_logger_records_git_metadata_for_each_run(tmp_path, monkeypatch) 
         "_git_metadata",
         staticmethod(lambda: ("0123456789abcdef", True)),
     )
-    logger = SQLiteLogger(database)
+    logger = SQLiteLogger(database, "copycat")
 
-    logger.log(ModelEvent.create("copycat", "run_started", seed=99))
+    logger.log("run_started", seed=99)
     logger.close()
 
     with sqlite3.connect(database) as connection:
@@ -191,7 +154,7 @@ def test_sqlite_logger_migrates_existing_runs_with_reproducibility_columns(
             "run_time TEXT NOT NULL)"
         )
 
-    logger = SQLiteLogger(database)
+    logger = SQLiteLogger(database, "copycat")
     logger.close()
 
     with sqlite3.connect(database) as connection:
@@ -204,35 +167,12 @@ def test_sqlite_logger_migrates_existing_runs_with_reproducibility_columns(
 
 def test_sqlite_logger_attaches_its_codelet_time_to_untimed_events(tmp_path) -> None:
     database = tmp_path / "cattycam.sqlite"
-    logger = SQLiteLogger(database)
+    logger = SQLiteLogger(database, "copycat")
 
-    logger.log(ModelEvent.create("copycat", "run_started", problem="abc -> abd"))
-    logger.log(
-        ModelEvent.create(
-            "copycat",
-            "attribute_updated",
-            object_id="temperature",
-            attribute="value",
-            value=100.0,
-        )
-    )
-    logger.log(
-        ModelEvent.create(
-            "copycat",
-            "codelet_selected",
-            codelet_id="c-1",
-            codelet_type="BottomUpBondScout",
-        )
-    )
-    logger.log(
-        ModelEvent.create(
-            "copycat",
-            "attribute_updated",
-            object_id="temperature",
-            attribute="value",
-            value=90.0,
-        )
-    )
+    logger.log("run_started", problem="abc -> abd")
+    logger.log("attribute_updated", object_id="temperature", attribute="value", value=100.0)
+    logger.log("codelet_selected", codelet_id="c-1", codelet_type="BottomUpBondScout")
+    logger.log("attribute_updated", object_id="temperature", attribute="value", value=90.0)
     logger.close()
 
     with sqlite3.connect(database) as connection:
@@ -248,20 +188,9 @@ def test_sqlite_logger_attaches_its_codelet_time_to_untimed_events(tmp_path) -> 
 
 def test_sqlite_logger_records_translated_rules_separately(tmp_path) -> None:
     database = tmp_path / "cattycam.sqlite"
-    logger = SQLiteLogger(database)
-    logger.log(ModelEvent.create("copycat", "run_started", problem="abc -> abd"))
-    logger.log(
-        ModelEvent.create(
-            "copycat",
-            "translated_rule_created",
-            rule_id="rule:translated:1",
-            source_object_category="letter",
-            source_descriptor="rightmost",
-            replaced_facet="letter_category",
-            relation="successor",
-            time=4,
-        )
-    )
+    logger = SQLiteLogger(database, "copycat")
+    logger.log("run_started", problem="abc -> abd")
+    logger.log("translated_rule_created", rule_id="rule:translated:1", source_object_category="letter", source_descriptor="rightmost", replaced_facet="letter_category", relation="successor", time=4)
     logger.close()
 
     with sqlite3.connect(database) as connection:
@@ -274,29 +203,10 @@ def test_sqlite_logger_records_translated_rules_separately(tmp_path) -> None:
 
 def test_sqlite_logger_updates_a_posted_codelet_when_selected(tmp_path) -> None:
     database = tmp_path / "cattycam.sqlite"
-    logger = SQLiteLogger(database)
-    logger.log(ModelEvent.create("copycat", "run_started", problem="abc -> abd"))
-    logger.log(
-        ModelEvent.create(
-            "copycat",
-            "codelet_posted",
-            codelet_id="codelet:1",
-            codelet_type="BottomUpBondScout",
-            urgency_bin=2,
-            birth_time=0,
-        )
-    )
-    logger.log(
-        ModelEvent.create(
-            "copycat",
-            "codelet_selected",
-            codelet_id="codelet:1",
-            codelet_type="BottomUpBondScout",
-            urgency_bin=2,
-            birth_time=0,
-            time=4,
-        )
-    )
+    logger = SQLiteLogger(database, "copycat")
+    logger.log("run_started", problem="abc -> abd")
+    logger.log("codelet_posted", codelet_id="codelet:1", codelet_type="BottomUpBondScout", urgency_bin=2, birth_time=0)
+    logger.log("codelet_selected", codelet_id="codelet:1", codelet_type="BottomUpBondScout", urgency_bin=2, birth_time=0, time=4)
     logger.close()
 
     with sqlite3.connect(database) as connection:
@@ -311,37 +221,11 @@ def test_sqlite_logger_assigns_selected_codelet_as_parent_of_new_posts(
     tmp_path,
 ) -> None:
     database = tmp_path / "cattycam.sqlite"
-    logger = SQLiteLogger(database)
-    logger.log(ModelEvent.create("copycat", "run_started", problem="abc -> abd"))
-    logger.log(
-        ModelEvent.create(
-            "copycat",
-            "codelet_posted",
-            codelet_id="codelet:parent",
-            codelet_type="BondScout",
-            urgency_bin=2,
-        )
-    )
-    logger.log(
-        ModelEvent.create(
-            "copycat",
-            "codelet_selected",
-            codelet_id="codelet:parent",
-            codelet_type="BondScout",
-            urgency_bin=2,
-            time=1,
-        )
-    )
-    logger.log(
-        ModelEvent.create(
-            "copycat",
-            "codelet_posted",
-            codelet_id="codelet:child",
-            codelet_type="BondStrengthTester",
-            urgency_bin=3,
-            parent_codelet_id="codelet:incorrect-parent",
-        )
-    )
+    logger = SQLiteLogger(database, "copycat")
+    logger.log("run_started", problem="abc -> abd")
+    logger.log("codelet_posted", codelet_id="codelet:parent", codelet_type="BondScout", urgency_bin=2)
+    logger.log("codelet_selected", codelet_id="codelet:parent", codelet_type="BondScout", urgency_bin=2, time=1)
+    logger.log("codelet_posted", codelet_id="codelet:child", codelet_type="BondStrengthTester", urgency_bin=3, parent_codelet_id="codelet:incorrect-parent")
     logger.close()
 
     with sqlite3.connect(database) as connection:
@@ -354,66 +238,13 @@ def test_sqlite_logger_assigns_selected_codelet_as_parent_of_new_posts(
 
 def test_sqlite_logger_populates_typed_workspace_tables(tmp_path) -> None:
     database = tmp_path / "cattycam.sqlite"
-    logger = SQLiteLogger(database)
-    logger.log(ModelEvent.create("copycat", "run_started", problem="abc -> abd"))
-    logger.log(
-        ModelEvent.create(
-            "copycat",
-            "letter_created",
-            letter_id="initial-0",
-            string_id="initial",
-            position=0,
-            letter_category="a",
-            time=0,
-        )
-    )
-    logger.log(
-        ModelEvent.create(
-            "copycat",
-            "bond_created",
-            bond_id="bond-1",
-            string_id="initial",
-            source_id="initial-0",
-            target_id="initial-1",
-            bond_category="successor",
-            direction_category="right",
-            time=1,
-        )
-    )
-    logger.log(
-        ModelEvent.create(
-            "copycat",
-            "group_created",
-            group_id="group-1",
-            string_id="initial",
-            group_category="successor_group",
-            members=["initial-0", "initial-1"],
-            time=2,
-        )
-    )
-    logger.log(
-        ModelEvent.create(
-            "copycat",
-            "correspondence_created",
-            correspondence_id="correspondence-1",
-            source_id="initial-0",
-            target_id="modified-0",
-            time=3,
-        )
-    )
-    logger.log(
-        ModelEvent.create(
-            "copycat",
-            "concept_mapping_created",
-            concept_mapping_id="mapping-1",
-            correspondence_id="correspondence-1",
-            source_facet="letter_category",
-            target_facet="letter_category",
-            source_descriptor="a",
-            target_descriptor="b",
-            label="successor",
-        )
-    )
+    logger = SQLiteLogger(database, "copycat")
+    logger.log("run_started", problem="abc -> abd")
+    logger.log("letter_created", letter_id="initial-0", string_id="initial", position=0, letter_category="a", time=0)
+    logger.log("bond_created", bond_id="bond-1", string_id="initial", source_id="initial-0", target_id="initial-1", bond_category="successor", direction_category="right", time=1)
+    logger.log("group_created", group_id="group-1", string_id="initial", group_category="successor_group", members=["initial-0", "initial-1"], time=2)
+    logger.log("correspondence_created", correspondence_id="correspondence-1", source_id="initial-0", target_id="modified-0", time=3)
+    logger.log("concept_mapping_created", concept_mapping_id="mapping-1", correspondence_id="correspondence-1", source_facet="letter_category", target_facet="letter_category", source_descriptor="a", target_descriptor="b", label="successor")
     logger.close()
 
     with sqlite3.connect(database) as connection:

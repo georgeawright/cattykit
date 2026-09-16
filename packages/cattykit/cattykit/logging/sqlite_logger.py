@@ -6,37 +6,38 @@ import subprocess
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
+from datetime import UTC, datetime
 
-from .event import ModelEvent
 from .identifiers import LoggerIdentifiers
 
 
 class SQLiteLogger(LoggerIdentifiers):
     """Persist model events in a SQLite database that can be read by Cattycam."""
 
-    def __init__(self, path: str | Path) -> None:
+    def __init__(self, path: str | Path, model_name: str) -> None:
+        self.model_name = model_name
         self._connection = sqlite3.connect(path)
         self._connection.execute("PRAGMA foreign_keys = ON")
-        self._run_ids: dict[str, int] = {}
+        self._run_id: int | None = None
         self._create_schema()
         self._connection.commit()
         self._codelets_run = 0
         self._active_codelet_id: str | None = None
 
-    def log(self, event: ModelEvent) -> None:
+    def log(self, kind: str, **data: object) -> None:
         """Record an event using the logger's current codelet-time cursor."""
-        data = self.event_data(event.kind, dict(event.data))
-        self._update_codelet_time(event.kind, data)
+        data = self.event_data(kind, data)
+        self._update_codelet_time(kind, data)
         if data.get("time") is None:
             data["time"] = self._codelets_run
-        if event.kind == "run_started":
+        if kind == "run_started":
             self._active_codelet_id = None
-        elif event.kind != "codelet_selected" and self._active_codelet_id is not None:
+        elif kind != "codelet_selected" and self._active_codelet_id is not None:
             data.setdefault("parent_codelet_id", self._active_codelet_id)
-        self._record_event(event, data)
-        if event.kind == "codelet_selected":
+        self._record_event(kind, datetime.now(UTC).isoformat(), data)
+        if kind == "codelet_selected":
             self._active_codelet_id = data.get("codelet_id")
-        elif event.kind in {"codelet_finished", "run_finished"}:
+        elif kind in {"codelet_finished", "run_finished"}:
             self._active_codelet_id = None
         self._connection.commit()
 
@@ -375,9 +376,6 @@ class SQLiteLogger(LoggerIdentifiers):
         """Encode arbitrary model values without losing the logging event."""
         return json.dumps(value, sort_keys=True, default=str)
 
-    def _run_id(self, event: ModelEvent) -> int | None:
-        return self._run_ids.get(event.model)
-
     @staticmethod
     def _git_metadata() -> tuple[str | None, bool]:
         """Return the current revision and whether its worktree is dirty.
@@ -411,8 +409,10 @@ class SQLiteLogger(LoggerIdentifiers):
         elif kind == "codelet_selected":
             self._codelets_run += 1
 
-    def _record_event(self, event: ModelEvent, data: Mapping[str, Any]) -> None:
-        if event.kind == "run_started":
+    def _record_event(
+        self, kind: str, timestamp: str, data: Mapping[str, Any]
+    ) -> None:
+        if kind == "run_started":
             commit_hash, has_uncommitted_changes = self._git_metadata()
             cursor = self._connection.execute(
                 """INSERT INTO runs
@@ -420,8 +420,8 @@ class SQLiteLogger(LoggerIdentifiers):
                     has_uncommitted_changes)
                    VALUES (?, ?, ?, ?, ?, ?)""",
                 (
-                    event.model,
-                    event.timestamp.isoformat(),
+                    self.model_name,
+                    timestamp,
                     data.get("problem"),
                     data.get("seed"),
                     commit_hash,
@@ -430,13 +430,13 @@ class SQLiteLogger(LoggerIdentifiers):
             )
             if cursor.lastrowid is None:
                 raise RuntimeError("SQLite did not return the new run identifier")
-            self._run_ids[event.model] = cursor.lastrowid
+            self._run_id = cursor.lastrowid
             return
 
-        run_id = self._run_id(event)
+        run_id = self._run_id
         if run_id is None:
             return
-        if event.kind == "run_finished":
+        if kind == "run_finished":
             self._connection.execute(
                 """UPDATE runs SET number_of_codelets_run = ?,
                    final_temperature = COALESCE(?, final_temperature)
@@ -447,13 +447,13 @@ class SQLiteLogger(LoggerIdentifiers):
                     run_id,
                 ),
             )
-            self._run_ids.pop(event.model, None)
-        elif event.kind == "answer_found":
+            self._run_id = None
+        elif kind == "answer_found":
             self._connection.execute(
                 "UPDATE runs SET solution = ? WHERE id = ?",
                 (data.get("answer"), run_id),
             )
-        elif event.kind == "snag_encountered":
+        elif kind == "snag_encountered":
             self._connection.execute(
                 "UPDATE runs SET number_of_snags = number_of_snags + 1 WHERE id = ?",
                 (run_id,),
@@ -462,12 +462,12 @@ class SQLiteLogger(LoggerIdentifiers):
                 "INSERT INTO snags (run_id, snag_start) VALUES (?, ?)",
                 (run_id, data.get("time")),
             )
-        elif event.kind == "snag_ended":
+        elif kind == "snag_ended":
             self._connection.execute(
                 "UPDATE snags SET snag_end = ? WHERE run_id = ? AND snag_end IS NULL",
                 (data.get("time"), run_id),
             )
-        elif event.kind in {"codelet_selected", "codelet_started"}:
+        elif kind in {"codelet_selected", "codelet_started"}:
             cursor = self._connection.execute(
                 """UPDATE codelets SET
                    parent_codelet_id = COALESCE(?, parent_codelet_id),
@@ -504,75 +504,75 @@ class SQLiteLogger(LoggerIdentifiers):
                         data.get("time"),
                     ),
                 )
-        elif event.kind == "codelet_posted":
+        elif kind == "codelet_posted":
             self._post_codelet(run_id, data)
-        elif event.kind == "codelet_removed":
+        elif kind == "codelet_removed":
             self._connection.execute(
                 """UPDATE codelets SET removal_time = ?
                    WHERE run_id = ? AND codelet_id = ? AND removal_time IS NULL""",
                 (data["time"], run_id, data.get("codelet_id")),
             )
-        elif event.kind == "codelet_finished":
+        elif kind == "codelet_finished":
             self._finish_codelet(run_id, data)
-        elif event.kind in {"string_created", "string_initialized"}:
+        elif kind in {"string_created", "string_initialized"}:
             self._upsert_string(run_id, data)
-        elif event.kind in {
+        elif kind in {
             "letter_proposed",
             "letter_created",
             "letter_destroyed",
         }:
-            self._upsert_lifecycle_entity("letters", "letter", run_id, event.kind, data)
-        elif event.kind in {
+            self._upsert_lifecycle_entity("letters", "letter", run_id, kind, data)
+        elif kind in {
             "description_proposed",
             "description_created",
             "description_destroyed",
         }:
             self._upsert_lifecycle_entity(
-                "descriptions", "description", run_id, event.kind, data
+                "descriptions", "description", run_id, kind, data
             )
-        elif event.kind in {"bond_proposed", "bond_created", "bond_destroyed"}:
-            self._upsert_lifecycle_entity("bonds", "bond", run_id, event.kind, data)
-        elif event.kind in {"group_proposed", "group_created", "group_destroyed"}:
+        elif kind in {"bond_proposed", "bond_created", "bond_destroyed"}:
+            self._upsert_lifecycle_entity("bonds", "bond", run_id, kind, data)
+        elif kind in {"group_proposed", "group_created", "group_destroyed"}:
             group_row_id = self._upsert_lifecycle_entity(
-                "groups", "group", run_id, event.kind, data
+                "groups", "group", run_id, kind, data
             )
             if group_row_id is not None and "members" in data:
                 self._replace_group_members(group_row_id, data["members"])
             if group_row_id is not None and "bonds" in data:
                 self._replace_group_bonds(group_row_id, data["bonds"])
-        elif event.kind in {
+        elif kind in {
             "correspondence_proposed",
             "correspondence_created",
             "correspondence_destroyed",
         }:
             self._upsert_lifecycle_entity(
-                "correspondences", "correspondence", run_id, event.kind, data
+                "correspondences", "correspondence", run_id, kind, data
             )
-        elif event.kind in {
+        elif kind in {
             "replacement_proposed",
             "replacement_created",
             "replacement_destroyed",
         }:
             self._upsert_lifecycle_entity(
-                "replacements", "replacement", run_id, event.kind, data
+                "replacements", "replacement", run_id, kind, data
             )
-        elif event.kind in {"rule_proposed", "rule_created", "rule_destroyed"}:
-            self._upsert_lifecycle_entity("rules", "rule", run_id, event.kind, data)
-        elif event.kind in {
+        elif kind in {"rule_proposed", "rule_created", "rule_destroyed"}:
+            self._upsert_lifecycle_entity("rules", "rule", run_id, kind, data)
+        elif kind in {
             "translated_rule_proposed",
             "translated_rule_created",
             "translated_rule_destroyed",
         }:
             self._upsert_lifecycle_entity(
-                "translated_rules", "rule", run_id, event.kind, data
+                "translated_rules", "rule", run_id, kind, data
             )
-        elif event.kind in {"concept_mapping_created", "concept_mapping_updated"}:
+        elif kind in {"concept_mapping_created", "concept_mapping_updated"}:
             self._upsert_concept_mapping(run_id, data)
-        elif event.kind in {"slipnode_created", "slipnode_initialized"}:
+        elif kind in {"slipnode_created", "slipnode_initialized"}:
             self._upsert_slipnode(run_id, data)
-        elif event.kind in {"sliplink_created", "sliplink_initialized"}:
+        elif kind in {"sliplink_created", "sliplink_initialized"}:
             self._insert_sliplink(run_id, data)
-        elif event.kind in {"attribute_value", "attribute_updated"}:
+        elif kind in {"attribute_value", "attribute_updated"}:
             self._connection.execute(
                 """INSERT INTO attribute_values
                    (run_id, time, object_id, attribute, value_json)

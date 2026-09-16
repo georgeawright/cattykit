@@ -2,7 +2,7 @@ import json
 import random
 from typing import Optional
 
-from cattykit.logging import ModelEvent, ModelLogger, NullLogger
+from cattykit.logging import ModelLogger, NullLogger
 
 from .answer_builder import AnswerBuilder
 from .codelets import (
@@ -89,7 +89,7 @@ class Copycat:
         logger: ModelLogger | None = None,
         seed: int | None = None,
     ):
-        logger = logger if logger is not None else NullLogger()
+        logger = logger if logger is not None else NullLogger("copycat")
         with open(hyperparameters_file) as f:
             hyperparameters = json.load(f)
         with open(slipnet_json_file) as f:
@@ -125,13 +125,10 @@ class Copycat:
         Solve a string analogy problem (e.g. "abc -> abd ==> ijk -> ?")
         """
         self.logger.log(
-            ModelEvent.create(
-                "copycat",
-                "run_started",
-                problem=string,
-                seed=self.seed,
-                time=self.coderack.number_of_codelets_run,
-            )
+            "run_started",
+            problem=string,
+            seed=self.seed,
+            time=self.coderack.number_of_codelets_run,
         )
         try:
             self.initialize(string)
@@ -144,14 +141,11 @@ class Copycat:
             )
         finally:
             self.logger.log(
-                ModelEvent.create(
-                    "copycat",
-                    "run_finished",
-                    codelets_run=self.coderack.number_of_codelets_run,
-                    found_answer=self.found_answer,
-                    temperature=self.temperature,
-                    time=self.coderack.number_of_codelets_run,
-                )
+                "run_finished",
+                codelets_run=self.coderack.number_of_codelets_run,
+                found_answer=self.found_answer,
+                temperature=self.temperature,
+                time=self.coderack.number_of_codelets_run,
             )
 
     def initialize(self, string: str):
@@ -190,24 +184,17 @@ class Copycat:
                 self.found_answer = True
                 self.update()
                 self.logger.log(
-                    ModelEvent.create(
-                        "copycat",
-                        "answer_found",
-                        answer="".join(
-                            letter.letter_category.name
-                            for letter in self.workspace.answer_string.letters
-                        ),
-                        time=self.coderack.number_of_codelets_run,
-                    )
+                    "answer_found",
+                    answer="".join(
+                        letter.letter_category.name
+                        for letter in self.workspace.answer_string.letters
+                    ),
+                    time=self.coderack.number_of_codelets_run,
                 )
                 break
             except SnagException:
                 self.logger.log(
-                    ModelEvent.create(
-                        "copycat",
-                        "snag_encountered",
-                        time=self.coderack.number_of_codelets_run,
-                    )
+                    "snag_encountered", time=self.coderack.number_of_codelets_run
                 )
                 self.handle_snag()
 
@@ -245,23 +232,9 @@ class Copycat:
         """Record the answer-string replacement produced by AnswerBuilder."""
         time = self.coderack.number_of_codelets_run
         for letter in previous_answer_letters:
-            self.logger.log(
-                ModelEvent.create(
-                    "copycat",
-                    "letter_destroyed",
-                    letter=letter,
-                    time=time,
-                )
-            )
+            self.logger.log("letter_destroyed", letter=letter, time=time)
         for letter in self.workspace.answer_string.letters:
-            self.logger.log(
-                ModelEvent.create(
-                    "copycat",
-                    "letter_created",
-                    letter=letter,
-                    time=time,
-                )
-            )
+            self.logger.log("letter_created", letter=letter, time=time)
 
     def update(self):
         """Update values of workspace structures and slipnet activations."""
@@ -296,14 +269,7 @@ class Copycat:
             )
         time = 0 if self.coderack is None else self.coderack.number_of_codelets_run
         self.logger.log(
-            ModelEvent.create(
-                "copycat",
-                "attribute_updated",
-                time=time,
-                object_id="temperature",
-                attribute="value",
-                value=self.temperature,
-            )
+            "attribute_updated", time=time, object=self, attribute="temperature"
         )
 
     def _probabilistically_unsnag(self):
@@ -322,13 +288,7 @@ class Copycat:
             for description in self.workspace.snag_object.descriptions:
                 self.slipnet.unclamp_node(description.descriptor.name)
             self.workspace.snag_object.salience_is_clamped = False
-            self.logger.log(
-                ModelEvent.create(
-                    "copycat",
-                    "snag_ended",
-                    time=self.coderack.number_of_codelets_run,
-                )
-            )
+            self.logger.log("snag_ended", time=self.coderack.number_of_codelets_run)
 
     def _clamp_initially_clamped_nodes(self):
         for node in self.initially_clamped_nodes:

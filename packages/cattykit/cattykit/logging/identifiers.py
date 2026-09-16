@@ -31,7 +31,37 @@ class LoggerIdentifiers:
         """Extract storage-ready fields from the domain objects in an event."""
         result = dict(data)
         if "object" in result:
-            result["object_id"] = self.object_id(result.pop("object"))
+            obj = result.pop("object")
+            result["object_id"] = self.object_id(obj)
+            if kind == "attribute_updated":
+                attribute = result["attribute"]
+                result["value"] = getattr(obj, attribute)
+                if type(obj).__name__ == "Coderack" and attribute == "population":
+                    result["attribute"] = "number_of_codelets_on_coderack"
+                elif type(obj).__name__ == "Copycat" and attribute == "temperature":
+                    result["object_id"] = "temperature"
+                    result["attribute"] = "value"
+        if "node" in result:
+            node = result.pop("node")
+            result.update(
+                name=node.name,
+                conceptual_depth=node.conceptual_depth,
+                intrinsic_link_length=node.intrinsic_link_length,
+                shrunk_link_length=node.shrunk_link_length,
+            )
+        if "link" in result:
+            link = result.pop("link")
+            result.update(
+                source=link.source.name,
+                target=link.target.name,
+                label=self._name(link.label),
+                fixed_length=link.fixed_length,
+                is_category_link=link.is_category_link,
+                is_instance_link=link.is_instance_link,
+                is_has_property_link=link.is_has_property_link,
+                is_lateral_sliplink=link.is_lateral_sliplink,
+                is_lateral_non_sliplink=link.is_lateral_non_sliplink,
+            )
         if "codelet" in result and not isinstance(result["codelet"], str):
             codelet = result.pop("codelet")
             result.update(

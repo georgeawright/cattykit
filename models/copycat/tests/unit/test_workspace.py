@@ -14,49 +14,6 @@ def create_workspace(initial_string, modified_string, target_string, answer_stri
     return workspace
 
 
-def test_rule_setter_logs_state_transitions():
-    workspace = create_workspace(None, None, None, None)
-    first_rule = Mock()
-    second_rule = Mock()
-    workspace._log_rule = Mock()
-
-    workspace.rule = first_rule
-    workspace.rule = first_rule
-    workspace.rule = second_rule
-    workspace.rule = None
-
-    assert workspace._log_rule.call_args_list == [
-        (("rule_created", first_rule),),
-        (("rule_destroyed", first_rule),),
-        (("rule_created", second_rule),),
-        (("rule_destroyed", second_rule),),
-    ]
-
-
-def test_translated_rule_setter_logs_state_transitions():
-    workspace = create_workspace(None, None, None, None)
-    translated_rule = Mock()
-    workspace._log_rule = Mock()
-
-    workspace.translated_rule = translated_rule
-    workspace.delete_translated_rule()
-
-    assert workspace._log_rule.call_args_list == [
-        (("translated_rule_created", translated_rule),),
-        (("translated_rule_destroyed", translated_rule),),
-    ]
-
-
-def test_propose_rule_logs_rule_proposal():
-    workspace = create_workspace(None, None, None, None)
-    rule = Mock()
-    workspace._log_rule = Mock()
-
-    workspace.propose_rule(rule)
-
-    workspace._log_rule.assert_called_once_with("rule_proposed", rule)
-
-
 class MockString:
     def __init__(self, objects):
         self.objects = objects

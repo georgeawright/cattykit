@@ -2,14 +2,11 @@
 
 from typing import Protocol, runtime_checkable
 
-from .event import ModelEvent
-
-
 @runtime_checkable
 class ModelLogger(Protocol):
     """Receives structured events emitted by a model."""
 
-    def log(self, event: ModelEvent) -> None:
+    def log(self, kind: str, **data: object) -> None:
         """Record an event."""
         ...
 

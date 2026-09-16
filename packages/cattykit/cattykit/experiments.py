@@ -33,7 +33,7 @@ def run_experiment(
         now = datetime.now().strftime("%Y%m%d-%H%M%S")
         logging_db = f"{model_name}-experiments-{now}.sqlite"
     distributions: dict[str, Counter[str]] = {}
-    logger = SQLiteLogger(logging_db)
+    logger = SQLiteLogger(logging_db, model_name)
     try:
         for problem in problems:
             if interactive:

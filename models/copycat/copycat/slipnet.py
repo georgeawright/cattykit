@@ -3,7 +3,7 @@ from typing import Callable, Dict, List, Optional
 
 import numpy as np
 
-from cattykit.logging import ModelEvent, ModelLogger
+from cattykit.logging import ModelLogger
 
 from .concept_mapping import ConceptMapping
 from .sliplink import Sliplink
@@ -167,33 +167,10 @@ class Slipnet:
     def initialize(self) -> None:
         """Record the network definition and calculate initial activations."""
         for node in self.nodes:
-            self.logger.log(
-                ModelEvent.create(
-                    "copycat",
-                    "slipnode_initialized",
-                    name=node.name,
-                    conceptual_depth=node.conceptual_depth,
-                    intrinsic_link_length=node.intrinsic_link_length,
-                    shrunk_link_length=node.shrunk_link_length,
-                )
-            )
+            self.logger.log("slipnode_initialized", node=node)
         for node in self.nodes:
             for link in node.outgoing_links:
-                self.logger.log(
-                    ModelEvent.create(
-                        "copycat",
-                        "sliplink_initialized",
-                        source=link.source.name,
-                        target=link.target.name,
-                        label=None if link.label is None else link.label.name,
-                        fixed_length=link.fixed_length,
-                        is_category_link=link.is_category_link,
-                        is_instance_link=link.is_instance_link,
-                        is_has_property_link=link.is_has_property_link,
-                        is_lateral_sliplink=link.is_lateral_sliplink,
-                        is_lateral_non_sliplink=link.is_lateral_non_sliplink,
-                    )
-                )
+                self.logger.log("sliplink_initialized", link=link)
         self.update_activations()
 
     def update_activations(self) -> None:
@@ -215,15 +192,7 @@ class Slipnet:
         self._probabilistically_activate_nodes()
         for node in self.nodes:
             node.activation = self.node_activations[self.node_index_lookup[node.name]]
-            self.logger.log(
-                ModelEvent.create(
-                        "copycat",
-                        "attribute_updated",
-                        object=node,
-                        attribute="activation",
-                        value=float(node.activation),
-                )
-            )
+            self.logger.log("attribute_updated", object=node, attribute="activation")
 
     def clamp_node(self, node_id: str):
         """Clamp a node at full activation."""

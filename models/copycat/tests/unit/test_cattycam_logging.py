@@ -1,7 +1,7 @@
 import sqlite3
 from pathlib import Path
 
-from cattykit.logging import ModelEvent, SQLiteLogger
+from cattykit.logging import SQLiteLogger
 from copycat import Copycat
 from copycat.codelets import ReplacementFinder
 
@@ -11,7 +11,7 @@ CONFIG_DIRECTORY = Path(__file__).parents[2] / "copycat/configs"
 
 def test_copycat_logs_initial_workspace_and_slipnet_state(tmp_path) -> None:
     database = tmp_path / "history.sqlite"
-    logger = SQLiteLogger(database)
+    logger = SQLiteLogger(database, "copycat")
     copycat = Copycat.from_json(
         str(CONFIG_DIRECTORY / "slipnet.json"),
         str(CONFIG_DIRECTORY / "coderack.json"),
@@ -19,9 +19,7 @@ def test_copycat_logs_initial_workspace_and_slipnet_state(tmp_path) -> None:
         logger=logger,
     )
 
-    logger.log(
-        ModelEvent.create("copycat", "run_started", problem="abc -> abd ==> ijk")
-    )
+    logger.log("run_started", problem="abc -> abd ==> ijk")
     copycat.workspace.initialize("abc -> abd ==> ijk -> ?", copycat.slipnet)
     copycat.slipnet.initialize()
     copycat.workspace.update()
@@ -54,7 +52,7 @@ def test_copycat_logs_initial_workspace_and_slipnet_state(tmp_path) -> None:
 
 def test_workspace_logs_the_structure_a_codelet_builds(tmp_path, monkeypatch) -> None:
     database = tmp_path / "history.sqlite"
-    logger = SQLiteLogger(database)
+    logger = SQLiteLogger(database, "copycat")
     copycat = Copycat.from_json(
         str(CONFIG_DIRECTORY / "slipnet.json"),
         str(CONFIG_DIRECTORY / "coderack.json"),
@@ -73,7 +71,7 @@ def test_workspace_logs_the_structure_a_codelet_builds(tmp_path, monkeypatch) ->
         lambda _: copycat.workspace.initial_string.letters[2],
     )
 
-    logger.log(ModelEvent.create("copycat", "run_started", problem="abc -> abd"))
+    logger.log("run_started", problem="abc -> abd")
     codelet.run(temperature=1.0)
     logger.close()
 
@@ -90,7 +88,7 @@ def test_workspace_logs_the_structure_a_codelet_builds(tmp_path, monkeypatch) ->
 
 def test_coderack_logs_a_codelet_when_it_is_posted(tmp_path) -> None:
     database = tmp_path / "history.sqlite"
-    logger = SQLiteLogger(database)
+    logger = SQLiteLogger(database, "copycat")
     copycat = Copycat.from_json(
         str(CONFIG_DIRECTORY / "slipnet.json"),
         str(CONFIG_DIRECTORY / "coderack.json"),
@@ -104,7 +102,7 @@ def test_coderack_logs_a_codelet_when_it_is_posted(tmp_path) -> None:
         slipnet=copycat.slipnet,
     )
 
-    logger.log(ModelEvent.create("copycat", "run_started", problem="abc -> abd"))
+    logger.log("run_started", problem="abc -> abd")
     copycat.coderack.post(codelet, temperature=1.0)
     logger.close()
 
