@@ -107,7 +107,12 @@ def _slipnet_activation_list(database: Path, run_id: int, time: int) -> pn.Colum
 
 def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.Viewable:
     """Render executed codelets as reverse-chronological detail cards."""
-    from cattycam.database import codelet_history, codelet_steps, codelet_types
+    from cattycam.database import (
+        codelet_history,
+        codelet_step_value_reprs,
+        codelet_steps,
+        codelet_types,
+    )
 
     codelets = codelet_history(database, run_id, time)
     if not codelets:
@@ -120,6 +125,7 @@ def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.View
             children_by_parent.setdefault(parent_id, []).append(codelet_id)
     types = codelet_types(database, run_id)
     steps_by_codelet = codelet_steps(database, run_id, time)
+    step_value_reprs = codelet_step_value_reprs(database, run_id)
 
     def codelet_label(codelet_id: str | None) -> str:
         if codelet_id is None:
@@ -144,8 +150,21 @@ def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.View
 
     def steps_html(codelet_id: str) -> str:
         steps = steps_by_codelet.get(codelet_id, [])
+
+        def value_repr(value: object) -> str:
+            if isinstance(value, str):
+                if value.startswith("slipnode:"):
+                    return value.removeprefix("slipnode:").upper()
+                return step_value_reprs.get(value, value)
+            if isinstance(value, list):
+                return repr([value_repr(item) for item in value])
+            return repr(value)
+
         return "".join(
-            "<div>" f"{html.escape(attribute)}: {html.escape(str(value))}" "</div>"
+            "<div>"
+            f"{html.escape(attribute)}: "
+            f"{html.escape(value_repr(value))}"
+            "</div>"
             for attribute, value in steps
         )
 

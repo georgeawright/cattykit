@@ -13,6 +13,7 @@ class DescriptionScout(Scout):
         self.proposed_description = Description(
             self.chosen_object, self.description_type, self.chosen_descriptor
         )
+        self.chosen_object.string.add_proposed_description(self.proposed_description)
         self.slipnet.activate_node_from_workspace(self.chosen_descriptor.name)
         urgency_level = self.coderack.get_urgency_level_from_activation(
             self.slipnet.get_node_activation(self.description_type.name)

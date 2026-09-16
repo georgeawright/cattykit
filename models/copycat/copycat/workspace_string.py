@@ -112,6 +112,9 @@ class WorkspaceString:
                 return True
         return False
 
+    def add_proposed_description(self, description):
+        self.logger.log("description_proposed", description=description)
+
     def add_proposed_bond(self, bond):
         """Add to a maintained list of proposed bonds between two nodes."""
         self.proposed_bonds_by_role[bond.source][bond.target].append(bond)

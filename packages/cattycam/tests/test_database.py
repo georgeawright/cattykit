@@ -2,6 +2,7 @@ import sqlite3
 
 from cattycam.database import (
     codelet_history,
+    codelet_step_value_reprs,
     codelet_steps,
     codelet_types,
     coderack_codelets,
@@ -176,6 +177,52 @@ def test_codelet_steps_are_grouped_and_ordered_by_recording(tmp_path) -> None:
 
     assert codelet_steps(database, 1, time=2) == {
         "codelet:1": [("source", "letter:1"), ("target", "letter:4")]
+    }
+
+
+def test_codelet_step_value_reprs_reconstruct_workspace_objects(tmp_path) -> None:
+    database = tmp_path / "history.sqlite"
+    with sqlite3.connect(database) as connection:
+        connection.execute(
+            "CREATE TABLE letters "
+            "(run_id INTEGER, letter_id TEXT, string_id TEXT, letter_category TEXT, position INTEGER)"
+        )
+        connection.execute(
+            "CREATE TABLE groups "
+            "(run_id INTEGER, group_id TEXT, string_id TEXT, left_position INTEGER, "
+            "right_position INTEGER, group_category TEXT, direction_category TEXT)"
+        )
+        connection.execute(
+            "CREATE TABLE bonds "
+            "(run_id INTEGER, bond_id TEXT, source_id TEXT, target_id TEXT, "
+            "bond_facet TEXT, bond_category TEXT, direction_category TEXT)"
+        )
+        connection.execute(
+            "CREATE TABLE descriptions "
+            "(run_id INTEGER, description_id TEXT, object_id TEXT, facet TEXT, descriptor TEXT)"
+        )
+        connection.execute(
+            "CREATE TABLE correspondences "
+            "(run_id INTEGER, correspondence_id TEXT, source_id TEXT, target_id TEXT)"
+        )
+        connection.executemany(
+            "INSERT INTO letters VALUES (?, ?, ?, ?, ?)",
+            [(1, "letter:1", "initial", "a", 0), (1, "letter:2", "initial", "b", 1)],
+        )
+        connection.execute(
+            "INSERT INTO bonds VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (1, "bond:1", "letter:1", "letter:2", "letter_category", "successor", "right"),
+        )
+        connection.execute(
+            "INSERT INTO descriptions VALUES (?, ?, ?, ?, ?)",
+            (1, "description:1", "letter:1", "letter_category", "a"),
+        )
+
+    assert codelet_step_value_reprs(database, 1) == {
+        "letter:1": "a@0",
+        "letter:2": "b@1",
+        "bond:1": "a@0 --['LETTER_CATEGORY', 'SUCCESSOR', 'RIGHT']--> b@1",
+        "description:1": "LETTER_CATEGORY of a@0 is A",
     }
 
 

@@ -175,6 +175,76 @@ def codelet_steps(
     return result
 
 
+def codelet_step_value_reprs(
+    database: str | Path, run_id: int
+) -> dict[str, str]:
+    """Reconstruct display representations for logged workspace identifiers.
+
+    This is deliberately a Cattycam concern: experiments persist only stable
+    identifiers, while the viewer resolves them into the model's familiar
+    object representations on demand.
+    """
+    try:
+        with sqlite3.connect(database) as connection:
+            letters = connection.execute(
+                "SELECT letter_id, string_id, letter_category, position FROM letters WHERE run_id = ?",
+                (run_id,),
+            ).fetchall()
+            groups = connection.execute(
+                """SELECT group_id, string_id, left_position, right_position,
+                          group_category, direction_category
+                   FROM groups WHERE run_id = ?""",
+                (run_id,),
+            ).fetchall()
+            bonds = connection.execute(
+                """SELECT bond_id, source_id, target_id, bond_facet, bond_category,
+                          direction_category FROM bonds WHERE run_id = ?""",
+                (run_id,),
+            ).fetchall()
+            descriptions = connection.execute(
+                "SELECT description_id, object_id, facet, descriptor FROM descriptions WHERE run_id = ?",
+                (run_id,),
+            ).fetchall()
+            correspondences = connection.execute(
+                "SELECT correspondence_id, source_id, target_id FROM correspondences WHERE run_id = ?",
+                (run_id,),
+            ).fetchall()
+    except sqlite3.OperationalError:
+        return {}
+
+    representations = {
+        letter_id: f"{letter_category}@{position}"
+        for letter_id, _, letter_category, position in letters
+    }
+    for group_id, string_id, left, right, category, direction in groups:
+        letters_in_group = "".join(
+            letter_category
+            for _, letter_string_id, letter_category, position in letters
+            if letter_string_id == string_id and left <= position <= right
+        )
+        group_type = "-".join(
+            value for value in (category, direction) if value is not None
+        )
+        representations[group_id] = f"{group_type}({letters_in_group})@{left}-{right}"
+    for bond_id, source_id, target_id, facet, category, direction in bonds:
+        labels = [label.upper() for label in (facet, category, direction) if label]
+        representations[bond_id] = (
+            f"{representations.get(source_id, source_id)} --{labels}--> "
+            f"{representations.get(target_id, target_id)}"
+        )
+    for description_id, object_id, facet, descriptor in descriptions:
+        representations[description_id] = (
+            f"{facet.upper()} of {representations.get(object_id, object_id)} "
+            f"is {descriptor.upper()}"
+        )
+    for correspondence_id, source_id, target_id in correspondences:
+        representations[correspondence_id] = (
+            f"{representations.get(source_id, source_id)} ==> "
+            f"{representations.get(target_id, target_id)}"
+        )
+    return representations
+
+
 def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
     """Return workspace entities visible at a selected codelet time."""
     with sqlite3.connect(database) as connection:
