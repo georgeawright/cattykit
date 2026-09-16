@@ -108,6 +108,7 @@ def _slipnet_activation_list(database: Path, run_id: int, time: int) -> pn.Colum
 def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.Viewable:
     """Render executed codelets as reverse-chronological detail cards."""
     from cattycam.database import (
+        codelet_arguments,
         codelet_history,
         codelet_step_value_reprs,
         codelet_steps,
@@ -124,6 +125,7 @@ def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.View
         if parent_id is not None:
             children_by_parent.setdefault(parent_id, []).append(codelet_id)
     types = codelet_types(database, run_id)
+    arguments_by_codelet = codelet_arguments(database, run_id)
     steps_by_codelet = codelet_steps(database, run_id, time)
     step_value_reprs = codelet_step_value_reprs(database, run_id)
 
@@ -148,24 +150,24 @@ def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.View
         outcome = "fizzled" if result == "fizzle" else "finished"
         return f"{outcome} after {time_taken / 1_000_000:.3f} milliseconds processing"
 
-    def steps_html(codelet_id: str) -> str:
-        steps = steps_by_codelet.get(codelet_id, [])
+    def value_repr(value: object) -> str:
+        if isinstance(value, str):
+            if value.startswith("slipnode:"):
+                return value.removeprefix("slipnode:").upper()
+            return step_value_reprs.get(value, value)
+        if isinstance(value, list):
+            return repr([value_repr(item) for item in value])
+        return repr(value)
 
-        def value_repr(value: object) -> str:
-            if isinstance(value, str):
-                if value.startswith("slipnode:"):
-                    return value.removeprefix("slipnode:").upper()
-                return step_value_reprs.get(value, value)
-            if isinstance(value, list):
-                return repr([value_repr(item) for item in value])
-            return repr(value)
-
+    def attributes_html(attributes: list[tuple[str, object]]) -> str:
+        if not attributes:
+            return "<div>—</div>"
         return "".join(
             "<div>"
             f"{html.escape(attribute)}: "
             f"{html.escape(value_repr(value))}"
             "</div>"
-            for attribute, value in steps
+            for attribute, value in attributes
         )
 
     cards = "".join(
@@ -181,7 +183,10 @@ def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.View
         f"Parent codelet: {codelet_label(parent_id)} · "
         f"Child codelet: {', '.join(codelet_label(child) for child in children_by_parent.get(codelet_id, [])) or '—'}"
         "</div><div style='margin-top:4px; font-size:0.9em;'>"
-        f"{steps_html(codelet_id)}"
+        "<div style='font-weight:600;'>Arguments</div>"
+        f"{attributes_html(arguments_by_codelet.get(codelet_id, []))}"
+        "<div style='font-weight:600; margin-top:4px;'>Run</div>"
+        f"{attributes_html(steps_by_codelet.get(codelet_id, []))}"
         f"{html.escape(fizzle_reason) if result == 'fizzle' and fizzle_reason else ''}"
         "</div><div style='margin-top:4px;'>"
         f"{duration_label(time_taken, result)}"

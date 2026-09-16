@@ -1,6 +1,7 @@
 import sqlite3
 
 from cattycam.database import (
+    codelet_arguments,
     codelet_history,
     codelet_step_value_reprs,
     codelet_steps,
@@ -177,6 +178,30 @@ def test_codelet_steps_are_grouped_and_ordered_by_recording(tmp_path) -> None:
 
     assert codelet_steps(database, 1, time=2) == {
         "codelet:1": [("source", "letter:1"), ("target", "letter:4")]
+    }
+
+
+def test_codelet_arguments_are_grouped_and_ordered_by_posting(tmp_path) -> None:
+    database = tmp_path / "history.sqlite"
+    with sqlite3.connect(database) as connection:
+        connection.execute(
+            "CREATE TABLE codelet_arguments "
+            "(id INTEGER PRIMARY KEY, run_id INTEGER, codelet_id TEXT, "
+            "attribute TEXT, value_json TEXT)"
+        )
+        connection.executemany(
+            "INSERT INTO codelet_arguments "
+            "(run_id, codelet_id, attribute, value_json) VALUES (?, ?, ?, ?)",
+            [
+                (1, "codelet:1", "proposed_structure", '"bond:7"'),
+                (1, "codelet:2", "proposed_structure", '"group:2"'),
+                (2, "codelet:3", "proposed_structure", '"bond:9"'),
+            ],
+        )
+
+    assert codelet_arguments(database, 1) == {
+        "codelet:1": [("proposed_structure", "bond:7")],
+        "codelet:2": [("proposed_structure", "group:2")],
     }
 
 

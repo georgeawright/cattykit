@@ -175,6 +175,22 @@ def codelet_steps(
     return result
 
 
+def codelet_arguments(
+    database: str | Path, run_id: int
+) -> dict[str, list[tuple[str, object]]]:
+    """Return each posted codelet's arguments in posting order."""
+    with sqlite3.connect(database) as connection:
+        rows = connection.execute(
+            """SELECT codelet_id, attribute, value_json FROM codelet_arguments
+               WHERE run_id = ? ORDER BY id""",
+            (run_id,),
+        ).fetchall()
+    result: dict[str, list[tuple[str, object]]] = {}
+    for codelet_id, attribute, value_json in rows:
+        result.setdefault(codelet_id, []).append((attribute, json.loads(value_json)))
+    return result
+
+
 def codelet_step_value_reprs(
     database: str | Path, run_id: int
 ) -> dict[str, str]:

@@ -99,7 +99,6 @@ class SQLiteLogger(LoggerIdentifiers):
                 parent_codelet_id TEXT,
                 codelet_type TEXT NOT NULL,
                 urgency_bin INTEGER,
-                arguments_json TEXT,
                 birth_time INTEGER,
                 run_time INTEGER,
                 removal_time INTEGER,
@@ -311,6 +310,14 @@ class SQLiteLogger(LoggerIdentifiers):
                 value_json TEXT NOT NULL
             );
 
+            CREATE TABLE IF NOT EXISTS codelet_arguments (
+                id INTEGER PRIMARY KEY,
+                run_id INTEGER NOT NULL REFERENCES runs(id),
+                codelet_id TEXT NOT NULL,
+                attribute TEXT NOT NULL,
+                value_json TEXT NOT NULL
+            );
+
             CREATE TABLE IF NOT EXISTS codelet_steps (
                 id INTEGER PRIMARY KEY,
                 run_id INTEGER NOT NULL REFERENCES runs(id),
@@ -450,15 +457,14 @@ class SQLiteLogger(LoggerIdentifiers):
                 self._connection.execute(
                     """INSERT INTO codelets
                 (run_id, codelet_id, parent_codelet_id, codelet_type, urgency_bin,
-                 arguments_json, birth_time, run_time, removal_time)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                 birth_time, run_time, removal_time)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
                     (
                         run_id,
                         data.get("codelet_id"),
                         data.get("parent_codelet_id"),
                         data.get("codelet_type", data.get("codelet", "unknown")),
                         data.get("urgency_bin"),
-                        self._json(data.get("arguments", {})),
                         data.get("birth_time"),
                         data.get("time"),
                         data.get("time"),
@@ -568,18 +574,30 @@ class SQLiteLogger(LoggerIdentifiers):
         self._connection.execute(
             """INSERT INTO codelets
                (run_id, codelet_id, parent_codelet_id, codelet_type, urgency_bin,
-                arguments_json, birth_time)
-               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                birth_time)
+               VALUES (?, ?, ?, ?, ?, ?)""",
             (
                 run_id,
                 data.get("codelet_id"),
                 self._active_codelet_id,
                 data.get("codelet_type", data.get("codelet", "unknown")),
                 data.get("urgency_bin"),
-                self._json(data.get("arguments", data.get("argument"))),
                 data.get("birth_time", data.get("time")),
             ),
         )
+        arguments = data.get("arguments", {})
+        if isinstance(arguments, Mapping) and "proposed_structure" in arguments:
+            self._connection.execute(
+                """INSERT INTO codelet_arguments
+                   (run_id, codelet_id, attribute, value_json)
+                   VALUES (?, ?, ?, ?)""",
+                (
+                    run_id,
+                    data["codelet_id"],
+                    "proposed_structure",
+                    self._json(arguments["proposed_structure"]),
+                ),
+            )
 
     def _finish_codelet(self, run_id: int, data: Mapping[str, Any]) -> None:
         cursor = self._connection.execute(
@@ -599,14 +617,13 @@ class SQLiteLogger(LoggerIdentifiers):
         if cursor.rowcount == 0:
             self._connection.execute(
                 """INSERT INTO codelets (run_id, codelet_id, codelet_type, urgency_bin,
-                   arguments_json, run_time, time_taken, result, fizzle_reason)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                   run_time, time_taken, result, fizzle_reason)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
                 (
                     run_id,
                     data.get("codelet_id"),
                     data.get("codelet_type", data.get("codelet", "unknown")),
                     data.get("urgency_bin"),
-                    self._json(data.get("arguments", {})),
                     data.get("time"),
                     data.get("time_taken"),
                     data.get("outcome", data.get("result")),

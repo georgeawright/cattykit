@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from types import SimpleNamespace
 from io import StringIO
 
 from cattykit.logging import NullLogger, PrintLogger, SQLiteLogger
@@ -126,6 +127,7 @@ def test_sqlite_logger_creates_the_cattycam_schema(tmp_path) -> None:
         "slipnodes",
         "sliplinks",
         "attribute_values",
+        "codelet_arguments",
         "codelet_steps",
     }
 
@@ -165,6 +167,37 @@ def test_sqlite_logger_populates_cattycam_run_history(tmp_path, monkeypatch) -> 
     assert run == ("abc -> abd ==> ijk -> ?", 1234, "ijl", 0.25, 3, 1)
     assert string == ("initial", "initial", "abc")
     assert codelet == ("c-1", "BottomUpBondScout", 2, 0, 1, 125_000_000, "fizzle", "no_bond")
+
+
+def test_sqlite_logger_records_a_posted_codelets_proposed_structure(tmp_path) -> None:
+    database = tmp_path / "cattycam.sqlite"
+    logger = SQLiteLogger(database, "copycat")
+    proposed_structure = SimpleNamespace(hash_id="bond-1")
+    codelet = SimpleNamespace(
+        hash_id="codelet-1",
+        urgency_bin=2,
+        birth_time=0,
+        proposed_structure=proposed_structure,
+    )
+
+    logger.log("run_started", problem="abc -> abd")
+    logger.log("codelet_posted", codelet=codelet)
+    logger.close()
+
+    with sqlite3.connect(database) as connection:
+        columns = {
+            row[1] for row in connection.execute("PRAGMA table_info(codelets)")
+        }
+        argument = connection.execute(
+            "SELECT codelet_id, attribute, value_json FROM codelet_arguments"
+        ).fetchone()
+
+    assert "arguments_json" not in columns
+    assert argument == (
+        "codelet:codelet-1",
+        "proposed_structure",
+        '"simplenamespace:bond-1"',
+    )
 
 
 def test_sqlite_logger_excludes_codelet_step_logging_time_from_time_taken(

@@ -75,10 +75,12 @@ class LoggerIdentifiers:
                 codelet_type=type(codelet).__name__,
                 urgency_bin=codelet.urgency_bin,
                 birth_time=codelet.birth_time,
-                arguments={
-                    "proposed_structure": getattr(codelet, "proposed_structure", None)
-                },
             )
+            proposed_structure = getattr(codelet, "proposed_structure", None)
+            if proposed_structure is not None:
+                result["arguments"] = {
+                    "proposed_structure": self.object_id(proposed_structure)
+                }
 
         entity = kind.rsplit("_", maxsplit=1)[0]
         entity_key = "rule" if entity == "translated_rule" else entity
