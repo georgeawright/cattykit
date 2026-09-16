@@ -167,6 +167,28 @@ def test_sqlite_logger_populates_cattycam_run_history(tmp_path, monkeypatch) -> 
     assert codelet == ("c-1", "BottomUpBondScout", 2, 0, 1, 125_000_000, "fizzle", "no_bond")
 
 
+def test_sqlite_logger_excludes_codelet_step_logging_time_from_time_taken(
+    tmp_path, monkeypatch
+) -> None:
+    database = tmp_path / "cattycam.sqlite"
+    logger = SQLiteLogger(database, "copycat")
+    logger.log("run_started", problem="abc -> abd")
+    timestamps = iter([100, 200, 300, 400, 1_000])
+    monkeypatch.setattr(
+        "cattykit.logging.sqlite_logger.perf_counter_ns", lambda: next(timestamps)
+    )
+
+    logger.log("codelet_selected", codelet_id="c-1", codelet_type="Scout")
+    logger.log("codelet_step", codelet_id="c-1", attribute="candidate", value="a")
+    logger.log("codelet_finished", codelet_id="c-1", outcome="finish")
+    logger.close()
+
+    with sqlite3.connect(database) as connection:
+        time_taken = connection.execute("SELECT time_taken FROM codelets").fetchone()
+
+    assert time_taken == (700,)
+
+
 def test_sqlite_logger_records_git_metadata_for_each_run(tmp_path, monkeypatch) -> None:
     database = tmp_path / "cattycam.sqlite"
     monkeypatch.setattr(

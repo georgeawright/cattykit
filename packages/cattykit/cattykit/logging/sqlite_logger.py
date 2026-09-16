@@ -24,38 +24,40 @@ class SQLiteLogger(LoggerIdentifiers):
         self._connection.commit()
         self._codelets_run = 0
         self._active_codelet_id: str | None = None
-        self._codelet_selection_times: dict[str, int] = {}
+        self._codelet_started_at: int | None = None
+        self._logging_time_during_codelet = 0
 
     def log(self, kind: str, **data: object) -> None:
         """Record an event using the logger's current codelet-time cursor."""
+        logging_started_at = perf_counter_ns()
         data = self.event_data(kind, data)
-        if kind == "codelet_selected" and isinstance(
-            codelet_id := data.get("codelet_id"), str
-        ):
-            self._codelet_selection_times[codelet_id] = perf_counter_ns()
-        elif kind == "codelet_finished":
-            codelet_id = data.get("codelet_id")
-            selected_at = (
-                self._codelet_selection_times.pop(codelet_id, None)
-                if isinstance(codelet_id, str)
-                else None
+        if kind == "codelet_finished" and self._codelet_started_at is not None:
+            data["time_taken"] = (
+                logging_started_at
+                - self._codelet_started_at
+                - self._logging_time_during_codelet
             )
-            if selected_at is not None:
-                data["time_taken"] = perf_counter_ns() - selected_at
         self._update_codelet_time(kind, data)
         if data.get("time") is None:
             data["time"] = self._codelets_run
         if kind == "run_started":
             self._active_codelet_id = None
-            self._codelet_selection_times.clear()
+            self._codelet_started_at = None
+            self._logging_time_during_codelet = 0
         elif kind != "codelet_selected" and self._active_codelet_id is not None:
             data.setdefault("parent_codelet_id", self._active_codelet_id)
         self._record_event(kind, datetime.now(UTC).isoformat(), data)
+        self._connection.commit()
         if kind == "codelet_selected":
             self._active_codelet_id = data.get("codelet_id")
+            self._codelet_started_at = perf_counter_ns()
+            self._logging_time_during_codelet = 0
         elif kind in {"codelet_finished", "run_finished"}:
             self._active_codelet_id = None
-        self._connection.commit()
+            self._codelet_started_at = None
+            self._logging_time_during_codelet = 0
+        elif self._active_codelet_id is not None:
+            self._logging_time_during_codelet += perf_counter_ns() - logging_started_at
 
     @property
     def codelets_run(self) -> int:
