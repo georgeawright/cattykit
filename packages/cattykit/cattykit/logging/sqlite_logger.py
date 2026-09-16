@@ -309,10 +309,21 @@ class SQLiteLogger(LoggerIdentifiers):
                 value_json TEXT NOT NULL
             );
 
+            CREATE TABLE IF NOT EXISTS codelet_steps (
+                id INTEGER PRIMARY KEY,
+                run_id INTEGER NOT NULL REFERENCES runs(id),
+                time INTEGER NOT NULL,
+                codelet_id TEXT NOT NULL,
+                attribute TEXT NOT NULL,
+                value_json TEXT NOT NULL
+            );
+
             CREATE INDEX IF NOT EXISTS codelets_by_run_time
                 ON codelets(run_id, run_time);
             CREATE INDEX IF NOT EXISTS attributes_by_run_time
                 ON attribute_values(run_id, time);
+            CREATE INDEX IF NOT EXISTS codelet_steps_by_run_codelet
+                ON codelet_steps(run_id, codelet_id, id);
             CREATE INDEX IF NOT EXISTS bonds_by_run_id ON bonds(run_id, bond_id);
             CREATE INDEX IF NOT EXISTS groups_by_run_id ON groups(run_id, group_id);
             CREATE INDEX IF NOT EXISTS correspondences_by_run_id
@@ -523,6 +534,19 @@ class SQLiteLogger(LoggerIdentifiers):
             self._connection.execute(
                 """INSERT INTO attribute_values
                    (run_id, time, object_id, attribute, value_json)
+                   VALUES (?, ?, ?, ?, ?)""",
+                (
+                    run_id,
+                    data.get("time", 0),
+                    data["object_id"],
+                    data["attribute"],
+                    self._json(data.get("value")),
+                ),
+            )
+        elif kind == "codelet_step":
+            self._connection.execute(
+                """INSERT INTO codelet_steps
+                   (run_id, time, codelet_id, attribute, value_json)
                    VALUES (?, ?, ?, ?, ?)""",
                 (
                     run_id,

@@ -76,6 +76,7 @@ class Coderack:
         self.logger.log(
             "codelet_selected", codelet=codelet, time=self.number_of_codelets_run
         )
+        codelet.logger = self.logger
         result = codelet.run(temperature)
         self.number_of_codelets_run += 1
         data = {

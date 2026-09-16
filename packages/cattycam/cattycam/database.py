@@ -159,6 +159,22 @@ def codelet_types(database: str | Path, run_id: int) -> dict[str, str]:
         )
 
 
+def codelet_steps(
+    database: str | Path, run_id: int, time: int
+) -> dict[str, list[tuple[str, object]]]:
+    """Return each executed codelet's steps in the order they were recorded."""
+    with sqlite3.connect(database) as connection:
+        rows = connection.execute(
+            """SELECT codelet_id, attribute, value_json FROM codelet_steps
+               WHERE run_id = ? AND time <= ? ORDER BY id""",
+            (run_id, time),
+        ).fetchall()
+    result: dict[str, list[tuple[str, object]]] = {}
+    for codelet_id, attribute, value_json in rows:
+        result.setdefault(codelet_id, []).append((attribute, json.loads(value_json)))
+    return result
+
+
 def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
     """Return workspace entities visible at a selected codelet time."""
     with sqlite3.connect(database) as connection:

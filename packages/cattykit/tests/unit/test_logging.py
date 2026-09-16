@@ -59,6 +59,42 @@ def test_print_logger_serializes_domain_objects() -> None:
     assert json.loads(stream.getvalue())["data"]["object_id"] == "letter:3"
 
 
+def test_print_logger_serializes_object_attribute_values() -> None:
+    class Rule:
+        hash_id = 4
+
+    class Codelet:
+        hash_id = 3
+        proposed_rule = Rule()
+
+    stream = StringIO()
+    logger = PrintLogger("test", stream)
+
+    logger.log("attribute_updated", object=Codelet(), attribute="proposed_rule")
+
+    assert json.loads(stream.getvalue())["data"]["value"] == "rule:4"
+
+
+def test_print_logger_serializes_codelet_steps() -> None:
+    class Letter:
+        hash_id = 4
+
+    class Codelet:
+        hash_id = 3
+        source = Letter()
+
+    stream = StringIO()
+    logger = PrintLogger("test", stream)
+
+    logger.log("codelet_step", object=Codelet(), attribute="source")
+
+    assert json.loads(stream.getvalue())["data"] == {
+        "attribute": "source",
+        "object_id": "codelet:3",
+        "value": "letter:4",
+    }
+
+
 def test_sqlite_logger_creates_the_cattycam_schema(tmp_path) -> None:
     database = tmp_path / "cattycam.sqlite"
     logger = SQLiteLogger(database, "copycat")
@@ -90,6 +126,7 @@ def test_sqlite_logger_creates_the_cattycam_schema(tmp_path) -> None:
         "slipnodes",
         "sliplinks",
         "attribute_values",
+        "codelet_steps",
     }
 
 
@@ -169,6 +206,36 @@ def test_sqlite_logger_attaches_its_codelet_time_to_untimed_events(tmp_path) -> 
     assert attribute_times == [(0,), (1,)]
     assert codelet_time == (1,)
     assert logger.codelets_run == 1
+
+
+def test_sqlite_logger_records_ordered_codelet_steps(tmp_path) -> None:
+    database = tmp_path / "cattycam.sqlite"
+    logger = SQLiteLogger(database, "copycat")
+    logger.log("run_started", problem="abc -> abd")
+    logger.log("codelet_selected", codelet_id="codelet:1", codelet_type="Scout")
+    logger.log(
+        "codelet_step",
+        object_id="codelet:1",
+        attribute="source",
+        value="letter:2",
+    )
+    logger.log(
+        "codelet_step",
+        object_id="codelet:1",
+        attribute="target",
+        value="letter:5",
+    )
+    logger.close()
+
+    with sqlite3.connect(database) as connection:
+        steps = connection.execute(
+            "SELECT time, codelet_id, attribute, value_json FROM codelet_steps ORDER BY id"
+        ).fetchall()
+
+    assert steps == [
+        (1, "codelet:1", "source", '"letter:2"'),
+        (1, "codelet:1", "target", '"letter:5"'),
+    ]
 
 
 def test_sqlite_logger_records_translated_rules_separately(tmp_path) -> None:

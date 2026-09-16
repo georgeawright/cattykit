@@ -2,6 +2,7 @@ import sqlite3
 
 from cattycam.database import (
     codelet_history,
+    codelet_steps,
     codelet_types,
     coderack_codelets,
     run_overview_series,
@@ -151,6 +152,30 @@ def test_codelet_history_filters_by_time_and_orders_newest_first(tmp_path) -> No
         "codelet:1": "Scout",
         "codelet:2": "Builder",
         "codelet:3": "Later",
+    }
+
+
+def test_codelet_steps_are_grouped_and_ordered_by_recording(tmp_path) -> None:
+    database = tmp_path / "history.sqlite"
+    with sqlite3.connect(database) as connection:
+        connection.execute(
+            "CREATE TABLE codelet_steps "
+            "(id INTEGER PRIMARY KEY, run_id INTEGER, time INTEGER, codelet_id TEXT, "
+            "attribute TEXT, value_json TEXT)"
+        )
+        connection.executemany(
+            "INSERT INTO codelet_steps (run_id, time, codelet_id, attribute, value_json) "
+            "VALUES (?, ?, ?, ?, ?)",
+            [
+                (1, 2, "codelet:1", "source", '"letter:1"'),
+                (1, 2, "codelet:1", "target", '"letter:4"'),
+                (1, 3, "codelet:2", "proposed_bond", '"bond:7"'),
+                (2, 1, "codelet:3", "ignored", '"letter:9"'),
+            ],
+        )
+
+    assert codelet_steps(database, 1, time=2) == {
+        "codelet:1": [("source", "letter:1"), ("target", "letter:4")]
     }
 
 

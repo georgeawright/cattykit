@@ -5,6 +5,8 @@ from unittest.mock import MagicMock, Mock
 import pytest
 
 from copycat import Coderack
+from copycat.codelet import Codelet
+from copycat.codelet_result import Finish
 
 
 def create_coderack(number_of_bins, max_population):
@@ -46,6 +48,30 @@ def test_population(bin_populations, total_population):
         urgency_bins.append(urgency_bin)
     coderack = Coderack(urgency_bins, None, 100, Mock())
     assert total_population == coderack.population
+
+
+def test_running_codelet_receives_logger_and_logs_attribute_assignments():
+    class LoggingCodelet(Codelet):
+        def run(self, temperature):
+            self.result_temperature = temperature
+            return Finish()
+
+    logger = Mock()
+    coderack = Coderack.create(1, 1, logger)
+    codelet = LoggingCodelet(
+        urgency_bin=0,
+        coderack=coderack,
+        workspace=Mock(),
+        slipnet=Mock(),
+    )
+    coderack.post(codelet, temperature=0.0)
+
+    coderack.run_next_codelet(temperature=0.25)
+
+    assert codelet.logger is logger
+    logger.log.assert_any_call(
+        "codelet_step", object=codelet, attribute="result_temperature"
+    )
 
 
 @pytest.mark.parametrize(

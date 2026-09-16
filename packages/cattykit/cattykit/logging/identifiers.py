@@ -33,9 +33,9 @@ class LoggerIdentifiers:
         if "object" in result:
             obj = result.pop("object")
             result["object_id"] = self.object_id(obj)
-            if kind == "attribute_updated":
+            if kind in {"attribute_updated", "codelet_step"}:
                 attribute = result["attribute"]
-                result["value"] = getattr(obj, attribute)
+                result["value"] = self._attribute_value(getattr(obj, attribute))
                 if type(obj).__name__ == "Coderack" and attribute == "population":
                     result["attribute"] = "number_of_codelets_on_coderack"
                 elif type(obj).__name__ == "Copycat" and attribute == "temperature":
@@ -168,6 +168,18 @@ class LoggerIdentifiers:
                     )
                 }
             )
+
+    def _attribute_value(self, value: object) -> object:
+        """Return a JSON-safe value for a logged attribute update."""
+        if value is None or isinstance(value, str | int | float | bool):
+            return value
+        if isinstance(value, list | tuple):
+            return [self._attribute_value(item) for item in value]
+        if isinstance(value, dict):
+            return {
+                str(key): self._attribute_value(item) for key, item in value.items()
+            }
+        return self.object_id(value)
 
     @staticmethod
     def _name(value: object | None) -> str | None:

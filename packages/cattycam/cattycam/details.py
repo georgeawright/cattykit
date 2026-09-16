@@ -107,7 +107,7 @@ def _slipnet_activation_list(database: Path, run_id: int, time: int) -> pn.Colum
 
 def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.Viewable:
     """Render executed codelets as reverse-chronological detail cards."""
-    from cattycam.database import codelet_history, codelet_types
+    from cattycam.database import codelet_history, codelet_steps, codelet_types
 
     codelets = codelet_history(database, run_id, time)
     if not codelets:
@@ -119,6 +119,7 @@ def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.View
         if parent_id is not None:
             children_by_parent.setdefault(parent_id, []).append(codelet_id)
     types = codelet_types(database, run_id)
+    steps_by_codelet = codelet_steps(database, run_id, time)
 
     def codelet_label(codelet_id: str | None) -> str:
         if codelet_id is None:
@@ -143,6 +144,15 @@ def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.View
             return f"{outcome} in — milliseconds"
         return f"{outcome} in {time_taken / 1_000_000:.3f} milliseconds"
 
+    def steps_html(codelet_id: str) -> str:
+        steps = steps_by_codelet.get(codelet_id, [])
+        return "".join(
+            "<div>"
+            f"{html.escape(attribute)} set to {html.escape(str(value))}"
+            "</div>"
+            for attribute, value in steps
+        )
+
     cards = "".join(
         "<div style='display:flex; gap:6px; min-height:76px; margin-bottom:8px;'>"
         f"<div style='width:42px; flex:0 0 42px; font-weight:600;'>{run_time}</div>"
@@ -152,12 +162,14 @@ def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.View
         "<div style='display:flex; justify-content:space-between; font-weight:600;'>"
         f"<span>{html.escape(codelet_type)} {codelet_id.removeprefix('codelet:')}</span>"
         f"<span>{urgency_bin if urgency_bin is not None else ''}</span>"
-        "</div><div style='margin-top:4px;'>"
-        f"{duration_label(time_taken, result)}"
-        f"{' · ' + html.escape(fizzle_reason) if result == 'fizzle' and fizzle_reason else ''}"
         "</div><div style='margin-top:4px; font-size:0.9em; color:#4c4c4c;'>"
         f"Parent codelet: {codelet_label(parent_id)} · "
         f"Child codelet: {', '.join(codelet_label(child) for child in children_by_parent.get(codelet_id, [])) or '—'}"
+        "</div><div style='margin-top:4px; font-size:0.9em;'>"
+        f"{steps_html(codelet_id)}"
+        f"{html.escape(fizzle_reason) if result == 'fizzle' and fizzle_reason else ''}"
+        "</div><div style='margin-top:4px;'>"
+        f"{duration_label(time_taken, result)}"
         "</div></div></div>"
         for codelet_id, parent_id, run_time, codelet_type, urgency_bin, time_taken, result, fizzle_reason in codelets
     )

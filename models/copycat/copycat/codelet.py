@@ -1,4 +1,7 @@
 import itertools
+from typing import Optional
+
+from cattykit.logging import ModelLogger
 
 from copycat.codelet_result import CodeletResult
 
@@ -13,6 +16,7 @@ class Codelet:
         workspace: "Workspace",
         slipnet: "Slipnet",
     ):
+        self.logger: Optional[ModelLogger] = None
         self.urgency_bin = urgency_bin
         self.coderack = coderack
         self.workspace = workspace
@@ -22,6 +26,13 @@ class Codelet:
     def __repr__(self):
         return f"<{type(self).__name__} {self.hash_id} in bin {self.urgency_bin}>"
 
+    def __setattr__(self, name: str, value: object) -> None:
+        object.__setattr__(self, name, value)
+        if name == "logger":
+            return
+        if self.logger is None:
+            return
+        self.logger.log("codelet_step", object=self, attribute=name)
+
     def run(self, temperature: float) -> CodeletResult:
-        """Perform this codelet's model-specific work."""
         raise NotImplementedError
