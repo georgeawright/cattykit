@@ -5,9 +5,10 @@ import sys
 from typing import TextIO
 
 from .event import ModelEvent
+from .identifiers import LoggerIdentifiers
 
 
-class PrintLogger:
+class PrintLogger(LoggerIdentifiers):
     """A logger that writes one JSON event per line to a text stream."""
 
     def __init__(self, stream: TextIO | None = None) -> None:
@@ -16,7 +17,15 @@ class PrintLogger:
     def log(self, event: ModelEvent) -> None:
         """Print an event as a JSON line."""
         print(
-            json.dumps(event.as_dict(), sort_keys=True), file=self._stream, flush=True
+            json.dumps(
+                {
+                    **event.as_dict(),
+                    "data": self.event_data(event.kind, dict(event.data)),
+                },
+                sort_keys=True,
+            ),
+            file=self._stream,
+            flush=True,
         )
 
     def close(self) -> None:

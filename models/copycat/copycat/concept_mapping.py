@@ -1,4 +1,5 @@
 from __future__ import annotations
+import itertools
 from typing import List, Optional
 
 from .slipnode import Slipnode
@@ -6,6 +7,8 @@ from .workspace_objects_and_structures.workspace_object import WorkspaceObject
 
 
 class ConceptMapping:
+    _next_id = itertools.count(1)
+
     def __init__(
         self,
         source_facet: Slipnode,
@@ -23,6 +26,7 @@ class ConceptMapping:
         self.label = label
         self.source = source
         self.target = target
+        self.hash_id = next(ConceptMapping._next_id)
 
     def __repr__(self):
         return (

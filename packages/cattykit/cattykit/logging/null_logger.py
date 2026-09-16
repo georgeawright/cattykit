@@ -1,9 +1,10 @@
 """No-op model logger."""
 
 from .event import ModelEvent
+from .identifiers import LoggerIdentifiers
 
 
-class NullLogger:
+class NullLogger(LoggerIdentifiers):
     """A logger that discards all events."""
 
     def log(self, event: ModelEvent) -> None:

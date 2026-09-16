@@ -77,20 +77,15 @@ class Coderack:
             ModelEvent.create(
                 "copycat",
                 "codelet_selected",
-                codelet_id=f"codelet:{codelet.hash_id}",
-                codelet_type=type(codelet).__name__,
-                urgency_bin=codelet.urgency_bin,
-                birth_time=codelet.birth_time,
+                codelet=codelet,
                 time=self.number_of_codelets_run,
             )
         )
         result = codelet.run(temperature)
         self.number_of_codelets_run += 1
         data = {
-            "codelet_id": f"codelet:{codelet.hash_id}",
+            "codelet": codelet,
             "time": self.number_of_codelets_run,
-            "codelet": type(codelet).__name__,
-            "urgency_bin": codelet.urgency_bin,
             "temperature": temperature,
             "outcome": "finish" if isinstance(result, Finish) else "fizzle",
         }
@@ -183,13 +178,7 @@ class Coderack:
             ModelEvent.create(
                 "copycat",
                 "codelet_posted",
-                codelet_id=f"codelet:{codelet.hash_id}",
-                codelet_type=type(codelet).__name__,
-                urgency_bin=codelet.urgency_bin,
-                birth_time=codelet.birth_time,
-                arguments={
-                    "proposed_structure": getattr(codelet, "proposed_structure", None)
-                },
+                codelet=codelet,
             )
         )
 
@@ -204,7 +193,7 @@ class Coderack:
             ModelEvent.create(
                 "copycat",
                 "codelet_removed",
-                codelet_id=f"codelet:{codelet.hash_id}",
+                codelet=codelet,
             )
         )
         if isinstance(codelet, (BondStrengthTester, BondBuilder)):

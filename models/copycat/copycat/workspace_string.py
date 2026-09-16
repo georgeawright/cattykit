@@ -88,7 +88,7 @@ class WorkspaceString:
                 ModelEvent.create(
                     "copycat",
                     "attribute_updated",
-                    object_id=_object_id(obj),
+                    object=obj,
                     attribute="relative_importance",
                     value=obj.relative_importance,
                 )
@@ -104,7 +104,7 @@ class WorkspaceString:
             ModelEvent.create(
                 "copycat",
                 "attribute_updated",
-                object_id=f"string:{self.string_id}",
+                object=self,
                 attribute="intra_string_unhappiness",
                 value=self.intra_string_unhappiness,
             )
@@ -115,12 +115,8 @@ class WorkspaceString:
 
     def add_letter(self, letter):
         self.letters.append(letter)
-        self._log(
-            "letter_created",
-            letter_id=f"letter:{letter.hash_id}",
-            string_id=self.string_id,
-            position=letter.left_position,
-            letter_category=letter.letter_category.name,
+        self.logger.log(
+            ModelEvent.create("copycat", "letter_created", letter=letter)
         )
 
     def contains_bond(self, b) -> bool:
@@ -133,12 +129,12 @@ class WorkspaceString:
     def add_proposed_bond(self, bond):
         """Add to a maintained list of proposed bonds between two nodes."""
         self.proposed_bonds_by_role[bond.source][bond.target].append(bond)
-        self._log_structure("bond_proposed", bond)
+        self.logger.log(ModelEvent.create("copycat", "bond_proposed", bond=bond))
 
     def delete_proposed_bond(self, bond):
         """Delete from a maintained list of proposed bonds between two objects."""
         self.proposed_bonds_by_role[bond.source][bond.target].remove(bond)
-        self._log_structure("bond_destroyed", bond)
+        self.logger.log(ModelEvent.create("copycat", "bond_destroyed", bond=bond))
 
     def add_bond(self, bond):
         """Add the only bond between two objects."""
@@ -147,7 +143,7 @@ class WorkspaceString:
         if bond.bond_category.name == "sameness":
             self.bonds_by_role[bond.target][bond.source] = bond
             self.bonds_by_position[bond.left_object][bond.right_object] = bond
-        self._log_structure("bond_created", bond)
+        self.logger.log(ModelEvent.create("copycat", "bond_created", bond=bond))
 
     def delete_bond(self, bond):
         """Delete the only bond between two objects."""
@@ -156,7 +152,7 @@ class WorkspaceString:
         if bond.bond_category.name == "sameness":
             self.bonds_by_role[bond.target][bond.source] = None
             self.bonds_by_position[bond.left_object][bond.right_object] = None
-        self._log_structure("bond_destroyed", bond)
+        self.logger.log(ModelEvent.create("copycat", "bond_destroyed", bond=bond))
 
     def get_bond_if_present(self, bond):
         """Return the equivalent bond if it is already in the string, else False."""
@@ -168,42 +164,26 @@ class WorkspaceString:
     def add_proposed_group(self, group):
         """Add to a list of proposed groups spanning from one object to another."""
         self._proposed_groups[group.left_object][group.right_object].append(group)
-        self._log_structure("group_proposed", group)
+        self.logger.log(ModelEvent.create("copycat", "group_proposed", group=group))
 
     def delete_proposed_group(self, group):
         """Delete from a list of proposed bonds spanning from one object to another."""
         self._proposed_groups[group.left_object][group.right_object].remove(group)
-        self._log_structure("group_destroyed", group)
+        self.logger.log(ModelEvent.create("copycat", "group_destroyed", group=group))
 
     def add_group(self, group):
         """Add the only group spanning from one object to another."""
         self._groups[group.left_object] = group
         self.object_positions[group.left_position].append(group)
         self.object_positions[group.right_position].append(group)
-        self._log_structure("group_created", group)
+        self.logger.log(ModelEvent.create("copycat", "group_created", group=group))
 
     def delete_group(self, group):
         """Delete the only group spanning from one object to another."""
         self._groups[group.left_object] = None
         self.object_positions[group.left_position].remove(group)
         self.object_positions[group.right_position].remove(group)
-        self._log_structure("group_destroyed", group)
-
-    def _log_structure(self, kind: str, structure: object) -> None:
-        data = (
-            _bond_data(structure)
-            if kind.startswith("bond_")
-            else _group_data(structure)
-        )
-        self._log(kind, **data)
-
-    def _log(self, kind: str, **data: object) -> None:
-        entity = kind.rsplit("_", maxsplit=1)[0]
-        identifier = f"{entity}_id"
-        if identifier not in data:
-            value = data.pop(entity)
-            data[identifier] = f"{entity}:{value.hash_id}"
-        self.logger.log(ModelEvent.create("copycat", kind, **data))
+        self.logger.log(ModelEvent.create("copycat", "group_destroyed", group=group))
 
     def get_group_if_present(self, group):
         """Return the equivalent group if it is already in the string, else False."""
@@ -263,40 +243,3 @@ class WorkspaceString:
 
     def get_changed_objects(self) -> List["WorkspaceObject"]:
         return [l for l in self.letters if l.is_changed_letter]
-
-
-def _object_id(obj: object) -> str:
-    return f"{type(obj).__name__.lower()}:{obj.hash_id}"
-
-
-def _node_name(value: object | None) -> str | None:
-    return None if value is None else value.name
-
-
-def _bond_data(bond: object) -> dict[str, object]:
-    return {
-        "bond": bond,
-        "string_id": bond.string.string_id,
-        "source_id": _object_id(bond.source),
-        "target_id": _object_id(bond.target),
-        "bond_category": bond.bond_category.name,
-        "direction_category": _node_name(bond.direction_category),
-        "bond_facet": bond.bond_facet.name,
-        "source_descriptor": bond.source_descriptor.name,
-        "target_descriptor": bond.target_descriptor.name,
-    }
-
-
-def _group_data(group: object) -> dict[str, object]:
-    return {
-        "group": group,
-        "string_id": group.string.string_id,
-        "group_category": group.group_category.name,
-        "direction_category": _node_name(group.direction_category),
-        "bond_category": group.bond_category.name,
-        "bond_facet": _node_name(group.bond_facet),
-        "left_position": group.left_position,
-        "right_position": group.right_position,
-        "members": [_object_id(member) for member in group.objects],
-        "bonds": [f"bond:{bond.hash_id}" for bond in group.bonds],
-    }

@@ -8,9 +8,10 @@ from pathlib import Path
 from typing import Any
 
 from .event import ModelEvent
+from .identifiers import LoggerIdentifiers
 
 
-class SQLiteLogger:
+class SQLiteLogger(LoggerIdentifiers):
     """Persist model events in a SQLite database that can be read by Cattycam."""
 
     def __init__(self, path: str | Path) -> None:
@@ -24,7 +25,7 @@ class SQLiteLogger:
 
     def log(self, event: ModelEvent) -> None:
         """Record an event using the logger's current codelet-time cursor."""
-        data = dict(event.data)
+        data = self.event_data(event.kind, dict(event.data))
         self._update_codelet_time(event.kind, data)
         if data.get("time") is None:
             data["time"] = self._codelets_run

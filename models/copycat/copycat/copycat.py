@@ -249,7 +249,7 @@ class Copycat:
                 ModelEvent.create(
                     "copycat",
                     "letter_destroyed",
-                    letter_id=f"letter:{letter.hash_id}",
+                    letter=letter,
                     time=time,
                 )
             )
@@ -258,10 +258,7 @@ class Copycat:
                 ModelEvent.create(
                     "copycat",
                     "letter_created",
-                    letter_id=f"letter:{letter.hash_id}",
-                    string_id="answer",
-                    position=letter.left_position,
-                    letter_category=letter.letter_category.name,
+                    letter=letter,
                     time=time,
                 )
             )

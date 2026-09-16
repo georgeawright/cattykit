@@ -7,6 +7,23 @@ from io import StringIO
 from cattykit.logging import ModelEvent, NullLogger, PrintLogger, SQLiteLogger
 
 
+def test_logger_assigns_serial_identifiers_to_domain_objects() -> None:
+    class Codelet:
+        hash_id = 7
+
+    class Letter:
+        hash_id = 3
+
+    class Slipnode:
+        name = "letter_category"
+
+    logger = NullLogger()
+
+    assert logger.codelet_id(Codelet()) == "codelet:7"
+    assert logger.object_id(Letter()) == "letter:3"
+    assert logger.entity_id("slipnode", Slipnode()) == "slipnode:letter_category"
+
+
 def test_null_logger_discards_events() -> None:
     logger = NullLogger()
 
@@ -26,6 +43,22 @@ def test_print_logger_writes_json_to_its_stream() -> None:
     assert event["kind"] == "started"
     assert event["model"] == "test"
     assert event["timestamp"].endswith("+00:00")
+
+
+def test_print_logger_serializes_domain_objects() -> None:
+    class Letter:
+        hash_id = 3
+
+    stream = StringIO()
+    logger = PrintLogger(stream)
+
+    logger.log(
+        ModelEvent.create(
+            "copycat", "attribute_updated", object=Letter(), attribute="value", value=1
+        )
+    )
+
+    assert json.loads(stream.getvalue())["data"]["object_id"] == "letter:3"
 
 
 def test_sqlite_logger_creates_the_cattycam_schema(tmp_path) -> None:

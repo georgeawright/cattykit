@@ -199,10 +199,7 @@ class WorkspaceObject:
             ModelEvent.create(
                 "copycat",
                 "description_created",
-                description_id=f"description:{description.hash_id}",
-                object_id=f"{type(self).__name__.lower()}:{self.hash_id}",
-                facet=description.facet.name,
-                descriptor=description.descriptor.name,
+                description=description,
             )
         )
 

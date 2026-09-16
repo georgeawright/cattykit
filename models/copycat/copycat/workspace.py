@@ -31,10 +31,6 @@ from .workspace_objects_and_structures import (
 )
 
 
-def _object_id(obj: object) -> str:
-    return f"{type(obj).__name__.lower()}:{obj.hash_id}"
-
-
 class Workspace:
     def __init__(
         self,
@@ -101,11 +97,14 @@ class Workspace:
                 workspace_string.add_letter(
                     Letter(workspace_string, slipnet[character], position)
                 )
-            self._log(
-                "string_initialized",
-                string_id=string_id,
-                role=string_id,
-                value=value,
+            self.logger.log(
+                ModelEvent.create(
+                    "copycat",
+                    "string_initialized",
+                    string_id=string_id,
+                    role=string_id,
+                    value=value,
+                )
             )
 
         self.initial_string.distribution_of_bond_counts = list(
@@ -188,10 +187,12 @@ class Workspace:
         if value is self._rule:
             return
         if self._rule is not None:
-            self._log_rule("rule_destroyed", self._rule)
+            self.logger.log(
+                ModelEvent.create("copycat", "rule_destroyed", rule=self._rule)
+            )
         self._rule = value
         if value is not None:
-            self._log_rule("rule_created", value)
+            self.logger.log(ModelEvent.create("copycat", "rule_created", rule=value))
 
     @property
     def translated_rule(self) -> Optional[Rule]:
@@ -202,10 +203,16 @@ class Workspace:
         if value is self._translated_rule:
             return
         if self._translated_rule is not None:
-            self._log_rule("translated_rule_destroyed", self._translated_rule)
+            self.logger.log(
+                ModelEvent.create(
+                    "copycat", "translated_rule_destroyed", rule=self._translated_rule
+                )
+            )
         self._translated_rule = value
         if value is not None:
-            self._log_rule("translated_rule_created", value)
+            self.logger.log(
+                ModelEvent.create("copycat", "translated_rule_created", rule=value)
+            )
 
     @property
     def unreplaced_objects(self):
@@ -424,7 +431,7 @@ class Workspace:
                     ModelEvent.create(
                         "copycat",
                         "attribute_updated",
-                        object_id=_object_id(structure),
+                        object=structure,
                         attribute=attribute,
                         value=getattr(structure, attribute),
                     )
@@ -446,7 +453,7 @@ class Workspace:
                     ModelEvent.create(
                         "copycat",
                         "attribute_updated",
-                        object_id=_object_id(obj),
+                        object=obj,
                         attribute=attribute,
                         value=getattr(obj, attribute),
                     )
@@ -455,27 +462,31 @@ class Workspace:
     def add_proposed_correspondence(self, c: Correspondence):
         """Add to a maintained list of proposed correspondences between two objects."""
         self._proposed_correspondences[c.source][c.target].append(c)
-        self._log_correspondence("correspondence_proposed", c)
+        self.logger.log(
+            ModelEvent.create("copycat", "correspondence_proposed", correspondence=c)
+        )
 
     def delete_proposed_correspondence(self, c: Correspondence):
         """Delete from a maintained list of proposed correspondences between two objects."""
         self._proposed_correspondences[c.source][c.target].remove(c)
-        self._log_correspondence("correspondence_destroyed", c)
+        self.logger.log(
+            ModelEvent.create("copycat", "correspondence_destroyed", correspondence=c)
+        )
 
     def add_correspondence(self, c: Correspondence):
         """Add the only correspondence between two objects."""
         self._correspondences[c.source] = c
-        self._log_correspondence("correspondence_created", c)
-        for index, mapping in enumerate(getattr(c, "concept_mappings", [])):
-            self._log(
-                "concept_mapping_created",
-                concept_mapping_id=f"correspondence:{c.hash_id}:mapping:{index}",
-                correspondence_id=f"correspondence:{c.hash_id}",
-                source_facet=mapping.source_facet.name,
-                target_facet=mapping.target_facet.name,
-                source_descriptor=mapping.source_descriptor.name,
-                target_descriptor=mapping.target_descriptor.name,
-                label=None if mapping.label is None else mapping.label.name,
+        self.logger.log(
+            ModelEvent.create("copycat", "correspondence_created", correspondence=c)
+        )
+        for mapping in getattr(c, "concept_mappings", []):
+            self.logger.log(
+                ModelEvent.create(
+                    "copycat",
+                    "concept_mapping_created",
+                    correspondence=c,
+                    concept_mapping=mapping,
+                )
             )
 
     def break_correspondence(self, c: Correspondence):
@@ -486,16 +497,15 @@ class Workspace:
     def delete_correspondence(self, c: Correspondence):
         """Delete the only correspondence between two objects."""
         self._correspondences[c.source] = None
-        self._log_correspondence("correspondence_destroyed", c)
+        self.logger.log(
+            ModelEvent.create("copycat", "correspondence_destroyed", correspondence=c)
+        )
 
     def add_replacement(self, replacement: Replacement) -> None:
         """Add a replacement discovered between the initial and modified strings."""
         self.replacements.append(replacement)
-        self._log(
-            "replacement_created",
-            replacement_id=f"replacement:{replacement.hash_id}",
-            source_id=_object_id(replacement.source),
-            target_id=_object_id(replacement.target),
+        self.logger.log(
+            ModelEvent.create("copycat", "replacement_created", replacement=replacement)
         )
 
     def delete_translated_rule(self):
@@ -503,7 +513,7 @@ class Workspace:
 
     def propose_rule(self, rule: Rule) -> None:
         """Record a rule proposal before it becomes workspace state."""
-        self._log_rule("rule_proposed", rule)
+        self.logger.log(ModelEvent.create("copycat", "rule_proposed", rule=rule))
 
     def delete_proposed_structures(self):
         for bond in self.proposed_bonds:
@@ -512,37 +522,6 @@ class Workspace:
             group.string.delete_proposed_group(group)
         for correspondence in self.proposed_correspondences:
             self.delete_proposed_correspondence(correspondence)
-
-    def _log_correspondence(self, kind: str, correspondence: Correspondence) -> None:
-        self._log(
-            kind,
-            correspondence_id=f"correspondence:{correspondence.hash_id}",
-            source_id=_object_id(correspondence.source),
-            target_id=_object_id(correspondence.target),
-        )
-
-    def _log_rule(self, kind: str, rule: Rule) -> None:
-        self._log(
-            kind,
-            rule_id=f"rule:{rule.hash_id}",
-            **{
-                attribute: None
-                if getattr(rule, attribute) is None
-                else getattr(rule, attribute).name
-                for attribute in (
-                    "source_object_category",
-                    "source_facet",
-                    "source_descriptor",
-                    "target_object_category",
-                    "target_descriptor",
-                    "replaced_facet",
-                    "relation",
-                )
-            },
-        )
-
-    def _log(self, kind: str, **data: object) -> None:
-        self.logger.log(ModelEvent.create("copycat", kind, **data))
 
     def contains_object(self, o: WorkspaceObject) -> bool:
         """Returns True if the workspace contains an equivalent group."""

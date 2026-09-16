@@ -219,7 +219,7 @@ class Slipnet:
                 ModelEvent.create(
                         "copycat",
                         "attribute_updated",
-                        object_id=f"slipnode:{node.name}",
+                        object=node,
                         attribute="activation",
                         value=float(node.activation),
                 )

@@ -5,6 +5,13 @@ from types import SimpleNamespace
 from copycat.concept_mapping import ConceptMapping
 
 
+def test_concept_mappings_receive_distinct_hash_ids() -> None:
+    first = ConceptMapping(None, None, None, None, None)
+    second = ConceptMapping(None, None, None, None, None)
+
+    assert first.hash_id != second.hash_id
+
+
 @pytest.mark.parametrize(
     "source_descriptor_name, target_descriptor_name, degree_of_association, expected",
     [
