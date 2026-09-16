@@ -22,28 +22,30 @@ class ImportantObjectCorrespondenceScout(CorrespondenceScout):
         )
         if self.source is None:
             return Fizzle(FizzleReason.NO_OBJECTS)
-        source_description = (
+        self.source_description = (
             self.source.choose_relevant_distinguishing_description_by_conceptual_depth()
         )
-        if source_description is None:
+        if self.source_description is None:
             return Fizzle(FizzleReason.NO_RELEVANT_DESCRIPTIONS)
-        source_descriptor = source_description.descriptor
-        target_descriptor = next(
+        self.source_descriptor = self.source_description.descriptor
+        self.target_descriptor = next(
             (
                 slippage.target_descriptor
                 for slippage in self.workspace.slippages
-                if slippage.source_descriptor == source_descriptor
+                if slippage.source_descriptor == self.source_descriptor
             ),
-            source_descriptor,
+            self.source_descriptor,
         )
-        target_candidates = [
+        self.target_candidates = [
             obj
             for obj in self.workspace.target_string.objects
-            if any(d.descriptor == target_descriptor for d in obj.relevant_descriptions)
+            if any(
+                d.descriptor == self.target_descriptor for d in obj.relevant_descriptions
+            )
         ]
-        if not target_candidates:
+        if not self.target_candidates:
             return Fizzle(FizzleReason.NO_OBJECTS_WITH_DESCRIPTOR)
         self.target = select_item_from_list(
-            target_candidates,
-            [obj.inter_string_salience for obj in target_candidates],
+            self.target_candidates,
+            [obj.inter_string_salience for obj in self.target_candidates],
         )

@@ -22,32 +22,32 @@ class RuleScout(Scout):
     def run(self, temperature: float) -> CodeletResult:
         if not self.workspace.all_replacements_found:
             return Fizzle(FizzleReason.NOT_ALL_REPLACEMENTS_FOUND)
-        changed_objects = self.workspace.initial_string.get_changed_objects()
-        if len(changed_objects) > 1:
+        self.changed_objects = self.workspace.initial_string.get_changed_objects()
+        if len(self.changed_objects) > 1:
             raise Exception("Cannot solve problems with more than one changed letter.")
-        if not changed_objects:
+        if not self.changed_objects:
             self._propose_rule(None, None, None, None, temperature=temperature)
             return Finish()
-        initial_object = changed_objects[0]
-        initial_description = self._get_initial_description(
-            initial_object,
+        self.initial_object = self.changed_objects[0]
+        self.initial_description = self._get_initial_description(
+            self.initial_object,
             temperature,
         )
-        if initial_description is None:
+        if self.initial_description is None:
             return Fizzle(FizzleReason.NO_INITIAL_DESCRIPTIONS)
-        modified_object = initial_object.replacement.target
-        modified_description = self._get_modified_description(
-            modified_object,
-            initial_description,
+        self.modified_object = self.initial_object.replacement.target
+        self.modified_description = self._get_modified_description(
+            self.modified_object,
+            self.initial_description,
             temperature,
         )
-        if modified_description is None:
+        if self.modified_description is None:
             return Fizzle(FizzleReason.NO_MODIFIED_DESCRIPTIONS)
         self._propose_rule(
-            initial_object,
-            initial_description,
-            modified_object,
-            modified_description,
+            self.initial_object,
+            self.initial_description,
+            self.modified_object,
+            self.modified_description,
             temperature=temperature,
         )
         return Finish()
@@ -164,13 +164,13 @@ class RuleScout(Scout):
         probabilities = temperature_adjust_list(
             [c.conceptual_depth for c in candidates], temperature
         )
-        choice = select_item_from_list(candidates, probabilities)
-        if isinstance(choice, ExtrinsicDescription):
+        self.choice = select_item_from_list(candidates, probabilities)
+        if isinstance(self.choice, ExtrinsicDescription):
             related_descriptor = initial_description.descriptor.get_related_node(
-                choice.relation.name
+                self.choice.relation.name
             )
             if related_descriptor:
                 for d in modified_object.descriptions:
                     if d.descriptor == related_descriptor:
                         return d
-        return choice
+        return self.choice

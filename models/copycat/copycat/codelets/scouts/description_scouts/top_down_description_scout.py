@@ -27,13 +27,13 @@ class TopDownDescriptionScout(DescriptionScout):
         self.description_type = description_type
 
     def run(self, temperature: float) -> CodeletResult:
-        chosen_object = self.workspace.choose_object(
+        self.chosen_object = self.workspace.choose_object(
             temperature, lambda x: x.total_salience
         )
-        if chosen_object is None:
+        if self.chosen_object is None:
             return Fizzle(FizzleReason.NO_OBJECTS)
         possible_descriptors = self.description_type.get_possible_descriptors(
-            chosen_object
+            self.chosen_object
         )
         if not possible_descriptors:
             return Fizzle(FizzleReason.NO_POSSIBLE_DESCRIPTORS)
@@ -41,11 +41,6 @@ class TopDownDescriptionScout(DescriptionScout):
             self.slipnet.get_node_activation(descriptor.name)
             for descriptor in possible_descriptors
         ]
-        chosen_descriptor = select_item_from_list(possible_descriptors, weights)
-        self.propose_description(
-            chosen_object,
-            self.description_type,
-            chosen_descriptor,
-            temperature=temperature,
-        )
+        self.chosen_descriptor = select_item_from_list(possible_descriptors, weights)
+        self.propose_description(temperature)
         return Finish()

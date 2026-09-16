@@ -140,16 +140,12 @@ def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.View
 
     def duration_label(time_taken: int | None, result: str | None) -> str:
         outcome = "fizzled" if result == "fizzle" else "finished"
-        if time_taken is None:
-            return f"{outcome} in — milliseconds"
-        return f"{outcome} in {time_taken / 1_000_000:.3f} milliseconds"
+        return f"{outcome} after {time_taken / 1_000_000:.3f} milliseconds"
 
     def steps_html(codelet_id: str) -> str:
         steps = steps_by_codelet.get(codelet_id, [])
         return "".join(
-            "<div>"
-            f"{html.escape(attribute)} set to {html.escape(str(value))}"
-            "</div>"
+            "<div>" f"{html.escape(attribute)}: {html.escape(str(value))}" "</div>"
             for attribute, value in steps
         )
 

@@ -35,52 +35,58 @@ class BondBuilder(Builder):
             or self.proposed_bond.target not in self.workspace.objects
         ):
             return Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
-        existing_bond = self.proposed_bond.string.get_bond_if_present(
+        self.existing_bond = self.proposed_bond.string.get_bond_if_present(
             self.proposed_bond
         )
-        if existing_bond:
-            self.slipnet.activate_node_from_workspace(existing_bond.bond_category.name)
-            if existing_bond.direction_category is not None:
+        if self.existing_bond:
+            self.slipnet.activate_node_from_workspace(
+                self.existing_bond.bond_category.name
+            )
+            if self.existing_bond.direction_category is not None:
                 self.slipnet.activate_node_from_workspace(
-                    existing_bond.direction_category.name
+                    self.existing_bond.direction_category.name
                 )
             self.proposed_bond.string.delete_proposed_bond(self.proposed_bond)
             return Fizzle(FizzleReason.STRUCTURE_ALREADY_EXISTS)
         self.proposed_bond.string.delete_proposed_bond(self.proposed_bond)
-        incompatible_bonds = self._get_incompatible_bonds()
-        if incompatible_bonds:
-            fight_result = structure_beats_structures(
-                self.proposed_bond, 1, incompatible_bonds, 1, temperature=temperature
-            )
-            if not fight_result:
-                return Fizzle(FizzleReason.INCOMPATIBLE_STRUCTURES_WON)
-        incompatible_groups = self._get_incompatible_groups()
-        if incompatible_groups:
+        self.incompatible_bonds = self._get_incompatible_bonds()
+        if self.incompatible_bonds:
             fight_result = structure_beats_structures(
                 self.proposed_bond,
                 1,
-                incompatible_groups,
-                max(group.letter_span for group in incompatible_groups),
+                self.incompatible_bonds,
+                1,
                 temperature=temperature,
             )
             if not fight_result:
                 return Fizzle(FizzleReason.INCOMPATIBLE_STRUCTURES_WON)
-        incompatible_correspondences = self._get_incompatible_correspondences()
-        if incompatible_correspondences:
+        self.incompatible_groups = self._get_incompatible_groups()
+        if self.incompatible_groups:
+            fight_result = structure_beats_structures(
+                self.proposed_bond,
+                1,
+                self.incompatible_groups,
+                max(group.letter_span for group in self.incompatible_groups),
+                temperature=temperature,
+            )
+            if not fight_result:
+                return Fizzle(FizzleReason.INCOMPATIBLE_STRUCTURES_WON)
+        self.incompatible_correspondences = self._get_incompatible_correspondences()
+        if self.incompatible_correspondences:
             fight_result = structure_beats_structures(
                 self.proposed_bond,
                 2,
-                incompatible_correspondences,
+                self.incompatible_correspondences,
                 3,
                 temperature=temperature,
             )
             if not fight_result:
                 return Fizzle(FizzleReason.INCOMPATIBLE_STRUCTURES_WON)
-        for group in incompatible_groups:
+        for group in self.incompatible_groups:
             self.workspace.break_group(group)
-        for bond in incompatible_bonds:
+        for bond in self.incompatible_bonds:
             self.workspace.break_bond(bond)
-        for correspondence in incompatible_correspondences:
+        for correspondence in self.incompatible_correspondences:
             self.workspace.break_correspondence(correspondence)
         self.build_bond()
         return Finish()

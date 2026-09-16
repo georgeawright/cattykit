@@ -22,41 +22,37 @@ class WholeStringGroupScout(GroupScout):
         )
 
     def run(self, temperature: float) -> CodeletResult:
-        workspace_string = self.workspace.get_random_string()
-        if not workspace_string.bonds:
+        self.workspace_string = self.workspace.get_random_string()
+        if not self.workspace_string.bonds:
             return Fizzle(FizzleReason.NO_BONDS)
-        chosen_object = workspace_string.choose_from_leftmost_objects()
-        first_bond = chosen_object.right_bond
-        if first_bond is None:
+        self.chosen_object = self.workspace_string.choose_from_leftmost_objects()
+        self.first_bond = self.chosen_object.right_bond
+        if self.first_bond is None:
             return Fizzle(FizzleReason.BONDS_DO_NOT_SPAN_STRING)
-        bonds, objects = self._get_bonds_and_objects(
-            direction=self.slipnet["right"], first_bond=first_bond
+        self.bonds, self.objects = self._get_bonds_and_objects(
+            direction=self.slipnet["right"], first_bond=self.first_bond
         )
         if not (
-            objects[0].is_leftmost_in_string and objects[-1].is_rightmost_in_string
+            self.objects[0].is_leftmost_in_string
+            and self.objects[-1].is_rightmost_in_string
         ):
             return Fizzle(FizzleReason.BONDS_DO_NOT_SPAN_STRING)
-        chosen_bond = select_item_from_list(bonds, [1] * len(bonds))
-        bond_category = chosen_bond.bond_category
-        direction_category = chosen_bond.direction_category
-        bond_facet = chosen_bond.bond_facet
-        possible_group_bonds = self._get_possible_group_bonds(
-            bond_category=bond_category,
-            direction=direction_category,
-            bond_facet=bond_facet,
-            bonds=bonds,
+        self.chosen_bond = select_item_from_list(self.bonds, [1] * len(self.bonds))
+        self.bond_category = self.chosen_bond.bond_category
+        self.direction_category = self.chosen_bond.direction_category
+        self.bond_facet = self.chosen_bond.bond_facet
+        self.possible_group_bonds = self._get_possible_group_bonds(
+            bond_category=self.bond_category,
+            direction=self.direction_category,
+            bond_facet=self.bond_facet,
+            bonds=self.bonds,
         )
-        if not possible_group_bonds:
+        if not self.possible_group_bonds:
             return Fizzle(FizzleReason.NO_COMPATIBLE_GROUP_BONDS)
-        group_category = bond_category.get_related_node("group_category")
-        self.propose_group(
-            objects=list(objects),
-            bonds=possible_group_bonds,
-            group_category=group_category,
-            direction=direction_category,
-            bond_category=bond_category,
-            temperature=temperature,
-        )
+        self.group_category = self.bond_category.get_related_node("group_category")
+        self.objects = list(self.objects)
+        self.bonds = self.possible_group_bonds
+        self.propose_group(temperature)
         return Finish()
 
     def _get_bonds_and_objects(

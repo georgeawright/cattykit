@@ -15,31 +15,30 @@ class BottomUpDescriptionScout(DescriptionScout):
     with urgency a function of the property's activation."""
 
     def run(self, temperature: float) -> CodeletResult:
-        chosen_object = self.workspace.choose_object(
+        self.chosen_object = self.workspace.choose_object(
             temperature, lambda x: x.total_salience
         )
-        if chosen_object is None:
+        if self.chosen_object is None:
             return Fizzle(FizzleReason.NO_OBJECTS)
-        chosen_description = chosen_object.choose_relevant_description_by_activation()
-        if chosen_description is None:
+        self.chosen_description = (
+            self.chosen_object.choose_relevant_description_by_activation()
+        )
+        if self.chosen_description is None:
             return Fizzle(FizzleReason.NO_RELEVANT_DESCRIPTIONS)
-        chosen_descriptor = chosen_description.descriptor
-        has_property_links = chosen_descriptor.get_similar_has_property_links(
+        self.chosen_descriptor = self.chosen_description.descriptor
+        self.has_property_links = self.chosen_descriptor.get_similar_has_property_links(
             temperature
         )
-        if not has_property_links:
+        if not self.has_property_links:
             return Fizzle(FizzleReason.NO_RELEVANT_HAS_PROPERTY_LINKS)
         weights = [
             link.degree_of_association
             * self.slipnet.get_node_activation(link.target.name)
-            for link in has_property_links
+            for link in self.has_property_links
         ]
-        chosen_link = select_item_from_list(has_property_links, weights)
-        chosen_property = chosen_link.target
-        self.propose_description(
-            chosen_object,
-            chosen_property.category,
-            chosen_property,
-            temperature=temperature,
-        )
+        self.chosen_link = select_item_from_list(self.has_property_links, weights)
+        self.chosen_property = self.chosen_link.target
+        self.description_type = self.chosen_property.category
+        self.chosen_descriptor = self.chosen_property
+        self.propose_description(temperature)
         return Finish()

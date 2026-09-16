@@ -30,6 +30,12 @@ class LoggerIdentifiers:
     def event_data(self, kind: str, data: dict[str, object]) -> dict[str, object]:
         """Extract storage-ready fields from the domain objects in an event."""
         result = dict(data)
+        if kind == "codelet_step" and "codelet" in result:
+            codelet = result.pop("codelet")
+            result["codelet_id"] = self.codelet_id(codelet)
+            result["value"] = self._attribute_value(
+                getattr(codelet, result["attribute"])
+            )
         if "object" in result:
             obj = result.pop("object")
             result["object_id"] = self.object_id(obj)

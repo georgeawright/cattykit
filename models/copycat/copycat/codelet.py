@@ -32,7 +32,7 @@ class Codelet:
             return
         if self.logger is None:
             return
-        self.logger.log("codelet_step", object=self, attribute=name)
+        self.logger.log("codelet_step", codelet=self, attribute=name)
 
     def run(self, temperature: float) -> CodeletResult:
         raise NotImplementedError

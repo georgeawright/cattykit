@@ -36,12 +36,11 @@ def test_propose_description():
     scout = DescriptionScout(
         urgency_bin=0, coderack=coderack, slipnet=slipnet, workspace=workspace
     )
-    scout.propose_description(
-        chosen_object=Mock(),
-        description_type=Mock(),
-        descriptor=Mock(),
-        temperature=0.0,
-    )
+    scout.chosen_object = Mock()
+    scout.description_type = Mock()
+    scout.chosen_descriptor = Mock()
+
+    scout.propose_description(temperature=0.0)
 
     assert coderack.post_called == 1
     assert slipnet.activate_called == 1

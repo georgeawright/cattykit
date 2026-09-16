@@ -23,32 +23,25 @@ class TopDownDirectionGroupScout(GroupScout):
         self.direction_category = direction_category
 
     def run(self, temperature: float) -> CodeletResult:
-        workspace_string = self.choose_workspace_string()
-        chosen_object = workspace_string.choose_object(
+        self.workspace_string = self.choose_workspace_string()
+        self.chosen_object = self.workspace_string.choose_object(
             temperature, lambda x: x.intra_string_salience
         )
-        if chosen_object.spans_whole_string:
+        if self.chosen_object.spans_whole_string:
             return Fizzle(FizzleReason.OBJECT_SPANS_WHOLE_STRING)
-        direction = self._choose_direction(chosen_object)
-        number_of_bonds = self._choose_number_of_bonds(workspace_string)
-        first_bond = self._get_first_bond(direction, chosen_object)
-        if first_bond is None:
+        self.direction = self._choose_direction(self.chosen_object)
+        self.number_of_bonds = self._choose_number_of_bonds(self.workspace_string)
+        self.first_bond = self._get_first_bond(self.direction, self.chosen_object)
+        if self.first_bond is None:
             return Fizzle(FizzleReason.NO_FIRST_BOND)
-        if first_bond.direction_category != self.direction_category:
+        if self.first_bond.direction_category != self.direction_category:
             return Fizzle(FizzleReason.BOND_DIRECTION_DOES_NOT_MATCH)
-        bond_category = first_bond.bond_category
-        group_category = bond_category.get_related_node("group_category")
-        bonds, objects = self._get_bonds_and_objects(
-            direction, first_bond, number_of_bonds
+        self.bond_category = self.first_bond.bond_category
+        self.group_category = self.bond_category.get_related_node("group_category")
+        self.bonds, self.objects = self._get_bonds_and_objects(
+            self.direction, self.first_bond, self.number_of_bonds
         )
-        self.propose_group(
-            objects=objects,
-            bonds=bonds,
-            group_category=group_category,
-            direction=self.direction_category,
-            bond_category=bond_category,
-            temperature=temperature,
-        )
+        self.propose_group(temperature)
         return Finish()
 
     def choose_workspace_string(self):

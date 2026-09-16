@@ -50,48 +50,42 @@ class TopDownCategoryBondScout(BondScout):
         target_string_score = (
             target_string_relevance + target_string_unhappiness
         ) * 0.5
-        string = select_item_from_list(
+        self.string = select_item_from_list(
             [self.workspace.initial_string, self.workspace.target_string],
             [initial_string_score, target_string_score],
         )
-        object_1 = string.choose_object(temperature, lambda x: x.intra_string_salience)
-        if object_1 is None:
+        self.object_1 = self.string.choose_object(
+            temperature, lambda x: x.intra_string_salience
+        )
+        if self.object_1 is None:
             return Fizzle(FizzleReason.NO_OBJECTS)
-        object_2 = object_1.choose_neighbour()
-        if object_2 is None:
+        self.object_2 = self.object_1.choose_neighbour()
+        if self.object_2 is None:
             return Fizzle(FizzleReason.NO_NEIGHBOUR)
-        bond_facet = self._choose_bond_facet(object_1, object_2)
-        if bond_facet is None:
+        self.bond_facet = self._choose_bond_facet(self.object_1, self.object_2)
+        if self.bond_facet is None:
             return Fizzle(FizzleReason.NO_COMMON_BOND_FACET)
-        object_1_descriptor = object_1.get_descriptor(bond_facet)
-        object_2_descriptor = object_2.get_descriptor(bond_facet)
-        if object_1_descriptor is None or object_2_descriptor is None:
+        self.object_1_descriptor = self.object_1.get_descriptor(self.bond_facet)
+        self.object_2_descriptor = self.object_2.get_descriptor(self.bond_facet)
+        if self.object_1_descriptor is None or self.object_2_descriptor is None:
             return Fizzle(FizzleReason.NO_DESCRIPTORS_FOR_BOND_FACET)
         if (
-            self._get_bond_category(object_1_descriptor, object_2_descriptor)
+            self._get_bond_category(self.object_1_descriptor, self.object_2_descriptor)
             == self.bond_category
         ):
-            source = object_1
-            target = object_2
-            source_descriptor = object_1_descriptor
-            target_descriptor = object_2_descriptor
+            self.source = self.object_1
+            self.target = self.object_2
+            self.source_descriptor = self.object_1_descriptor
+            self.target_descriptor = self.object_2_descriptor
         elif (
-            self._get_bond_category(object_2_descriptor, object_1_descriptor)
+            self._get_bond_category(self.object_2_descriptor, self.object_1_descriptor)
             == self.bond_category
         ):
-            source = object_2
-            target = object_1
-            source_descriptor = object_2_descriptor
-            target_descriptor = object_1_descriptor
+            self.source = self.object_2
+            self.target = self.object_1
+            self.source_descriptor = self.object_2_descriptor
+            self.target_descriptor = self.object_1_descriptor
         else:
             return Fizzle(FizzleReason.BOND_CATEGORY_DOES_NOT_MATCH)
-        self.propose_bond(
-            source,
-            target,
-            self.bond_category,
-            bond_facet,
-            source_descriptor,
-            target_descriptor,
-            temperature=temperature,
-        )
+        self.propose_bond(temperature)
         return Finish()

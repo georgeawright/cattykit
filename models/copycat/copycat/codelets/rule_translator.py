@@ -29,23 +29,25 @@ class RuleTranslator(Codelet):
         if temperature > answer_temperature_threshold:
             return Fizzle(FizzleReason.TEMPERATURE_TOO_HIGH)
         try:
-            changed_object = self.workspace.initial_string.get_changed_objects()[0]
+            self.changed_object = self.workspace.initial_string.get_changed_objects()[0]
         except IndexError:
             return Fizzle(FizzleReason.NO_CHANGED_OBJECT)
-        if changed_object.correspondence is None:
-            slippages = self.workspace.slippages
+        if self.changed_object.correspondence is None:
+            self.slippages = self.workspace.slippages
         else:
-            slippages = [
+            self.slippages = [
                 slippage
                 for slippage in self.workspace.slippages
                 if not any(
                     [
                         mapping.contradicts(slippage)
-                        for mapping in changed_object.correspondence.concept_mappings
+                        for mapping in self.changed_object.correspondence.concept_mappings
                     ]
                 )
             ]
-        self.workspace.translated_rule = self.workspace.rule.apply_slippages(slippages)
+        self.workspace.translated_rule = self.workspace.rule.apply_slippages(
+            self.slippages
+        )
         return Finish()
 
     def _get_answer_temperature_threshold(self) -> float:

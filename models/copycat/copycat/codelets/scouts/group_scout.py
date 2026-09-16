@@ -12,34 +12,26 @@ class GroupScout(Scout):
     If possible, it makes a proposed group and posts a group strength tester.
     """
 
-    def propose_group(
-        self,
-        objects: List["WorkspaceObject"],
-        bonds: List["Bond"],
-        group_category: "Slipnode",
-        direction: "Slipnode",
-        bond_category: "Slipnode",
-        temperature: float,
-    ):
-        string = objects[0].string
-        left_object = min(objects, key=lambda o: o.left_position)
-        right_object = max(objects, key=lambda o: o.right_position)
-        proposed_group = Group(
-            string=string,
-            left_position=left_object.left_position,
-            right_position=right_object.right_position,
-            objects=objects,
-            bonds=bonds,
-            group_category=group_category,
-            direction_category=direction,
-            bond_category=bond_category,
+    def propose_group(self, temperature: float) -> None:
+        self.string = self.objects[0].string
+        self.left_object = min(self.objects, key=lambda o: o.left_position)
+        self.right_object = max(self.objects, key=lambda o: o.right_position)
+        self.proposed_group = Group(
+            string=self.string,
+            left_position=self.left_object.left_position,
+            right_position=self.right_object.right_position,
+            objects=self.objects,
+            bonds=self.bonds,
+            group_category=self.group_category,
+            direction_category=self.direction_category,
+            bond_category=self.bond_category,
         )
-        self._add_descriptions_to_group(proposed_group, temperature)
-        string.add_proposed_group(proposed_group)
-        self.slipnet.activate_node_from_workspace(bond_category.name)
-        if direction is not None:
-            self.slipnet.activate_node_from_workspace(direction.name)
-        urgency = bond_category.bond_degree_of_association
+        self._add_descriptions_to_group(self.proposed_group, temperature)
+        self.string.add_proposed_group(self.proposed_group)
+        self.slipnet.activate_node_from_workspace(self.bond_category.name)
+        if self.direction_category is not None:
+            self.slipnet.activate_node_from_workspace(self.direction_category.name)
+        urgency = self.bond_category.bond_degree_of_association
         urgency_bin = self.coderack.get_urgency_level_from_activation(urgency)
         self.coderack.post(
             GroupStrengthTester(
@@ -47,7 +39,7 @@ class GroupScout(Scout):
                 coderack=self.coderack,
                 slipnet=self.slipnet,
                 workspace=self.workspace,
-                proposed_group=proposed_group,
+                proposed_group=self.proposed_group,
             ),
             temperature=temperature,
         )
@@ -65,11 +57,11 @@ class GroupScout(Scout):
             initial_string_relevance + initial_string_unhappiness
         ) / 2
         target_string_score = (target_string_relevance + target_string_unhappiness) / 2
-        chosen_string = select_item_from_list(
+        self.chosen_string = select_item_from_list(
             [self.workspace.initial_string, self.workspace.target_string],
             [initial_string_score, target_string_score],
         )
-        return chosen_string
+        return self.chosen_string
 
     def _choose_direction(self, chosen_object):
         if chosen_object.is_leftmost_in_string:
@@ -81,11 +73,11 @@ class GroupScout(Scout):
         return select_item_from_list([left, right], [left.activation, right.activation])
 
     def _choose_number_of_bonds(self, workspace_string):
-        number_of_bonds = select_item_from_list(
+        self.number_of_bonds = select_item_from_list(
             workspace_string.distribution_of_bond_counts,
             workspace_string.distribution_of_bond_counts,
         )
-        return number_of_bonds
+        return self.number_of_bonds
 
     def _get_first_bond(self, direction, chosen_object) -> Optional["Bond"]:
         if direction.name == "left":
@@ -104,26 +96,26 @@ class GroupScout(Scout):
             if first_bond.direction_category is not None
             else None
         )
-        next_bond = first_bond
+        self.next_bond = first_bond
         for i in range(2, number_of_bonds + 1):
-            next_bond = next_bond.choose_neighbour(direction)
-            if next_bond is None:
+            self.next_bond = self.next_bond.choose_neighbour(direction)
+            if self.next_bond is None:
                 break
-            next_object = next_bond.get_object(direction)
+            self.next_object = self.next_bond.get_object(direction)
             if (
-                next_bond.bond_category == first_bond.bond_category
-                and next_bond.direction_category == first_bond.direction_category
-                and next_bond.bond_facet == first_bond.bond_facet
+                self.next_bond.bond_category == first_bond.bond_category
+                and self.next_bond.direction_category == first_bond.direction_category
+                and self.next_bond.bond_facet == first_bond.bond_facet
             ):
-                bonds.append(next_bond)
-                objects.append(next_object)
+                bonds.append(self.next_bond)
+                objects.append(self.next_object)
             elif (
-                next_bond.bond_category == opposite_bond_category
-                and next_bond.direction_category == opposite_direction_category
-                and next_bond.bond_facet == first_bond.bond_facet
+                self.next_bond.bond_category == opposite_bond_category
+                and self.next_bond.direction_category == opposite_direction_category
+                and self.next_bond.bond_facet == first_bond.bond_facet
             ):
-                bonds.append(next_bond.get_flipped_version())
-                objects.append(next_object)
+                bonds.append(self.next_bond.get_flipped_version())
+                objects.append(self.next_object)
             else:
                 break
         return bonds, objects
@@ -181,7 +173,7 @@ class GroupScout(Scout):
     def _add_description(self, group: Group, facet, descriptor):
         if descriptor is None:
             return
-        description = Description(group, facet, descriptor)
+        self.description = Description(group, facet, descriptor)
         existing_descriptions = group.descriptions + group.bond_descriptions
         if any(
             getattr(existing, "facet", None) == facet
@@ -189,7 +181,7 @@ class GroupScout(Scout):
             for existing in existing_descriptions
         ):
             return
-        group.add_description(description)
+        group.add_description(self.description)
 
     def _get_string_position(self, group: Group):
         if group.spans_whole_string:

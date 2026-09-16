@@ -86,11 +86,11 @@ def test_print_logger_serializes_codelet_steps() -> None:
     stream = StringIO()
     logger = PrintLogger("test", stream)
 
-    logger.log("codelet_step", object=Codelet(), attribute="source")
+    logger.log("codelet_step", codelet=Codelet(), attribute="source")
 
     assert json.loads(stream.getvalue())["data"] == {
         "attribute": "source",
-        "object_id": "codelet:3",
+        "codelet_id": "codelet:3",
         "value": "letter:4",
     }
 
@@ -215,13 +215,13 @@ def test_sqlite_logger_records_ordered_codelet_steps(tmp_path) -> None:
     logger.log("codelet_selected", codelet_id="codelet:1", codelet_type="Scout")
     logger.log(
         "codelet_step",
-        object_id="codelet:1",
+        codelet_id="codelet:1",
         attribute="source",
         value="letter:2",
     )
     logger.log(
         "codelet_step",
-        object_id="codelet:1",
+        codelet_id="codelet:1",
         attribute="target",
         value="letter:5",
     )

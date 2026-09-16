@@ -551,7 +551,7 @@ class SQLiteLogger(LoggerIdentifiers):
                 (
                     run_id,
                     data.get("time", 0),
-                    data["object_id"],
+                    data["codelet_id"],
                     data["attribute"],
                     self._json(data.get("value")),
                 ),

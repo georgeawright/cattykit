@@ -34,7 +34,7 @@ class CorrespondenceScout(Scout):
             self.target.spans_whole_string and not self.source.spans_whole_string
         ):
             return Fizzle(FizzleReason.INCOMPATIBLE_OBJECT_SPANS)
-        concept_mappings = self.slipnet.get_concept_mappings(
+        self.concept_mappings = self.slipnet.get_concept_mappings(
             self.source,
             self.target,
             self.source.relevant_descriptions,
@@ -43,12 +43,12 @@ class CorrespondenceScout(Scout):
         concept_mappings_possible = any(
             random.random()
             < temperature_adjust_probability(mapping.slippability, temperature)
-            for mapping in concept_mappings
+            for mapping in self.concept_mappings
         )
         if not concept_mappings_possible:
             return Fizzle(FizzleReason.NO_CONCEPT_MAPPINGS)
         distinguishing_concept_mappings = [
-            mapping for mapping in concept_mappings if mapping.is_distinguishing
+            mapping for mapping in self.concept_mappings if mapping.is_distinguishing
         ]
         if not distinguishing_concept_mappings:
             return Fizzle(FizzleReason.NO_DISTINGUISHING_CONCEPT_MAPPINGS)
@@ -71,7 +71,7 @@ class CorrespondenceScout(Scout):
             if mapping.source_facet.name
             not in ["string_position_category", "bond_facet"]
         ]
-        target_flipped = False
+        self.target_flipped = False
         if (
             self.source.is_string_spanning_group
             and self.target.is_string_spanning_group
@@ -178,42 +178,29 @@ class CorrespondenceScout(Scout):
                             self.slipnet.numbers[group_length - 1],
                         )
                     )
-            concept_mappings = self.slipnet.get_concept_mappings(
+            self.concept_mappings = self.slipnet.get_concept_mappings(
                 self.source,
                 self.target,
                 self.source.relevant_descriptions,
                 self.target.relevant_descriptions,
             )
-            target_flipped = True
-        self.propose_correspondence(
-            self.source,
-            self.target,
-            concept_mappings,
-            target_flipped,
-            temperature=temperature,
-        )
+            self.target_flipped = True
+        self.propose_correspondence(temperature)
         return Finish()
 
-    def propose_correspondence(
-        self,
-        source: "WorkspaceObject",
-        target: "WorkspaceObject",
-        concept_mappings: List[ConceptMapping],
-        target_flipped: bool,
-        temperature: float,
-    ):
-        proposed_correspondence = Correspondence(
-            self.workspace, source, target, concept_mappings
+    def propose_correspondence(self, temperature: float) -> None:
+        self.proposed_correspondence = Correspondence(
+            self.workspace, self.source, self.target, self.concept_mappings
         )
-        for mapping in proposed_correspondence.concept_mappings:
+        for mapping in self.proposed_correspondence.concept_mappings:
             self.slipnet.activate_node_from_workspace(mapping.source_facet.name)
             self.slipnet.activate_node_from_workspace(mapping.source_descriptor.name)
             self.slipnet.activate_node_from_workspace(mapping.target_facet.name)
             self.slipnet.activate_node_from_workspace(mapping.target_descriptor.name)
-        self.workspace.add_proposed_correspondence(proposed_correspondence)
-        distinguishing_mappings = proposed_correspondence.distinguishing_mappings
-        urgency = sum(mapping.strength for mapping in distinguishing_mappings) / len(
-            distinguishing_mappings
+        self.workspace.add_proposed_correspondence(self.proposed_correspondence)
+        self.distinguishing_mappings = self.proposed_correspondence.distinguishing_mappings
+        urgency = sum(mapping.strength for mapping in self.distinguishing_mappings) / len(
+            self.distinguishing_mappings
         )
         urgency_bin = self.coderack.get_urgency_level_from_activation(urgency)
         self.coderack.post(
@@ -222,8 +209,8 @@ class CorrespondenceScout(Scout):
                 coderack=self.coderack,
                 slipnet=self.slipnet,
                 workspace=self.workspace,
-                proposed_correspondence=proposed_correspondence,
-                target_flipped=target_flipped,
+                proposed_correspondence=self.proposed_correspondence,
+                target_flipped=self.target_flipped,
             ),
             temperature=temperature,
         )

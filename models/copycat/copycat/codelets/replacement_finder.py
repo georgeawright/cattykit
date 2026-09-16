@@ -29,30 +29,32 @@ class ReplacementFinder(Codelet):
         )
 
     def run(self, temperature: float) -> CodeletResult:
-        initial_letter = random.choice(self.workspace.initial_string.letters)
-        if initial_letter.replacement is not None:
+        self.initial_letter = random.choice(self.workspace.initial_string.letters)
+        if self.initial_letter.replacement is not None:
             return Fizzle(FizzleReason.LETTER_ALREADY_HAS_REPLACEMENT)
-        modified_letter = self.workspace.modified_string.letters[
-            initial_letter.left_position
+        self.modified_letter = self.workspace.modified_string.letters[
+            self.initial_letter.left_position
         ]
-        initial_letter_category = initial_letter.get_descriptor(
+        self.initial_letter_category = self.initial_letter.get_descriptor(
             self.slipnet["letter_category"]
         )
-        modified_letter_category = modified_letter.get_descriptor(
+        self.modified_letter_category = self.modified_letter.get_descriptor(
             self.slipnet["letter_category"]
         )
-        if initial_letter_category != modified_letter_category:
-            initial_letter.is_changed_letter = True
-            change_relation = self.slipnet.get_label_node(
-                initial_letter_category, modified_letter_category
+        if self.initial_letter_category != self.modified_letter_category:
+            self.initial_letter.is_changed_letter = True
+            self.change_relation = self.slipnet.get_label_node(
+                self.initial_letter_category, self.modified_letter_category
             )
-            if change_relation is not None:
-                modified_letter.extrinsic_descriptions.append(
+            if self.change_relation is not None:
+                self.modified_letter.extrinsic_descriptions.append(
                     ExtrinsicDescription(
-                        change_relation, self.slipnet["letter_category"], initial_letter
+                        self.change_relation,
+                        self.slipnet["letter_category"],
+                        self.initial_letter,
                     )
                 )
-        replacement = Replacement(initial_letter, modified_letter)
-        self.workspace.add_replacement(replacement)
-        initial_letter.replacement = replacement
+        self.replacement = Replacement(self.initial_letter, self.modified_letter)
+        self.workspace.add_replacement(self.replacement)
+        self.initial_letter.replacement = self.replacement
         return Finish()

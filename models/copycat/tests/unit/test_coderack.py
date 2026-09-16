@@ -70,7 +70,7 @@ def test_running_codelet_receives_logger_and_logs_attribute_assignments():
 
     assert codelet.logger is logger
     logger.log.assert_any_call(
-        "codelet_step", object=codelet, attribute="result_temperature"
+        "codelet_step", codelet=codelet, attribute="result_temperature"
     )
 
 

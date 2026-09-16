@@ -103,12 +103,12 @@ class GroupBuilder(Builder):
         for description in source_group.descriptions:
             if target_group.has_description(description):
                 continue
-            new_description = Description(
+            self.new_description = Description(
                 argument_object=target_group,
                 facet=description.facet,
                 descriptor=description.descriptor,
             )
-            target_group.add_description(new_description)
+            target_group.add_description(self.new_description)
 
     def _all_bonds_still_exist(self, workspace_string: "WorkspaceString") -> bool:
         for bond in self.proposed_group.bonds:

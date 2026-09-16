@@ -12,37 +12,28 @@ class BondScout(Scout):
     If possible, it makes a proposed bond and posts a bond strength tester.
     """
 
-    def propose_bond(
-        self,
-        source,
-        target,
-        bond_category,
-        bond_facet,
-        source_descriptor,
-        target_descriptor,
-        temperature,
-    ):
-        self.slipnet.activate_node_from_workspace(source_descriptor.name)
-        self.slipnet.activate_node_from_workspace(target_descriptor.name)
-        self.slipnet.activate_node_from_workspace(bond_facet.name)
-        direction_category = (
+    def propose_bond(self, temperature: float) -> None:
+        self.slipnet.activate_node_from_workspace(self.source_descriptor.name)
+        self.slipnet.activate_node_from_workspace(self.target_descriptor.name)
+        self.slipnet.activate_node_from_workspace(self.bond_facet.name)
+        self.direction_category = (
             None
-            if bond_category.name == "sameness"
+            if self.bond_category.name == "sameness"
             else self.slipnet["right"]
-            if source.left_position < target.left_position
+            if self.source.left_position < self.target.left_position
             else self.slipnet["left"]
         )
-        proposed_bond = Bond(
-            source=source,
-            target=target,
-            bond_category=bond_category,
-            direction_category=direction_category,
-            bond_facet=bond_facet,
-            source_descriptor=source_descriptor,
-            target_descriptor=target_descriptor,
+        self.proposed_bond = Bond(
+            source=self.source,
+            target=self.target,
+            bond_category=self.bond_category,
+            direction_category=self.direction_category,
+            bond_facet=self.bond_facet,
+            source_descriptor=self.source_descriptor,
+            target_descriptor=self.target_descriptor,
         )
-        source.string.add_proposed_bond(proposed_bond)
-        urgency = bond_category.bond_degree_of_association
+        self.source.string.add_proposed_bond(self.proposed_bond)
+        urgency = self.bond_category.bond_degree_of_association
         urgency_bin = self.coderack.get_urgency_level_from_activation(urgency)
         self.coderack.post(
             BondStrengthTester(
@@ -50,7 +41,7 @@ class BondScout(Scout):
                 coderack=self.coderack,
                 slipnet=self.slipnet,
                 workspace=self.workspace,
-                proposed_bond=proposed_bond,
+                proposed_bond=self.proposed_bond,
             ),
             temperature=temperature,
         )
