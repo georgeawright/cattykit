@@ -60,6 +60,7 @@ class Copycat:
         initially_clamped_nodes: list[str],
         initial_slipnode_clamp_time: int,
         logger: ModelLogger,
+        seed: int | None = None,
     ):
         self.slipnet = slipnet
         self.coderack = coderack
@@ -75,6 +76,7 @@ class Copycat:
         self.last_snag_time: Optional[int] = None
         self.clamp_temperature = False
         self.logger = logger
+        self.seed = seed
 
     def close(self) -> None:
         """Copycat owns no resources"""
@@ -86,6 +88,7 @@ class Copycat:
         coderack_json_file: str,
         hyperparameters_file: str,
         logger: ModelLogger | None = None,
+        seed: int | None = None,
     ):
         logger = logger if logger is not None else NullLogger()
         with open(hyperparameters_file) as f:
@@ -115,6 +118,7 @@ class Copycat:
             initially_clamped_nodes=hyperparameters["initially_clamped_nodes"],
             initial_slipnode_clamp_time=hyperparameters["initial_slipnode_clamp_time"],
             logger=logger,
+            seed=seed,
         )
 
     def solve(self, string: str) -> str | None:
@@ -126,6 +130,7 @@ class Copycat:
                 "copycat",
                 "run_started",
                 problem=string,
+                seed=self.seed,
                 time=self.coderack.number_of_codelets_run,
             )
         )

@@ -45,13 +45,15 @@ def create_model(
         random.seed(seed)
 
     if config_directory is not None:
-        return _load_copycat(Path(config_directory), logger)
+        return _load_copycat(Path(config_directory), logger, seed)
 
     with as_file(_CONFIG_DIRECTORY) as bundled_config_directory:
-        return _load_copycat(bundled_config_directory, logger)
+        return _load_copycat(bundled_config_directory, logger, seed)
 
 
-def _load_copycat(config_directory: Path, logger: ModelLogger | None) -> Copycat:
+def _load_copycat(
+    config_directory: Path, logger: ModelLogger | None, seed: int | None
+) -> Copycat:
     """Load Copycat from a directory containing its JSON configuration files."""
     return cast(
         Copycat,
@@ -60,5 +62,6 @@ def _load_copycat(config_directory: Path, logger: ModelLogger | None) -> Copycat
             str(config_directory / "coderack.json"),
             str(config_directory / "hyperparameters.json"),
             logger=logger,
+            seed=seed,
         ),
     )

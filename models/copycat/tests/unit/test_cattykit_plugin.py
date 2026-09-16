@@ -16,6 +16,7 @@ def test_copycat_factory_returns_a_cattykit_model() -> None:
 
     assert isinstance(model, CattyKitModel)
     assert model.logger is logger
+    assert model.seed == 1234
 
 
 class RecordingLogger:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import subprocess
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -55,6 +56,9 @@ class SQLiteLogger:
                 model TEXT NOT NULL,
                 run_time TEXT NOT NULL,
                 problem TEXT,
+                seed INTEGER,
+                commit_hash TEXT,
+                has_uncommitted_changes INTEGER NOT NULL DEFAULT 0,
                 solution TEXT,
                 final_temperature REAL,
                 number_of_codelets_run INTEGER,
@@ -297,6 +301,13 @@ class SQLiteLogger:
             """
         )
         self._ensure_column("codelets", "removal_time", "INTEGER")
+        self._ensure_column("runs", "seed", "INTEGER")
+        self._ensure_column("runs", "commit_hash", "TEXT")
+        self._ensure_column(
+            "runs",
+            "has_uncommitted_changes",
+            "INTEGER NOT NULL DEFAULT 0",
+        )
         for table in ("rules", "translated_rules"):
             for column in (
                 "source_object_category",
@@ -366,6 +377,30 @@ class SQLiteLogger:
     def _run_id(self, event: ModelEvent) -> int | None:
         return self._run_ids.get(event.model)
 
+    @staticmethod
+    def _git_metadata() -> tuple[str | None, bool]:
+        """Return the current revision and whether its worktree is dirty.
+
+        Logging remains usable when Git is unavailable, for example from an
+        installed distribution or a source archive.
+        """
+        try:
+            commit = subprocess.run(
+                ["git", "rev-parse", "HEAD"],
+                capture_output=True,
+                check=True,
+                text=True,
+            ).stdout.strip()
+            status = subprocess.run(
+                ["git", "status", "--porcelain"],
+                capture_output=True,
+                check=True,
+                text=True,
+            ).stdout
+        except (OSError, subprocess.CalledProcessError):
+            return None, False
+        return commit or None, bool(status.strip())
+
     def _update_codelet_time(self, kind: str, data: Mapping[str, Any]) -> None:
         """Synchronize the logger's codelet-time cursor with an incoming event."""
         if kind == "run_started":
@@ -377,9 +412,20 @@ class SQLiteLogger:
 
     def _record_event(self, event: ModelEvent, data: Mapping[str, Any]) -> None:
         if event.kind == "run_started":
+            commit_hash, has_uncommitted_changes = self._git_metadata()
             cursor = self._connection.execute(
-                "INSERT INTO runs (model, run_time, problem) VALUES (?, ?, ?)",
-                (event.model, event.timestamp.isoformat(), data.get("problem")),
+                """INSERT INTO runs
+                   (model, run_time, problem, seed, commit_hash,
+                    has_uncommitted_changes)
+                   VALUES (?, ?, ?, ?, ?, ?)""",
+                (
+                    event.model,
+                    event.timestamp.isoformat(),
+                    data.get("problem"),
+                    data.get("seed"),
+                    commit_hash,
+                    has_uncommitted_changes,
+                ),
             )
             if cursor.lastrowid is None:
                 raise RuntimeError("SQLite did not return the new run identifier")
