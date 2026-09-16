@@ -4,6 +4,7 @@ import random
 from cattykit.logging import ModelEvent, ModelLogger
 
 from .coderack_bin import CoderackBin
+from .codelet_result import Finish, Fizzle
 from .codelets.builders import BondBuilder, CorrespondenceBuilder, GroupBuilder
 from .codelets.strength_testers import (
     BondStrengthTester,
@@ -44,7 +45,9 @@ class Coderack:
             [round(URGENCY_TEMPERATURE_FUNCTION(u, t)) for u in range(number_of_bins)]
             for t in range(101)
         ]
-        return cls(urgency_bins, urgency_temperature_lookup_table, max_population, logger)
+        return cls(
+            urgency_bins, urgency_temperature_lookup_table, max_population, logger
+        )
 
     @classmethod
     def from_json(cls, json_data: dict, logger: ModelLogger) -> Coderack:
@@ -67,6 +70,33 @@ class Coderack:
     @property
     def is_empty(self) -> bool:
         return self.population == 0
+
+    def run_next_codelet(self, temperature: float):
+        codelet = self.choose(temperature)
+        self.logger.log(
+            ModelEvent.create(
+                "copycat",
+                "codelet_selected",
+                codelet_id=f"codelet:{codelet.hash_id}",
+                codelet_type=type(codelet).__name__,
+                urgency_bin=codelet.urgency_bin,
+                birth_time=codelet.birth_time,
+                time=self.number_of_codelets_run,
+            )
+        )
+        result = codelet.run(temperature)
+        self.number_of_codelets_run += 1
+        data = {
+            "codelet_id": f"codelet:{codelet.hash_id}",
+            "time": self.number_of_codelets_run,
+            "codelet": type(codelet).__name__,
+            "urgency_bin": codelet.urgency_bin,
+            "temperature": temperature,
+            "outcome": "finish" if isinstance(result, Finish) else "fizzle",
+        }
+        if isinstance(result, Fizzle):
+            data["reason"] = result.reason.value
+        self.logger.log(ModelEvent.create("copycat", "codelet_finished", **data))
 
     def get_urgency_bin(self, urgency_level):
         return self._urgency_bins[urgency_level]

@@ -5,7 +5,6 @@ from typing import Optional
 from cattykit.logging import ModelEvent, ModelLogger, NullLogger
 
 from .answer_builder import AnswerBuilder
-from .codelet_result import Finish, Fizzle
 from .codelets import (
     BottomUpBondScout,
     BottomUpCorrespondenceScout,
@@ -180,7 +179,7 @@ class Copycat:
             if self.coderack.is_empty:
                 self._clamp_initially_clamped_nodes()
                 self._post_initial_codelets()
-            self.step()
+            self.coderack.run_next_codelet(self.temperature)
             if self.workspace.translated_rule is None:
                 continue
             try:
@@ -289,46 +288,6 @@ class Copycat:
             self.slipnet.update_activations()
         if codelets_to_post:
             self.coderack.post_many(codelets_to_post, self.temperature)
-
-    def step(self):
-        """Run a single codelet."""
-        codelet = self.coderack.choose(self.temperature)
-        self.logger.log(
-            ModelEvent.create(
-                "copycat",
-                "codelet_selected",
-                codelet_id=f"codelet:{codelet.hash_id}",
-                codelet_type=type(codelet).__name__,
-                urgency_bin=codelet.urgency_bin,
-                birth_time=codelet.birth_time,
-                time=self.coderack.number_of_codelets_run,
-            )
-        )
-        result = codelet.run(self.temperature)
-        self.coderack.number_of_codelets_run += 1
-        self._log_rule_proposal(codelet)
-        data = {
-            "codelet": type(codelet).__name__,
-            "urgency_bin": codelet.urgency_bin,
-            "temperature": self.temperature,
-            "outcome": "finish" if isinstance(result, Finish) else "fizzle",
-        }
-        if isinstance(result, Fizzle):
-            data["reason"] = result.reason.value
-        self.logger.log(
-            ModelEvent.create(
-                "copycat",
-                "codelet_finished",
-                codelet_id=f"codelet:{codelet.hash_id}",
-                time=self.coderack.number_of_codelets_run,
-                **data,
-            )
-        )
-
-    def _log_rule_proposal(self, codelet) -> None:
-        proposed_rule = getattr(codelet, "proposed_rule", None)
-        if proposed_rule is not None:
-            self.workspace.propose_rule(proposed_rule)
 
     def _update_temperature(self):
         if not self.clamp_temperature:
