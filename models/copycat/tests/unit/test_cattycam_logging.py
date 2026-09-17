@@ -1,7 +1,7 @@
 import sqlite3
 from pathlib import Path
 
-from cattykit.logging import SQLiteLogger
+from cattykit.logging import CattycamLogger
 from copycat import Copycat
 from copycat.codelets import ReplacementFinder
 
@@ -11,7 +11,7 @@ CONFIG_DIRECTORY = Path(__file__).parents[2] / "copycat/configs"
 
 def test_copycat_logs_initial_workspace_and_slipnet_state(tmp_path) -> None:
     database = tmp_path / "history.sqlite"
-    logger = SQLiteLogger(database, "copycat")
+    logger = CattycamLogger(database, "copycat")
     copycat = Copycat.from_json(
         str(CONFIG_DIRECTORY / "slipnet.json"),
         str(CONFIG_DIRECTORY / "coderack.json"),
@@ -74,7 +74,7 @@ def test_copycat_logs_initial_workspace_and_slipnet_state(tmp_path) -> None:
 
 def test_workspace_logs_the_structure_a_codelet_builds(tmp_path, monkeypatch) -> None:
     database = tmp_path / "history.sqlite"
-    logger = SQLiteLogger(database, "copycat")
+    logger = CattycamLogger(database, "copycat")
     copycat = Copycat.from_json(
         str(CONFIG_DIRECTORY / "slipnet.json"),
         str(CONFIG_DIRECTORY / "coderack.json"),
@@ -110,7 +110,7 @@ def test_workspace_logs_the_structure_a_codelet_builds(tmp_path, monkeypatch) ->
 
 def test_coderack_logs_a_codelet_when_it_is_posted(tmp_path) -> None:
     database = tmp_path / "history.sqlite"
-    logger = SQLiteLogger(database, "copycat")
+    logger = CattycamLogger(database, "copycat")
     copycat = Copycat.from_json(
         str(CONFIG_DIRECTORY / "slipnet.json"),
         str(CONFIG_DIRECTORY / "coderack.json"),
