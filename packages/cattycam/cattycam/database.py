@@ -177,6 +177,7 @@ def object_history(database: str | Path, run_id: int, object_id: str) -> dict | 
         group_members: list[str] = []
         group_bonds: list[str] = []
         concept_mappings: list[dict[str, object]] = []
+        slipnode_link_arguments: list[dict[str, object]] = []
         for table, id_column in _OBJECT_TABLES.items():
             if table not in tables:
                 continue
@@ -194,6 +195,27 @@ def object_history(database: str | Path, run_id: int, object_id: str) -> dict | 
                         for column in connection.execute("PRAGMA table_info(slipnodes)")
                     ]
                     details = _object_row_details(column_names, row, id_column)
+                    if "slipnode_link_arguments" in tables:
+                        slipnode_row = connection.execute(
+                            "SELECT id FROM slipnodes WHERE run_id = ? AND name = ?",
+                            (run_id, lookup_id),
+                        ).fetchone()
+                        if slipnode_row:
+                            link_rows = connection.execute(
+                                """SELECT link_collection, source, target, label
+                                   FROM slipnode_link_arguments
+                                   WHERE slipnode_id = ? ORDER BY link_collection, id""",
+                                slipnode_row,
+                            ).fetchall()
+                            slipnode_link_arguments = [
+                                {
+                                    "collection": collection,
+                                    "source": source,
+                                    "target": target,
+                                    "label": label,
+                                }
+                                for collection, source, target, label in link_rows
+                            ]
                     break
             elif object_id.startswith("slipnode:"):
                 continue
@@ -300,6 +322,7 @@ def object_history(database: str | Path, run_id: int, object_id: str) -> dict | 
         "group_members": group_members,
         "group_bonds": group_bonds,
         "concept_mappings": concept_mappings,
+        "slipnode_link_arguments": slipnode_link_arguments,
     }
 
 

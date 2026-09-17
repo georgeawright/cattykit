@@ -145,7 +145,47 @@ def test_object_history_groups_attributes_and_finds_lifecycle_boundaries(tmp_pat
         "group_members": [],
         "group_bonds": [],
         "concept_mappings": [],
+        "slipnode_link_arguments": [],
     }
+
+
+def test_object_history_includes_normalized_slipnode_link_arguments(tmp_path) -> None:
+    database = tmp_path / "history.sqlite"
+    with sqlite3.connect(database) as connection:
+        connection.execute(
+            "CREATE TABLE runs (id INTEGER PRIMARY KEY, number_of_codelets_run INTEGER)"
+        )
+        connection.execute("INSERT INTO runs VALUES (1, 0)")
+        connection.execute(
+            """CREATE TABLE attribute_values
+               (id INTEGER PRIMARY KEY, run_id INTEGER, time INTEGER, object_id TEXT,
+                attribute TEXT, value_json TEXT)"""
+        )
+        connection.execute(
+            "CREATE TABLE slipnodes (id INTEGER PRIMARY KEY, run_id INTEGER, name TEXT)"
+        )
+        connection.execute(
+            """CREATE TABLE slipnode_link_arguments
+               (id INTEGER PRIMARY KEY, slipnode_id INTEGER, link_collection TEXT,
+                source TEXT, target TEXT, label TEXT)"""
+        )
+        connection.execute("INSERT INTO slipnodes VALUES (8, 1, 'successor')")
+        connection.execute(
+            "INSERT INTO slipnode_link_arguments VALUES "
+            "(1, 8, 'lateral_sliplinks', 'successor', 'predecessor', 'opposite')"
+        )
+
+    history = object_history(database, 1, "slipnode:successor")
+
+    assert history is not None
+    assert history["slipnode_link_arguments"] == [
+        {
+            "collection": "lateral_sliplinks",
+            "source": "successor",
+            "target": "predecessor",
+            "label": "opposite",
+        }
+    ]
 
 
 def test_object_table_rows_link_to_their_detail_page(tmp_path) -> None:

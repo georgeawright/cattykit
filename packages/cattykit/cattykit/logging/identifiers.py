@@ -55,19 +55,20 @@ class LoggerIdentifiers:
                 intrinsic_link_length=node.intrinsic_link_length,
                 shrunk_link_length=node.shrunk_link_length,
             )
+            for attribute in (
+                "category_links",
+                "instance_links",
+                "has_property_links",
+                "lateral_sliplinks",
+                "lateral_non_sliplinks",
+                "incoming_links",
+            ):
+                result[attribute] = [
+                    self._sliplink_attributes(link) for link in getattr(node, attribute)
+                ]
         if "link" in result:
             link = result.pop("link")
-            result.update(
-                source=link.source.name,
-                target=link.target.name,
-                label=self._name(link.label),
-                fixed_length=link.fixed_length,
-                is_category_link=link.is_category_link,
-                is_instance_link=link.is_instance_link,
-                is_has_property_link=link.is_has_property_link,
-                is_lateral_sliplink=link.is_lateral_sliplink,
-                is_lateral_non_sliplink=link.is_lateral_non_sliplink,
-            )
+            result.update(self._sliplink_attributes(link))
         if "codelet" in result and not isinstance(result["codelet"], str):
             codelet = result.pop("codelet")
             result.update(
@@ -192,3 +193,17 @@ class LoggerIdentifiers:
     @staticmethod
     def _name(value: object | None) -> str | None:
         return None if value is None else value.name
+
+    def _sliplink_attributes(self, link: object) -> dict[str, object]:
+        """Return the relational fields used to identify a Slipnet link."""
+        return {
+            "source": link.source.name,
+            "target": link.target.name,
+            "label": self._name(link.label),
+            "fixed_length": link.fixed_length,
+            "is_category_link": link.is_category_link,
+            "is_instance_link": link.is_instance_link,
+            "is_has_property_link": link.is_has_property_link,
+            "is_lateral_sliplink": link.is_lateral_sliplink,
+            "is_lateral_non_sliplink": link.is_lateral_non_sliplink,
+        }

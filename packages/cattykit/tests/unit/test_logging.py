@@ -125,6 +125,7 @@ def test_sqlite_logger_creates_the_cattycam_schema(tmp_path) -> None:
         "rules",
         "translated_rules",
         "slipnodes",
+        "slipnode_link_arguments",
         "sliplinks",
         "attribute_values",
         "codelet_arguments",

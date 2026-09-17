@@ -33,6 +33,7 @@ def test_copycat_logs_initial_workspace_and_slipnet_state(tmp_path) -> None:
                 "letters",
                 "descriptions",
                 "slipnodes",
+                "slipnode_link_arguments",
                 "sliplinks",
                 "attribute_values",
             )
@@ -41,13 +42,34 @@ def test_copycat_logs_initial_workspace_and_slipnet_state(tmp_path) -> None:
             "SELECT value_json FROM attribute_values "
             "WHERE object_id = 'slipnode:letter_category' AND attribute = 'activation'"
         ).fetchone()
+        link_argument_counts = dict(
+            connection.execute(
+                """SELECT link_collection, COUNT(*)
+                   FROM slipnode_link_arguments
+                   GROUP BY link_collection"""
+            )
+        )
+        slipnode_columns = {
+            column[1] for column in connection.execute("PRAGMA table_info(slipnodes)")
+        }
 
     assert counts["letters"] == 9
     assert counts["descriptions"] == 27
     assert counts["slipnodes"] > 0
+    assert counts["slipnode_link_arguments"] > 0
     assert counts["sliplinks"] > 0
     assert counts["attribute_values"] > 0
     assert activation is not None
+    assert link_argument_counts.keys() == {
+        "category_links",
+        "instance_links",
+        "has_property_links",
+        "lateral_sliplinks",
+        "lateral_non_sliplinks",
+        "incoming_links",
+    }
+    assert all(count > 0 for count in link_argument_counts.values())
+    assert not {column for column in slipnode_columns if column.endswith("_json")}
 
 
 def test_workspace_logs_the_structure_a_codelet_builds(tmp_path, monkeypatch) -> None:

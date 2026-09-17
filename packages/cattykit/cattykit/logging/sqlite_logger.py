@@ -278,13 +278,22 @@ class SQLiteLogger(LoggerIdentifiers):
                 depth_factor REAL,
                 intrinsic_link_length REAL,
                 shrunk_link_length REAL,
-                category_links_json TEXT NOT NULL DEFAULT '[]',
-                instance_links_json TEXT NOT NULL DEFAULT '[]',
-                has_property_links_json TEXT NOT NULL DEFAULT '[]',
-                lateral_sliplinks_json TEXT NOT NULL DEFAULT '[]',
-                lateral_non_sliplinks_json TEXT NOT NULL DEFAULT '[]',
-                incoming_links_json TEXT NOT NULL DEFAULT '[]',
                 UNIQUE(run_id, name)
+            );
+
+            CREATE TABLE IF NOT EXISTS slipnode_link_arguments (
+                id INTEGER PRIMARY KEY,
+                slipnode_id INTEGER NOT NULL REFERENCES slipnodes(id) ON DELETE CASCADE,
+                link_collection TEXT NOT NULL,
+                source TEXT NOT NULL,
+                target TEXT NOT NULL,
+                label TEXT,
+                fixed_length REAL,
+                is_category_link INTEGER NOT NULL DEFAULT 0,
+                is_instance_link INTEGER NOT NULL DEFAULT 0,
+                is_has_property_link INTEGER NOT NULL DEFAULT 0,
+                is_lateral_sliplink INTEGER NOT NULL DEFAULT 0,
+                is_lateral_non_sliplink INTEGER NOT NULL DEFAULT 0
             );
 
             CREATE TABLE IF NOT EXISTS sliplinks (
@@ -796,12 +805,6 @@ class SQLiteLogger(LoggerIdentifiers):
             "depth_factor",
             "intrinsic_link_length",
             "shrunk_link_length",
-            "category_links_json",
-            "instance_links_json",
-            "has_property_links_json",
-            "lateral_sliplinks_json",
-            "lateral_non_sliplinks_json",
-            "incoming_links_json",
         )
         columns = ", ".join(column_names)
         values = [
@@ -811,9 +814,28 @@ class SQLiteLogger(LoggerIdentifiers):
             data.get("intrinsic_link_length"),
             data.get("shrunk_link_length"),
         ]
-        values.extend(
-            self._json(data.get(key, []))
-            for key in (
+        placeholders = ", ".join("?" for _ in range(len(values) + 1))
+        self._connection.execute(
+            f"INSERT INTO slipnodes (run_id, {columns}) VALUES ({placeholders}) "
+            "ON CONFLICT(run_id, name) DO UPDATE SET "
+            + ", ".join(f"{column} = excluded.{column}" for column in column_names[1:]),
+            [run_id, *values],
+        )
+        slipnode_id = self._connection.execute(
+            "SELECT id FROM slipnodes WHERE run_id = ? AND name = ?",
+            (run_id, data["name"]),
+        ).fetchone()[0]
+        self._add_slipnode_link_arguments(slipnode_id, data)
+
+    def _add_slipnode_link_arguments(
+        self, slipnode_id: int, data: Mapping[str, Any]
+    ) -> None:
+        self._connection.execute(
+            "DELETE FROM slipnode_link_arguments WHERE slipnode_id = ?", (slipnode_id,)
+        )
+        rows = [
+            (slipnode_id, collection, link)
+            for collection in (
                 "category_links",
                 "instance_links",
                 "has_property_links",
@@ -821,13 +843,30 @@ class SQLiteLogger(LoggerIdentifiers):
                 "lateral_non_sliplinks",
                 "incoming_links",
             )
-        )
-        placeholders = ", ".join("?" for _ in range(len(values) + 1))
-        self._connection.execute(
-            f"INSERT INTO slipnodes (run_id, {columns}) VALUES ({placeholders}) "
-            "ON CONFLICT(run_id, name) DO UPDATE SET "
-            + ", ".join(f"{column} = excluded.{column}" for column in column_names[1:]),
-            [run_id, *values],
+            for link in data.get(collection, [])
+        ]
+        self._connection.executemany(
+            """INSERT INTO slipnode_link_arguments
+               (slipnode_id, link_collection, source, target, label, fixed_length,
+                is_category_link, is_instance_link, is_has_property_link,
+                is_lateral_sliplink, is_lateral_non_sliplink)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (
+                (
+                    node_id,
+                    collection,
+                    link["source"],
+                    link["target"],
+                    link["label"],
+                    link["fixed_length"],
+                    int(bool(link["is_category_link"])),
+                    int(bool(link["is_instance_link"])),
+                    int(bool(link["is_has_property_link"])),
+                    int(bool(link["is_lateral_sliplink"])),
+                    int(bool(link["is_lateral_non_sliplink"])),
+                )
+                for node_id, collection, link in rows
+            ),
         )
 
     def _insert_sliplink(self, run_id: int, data: Mapping[str, Any]) -> None:

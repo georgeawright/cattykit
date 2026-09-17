@@ -265,6 +265,43 @@ def create_app(database: str | Path) -> pn.Column:
                     sizing_mode="stretch_width",
                 ),
             ]
+        slipnode_link_sections = []
+        if history["table"] == "slipnodes":
+            collection_labels = {
+                "category_links": "Category links",
+                "instance_links": "Instance links",
+                "has_property_links": "Has-property links",
+                "lateral_sliplinks": "Lateral sliplinks",
+                "lateral_non_sliplinks": "Lateral non-sliplinks",
+                "incoming_links": "Incoming links",
+            }
+
+            def slipnode_link_part(name: str | None) -> str:
+                return "—" if name is None else object_link(f"slipnode:{name}")
+
+            def slipnode_link_repr(link: dict[str, object]) -> str:
+                source = slipnode_link_part(str(link["source"]))
+                target = slipnode_link_part(str(link["target"]))
+                label = link["label"]
+                if label is None:
+                    return f"{source} ~~~~&gt; {target}"
+                return f"{source} ~~ {slipnode_link_part(str(label))} ~~&gt; {target}"
+
+            links_by_collection: dict[str, list[dict[str, object]]] = {}
+            for link in history["slipnode_link_arguments"]:
+                links_by_collection.setdefault(str(link["collection"]), []).append(link)
+            link_content = "".join(
+                f"<h4>{html.escape(collection_labels[collection])}</h4><ul>"
+                + "".join(
+                    f"<li>{slipnode_link_repr(link)}</li>" for link in links
+                )
+                + "</ul>"
+                for collection, links in links_by_collection.items()
+            ) or "<p><em>No link arguments were logged.</em></p>"
+            slipnode_link_sections = [
+                "### Link arguments",
+                pn.pane.HTML(link_content, sizing_mode="stretch_width"),
+            ]
         content.objects = [
             pn.pane.HTML(f'<p><a href="?run_id={run_id}">← Run {run_id}</a></p>'),
             pn.pane.Markdown(f"## {object_id}"),
@@ -277,6 +314,7 @@ def create_app(database: str | Path) -> pn.Column:
             attributes,
             *group_sections,
             *mapping_sections,
+            *slipnode_link_sections,
         ]
 
     def show_runs(_: object | None = None) -> None:
