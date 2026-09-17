@@ -110,6 +110,7 @@ def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.View
     """Render executed codelets as reverse-chronological detail cards."""
     from cattycam.database import (
         codelet_arguments,
+        codelet_children,
         codelet_history,
         codelet_run_times,
         codelet_step_value_reprs,
@@ -122,10 +123,7 @@ def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.View
         return pn.pane.Markdown(
             "_No codelets have run yet._", height=430, sizing_mode="stretch_width"
         )
-    children_by_parent: dict[str, list[str]] = {}
-    for codelet_id, parent_id, *_ in codelets:
-        if parent_id is not None:
-            children_by_parent.setdefault(parent_id, []).append(codelet_id)
+    children_by_parent = codelet_children(database, run_id)
     types = codelet_types(database, run_id)
     run_times = codelet_run_times(database, run_id)
     arguments_by_codelet = codelet_arguments(database, run_id)

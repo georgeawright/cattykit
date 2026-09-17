@@ -485,7 +485,7 @@ def test_codelet_history_links_only_executed_codelet_references(tmp_path) -> Non
                 (1, "codelet:parent", None, 1, "Parent"),
                 (2, "codelet:child", "codelet:parent", 2, "Child"),
                 (3, "codelet:orphan", "codelet:not-run", 3, "Orphan"),
-                (4, "codelet:not-run", None, None, "Pending"),
+                (4, "codelet:not-run", "codelet:parent", None, "Pending"),
             ],
         )
 
@@ -493,6 +493,7 @@ def test_codelet_history_links_only_executed_codelet_references(tmp_path) -> Non
 
     assert '?run_id=1&time=1">Parent parent</a>' in history
     assert '?run_id=1&time=2">Child child</a>' in history
+    assert 'Child codelet: <a href="?run_id=1&time=2">Child child</a>, Pending not-run' in history
     assert "Parent codelet: Pending not-run" in history
 
 

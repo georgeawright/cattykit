@@ -407,6 +407,20 @@ def codelet_run_times(database: str | Path, run_id: int) -> dict[str, int]:
         return {}
 
 
+def codelet_children(database: str | Path, run_id: int) -> dict[str, list[str]]:
+    """Return posted child codelets keyed by their parent, in posting order."""
+    with sqlite3.connect(database) as connection:
+        rows = connection.execute(
+            """SELECT parent_codelet_id, codelet_id FROM codelets WHERE run_id = ?
+               AND parent_codelet_id IS NOT NULL ORDER BY id""",
+            (run_id,),
+        ).fetchall()
+    children: dict[str, list[str]] = {}
+    for parent_id, child_id in rows:
+        children.setdefault(parent_id, []).append(child_id)
+    return children
+
+
 def codelet_steps(
     database: str | Path, run_id: int, time: int
 ) -> dict[str, list[tuple[str, object]]]:
