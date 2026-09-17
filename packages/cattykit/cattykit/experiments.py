@@ -1,6 +1,7 @@
 import sys
 from collections import Counter
 from dataclasses import dataclass
+from math import erfc, sqrt
 from pathlib import Path
 from shutil import get_terminal_size
 
@@ -93,6 +94,29 @@ def total_variation_distance(
         )
         for answer in answers
     )
+
+
+def z_statistic(
+    observed_mean: float,
+    expected_mean: float,
+    observed_standard_error: float,
+    expected_standard_error: float,
+) -> float:
+    """Return the z statistic for two means with independent errors."""
+    standard_error = sqrt(
+        observed_standard_error**2 + expected_standard_error**2
+    )
+    difference = observed_mean - expected_mean
+    if standard_error == 0:
+        if difference == 0:
+            return 0.0
+        return float("inf") if difference > 0 else float("-inf")
+    return difference / standard_error
+
+
+def two_sided_p_value(z_score: float) -> float:
+    """Return the two-sided normal-distribution p value for a z statistic."""
+    return erfc(abs(z_score) / sqrt(2))
 
 
 def _terminal_rule(character: str) -> str:
