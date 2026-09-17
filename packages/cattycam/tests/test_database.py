@@ -368,6 +368,61 @@ def test_codelet_step_value_reprs_reconstruct_workspace_objects(tmp_path) -> Non
     }
 
 
+def test_codelet_history_links_workspace_object_references(tmp_path) -> None:
+    from cattycam.details import _codelet_history
+
+    database = tmp_path / "history.sqlite"
+    with sqlite3.connect(database) as connection:
+        connection.execute(
+            "CREATE TABLE codelets (id INTEGER PRIMARY KEY, run_id INTEGER, codelet_id TEXT, "
+            "parent_codelet_id TEXT, run_time INTEGER, codelet_type TEXT, "
+            "urgency_bin INTEGER, time_taken INTEGER, result TEXT, fizzle_reason TEXT)"
+        )
+        connection.execute(
+            "CREATE TABLE codelet_arguments (id INTEGER PRIMARY KEY, run_id INTEGER, codelet_id TEXT, "
+            "attribute TEXT, value_json TEXT)"
+        )
+        connection.execute(
+            "CREATE TABLE codelet_steps (id INTEGER PRIMARY KEY, run_id INTEGER, codelet_id TEXT, "
+            "time INTEGER, attribute TEXT, value_json TEXT)"
+        )
+        connection.execute(
+            "CREATE TABLE letters (run_id INTEGER, letter_id TEXT, string_id TEXT, "
+            "letter_category TEXT, position INTEGER)"
+        )
+        connection.execute(
+            "CREATE TABLE groups (run_id INTEGER, group_id TEXT, string_id TEXT, "
+            "left_position INTEGER, right_position INTEGER, group_category TEXT, "
+            "direction_category TEXT)"
+        )
+        connection.execute(
+            "CREATE TABLE bonds (run_id INTEGER, bond_id TEXT, source_id TEXT, "
+            "target_id TEXT, bond_facet TEXT, bond_category TEXT, direction_category TEXT)"
+        )
+        connection.execute(
+            "CREATE TABLE descriptions (run_id INTEGER, description_id TEXT, "
+            "object_id TEXT, facet TEXT, descriptor TEXT)"
+        )
+        connection.execute(
+            "CREATE TABLE correspondences (run_id INTEGER, correspondence_id TEXT, "
+            "source_id TEXT, target_id TEXT)"
+        )
+        connection.execute("INSERT INTO letters VALUES (1, 'letter:1', 'initial', 'a', 0)")
+        connection.execute(
+            "INSERT INTO codelets VALUES (1, 1, 'codelet:1', NULL, 1, 'Builder', 3, 1, 'finish', NULL)"
+        )
+        connection.execute(
+            "INSERT INTO codelet_arguments VALUES (1, 1, 'codelet:1', 'object', '\"letter:1\"')"
+        )
+        connection.execute(
+            "INSERT INTO codelet_steps VALUES (1, 1, 'codelet:1', 1, 'objects', '[\"letter:1\"]')"
+        )
+
+    history = _codelet_history(database, run_id=1, time=1)
+
+    assert history.object.count('?run_id=1&object_id=letter%3A1') == 2
+
+
 def test_workspace_snapshot_includes_built_and_proposed_entities(tmp_path) -> None:
     database = tmp_path / "history.sqlite"
     with sqlite3.connect(database) as connection:

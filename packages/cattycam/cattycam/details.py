@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 from pathlib import Path
+from urllib.parse import urlencode
 
 import panel as pn
 
@@ -159,13 +160,24 @@ def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.View
             return repr([value_repr(item) for item in value])
         return repr(value)
 
+    def value_html(value: object) -> str:
+        """Render workspace-object references as links to their detail pages."""
+        if isinstance(value, str) and value in step_value_reprs:
+            return (
+                f'<a href="?{urlencode({"run_id": run_id, "object_id": value})}">'
+                f"{html.escape(value_repr(value))}</a>"
+            )
+        if isinstance(value, list):
+            return "[" + ", ".join(value_html(item) for item in value) + "]"
+        return html.escape(value_repr(value))
+
     def attributes_html(attributes: list[tuple[str, object]]) -> str:
         if not attributes:
             return "<div>—</div>"
         return "".join(
             "<div>"
             f"{html.escape(attribute)}: "
-            f"{html.escape(value_repr(value))}"
+            f"{value_html(value)}"
             "</div>"
             for attribute, value in attributes
         )
