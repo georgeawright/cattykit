@@ -218,16 +218,6 @@ def test_matches_copycat_answers(problem, gold_solutions, gold_codelets):
     assert distance <= 0.05
 
     summary = result.summaries[problem]
-    total = summary.loc[summary["solution"] == "Total"].iloc[0]
-    codelets_z_score = z_statistic(
-        total["mean_codelets_run"],
-        gold_codelets["mean"],
-        total["codelets_standard_error"],
-        gold_codelets["standard_error"],
-    )
-    codelets_p_value = two_sided_p_value(codelets_z_score)
-    assert abs(codelets_z_score) < 2.0
-    assert codelets_p_value > 0.05
 
     for solution, gold_temperature in gold_solutions.items():
         if gold_temperature["frequency"] <= 10:
@@ -243,3 +233,14 @@ def test_matches_copycat_answers(problem, gold_solutions, gold_codelets):
         temperature_p_value = two_sided_p_value(temperature_z_score)
         assert abs(temperature_z_score) < 2.0
         assert temperature_p_value > 0.05
+
+    total = summary.loc[summary["solution"] == "Total"].iloc[0]
+    codelets_z_score = z_statistic(
+        total["mean_codelets_run"],
+        gold_codelets["mean"],
+        total["codelets_standard_error"],
+        gold_codelets["standard_error"],
+    )
+    codelets_p_value = two_sided_p_value(codelets_z_score)
+    assert abs(codelets_z_score) < 2.0
+    assert codelets_p_value > 0.05
