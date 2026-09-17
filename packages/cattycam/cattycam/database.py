@@ -7,6 +7,22 @@ import json
 import sqlite3
 from collections.abc import Sequence
 from pathlib import Path
+from urllib.parse import urlencode
+
+
+# Tables whose rows represent an entity that can have an object-history page.
+# The second value is the column containing Cattykit's stable object identifier.
+_OBJECT_TABLES = {
+    "letters": "letter_id",
+    "descriptions": "description_id",
+    "bonds": "bond_id",
+    "groups": "group_id",
+    "correspondences": "correspondence_id",
+    "replacements": "replacement_id",
+    "rules": "rule_id",
+    "translated_rules": "rule_id",
+    "slipnodes": "name",
+}
 
 
 def table_names(database: str | Path) -> list[str]:
@@ -31,13 +47,32 @@ def table_documentation(
         query, parameters = _table_query(quoted_table, table, run_id)
         rows = connection.execute(query, parameters).fetchall()
     column_names = [column[1] for column in columns]
+    if table in _OBJECT_TABLES and run_id is not None:
+        id_column = _OBJECT_TABLES[table]
+        id_index = column_names.index(id_column)
+        headers = ["View", *column_names]
+        linked_rows = [
+            (
+                f'<a href="?{urlencode({"run_id": run_id, "object_id": _object_id(table, row[id_index])})}">View</a>',
+                *row,
+            )
+            for row in rows
+        ]
+        table_html = _html_table(headers, linked_rows, first_column_html=True)
+    else:
+        table_html = _html_table(column_names, rows)
     return "\n".join(
         (
             f"<h2>{html.escape(table)}</h2>",
             f"<p>{len(rows)} row{'s' if len(rows) != 1 else ''}</p>",
-            _html_table(column_names, rows),
+            table_html,
         )
     )
+
+
+def _object_id(table: str, value: object) -> str:
+    """Return the logged identifier for an entity-table row."""
+    return f"slipnode:{value}" if table == "slipnodes" else str(value)
 
 
 def table_rows(
@@ -115,6 +150,111 @@ def run_overview_series(database: str | Path, run_id: int) -> dict[str, list[tup
             for start, end in snags
         ],
     }
+
+
+def object_history(database: str | Path, run_id: int, object_id: str) -> dict | None:
+    """Return tracked attributes and lifecycle boundaries for one viewer object."""
+    with sqlite3.connect(database) as connection:
+        tables = {
+            row[0]
+            for row in connection.execute(
+                "SELECT name FROM sqlite_master WHERE type = 'table'"
+            )
+        }
+        attributes = connection.execute(
+            """SELECT time, attribute, value_json FROM attribute_values
+               WHERE run_id = ? AND object_id = ? ORDER BY time, id""",
+            (run_id, object_id),
+        ).fetchall()
+        run_length_row = connection.execute(
+            "SELECT number_of_codelets_run FROM runs WHERE id = ?", (run_id,)
+        ).fetchone()
+
+        lifecycle: tuple[int | None, int | None] | None = None
+        details: list[tuple[str, object]] = []
+        for table, id_column in _OBJECT_TABLES.items():
+            if table not in tables:
+                continue
+            lookup_id = object_id.removeprefix("slipnode:") if table == "slipnodes" else object_id
+            if table == "slipnodes":
+                row = connection.execute(
+                    "SELECT * FROM slipnodes WHERE run_id = ? AND name = ?",
+                    (run_id, lookup_id),
+                ).fetchone()
+                if row:
+                    lifecycle = (None, None)
+                    column_names = [
+                        column[1]
+                        for column in connection.execute("PRAGMA table_info(slipnodes)")
+                    ]
+                    details = _object_row_details(column_names, row, id_column)
+                    break
+            elif object_id.startswith("slipnode:"):
+                continue
+            else:
+                row = connection.execute(
+                    f"SELECT creation_time, destruction_time FROM {_quote_identifier(table)} "
+                    f"WHERE run_id = ? AND {_quote_identifier(id_column)} = ?",
+                    (run_id, lookup_id),
+                ).fetchone()
+                if row:
+                    lifecycle = row
+                    full_row = connection.execute(
+                        f"SELECT * FROM {_quote_identifier(table)} "
+                        f"WHERE run_id = ? AND {_quote_identifier(id_column)} = ?",
+                        (run_id, lookup_id),
+                    ).fetchone()
+                    column_names = [
+                        column[1]
+                        for column in connection.execute(
+                            f"PRAGMA table_info({_quote_identifier(table)})"
+                        )
+                    ]
+                    details = _object_row_details(column_names, full_row, id_column)
+                    break
+
+    if lifecycle is None and not attributes:
+        return None
+    grouped: dict[str, list[tuple[int, object]]] = {}
+    for time, attribute, value_json in attributes:
+        try:
+            value = json.loads(value_json)
+        except json.JSONDecodeError:
+            value = value_json
+        grouped.setdefault(attribute, []).append((time, value))
+    maximum_time = max((time for time, _, _ in attributes), default=0)
+    run_length = (
+        int(run_length_row[0])
+        if run_length_row and run_length_row[0] is not None
+        else maximum_time
+    )
+    creation_time, destruction_time = lifecycle or (None, None)
+    return {
+        "id": object_id,
+        "run_length": max(run_length, maximum_time),
+        "creation_time": creation_time,
+        "destruction_time": destruction_time,
+        "attributes": grouped,
+        "details": details,
+    }
+
+
+def _object_row_details(
+    column_names: list[str], row: Sequence[object], id_column: str
+) -> list[tuple[str, object]]:
+    """Select the user-meaningful fields from an object's database row."""
+    excluded = {"id", "run_id", id_column}
+    details = []
+    for column, value in zip(column_names, row, strict=True):
+        if column in excluded:
+            continue
+        if column.endswith("_json") and isinstance(value, str):
+            try:
+                value = json.loads(value)
+            except json.JSONDecodeError:
+                pass
+        details.append((column.removesuffix("_json"), value))
+    return details
 
 
 def coderack_codelets(
@@ -497,14 +637,23 @@ def _table_query(
     return f"SELECT * FROM {quoted_table} WHERE run_id = ?", (run_id,)
 
 
-def _html_table(headers: Sequence[object], rows: Sequence[Sequence[object]]) -> str:
+def _html_table(
+    headers: Sequence[object],
+    rows: Sequence[Sequence[object]],
+    *,
+    first_column_html: bool = False,
+) -> str:
     """Build a compact, escaped HTML table."""
     header_cells = "".join(f"<th>{html.escape(str(value))}</th>" for value in headers)
     body_rows = "".join(
         "<tr>"
         + "".join(
-            f"<td>{html.escape('' if value is None else str(value))}</td>"
-            for value in row
+            (
+                f"<td>{value}</td>"
+                if first_column_html and index == 0
+                else f"<td>{html.escape('' if value is None else str(value))}</td>"
+            )
+            for index, value in enumerate(row)
         )
         + "</tr>"
         for row in rows

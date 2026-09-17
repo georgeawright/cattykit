@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import html
+import json
 import math
 from typing import Any
 
@@ -240,6 +242,65 @@ def _run_overview(
             sizing_mode="stretch_width",
         ),
         sizing_mode="stretch_width",
+    )
+
+
+def _object_attribute_charts(history: dict) -> tuple[pn.Row, pn.pane.HTML]:
+    """Render changing object attributes and summarize the attributes that stayed fixed."""
+    charts = []
+    unchanged = []
+    for attribute, values in history["attributes"].items():
+        distinct_values = {json.dumps(value, sort_keys=True, default=str) for _, value in values}
+        if len(distinct_values) <= 1:
+            unchanged.append((attribute, values[-1][1] if values else None))
+            continue
+        numeric = all(
+            isinstance(value, (int, float)) and not isinstance(value, bool)
+            for _, value in values
+        )
+        chart = figure(
+            title=attribute.replace("_", " "),
+            x_axis_label="Codelets run",
+            y_axis_label=attribute.replace("_", " "),
+            x_range=Range1d(0, history["run_length"]),
+            height=260,
+            width=380,
+            toolbar_location=None,
+        )
+        times, raw_values = zip(*values)
+        if numeric:
+            chart.line(times, raw_values, line_width=2)
+        else:
+            categories = list(dict.fromkeys(json.dumps(value, sort_keys=True, default=str) for value in raw_values))
+            chart.y_range = FactorRange(*categories)
+            chart.line(times, categories, line_width=2)
+        if history["creation_time"] not in (None, 0):
+            chart.add_layout(
+                Span(
+                    location=history["creation_time"], dimension="height",
+                    line_dash="dotted", line_color="#16a34a", line_width=2,
+                )
+            )
+        if history["destruction_time"] is not None:
+            chart.add_layout(
+                Span(
+                    location=history["destruction_time"], dimension="height",
+                    line_dash="dotted", line_color="#dc2626", line_width=2,
+                )
+            )
+        charts.append(chart)
+    attribute_items = [*history["details"], *unchanged]
+    attributes_html = "".join(
+        "<li>"
+        f"<strong>{html.escape(attribute)}</strong>: {html.escape(json.dumps(value, sort_keys=True, default=str))}"
+        "</li>"
+        for attribute, value in attribute_items
+    ) or "<li>None</li>"
+    return (
+        pn.Row(*charts, sizing_mode="stretch_width")
+        if charts
+        else pn.Row(pn.pane.Alert("No changing attributes were logged.", alert_type="info")),
+        pn.pane.HTML(f"<ul>{attributes_html}</ul>", sizing_mode="stretch_width"),
     )
 
 

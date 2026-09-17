@@ -7,6 +7,7 @@ from cattycam.database import (
     codelet_steps,
     codelet_types,
     coderack_codelets,
+    object_history,
     run_overview_series,
     slipnet_snapshot,
     table_documentation,
@@ -97,6 +98,60 @@ def test_run_overview_series_uses_attribute_and_lifecycle_history(tmp_path) -> N
         "workspace": [(0, 2), (1, 3), (2, 2)],
         "snags": [(1, 2)],
     }
+
+
+def test_object_history_groups_attributes_and_finds_lifecycle_boundaries(tmp_path) -> None:
+    database = tmp_path / "history.sqlite"
+    with sqlite3.connect(database) as connection:
+        connection.execute(
+            "CREATE TABLE runs (id INTEGER PRIMARY KEY, number_of_codelets_run INTEGER)"
+        )
+        connection.execute("INSERT INTO runs VALUES (1, 8)")
+        connection.execute(
+            "CREATE TABLE bonds (run_id INTEGER, bond_id TEXT, source_id TEXT, target_id TEXT, creation_time INTEGER, destruction_time INTEGER)"
+        )
+        connection.execute("INSERT INTO bonds VALUES (1, 'bond:1', 'letter:1', 'letter:2', 2, 6)")
+        connection.execute(
+            "CREATE TABLE attribute_values "
+            "(id INTEGER PRIMARY KEY, run_id INTEGER, time INTEGER, object_id TEXT, attribute TEXT, value_json TEXT)"
+        )
+        connection.executemany(
+            "INSERT INTO attribute_values (run_id, time, object_id, attribute, value_json) VALUES (?, ?, ?, ?, ?)",
+            [
+                (1, 2, "bond:1", "strength", "0.2"),
+                (1, 4, "bond:1", "strength", "0.8"),
+                (1, 2, "bond:1", "facet", '"letter_category"'),
+            ],
+        )
+
+    assert object_history(database, 1, "bond:1") == {
+        "id": "bond:1",
+        "run_length": 8,
+        "creation_time": 2,
+        "destruction_time": 6,
+        "attributes": {
+            "strength": [(2, 0.2), (4, 0.8)],
+            "facet": [(2, "letter_category")],
+        },
+        "details": [
+            ("source_id", "letter:1"),
+            ("target_id", "letter:2"),
+            ("creation_time", 2),
+            ("destruction_time", 6),
+        ],
+    }
+
+
+def test_object_table_rows_link_to_their_detail_page(tmp_path) -> None:
+    database = tmp_path / "history.sqlite"
+    with sqlite3.connect(database) as connection:
+        connection.execute("CREATE TABLE bonds (run_id INTEGER, bond_id TEXT)")
+        connection.execute("INSERT INTO bonds VALUES (1, 'bond:1')")
+
+    documentation = table_documentation(database, "bonds", run_id=1)
+
+    assert "<th>View</th>" in documentation
+    assert '?run_id=1&object_id=bond%3A1' in documentation
 
 
 def test_coderack_codelets_returns_only_active_codelets_by_urgency(tmp_path) -> None:

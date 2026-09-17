@@ -9,7 +9,7 @@ import pandas as pd
 import panel as pn
 
 from .canvases import BrowserHistoryBridge
-from .charts import _run_overview
+from .charts import _object_attribute_charts, _run_overview
 from .details import (
     _codelet_history,
     _coderack_badges,
@@ -48,12 +48,14 @@ def create_app(database: str | Path) -> pn.Column:
         )
     content = pn.Column(sizing_mode="stretch_width")
     active_run = pn.widgets.IntInput(value=0, visible=False)
+    active_object = pn.widgets.TextInput(value="", visible=False)
     if pn.state.location:
         # This is a standalone Panel application. Reloading after a URL change
         # gives browser Back/Forward a fresh session whose selected run is read
         # from the query string.
         pn.state.location.reload = True
         pn.state.location.sync(active_run, {"value": "run_id"})
+        pn.state.location.sync(active_object, {"value": "object_id"})
 
     def show_run(run_id: int) -> None:
         columns, rows = table_rows(database_path, "runs", run_id=run_id)
@@ -165,6 +167,36 @@ def create_app(database: str | Path) -> pn.Column:
             table_content,
         ]
 
+    def show_object(run_id: int, object_id: str) -> None:
+        from cattycam.database import object_history
+
+        history = object_history(database_path, run_id, object_id)
+        if history is None:
+            content.objects = [
+                pn.pane.HTML(f'<p><a href="?run_id={run_id}">← Run {run_id}</a></p>'),
+                pn.pane.Alert(
+                    f"Object {object_id!r} was not found in run {run_id}.",
+                    alert_type="warning",
+                ),
+            ]
+            return
+        charts, attributes = _object_attribute_charts(history)
+        lifecycle_note = ""
+        if history["creation_time"] not in (None, 0):
+            lifecycle_note += " Green dotted line: created."
+        if history["destruction_time"] is not None:
+            lifecycle_note += " Red dotted line: destroyed."
+        content.objects = [
+            pn.pane.HTML(f'<p><a href="?run_id={run_id}">← Run {run_id}</a></p>'),
+            pn.pane.Markdown(f"## {object_id}"),
+            pn.pane.Markdown(
+                f"Time axis: 0–{history['run_length']} codelets.{lifecycle_note}"
+            ),
+            charts,
+            "### Attributes",
+            attributes,
+        ]
+
     def show_runs(_: object | None = None) -> None:
         columns, rows = table_rows(database_path, "runs")
         runs = pd.DataFrame(rows, columns=columns)
@@ -207,9 +239,12 @@ def create_app(database: str | Path) -> pn.Column:
         ]
 
     def update_view(event: Any | None = None) -> None:
-        run_id = active_run.value if event is None else event.new
+        run_id = active_run.value
         if run_id:
-            show_run(run_id)
+            if active_object.value:
+                show_object(run_id, active_object.value)
+            else:
+                show_run(run_id)
         elif (
             pn.state.location
             and {"model", "problem"} <= pn.state.location.query_params.keys()
@@ -222,6 +257,7 @@ def create_app(database: str | Path) -> pn.Column:
             show_runs()
 
     active_run.param.watch(update_view, "value")
+    active_object.param.watch(update_view, "value")
     update_view()
     return pn.Column(
         content,
