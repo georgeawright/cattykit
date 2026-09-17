@@ -25,7 +25,6 @@ def create_app(database: str | Path) -> pn.Column:
     """Create a run picker which opens a tabbed, run-specific database view."""
     from cattycam.database import (
         run_overview_series,
-        table_documentation,
         table_names,
         table_rows,
     )
@@ -90,22 +89,6 @@ def create_app(database: str | Path) -> pn.Column:
         overview = _run_overview(
             run_overview_series(database_path, run_id), codelet_time
         )
-        visible_tables = [table for table in tables if table != "attribute_values"]
-        table_content = pn.Column(sizing_mode="stretch_width")
-        table_links = pn.Row(sizing_mode="stretch_width")
-
-        def show_table(table: str) -> None:
-            table_content.objects = [
-                pn.pane.HTML(
-                    table_documentation(database_path, table, run_id=run_id),
-                    sizing_mode="stretch_width",
-                )
-            ]
-
-        for table in visible_tables:
-            link = pn.widgets.Button(name=table, button_type="light")
-            link.on_click(lambda _, table=table: show_table(table))
-            table_links.append(link)
         coderack_panel = pn.bind(
             _coderack_badges,
             database_path,
@@ -173,8 +156,6 @@ def create_app(database: str | Path) -> pn.Column:
             overview,
             codelet_time,
             detail_panels,
-            table_links,
-            table_content,
         ]
 
     def show_object(run_id: int, object_id: str) -> None:
