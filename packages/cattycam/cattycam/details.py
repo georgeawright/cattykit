@@ -111,6 +111,7 @@ def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.View
     from cattycam.database import (
         codelet_arguments,
         codelet_history,
+        codelet_run_times,
         codelet_step_value_reprs,
         codelet_steps,
         codelet_types,
@@ -126,6 +127,7 @@ def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.View
         if parent_id is not None:
             children_by_parent.setdefault(parent_id, []).append(codelet_id)
     types = codelet_types(database, run_id)
+    run_times = codelet_run_times(database, run_id)
     arguments_by_codelet = codelet_arguments(database, run_id)
     steps_by_codelet = codelet_steps(database, run_id, time)
     step_value_reprs = codelet_step_value_reprs(database, run_id)
@@ -133,9 +135,15 @@ def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.View
     def codelet_label(codelet_id: str | None) -> str:
         if codelet_id is None:
             return "—"
-        return (
+        label = (
             f"{html.escape(types.get(codelet_id, 'unknown'))} "
             f"{codelet_id.removeprefix('codelet:')}"
+        )
+        if codelet_id not in run_times:
+            return label
+        return (
+            f'<a href="?{urlencode({"run_id": run_id, "time": run_times[codelet_id]})}">'
+            f"{label}</a>"
         )
 
     def card_colors(urgency_bin: int | None, result: str | None) -> tuple[str, str]:

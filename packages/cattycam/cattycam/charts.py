@@ -246,7 +246,7 @@ def _run_overview(
 
 
 def _object_attribute_charts(
-    history: dict, value_html: Callable[[object], str] | None = None
+    history: dict, value_html: Callable[[str, object], str] | None = None
 ) -> tuple[pn.Row, pn.pane.HTML]:
     """Render tracked object attributes and return immutable table properties."""
     charts = []
@@ -291,12 +291,12 @@ def _object_attribute_charts(
             )
         charts.append(chart)
     render_value = value_html or (
-        lambda value: html.escape(json.dumps(value, sort_keys=True, default=str))
+        lambda _, value: html.escape(json.dumps(value, sort_keys=True, default=str))
     )
     attribute_items = history["details"]
     attributes_html = "".join(
         "<li>"
-        f"<strong>{html.escape(attribute.removesuffix('_id').replace('_', ' '))}</strong>: {render_value(value)}"
+        f"<strong>{html.escape(attribute.removesuffix('_id').replace('_', ' '))}</strong>: {render_value(attribute.removesuffix('_id'), value)}"
         "</li>"
         for attribute, value in attribute_items
     ) or "<li>None</li>"

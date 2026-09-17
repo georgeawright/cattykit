@@ -461,6 +461,41 @@ def test_codelet_history_links_workspace_object_references(tmp_path) -> None:
     assert history.object.count('?run_id=1&object_id=letter%3A1') == 2
 
 
+def test_codelet_history_links_only_executed_codelet_references(tmp_path) -> None:
+    from cattycam.details import _codelet_history
+
+    database = tmp_path / "history.sqlite"
+    with sqlite3.connect(database) as connection:
+        connection.execute(
+            "CREATE TABLE codelets (id INTEGER PRIMARY KEY, run_id INTEGER, codelet_id TEXT, "
+            "parent_codelet_id TEXT, run_time INTEGER, codelet_type TEXT, "
+            "urgency_bin INTEGER, time_taken INTEGER, result TEXT, fizzle_reason TEXT)"
+        )
+        connection.execute(
+            "CREATE TABLE codelet_arguments (id INTEGER PRIMARY KEY, run_id INTEGER, "
+            "codelet_id TEXT, attribute TEXT, value_json TEXT)"
+        )
+        connection.execute(
+            "CREATE TABLE codelet_steps (id INTEGER PRIMARY KEY, run_id INTEGER, "
+            "time INTEGER, codelet_id TEXT, attribute TEXT, value_json TEXT)"
+        )
+        connection.executemany(
+            "INSERT INTO codelets VALUES (?, 1, ?, ?, ?, ?, 1, 1, 'finish', NULL)",
+            [
+                (1, "codelet:parent", None, 1, "Parent"),
+                (2, "codelet:child", "codelet:parent", 2, "Child"),
+                (3, "codelet:orphan", "codelet:not-run", 3, "Orphan"),
+                (4, "codelet:not-run", None, None, "Pending"),
+            ],
+        )
+
+    history = _codelet_history(database, run_id=1, time=3).object
+
+    assert '?run_id=1&time=1">Parent parent</a>' in history
+    assert '?run_id=1&time=2">Child child</a>' in history
+    assert "Parent codelet: Pending not-run" in history
+
+
 def test_workspace_snapshot_includes_built_and_proposed_entities(tmp_path) -> None:
     database = tmp_path / "history.sqlite"
     with sqlite3.connect(database) as connection:

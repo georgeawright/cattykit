@@ -178,7 +178,11 @@ def create_app(database: str | Path) -> pn.Column:
         ]
 
     def show_object(run_id: int, object_id: str) -> None:
-        from cattycam.database import object_display_reprs, object_history
+        from cattycam.database import (
+            codelet_run_times,
+            object_display_reprs,
+            object_history,
+        )
 
         history = object_history(database_path, run_id, object_id)
         if history is None:
@@ -191,6 +195,7 @@ def create_app(database: str | Path) -> pn.Column:
             ]
             return
         representations = object_display_reprs(database_path, run_id)
+        run_times = codelet_run_times(database_path, run_id)
         slipnode_ids = {
             identifier.removeprefix("slipnode:"): identifier
             for identifier in representations
@@ -204,8 +209,14 @@ def create_app(database: str | Path) -> pn.Column:
                 f"{html.escape(label)}</a>"
             )
 
-        def attribute_value_html(value: object) -> str:
+        def attribute_value_html(attribute: str, value: object) -> str:
             if isinstance(value, str):
+                if attribute == "parent_codelet" and value in run_times:
+                    label = representations.get(value, value)
+                    return (
+                        f'<a href="?{urlencode({"run_id": run_id, "time": run_times[value]})}">'
+                        f"{html.escape(label)}</a>"
+                    )
                 target = value if value in representations else slipnode_ids.get(value)
                 if target and not target.startswith("codelet:"):
                     return object_link(target)
@@ -213,10 +224,12 @@ def create_app(database: str | Path) -> pn.Column:
                     return html.escape(representations[value])
                 return html.escape(json.dumps(value))
             if isinstance(value, list):
-                return "[" + ", ".join(attribute_value_html(item) for item in value) + "]"
+                return "[" + ", ".join(
+                    attribute_value_html(attribute, item) for item in value
+                ) + "]"
             if isinstance(value, dict):
                 return "{" + ", ".join(
-                    f"{html.escape(str(key))}: {attribute_value_html(item)}"
+                    f"{html.escape(str(key))}: {attribute_value_html(attribute, item)}"
                     for key, item in value.items()
                 ) + "}"
             return html.escape(json.dumps(value, sort_keys=True, default=str))

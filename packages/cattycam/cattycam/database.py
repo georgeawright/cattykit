@@ -392,6 +392,21 @@ def codelet_types(database: str | Path, run_id: int) -> dict[str, str]:
         )
 
 
+def codelet_run_times(database: str | Path, run_id: int) -> dict[str, int]:
+    """Return the time at which each codelet in a run executed."""
+    try:
+        with sqlite3.connect(database) as connection:
+            return dict(
+                connection.execute(
+                    """SELECT codelet_id, run_time FROM codelets WHERE run_id = ?
+                       AND run_time IS NOT NULL""",
+                    (run_id,),
+                ).fetchall()
+            )
+    except sqlite3.OperationalError:
+        return {}
+
+
 def codelet_steps(
     database: str | Path, run_id: int, time: int
 ) -> dict[str, list[tuple[str, object]]]:
