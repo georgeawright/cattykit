@@ -353,8 +353,14 @@ def coderack_codelets(
             """SELECT urgency_bin, codelet_type, codelet_id FROM codelets
                WHERE run_id = ? AND birth_time <= ?
                AND (removal_time IS NULL OR removal_time > ?)
+               AND NOT EXISTS (
+                   SELECT 1 FROM snags
+                   WHERE snags.run_id = codelets.run_id
+                   AND snags.snag_start > codelets.birth_time
+                   AND snags.snag_start <= ?
+               )
                ORDER BY urgency_bin DESC, id""",
-            (run_id, time, time),
+            (run_id, time, time, time),
         ).fetchall()
 
 

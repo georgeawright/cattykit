@@ -224,6 +224,10 @@ def test_coderack_codelets_returns_only_active_codelets_by_urgency(tmp_path) -> 
             "(id INTEGER PRIMARY KEY, run_id INTEGER, codelet_id TEXT, codelet_type TEXT, "
             "urgency_bin INTEGER, birth_time INTEGER, removal_time INTEGER)"
         )
+        connection.execute(
+            "CREATE TABLE snags "
+            "(id INTEGER PRIMARY KEY, run_id INTEGER, snag_start INTEGER)"
+        )
         connection.executemany(
             "INSERT INTO codelets "
             "(run_id, codelet_id, codelet_type, urgency_bin, birth_time, removal_time) "
@@ -239,6 +243,40 @@ def test_coderack_codelets_returns_only_active_codelets_by_urgency(tmp_path) -> 
     assert coderack_codelets(database, 1, time=2) == [
         (4, "High", "codelet:2"),
         (1, "Low", "codelet:1"),
+    ]
+
+
+def test_coderack_codelets_excludes_codelets_discarded_when_a_snag_clears_rack(
+    tmp_path,
+) -> None:
+    database = tmp_path / "history.sqlite"
+    with sqlite3.connect(database) as connection:
+        connection.execute(
+            "CREATE TABLE codelets "
+            "(id INTEGER PRIMARY KEY, run_id INTEGER, codelet_id TEXT, "
+            "codelet_type TEXT, urgency_bin INTEGER, birth_time INTEGER, "
+            "removal_time INTEGER)"
+        )
+        connection.execute(
+            "CREATE TABLE snags "
+            "(id INTEGER PRIMARY KEY, run_id INTEGER, snag_start INTEGER)"
+        )
+        connection.executemany(
+            "INSERT INTO codelets "
+            "(run_id, codelet_id, codelet_type, urgency_bin, birth_time, removal_time) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            [
+                (1, "codelet:discarded", "Scout", 2, 3, None),
+                (1, "codelet:new", "Builder", 4, 6, None),
+            ],
+        )
+        connection.execute("INSERT INTO snags (run_id, snag_start) VALUES (1, 5)")
+
+    assert coderack_codelets(database, 1, time=4) == [
+        (2, "Scout", "codelet:discarded"),
+    ]
+    assert coderack_codelets(database, 1, time=6) == [
+        (4, "Builder", "codelet:new"),
     ]
 
 

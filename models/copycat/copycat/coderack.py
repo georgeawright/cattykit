@@ -102,9 +102,9 @@ class Coderack:
         return self.urgency_lookup_table[temperature_index]
 
     def empty(self):
-        self._urgency_bins = [
-            CoderackBin(i + 1) for i, _ in enumerate(self._urgency_bins)
-        ]
+        for codelet in self.codelets:
+            self.get_urgency_bin(codelet.urgency_bin).remove(codelet)
+            self.logger.log("codelet_removed", codelet=codelet)
 
     def post(self, codelet: "Codelet", temperature: float):
         if self.population >= self.max_population:

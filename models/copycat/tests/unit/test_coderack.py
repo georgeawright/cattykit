@@ -129,6 +129,22 @@ def test_post_to_empty_coderack():
         assert 1 == len(coderack.get_urgency_bin(urgency_bin))
 
 
+def test_empty_logs_each_discarded_codelet():
+    logger = Mock()
+    coderack = Coderack.create(2, 100, logger)
+    codelets = [
+        SimpleNamespace(hash_id=index, urgency_bin=index)
+        for index in range(2)
+    ]
+    coderack.post_many(codelets, temperature=0.0)
+
+    coderack.empty()
+
+    assert coderack.population == 0
+    for codelet in codelets:
+        logger.log.assert_any_call("codelet_removed", codelet=codelet)
+
+
 def test_post_removes_excess_codelets():
     coderack = create_coderack(7, 2)
     temperature = 0.0
