@@ -104,7 +104,7 @@ NOW = datetime.now().strftime("%Y%m%d-%H%M%S")
                     "temperature_standard_error": 0.006,
                 },
                 "lji": {
-                    "frequency": 106,
+                    "frequency": 186,
                     "temperature_mean": 0.18,
                     "temperature_standard_error": 0.003,
                 },
