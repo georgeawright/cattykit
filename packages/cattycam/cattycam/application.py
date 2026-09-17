@@ -71,12 +71,21 @@ def create_app(database: str | Path) -> pn.Column:
         solution = run["solution"]
         codelets_run = run["number_of_codelets_run"]
         final_temperature = run["final_temperature"]
+        selected_time = pn.widgets.IntInput(
+            value=int(codelets_run or 0), visible=False
+        )
+        if pn.state.location:
+            pn.state.location.sync(selected_time, {"value": "time"})
         codelet_time = pn.widgets.EditableIntSlider(
-            name="Codelets run",
+            name="Time",
             start=0,
             end=int(codelets_run or 0),
-            value=int(codelets_run or 0),
+            value=selected_time.value,
             sizing_mode="stretch_width",
+        )
+        codelet_time.param.watch(
+            lambda event: setattr(selected_time, "value", event.new),
+            "value_throttled",
         )
         overview = _run_overview(
             run_overview_series(database_path, run_id), codelet_time
