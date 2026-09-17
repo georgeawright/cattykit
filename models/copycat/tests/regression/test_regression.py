@@ -3,7 +3,6 @@ from pathlib import Path
 
 import pytest
 
-from cattykit.logging import SQLiteLogger
 from cattykit.experiments import run_experiment, total_variation_distance
 
 _CONFIG_DIRECTORY = (
@@ -74,9 +73,8 @@ NOW = datetime.now().strftime("%Y%m%d-%H%M%S")
     ],
 )
 def test_matches_copycat_answers(problem, gold_distribution):
-    logging_db = f"copycat-regression-{NOW}.sqlite"
     iterations = sum(count for _, count in gold_distribution.items())
-    result = run_experiment("copycat", [problem], iterations, logging_db)
+    result = run_experiment("copycat", [problem], iterations)
     answer_distribution = result.distributions[problem]
     distance = total_variation_distance(gold_distribution, answer_distribution)
     assert distance <= 0.05

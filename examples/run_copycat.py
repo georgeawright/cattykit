@@ -1,7 +1,7 @@
 import random
 from pathlib import Path
 
-from cattykit.logging import SQLiteLogger
+from cattykit.logging import CattycamLogger
 from copycat import Copycat
 
 _CONFIG_DIRECTORY = (
@@ -11,7 +11,7 @@ _CONFIG_DIRECTORY = (
 
 def main() -> None:
     random.seed(2)
-    logger = SQLiteLogger("history.sqlite", "copycat")
+    logger = Cattycam("history.sqlite", "copycat")
     copycat = Copycat.from_json(
         str(_CONFIG_DIRECTORY / "slipnet.json"),
         str(_CONFIG_DIRECTORY / "coderack.json"),

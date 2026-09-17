@@ -12,7 +12,7 @@ from datetime import UTC, datetime
 from .identifiers import LoggerIdentifiers
 
 
-class SQLiteLogger(LoggerIdentifiers):
+class CattycamLogger(LoggerIdentifiers):
     """Persist model events in a SQLite database that can be read by Cattycam."""
 
     def __init__(self, path: str | Path, model_name: str) -> None:

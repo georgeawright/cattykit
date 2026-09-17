@@ -11,7 +11,8 @@ def main() -> None:
             "abc -> abd ==> mrrjjj -> ?",
             "abc -> abd ==> xyz -> ?",
         ],
-        iterations=1000,
+        iterations=10,
+        logging_db="copycat_experiment_logs.sqlite",
     )
 
 
