@@ -114,7 +114,7 @@ def test_transfers_descriptions_and_fizzles_if_group_exists():
     # Run the builder
     result = builder.run(temperature=0.5)
 
-    assert slipnet.activate_node_from_workspace_called == 2
+    assert slipnet.activate_node_from_workspace_called == 3
     assert existing_group.add_description_called == len(proposed_group.descriptions)
     assert workspace_string.delete_proposed_group_called == 1
 

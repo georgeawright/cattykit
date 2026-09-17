@@ -110,6 +110,7 @@ class GroupBuilder(Builder):
             )
             target_group.add_description(self.new_description)
             self.slipnet.activate_node_from_workspace(description.descriptor.name)
+            self.slipnet.activate_node_from_workspace(description.facet.name)
 
     def _all_bonds_still_exist(self, workspace_string: "WorkspaceString") -> bool:
         for bond in self.proposed_group.bonds:
