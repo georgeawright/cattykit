@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import html
+import json
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlencode
@@ -168,7 +169,7 @@ def create_app(database: str | Path) -> pn.Column:
         ]
 
     def show_object(run_id: int, object_id: str) -> None:
-        from cattycam.database import object_history
+        from cattycam.database import object_display_reprs, object_history
 
         history = object_history(database_path, run_id, object_id)
         if history is None:
@@ -180,21 +181,102 @@ def create_app(database: str | Path) -> pn.Column:
                 ),
             ]
             return
-        charts, attributes = _object_attribute_charts(history)
-        lifecycle_note = ""
-        if history["creation_time"] not in (None, 0):
-            lifecycle_note += " Green dotted line: created."
-        if history["destruction_time"] is not None:
-            lifecycle_note += " Red dotted line: destroyed."
+        representations = object_display_reprs(database_path, run_id)
+        slipnode_ids = {
+            identifier.removeprefix("slipnode:"): identifier
+            for identifier in representations
+            if identifier.startswith("slipnode:")
+        }
+
+        def object_link(item: str) -> str:
+            label = representations.get(item, item)
+            return (
+                f'<a href="?{urlencode({"run_id": run_id, "object_id": item})}">'
+                f"{html.escape(label)}</a>"
+            )
+
+        def attribute_value_html(value: object) -> str:
+            if isinstance(value, str):
+                target = value if value in representations else slipnode_ids.get(value)
+                if target and not target.startswith("codelet:"):
+                    return object_link(target)
+                if value in representations:
+                    return html.escape(representations[value])
+                return html.escape(json.dumps(value))
+            if isinstance(value, list):
+                return "[" + ", ".join(attribute_value_html(item) for item in value) + "]"
+            if isinstance(value, dict):
+                return "{" + ", ".join(
+                    f"{html.escape(str(key))}: {attribute_value_html(item)}"
+                    for key, item in value.items()
+                ) + "}"
+            return html.escape(json.dumps(value, sort_keys=True, default=str))
+
+        charts, attributes = _object_attribute_charts(history, attribute_value_html)
+        proposed_not_created = (
+            history["proposal_time"] is not None
+            and history["creation_time"] is None
+        )
+        def object_links(ids: list[str]) -> pn.pane.HTML:
+            items = "".join(
+                f"<li>{object_link(item)}</li>"
+                for item in ids
+            ) or "<li>None</li>"
+            return pn.pane.HTML(f"<ul>{items}</ul>", sizing_mode="stretch_width")
+
+        group_sections = []
+        if history["group_members"] or history["group_bonds"]:
+            group_sections = [
+                "### Group members",
+                object_links(history["group_members"]),
+                "### Group bonds",
+                object_links(history["group_bonds"]),
+            ]
+        mapping_sections = []
+        if history["table"] == "correspondences":
+            headers = ["ID", "Source facet", "Target facet", "Source descriptor", "Target descriptor", "Label"]
+            rows = "".join(
+                "<tr>"
+                + "".join(
+                    f"<td>{html.escape('' if mapping[key] is None else str(mapping[key]))}</td>"
+                    for key in (
+                        "id",
+                        "source_facet",
+                        "target_facet",
+                        "source_descriptor",
+                        "target_descriptor",
+                        "label",
+                    )
+                )
+                + "</tr>"
+                for mapping in history["concept_mappings"]
+            )
+            mapping_content = (
+                "<table><thead><tr>"
+                + "".join(f"<th>{header}</th>" for header in headers)
+                + f"</tr></thead><tbody>{rows}</tbody></table>"
+                if rows
+                else "<p><em>No concept mappings were logged.</em></p>"
+            )
+            mapping_sections = [
+                "### Concept mappings",
+                pn.pane.HTML(
+                    mapping_content,
+                    sizing_mode="stretch_width",
+                ),
+            ]
         content.objects = [
             pn.pane.HTML(f'<p><a href="?run_id={run_id}">← Run {run_id}</a></p>'),
             pn.pane.Markdown(f"## {object_id}"),
-            pn.pane.Markdown(
-                f"Time axis: 0–{history['run_length']} codelets.{lifecycle_note}"
+            *(
+                [pn.pane.Markdown("This object was proposed but not created.")]
+                if proposed_not_created
+                else [charts]
             ),
-            charts,
             "### Attributes",
             attributes,
+            *group_sections,
+            *mapping_sections,
         ]
 
     def show_runs(_: object | None = None) -> None:

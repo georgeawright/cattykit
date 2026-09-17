@@ -8,6 +8,7 @@ from cattycam.database import (
     codelet_types,
     coderack_codelets,
     object_history,
+    object_display_reprs,
     run_overview_series,
     slipnet_snapshot,
     table_documentation,
@@ -126,9 +127,11 @@ def test_object_history_groups_attributes_and_finds_lifecycle_boundaries(tmp_pat
 
     assert object_history(database, 1, "bond:1") == {
         "id": "bond:1",
+        "table": "bonds",
         "run_length": 8,
         "creation_time": 2,
         "destruction_time": 6,
+        "proposal_time": None,
         "attributes": {
             "strength": [(2, 0.2), (4, 0.8)],
             "facet": [(2, "letter_category")],
@@ -139,6 +142,9 @@ def test_object_history_groups_attributes_and_finds_lifecycle_boundaries(tmp_pat
             ("creation_time", 2),
             ("destruction_time", 6),
         ],
+        "group_members": [],
+        "group_bonds": [],
+        "concept_mappings": [],
     }
 
 
@@ -152,6 +158,22 @@ def test_object_table_rows_link_to_their_detail_page(tmp_path) -> None:
 
     assert "<th>View</th>" in documentation
     assert '?run_id=1&object_id=bond%3A1' in documentation
+
+
+def test_object_display_reprs_labels_slipnodes_and_codelets(tmp_path) -> None:
+    database = tmp_path / "history.sqlite"
+    with sqlite3.connect(database) as connection:
+        connection.execute("CREATE TABLE slipnodes (run_id INTEGER, name TEXT)")
+        connection.execute(
+            "CREATE TABLE codelets (run_id INTEGER, codelet_id TEXT, codelet_type TEXT)"
+        )
+        connection.execute("INSERT INTO slipnodes VALUES (1, 'successor')")
+        connection.execute("INSERT INTO codelets VALUES (1, 'codelet:9', 'BondBuilder')")
+
+    assert object_display_reprs(database, 1) == {
+        "slipnode:successor": "SUCCESSOR",
+        "codelet:9": "BondBuilder 9",
+    }
 
 
 def test_coderack_codelets_returns_only_active_codelets_by_urgency(tmp_path) -> None:

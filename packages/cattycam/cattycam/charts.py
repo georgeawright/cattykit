@@ -3,7 +3,7 @@ from __future__ import annotations
 import html
 import json
 import math
-from typing import Any
+from typing import Any, Callable
 
 import pandas as pd
 import panel as pn
@@ -245,19 +245,19 @@ def _run_overview(
     )
 
 
-def _object_attribute_charts(history: dict) -> tuple[pn.Row, pn.pane.HTML]:
-    """Render changing object attributes and summarize the attributes that stayed fixed."""
+def _object_attribute_charts(
+    history: dict, value_html: Callable[[object], str] | None = None
+) -> tuple[pn.Row, pn.pane.HTML]:
+    """Render tracked object attributes and return immutable table properties."""
     charts = []
-    unchanged = []
     for attribute, values in history["attributes"].items():
-        distinct_values = {json.dumps(value, sort_keys=True, default=str) for _, value in values}
-        if len(distinct_values) <= 1:
-            unchanged.append((attribute, values[-1][1] if values else None))
-            continue
         numeric = all(
             isinstance(value, (int, float)) and not isinstance(value, bool)
             for _, value in values
         )
+        chart_options = {}
+        if numeric and attribute != "strength":
+            chart_options["y_range"] = Range1d(0, 1)
         chart = figure(
             title=attribute.replace("_", " "),
             x_axis_label="Codelets run",
@@ -266,6 +266,7 @@ def _object_attribute_charts(history: dict) -> tuple[pn.Row, pn.pane.HTML]:
             height=260,
             width=380,
             toolbar_location=None,
+            **chart_options,
         )
         times, raw_values = zip(*values)
         if numeric:
@@ -278,7 +279,7 @@ def _object_attribute_charts(history: dict) -> tuple[pn.Row, pn.pane.HTML]:
             chart.add_layout(
                 Span(
                     location=history["creation_time"], dimension="height",
-                    line_dash="dotted", line_color="#16a34a", line_width=2,
+                    line_dash="dotted", line_color="#dc2626", line_width=2,
                 )
             )
         if history["destruction_time"] is not None:
@@ -289,17 +290,20 @@ def _object_attribute_charts(history: dict) -> tuple[pn.Row, pn.pane.HTML]:
                 )
             )
         charts.append(chart)
-    attribute_items = [*history["details"], *unchanged]
+    render_value = value_html or (
+        lambda value: html.escape(json.dumps(value, sort_keys=True, default=str))
+    )
+    attribute_items = history["details"]
     attributes_html = "".join(
         "<li>"
-        f"<strong>{html.escape(attribute)}</strong>: {html.escape(json.dumps(value, sort_keys=True, default=str))}"
+        f"<strong>{html.escape(attribute.removesuffix('_id').replace('_', ' '))}</strong>: {render_value(value)}"
         "</li>"
         for attribute, value in attribute_items
     ) or "<li>None</li>"
     return (
         pn.Row(*charts, sizing_mode="stretch_width")
         if charts
-        else pn.Row(pn.pane.Alert("No changing attributes were logged.", alert_type="info")),
+        else pn.Row(pn.pane.Alert("No tracked attributes were logged.", alert_type="info")),
         pn.pane.HTML(f"<ul>{attributes_html}</ul>", sizing_mode="stretch_width"),
     )
 

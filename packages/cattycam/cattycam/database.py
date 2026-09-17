@@ -171,7 +171,12 @@ def object_history(database: str | Path, run_id: int, object_id: str) -> dict | 
         ).fetchone()
 
         lifecycle: tuple[int | None, int | None] | None = None
+        object_table: str | None = None
         details: list[tuple[str, object]] = []
+        proposal_time: int | None = None
+        group_members: list[str] = []
+        group_bonds: list[str] = []
+        concept_mappings: list[dict[str, object]] = []
         for table, id_column in _OBJECT_TABLES.items():
             if table not in tables:
                 continue
@@ -183,6 +188,7 @@ def object_history(database: str | Path, run_id: int, object_id: str) -> dict | 
                 ).fetchone()
                 if row:
                     lifecycle = (None, None)
+                    object_table = table
                     column_names = [
                         column[1]
                         for column in connection.execute("PRAGMA table_info(slipnodes)")
@@ -199,6 +205,7 @@ def object_history(database: str | Path, run_id: int, object_id: str) -> dict | 
                 ).fetchone()
                 if row:
                     lifecycle = row
+                    object_table = table
                     full_row = connection.execute(
                         f"SELECT * FROM {_quote_identifier(table)} "
                         f"WHERE run_id = ? AND {_quote_identifier(id_column)} = ?",
@@ -211,6 +218,58 @@ def object_history(database: str | Path, run_id: int, object_id: str) -> dict | 
                         )
                     ]
                     details = _object_row_details(column_names, full_row, id_column)
+                    proposal_time = next(
+                        (value for attribute, value in details if attribute == "proposal_time"),
+                        None,
+                    )
+                    if table == "groups" and {"group_members", "group_bonds"} <= tables:
+                        group_row = connection.execute(
+                            "SELECT id FROM groups WHERE run_id = ? AND group_id = ?",
+                            (run_id, object_id),
+                        ).fetchone()
+                        if group_row:
+                            group_members = [
+                                value[0]
+                                for value in connection.execute(
+                                    "SELECT object_id FROM group_members WHERE group_id = ? "
+                                    "ORDER BY member_order",
+                                    group_row,
+                                )
+                            ]
+                            group_bonds = [
+                                value[0]
+                                for value in connection.execute(
+                                    "SELECT bond_id FROM group_bonds WHERE group_id = ? "
+                                    "ORDER BY bond_order",
+                                    group_row,
+                                )
+                            ]
+                    if table == "correspondences" and "concept_mappings" in tables:
+                        mapping_rows = connection.execute(
+                            """SELECT concept_mapping_id, source_facet, target_facet,
+                                      source_descriptor, target_descriptor, label
+                               FROM concept_mappings WHERE run_id = ?
+                               AND correspondence_id = ? ORDER BY id""",
+                            (run_id, object_id),
+                        ).fetchall()
+                        concept_mappings = [
+                            {
+                                "id": mapping_id,
+                                "source_facet": source_facet,
+                                "target_facet": target_facet,
+                                "source_descriptor": source_descriptor,
+                                "target_descriptor": target_descriptor,
+                                "label": label,
+                            }
+                            for (
+                                mapping_id,
+                                source_facet,
+                                target_facet,
+                                source_descriptor,
+                                target_descriptor,
+                                label,
+                            ) in mapping_rows
+                        ]
                     break
 
     if lifecycle is None and not attributes:
@@ -231,11 +290,16 @@ def object_history(database: str | Path, run_id: int, object_id: str) -> dict | 
     creation_time, destruction_time = lifecycle or (None, None)
     return {
         "id": object_id,
+        "table": object_table,
         "run_length": max(run_length, maximum_time),
         "creation_time": creation_time,
         "destruction_time": destruction_time,
+        "proposal_time": proposal_time,
         "attributes": grouped,
         "details": details,
+        "group_members": group_members,
+        "group_bonds": group_bonds,
+        "concept_mappings": concept_mappings,
     }
 
 
@@ -398,6 +462,32 @@ def codelet_step_value_reprs(
             f"{representations.get(source_id, source_id)} ==> "
             f"{representations.get(target_id, target_id)}"
         )
+    return representations
+
+
+def object_display_reprs(database: str | Path, run_id: int) -> dict[str, str]:
+    """Return familiar labels for workspace objects, Slipnet nodes, and codelets."""
+    representations = codelet_step_value_reprs(database, run_id)
+    try:
+        with sqlite3.connect(database) as connection:
+            slipnodes = connection.execute(
+                "SELECT name FROM slipnodes WHERE run_id = ?", (run_id,)
+            ).fetchall()
+            codelets = connection.execute(
+                "SELECT codelet_id, codelet_type FROM codelets WHERE run_id = ?",
+                (run_id,),
+            ).fetchall()
+    except sqlite3.OperationalError:
+        return representations
+    representations.update(
+        {f"slipnode:{name}": str(name).upper() for (name,) in slipnodes}
+    )
+    representations.update(
+        {
+            codelet_id: f"{codelet_type} {str(codelet_id).removeprefix('codelet:')}"
+            for codelet_id, codelet_type in codelets
+        }
+    )
     return representations
 
 
