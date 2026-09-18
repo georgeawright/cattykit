@@ -123,7 +123,7 @@ wheels = [
 [[package]]
 name = "cattycam"
 version = "0.1.0"
-source = { virtual = "packages/cattycam" }
+source = { editable = "packages/cattycam" }
 dependencies = [
     { name = "panel" },
 ]

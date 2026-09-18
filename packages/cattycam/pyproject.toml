@@ -9,6 +9,13 @@ dependencies = [
 ]
 license = "AGPL-3.0-or-later"
 
+[project.scripts]
+cattycam = "cattycam.cli:main"
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
 [dependency-groups]
 dev = [
     "ipython>=9.11.0",
