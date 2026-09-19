@@ -62,6 +62,7 @@ def create_app(database: str | Path) -> pn.Column:
     active_run = pn.widgets.IntInput(value=0, visible=False)
     active_object = pn.widgets.TextInput(value="", visible=False)
     refresh_run: Callable[[], None] | None = None
+    advance_playback: Callable[[], None] | None = None
     if pn.state.location:
         # This is a standalone Panel application. Reloading after a URL change
         # gives browser Back/Forward a fresh session whose selected run is read
@@ -71,8 +72,9 @@ def create_app(database: str | Path) -> pn.Column:
         pn.state.location.sync(active_object, {"value": "object_id"})
 
     def show_run(run_id: int) -> None:
-        nonlocal refresh_run
+        nonlocal advance_playback, refresh_run
         refresh_run = None
+        advance_playback = None
         columns, rows = table_rows(database_path, "runs", run_id=run_id)
         if not rows:
             content.objects = [
@@ -108,6 +110,43 @@ def create_app(database: str | Path) -> pn.Column:
             lambda event: setattr(selected_time, "value", event.new),
             "value_throttled",
         )
+        playback_version = pn.widgets.IntInput(value=0, visible=False)
+        playing = False
+
+        def set_time(time: int) -> None:
+            codelet_time.value = max(codelet_time.start, min(time, codelet_time.end))
+            playback_version.value += 1
+
+        def play(_: object) -> None:
+            nonlocal playing
+            playing = True
+
+        def pause(_: object) -> None:
+            nonlocal playing
+            playing = False
+
+        def advance() -> None:
+            nonlocal playing
+            if playing and codelet_time.value < codelet_time.end:
+                set_time(codelet_time.value + 1)
+            elif codelet_time.value >= codelet_time.end:
+                playing = False
+
+        advance_playback = advance
+        controls = pn.Row()
+        for name, callback in (
+            ("Run start", lambda _: set_time(codelet_time.start)),
+            ("Previous codelet", lambda _: set_time(codelet_time.value - 1)),
+            ("Play", play),
+            ("Pause", pause),
+            ("Next codelet", lambda _: set_time(codelet_time.value + 1)),
+            ("Run finish", lambda _: set_time(codelet_time.end)),
+        ):
+            button = pn.widgets.Button(
+                name=name, button_type="primary" if name == "Play" else "default"
+            )
+            button.on_click(callback)
+            controls.append(button)
         refresh_versions = {
             name: pn.widgets.IntInput(value=0, visible=False)
             for name in ("header", "overview", "coderack", "history", "workspace", "slipnet")
@@ -149,22 +188,23 @@ def create_app(database: str | Path) -> pn.Column:
         content.objects = [
             pn.Row(pn.bind(render_header, refresh_versions["header"].param.value)),
             pn.bind(render_overview, refresh_versions["overview"].param.value),
+            controls,
             codelet_time,
             pn.Row(
                 pn.Column(
                     "### Coderack",
-                    pn.bind(lambda _, __: _coderack_badges(database_path, run_id, codelet_time.value), codelet_time.param.value_throttled, refresh_versions["coderack"].param.value),
+                    pn.bind(lambda _, __, ___: _coderack_badges(database_path, run_id, codelet_time.value), codelet_time.param.value_throttled, playback_version.param.value, refresh_versions["coderack"].param.value),
                     "### Codelet history",
-                    pn.bind(lambda _, __: _codelet_history(database_path, run_id, codelet_time.value), codelet_time.param.value_throttled, refresh_versions["history"].param.value),
+                    pn.bind(lambda _, __, ___: _codelet_history(database_path, run_id, codelet_time.value), codelet_time.param.value_throttled, playback_version.param.value, refresh_versions["history"].param.value),
                     sizing_mode="stretch_width", styles={"flex": "1"},
                 ),
                 pn.Column(
                     "### Workspace",
-                    pn.bind(lambda _, __: _workspace_canvas(database_path, run_id, codelet_time.value), codelet_time.param.value_throttled, refresh_versions["workspace"].param.value),
+                    pn.bind(lambda _, __, ___: _workspace_canvas(database_path, run_id, codelet_time.value), codelet_time.param.value_throttled, playback_version.param.value, refresh_versions["workspace"].param.value),
                     "### Slipnet",
                     pn.Row(
-                        pn.bind(lambda _, __: _slipnet_canvas(database_path, run_id, codelet_time.value), codelet_time.param.value_throttled, refresh_versions["slipnet"].param.value),
-                        pn.bind(lambda _, __: _slipnet_activation_list(database_path, run_id, codelet_time.value), codelet_time.param.value_throttled, refresh_versions["slipnet"].param.value),
+                        pn.bind(lambda _, __, ___: _slipnet_canvas(database_path, run_id, codelet_time.value), codelet_time.param.value_throttled, playback_version.param.value, refresh_versions["slipnet"].param.value),
+                        pn.bind(lambda _, __, ___: _slipnet_activation_list(database_path, run_id, codelet_time.value), codelet_time.param.value_throttled, playback_version.param.value, refresh_versions["slipnet"].param.value),
                         sizing_mode="stretch_width",
                     ),
                     sizing_mode="stretch_width", styles={"flex": "2"},
@@ -377,11 +417,12 @@ def create_app(database: str | Path) -> pn.Column:
         ]
 
     def update_view(event: Any | None = None) -> None:
-        nonlocal refresh_run
+        nonlocal advance_playback, refresh_run
         run_id = active_run.value
         if run_id:
             if active_object.value:
                 refresh_run = None
+                advance_playback = None
                 show_object(run_id, active_object.value)
             else:
                 show_run(run_id)
@@ -390,12 +431,14 @@ def create_app(database: str | Path) -> pn.Column:
             and {"model", "problem"} <= pn.state.location.query_params.keys()
         ):
             refresh_run = None
+            advance_playback = None
             show_problem(
                 pn.state.location.query_params["model"],
                 pn.state.location.query_params["problem"],
             )
         else:
             refresh_run = None
+            advance_playback = None
             show_runs()
 
     active_run.param.watch(update_view, "value")
@@ -412,6 +455,8 @@ def create_app(database: str | Path) -> pn.Column:
             last_database_revision = revision
             if refresh_run is not None:
                 refresh_run()
+        if advance_playback is not None:
+            advance_playback()
 
     # SQLite's WAL is included in the revision, so this also works for the
     # normal concurrent-reader/writer configuration. Panel runs callbacks in

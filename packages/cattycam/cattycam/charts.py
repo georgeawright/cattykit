@@ -375,16 +375,16 @@ def _add_time_marker(
     value_formatter,
 ) -> None:
     """Add a vertical marker and value label that follow the selected time."""
-    value = _value_at_time(values, codelet_time.value_throttled)
+    value = _value_at_time(values, codelet_time.value)
     marker = Span(
-        location=codelet_time.value_throttled,
+        location=codelet_time.value,
         dimension="height",
         line_color="red",
         line_width=2,
     )
     chart.add_layout(marker)
     label = Label(
-        x=codelet_time.value_throttled,
+        x=codelet_time.value,
         # The plot frame is shorter than the figure because of its title and axes.
         # Keep the screen-positioned label inside that frame.
         y=175,
@@ -403,7 +403,9 @@ def _add_time_marker(
         label.x = event.new
         label.text = value_formatter(_value_at_time(values, event.new))
 
-    codelet_time.param.watch(update_marker, "value_throttled")
+    # Playback and the navigation buttons set ``value`` directly; waiting for
+    # the throttled value leaves the chart marker behind the displayed state.
+    codelet_time.param.watch(update_marker, "value")
 
 
 def _value_at_time(values: list[tuple], time: int) -> object:
