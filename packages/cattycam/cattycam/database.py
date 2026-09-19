@@ -426,7 +426,7 @@ def codelet_history(
 ) -> list[
     tuple[str, str | None, int, str, int | None, int | None, str | None, str | None]
 ]:
-    """Return completed codelets up to a selected time, newest first."""
+    """Return codelets one display step ahead of the workspace, newest first."""
     with sqlite3.connect(database) as connection:
         return connection.execute(
             """SELECT codelet_id, parent_codelet_id, run_time, codelet_type,
@@ -434,7 +434,7 @@ def codelet_history(
                FROM codelets WHERE run_id = ?
                AND run_time IS NOT NULL AND run_time <= ?
                ORDER BY run_time DESC, id DESC""",
-            (run_id, time),
+            (run_id, time + 1),
         ).fetchall()
 
 
@@ -680,6 +680,26 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
             (run_id, time, time),
         ).fetchall()
 
+    # Highlight lifecycle events when they become visible.
+    highlighted_ids = {
+        row[0]
+        for table, id_column in (
+            ("letters", "letter_id"),
+            ("groups", "group_id"),
+            ("bonds", "bond_id"),
+            ("correspondences", "correspondence_id"),
+            ("replacements", "replacement_id"),
+            ("rules", "rule_id"),
+            ("translated_rules", "rule_id"),
+            ("descriptions", "object_id"),
+        )
+        for row in connection.execute(
+            f"SELECT {id_column} FROM {table} WHERE run_id = ? "
+            "AND (proposal_time = ? OR creation_time = ?)",
+            (run_id, time, time),
+        )
+    }
+
     rule = rules[0] if rules else None
     translated_rule = translated_rules[0] if translated_rules else None
 
@@ -772,6 +792,7 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
             if translated_rule
             else None
         ),
+        "highlighted_ids": sorted(highlighted_ids),
     }
 
 

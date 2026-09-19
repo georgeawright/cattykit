@@ -486,7 +486,7 @@ def create_app(database: str | Path) -> pn.Column:
     # SQLite's WAL is included in the revision, so this also works for the
     # normal concurrent-reader/writer configuration. Panel runs callbacks in
     # the browser session's event loop, making UI updates safe.
-    pn.state.add_periodic_callback(refresh_when_database_changes, period=1_000)
+    pn.state.add_periodic_callback(refresh_when_database_changes, period=500)
     return pn.Column(
         content,
         BrowserHistoryBridge(),

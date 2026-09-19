@@ -313,7 +313,7 @@ def test_coderack_codelets_excludes_codelets_discarded_when_a_snag_clears_rack(
     ]
 
 
-def test_codelet_history_filters_by_time_and_orders_newest_first(tmp_path) -> None:
+def test_codelet_history_leads_the_workspace_by_one_step(tmp_path) -> None:
     database = tmp_path / "history.sqlite"
     with sqlite3.connect(database) as connection:
         connection.execute(
@@ -335,6 +335,7 @@ def test_codelet_history_filters_by_time_and_orders_newest_first(tmp_path) -> No
         )
 
     assert codelet_history(database, 1, time=3) == [
+        ("codelet:3", None, 4, "Later", 6, 500_000_000, "finish", None),
         ("codelet:2", "codelet:1", 3, "Builder", 4, 250_000_000, "finish", None),
         ("codelet:1", None, 1, "Scout", 2, 125_000_000, "fizzle", "no match"),
     ]
@@ -536,7 +537,8 @@ def test_workspace_snapshot_includes_built_and_proposed_entities(tmp_path) -> No
         connection.execute(
             "CREATE TABLE letters "
             "(run_id INTEGER, letter_id TEXT, string_id TEXT, position INTEGER, "
-            "letter_category TEXT, creation_time INTEGER, destruction_time INTEGER)"
+            "letter_category TEXT, proposal_time INTEGER, creation_time INTEGER, "
+            "destruction_time INTEGER)"
         )
         for table, identifier in (
             ("groups", "group_id"),
@@ -582,10 +584,10 @@ def test_workspace_snapshot_includes_built_and_proposed_entities(tmp_path) -> No
             "proposal_time INTEGER, creation_time INTEGER, destruction_time INTEGER)"
         )
         connection.executemany(
-            "INSERT INTO letters VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO letters VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
             [
-                (1, "letter:1", "initial", 0, "a", 0, None),
-                (1, "letter:2", "initial", 1, "b", 0, None),
+                (1, "letter:1", "initial", 0, "a", 0, 0, None),
+                (1, "letter:2", "initial", 1, "b", 0, 0, None),
             ],
         )
         connection.execute(
@@ -639,6 +641,14 @@ def test_workspace_snapshot_includes_built_and_proposed_entities(tmp_path) -> No
     assert snapshot["translated_rule"] == {
         "id": "rule:translated:1", "source_object_category": "letter", "source_descriptor": "a",
         "replaced_facet": "letter_category", "target_descriptor": "b", "relation": None,
+    }
+    assert set(snapshot["highlighted_ids"]) == {
+        "group:1",
+        "bond:1",
+        "correspondence:1",
+        "replacement:1",
+        "rule:1",
+        "rule:translated:1",
     }
 
 
