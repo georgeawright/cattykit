@@ -9,6 +9,8 @@ from cattycam.database import (
     coderack_codelets,
     object_history,
     object_display_reprs,
+    run_current_time,
+    run_component_revisions,
     run_overview_series,
     slipnet_snapshot,
     table_documentation,
@@ -99,6 +101,37 @@ def test_run_overview_series_uses_attribute_and_lifecycle_history(tmp_path) -> N
         "workspace": [(0, 2), (1, 3), (2, 2)],
         "snags": [(1, 2)],
     }
+
+
+def test_run_current_time_uses_logged_codelets_before_a_run_finishes(tmp_path) -> None:
+    database = tmp_path / "history.sqlite"
+    with sqlite3.connect(database) as connection:
+        connection.execute("CREATE TABLE codelets (run_id INTEGER, run_time INTEGER)")
+        connection.executemany(
+            "INSERT INTO codelets VALUES (?, ?)", [(1, 2), (1, 7), (2, 9)]
+        )
+
+    assert run_current_time(database, 1) == 7
+    assert run_current_time(database, 3) == 0
+
+
+def test_run_component_revisions_ignore_changes_to_other_runs(tmp_path) -> None:
+    database = tmp_path / "history.sqlite"
+    with sqlite3.connect(database) as connection:
+        connection.execute("CREATE TABLE runs (id INTEGER PRIMARY KEY)")
+        connection.execute("CREATE TABLE codelets (run_id INTEGER, run_time INTEGER)")
+        connection.execute(
+            """CREATE TABLE attribute_values
+               (id INTEGER PRIMARY KEY, run_id INTEGER, time INTEGER, object_id TEXT,
+                attribute TEXT, value_json TEXT)"""
+        )
+        connection.execute("INSERT INTO runs VALUES (1)")
+        connection.execute("INSERT INTO runs VALUES (2)")
+        connection.commit()
+        before = run_component_revisions(database, 1)
+        connection.execute("INSERT INTO codelets VALUES (2, 1)")
+
+    assert run_component_revisions(database, 1) == before
 
 
 def test_object_history_groups_attributes_and_finds_lifecycle_boundaries(tmp_path) -> None:

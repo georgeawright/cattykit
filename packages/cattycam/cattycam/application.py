@@ -3,7 +3,7 @@ from __future__ import annotations
 import html
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 from urllib.parse import urlencode
 
 import pandas as pd
@@ -21,9 +21,21 @@ from .details import (
 from .views import _problem_overview, _run_group_table
 
 
+def _database_revision(database: Path) -> tuple[tuple[str, int, int], ...]:
+    """Identify SQLite files whose changes should refresh a browser session."""
+    files = (database, Path(f"{database}-wal"), Path(f"{database}-journal"))
+    return tuple(
+        (str(file), stat.st_mtime_ns, stat.st_size)
+        for file in files
+        if (stat := file.stat() if file.exists() else None) is not None
+    )
+
+
 def create_app(database: str | Path) -> pn.Column:
     """Create a run picker which opens a tabbed, run-specific database view."""
     from cattycam.database import (
+        run_current_time,
+        run_component_revisions,
         run_overview_series,
         table_names,
         table_rows,
@@ -49,6 +61,7 @@ def create_app(database: str | Path) -> pn.Column:
     content = pn.Column(sizing_mode="stretch_width")
     active_run = pn.widgets.IntInput(value=0, visible=False)
     active_object = pn.widgets.TextInput(value="", visible=False)
+    refresh_run: Callable[[], None] | None = None
     if pn.state.location:
         # This is a standalone Panel application. Reloading after a URL change
         # gives browser Back/Forward a fresh session whose selected run is read
@@ -58,18 +71,27 @@ def create_app(database: str | Path) -> pn.Column:
         pn.state.location.sync(active_object, {"value": "object_id"})
 
     def show_run(run_id: int) -> None:
+        nonlocal refresh_run
+        refresh_run = None
         columns, rows = table_rows(database_path, "runs", run_id=run_id)
         if not rows:
             content.objects = [
                 pn.pane.Alert(f"Run {run_id} was not found.", alert_type="warning")
             ]
             return
-        run = dict(zip(columns, rows[0], strict=True))
-        model = run["model"]
-        problem = run["problem"]
-        solution = run["solution"]
-        codelets_run = run["number_of_codelets_run"]
-        final_temperature = run["final_temperature"]
+        def current_codelet_count() -> int:
+            latest_run_columns, latest_run_rows = table_rows(
+                database_path, "runs", run_id=run_id
+            )
+            latest_run = dict(zip(latest_run_columns, latest_run_rows[0], strict=True))
+            # Active runs do not receive their final codelet count until
+            # ``run_finished``. Use the latest logged codelet meanwhile.
+            return max(
+                int(latest_run["number_of_codelets_run"] or 0),
+                run_current_time(database_path, run_id),
+            )
+
+        codelets_run = current_codelet_count()
         selected_time = pn.widgets.IntInput(
             value=int(codelets_run or 0), visible=False
         )
@@ -86,76 +108,69 @@ def create_app(database: str | Path) -> pn.Column:
             lambda event: setattr(selected_time, "value", event.new),
             "value_throttled",
         )
-        overview = _run_overview(
-            run_overview_series(database_path, run_id), codelet_time
-        )
-        coderack_panel = pn.bind(
-            _coderack_badges,
-            database_path,
-            run_id,
-            codelet_time.param.value_throttled,
-        )
-        codelet_history_panel = pn.bind(
-            _codelet_history,
-            database_path,
-            run_id,
-            codelet_time.param.value_throttled,
-        )
-        workspace_panel = pn.bind(
-            _workspace_canvas,
-            database_path,
-            run_id,
-            codelet_time.param.value_throttled,
-        )
-        slipnet_panel = pn.bind(
-            _slipnet_canvas,
-            database_path,
-            run_id,
-            codelet_time.param.value_throttled,
-        )
-        slipnet_activations = pn.bind(
-            _slipnet_activation_list,
-            database_path,
-            run_id,
-            codelet_time.param.value_throttled,
-        )
-        detail_panels = pn.Row(
-            pn.Column(
-                "### Coderack",
-                coderack_panel,
-                "### Codelet history",
-                codelet_history_panel,
-                sizing_mode="stretch_width",
-                styles={"flex": "1"},
-            ),
-            pn.Column(
-                "### Workspace",
-                workspace_panel,
-                "### Slipnet",
-                pn.Row(
-                    slipnet_panel,
-                    slipnet_activations,
-                    sizing_mode="stretch_width",
+        refresh_versions = {
+            name: pn.widgets.IntInput(value=0, visible=False)
+            for name in ("header", "overview", "coderack", "history", "workspace", "slipnet")
+        }
+        component_revisions = run_component_revisions(database_path, run_id)
+
+        def render_header(_: int) -> pn.pane.Markdown:
+            latest_columns, latest_rows = table_rows(database_path, "runs", run_id=run_id)
+            latest_run = dict(zip(latest_columns, latest_rows[0], strict=True))
+            problem_and_solution = (
+                latest_run["problem"]
+                if latest_run["solution"] is None
+                else str(latest_run["problem"]).replace("?", str(latest_run["solution"]))
+            )
+            return pn.pane.Markdown(
+                f"## Run {run_id} of {latest_run['model']} {problem_and_solution}"
+                f" Codelets run: {current_codelet_count()}"
+                f" final temperature: {latest_run['final_temperature']}"
+            )
+
+        def render_overview(_: int) -> pn.Column:
+            return _run_overview(run_overview_series(database_path, run_id), codelet_time)
+
+        def refresh_components() -> None:
+            nonlocal component_revisions
+            was_at_live_edge = codelet_time.value == codelet_time.end
+            latest_time = current_codelet_count()
+            if latest_time > codelet_time.end:
+                codelet_time.end = latest_time
+                if was_at_live_edge:
+                    codelet_time.value = latest_time
+            latest_revisions = run_component_revisions(database_path, run_id)
+            for component, revision in latest_revisions.items():
+                if revision != component_revisions[component]:
+                    refresh_versions[component].value += 1
+            component_revisions = latest_revisions
+
+        refresh_run = refresh_components
+        content.objects = [
+            pn.Row(pn.bind(render_header, refresh_versions["header"].param.value)),
+            pn.bind(render_overview, refresh_versions["overview"].param.value),
+            codelet_time,
+            pn.Row(
+                pn.Column(
+                    "### Coderack",
+                    pn.bind(lambda _, __: _coderack_badges(database_path, run_id, codelet_time.value), codelet_time.param.value_throttled, refresh_versions["coderack"].param.value),
+                    "### Codelet history",
+                    pn.bind(lambda _, __: _codelet_history(database_path, run_id, codelet_time.value), codelet_time.param.value_throttled, refresh_versions["history"].param.value),
+                    sizing_mode="stretch_width", styles={"flex": "1"},
+                ),
+                pn.Column(
+                    "### Workspace",
+                    pn.bind(lambda _, __: _workspace_canvas(database_path, run_id, codelet_time.value), codelet_time.param.value_throttled, refresh_versions["workspace"].param.value),
+                    "### Slipnet",
+                    pn.Row(
+                        pn.bind(lambda _, __: _slipnet_canvas(database_path, run_id, codelet_time.value), codelet_time.param.value_throttled, refresh_versions["slipnet"].param.value),
+                        pn.bind(lambda _, __: _slipnet_activation_list(database_path, run_id, codelet_time.value), codelet_time.param.value_throttled, refresh_versions["slipnet"].param.value),
+                        sizing_mode="stretch_width",
+                    ),
+                    sizing_mode="stretch_width", styles={"flex": "2"},
                 ),
                 sizing_mode="stretch_width",
-                styles={"flex": "2"},
             ),
-            sizing_mode="stretch_width",
-        )
-        problem_and_solution = (
-            problem if solution is None else str(problem).replace("?", str(solution))
-        )
-        content.objects = [
-            pn.Row(
-                pn.pane.Markdown(
-                    f"## Run {run_id} of {model} {problem_and_solution}"
-                    f" Codelets run: {codelets_run}"
-                    f" final temperature: {final_temperature}"
-                )
-            ),
-            overview,
-            codelet_time,
-            detail_panels,
         ]
 
     def show_object(run_id: int, object_id: str) -> None:
@@ -362,9 +377,11 @@ def create_app(database: str | Path) -> pn.Column:
         ]
 
     def update_view(event: Any | None = None) -> None:
+        nonlocal refresh_run
         run_id = active_run.value
         if run_id:
             if active_object.value:
+                refresh_run = None
                 show_object(run_id, active_object.value)
             else:
                 show_run(run_id)
@@ -372,16 +389,34 @@ def create_app(database: str | Path) -> pn.Column:
             pn.state.location
             and {"model", "problem"} <= pn.state.location.query_params.keys()
         ):
+            refresh_run = None
             show_problem(
                 pn.state.location.query_params["model"],
                 pn.state.location.query_params["problem"],
             )
         else:
+            refresh_run = None
             show_runs()
 
     active_run.param.watch(update_view, "value")
     active_object.param.watch(update_view, "value")
     update_view()
+
+    last_database_revision = _database_revision(database_path)
+
+    def refresh_when_database_changes() -> None:
+        """Re-render this session after the logger commits new SQLite data."""
+        nonlocal last_database_revision
+        revision = _database_revision(database_path)
+        if revision != last_database_revision:
+            last_database_revision = revision
+            if refresh_run is not None:
+                refresh_run()
+
+    # SQLite's WAL is included in the revision, so this also works for the
+    # normal concurrent-reader/writer configuration. Panel runs callbacks in
+    # the browser session's event loop, making UI updates safe.
+    pn.state.add_periodic_callback(refresh_when_database_changes, period=1_000)
     return pn.Column(
         content,
         BrowserHistoryBridge(),

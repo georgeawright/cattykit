@@ -152,6 +152,63 @@ def run_overview_series(database: str | Path, run_id: int) -> dict[str, list[tup
     }
 
 
+def run_current_time(database: str | Path, run_id: int) -> int:
+    """Return the latest codelet time available for a run, including live runs.
+
+    ``runs.number_of_codelets_run`` is written when a run finishes. While a
+    logger is still recording, the codelet rows are the authoritative cursor.
+    """
+    with sqlite3.connect(database) as connection:
+        row = connection.execute(
+            """SELECT MAX(run_time) FROM codelets
+               WHERE run_id = ? AND run_time IS NOT NULL""",
+            (run_id,),
+        ).fetchone()
+    return int(row[0] or 0)
+
+
+def run_component_revisions(database: str | Path, run_id: int) -> dict[str, tuple]:
+    """Return stable fingerprints for the data rendered by each run component."""
+    available_tables = set(table_names(database))
+    component_tables = {
+        "header": ("runs", "codelets"),
+        "overview": (
+            "attribute_values", "letters", "groups", "bonds", "correspondences",
+            "replacements", "rules", "snags",
+        ),
+        "coderack": ("codelets",),
+        "history": ("codelets", "codelet_arguments", "codelet_steps"),
+        "workspace": (
+            "strings", "letters", "descriptions", "bonds", "groups",
+            "group_members", "group_bonds", "correspondences", "concept_mappings",
+            "replacements", "rules", "translated_rules",
+        ),
+    }
+    revisions = {
+        component: tuple(
+            (table, table_rows(database, table, run_id=run_id)[1])
+            for table in tables
+            if table in available_tables
+        )
+        for component, tables in component_tables.items()
+    }
+    # Only activation history for a slipnode affects the slipnet panel; changes
+    # to temperature or workspace attributes must not redraw it.
+    with sqlite3.connect(database) as connection:
+        activations = connection.execute(
+            """SELECT time, object_id, value_json FROM attribute_values
+               WHERE run_id = ? AND attribute = 'activation'
+               AND object_id LIKE 'slipnode:%' ORDER BY id""",
+            (run_id,),
+        ).fetchall()
+    revisions["slipnet"] = tuple(
+        (table, table_rows(database, table, run_id=run_id)[1])
+        for table in ("slipnodes", "sliplinks")
+        if table in available_tables
+    ) + (("activations", activations),)
+    return revisions
+
+
 def object_history(database: str | Path, run_id: int, object_id: str) -> dict | None:
     """Return tracked attributes and lifecycle boundaries for one viewer object."""
     with sqlite3.connect(database) as connection:
