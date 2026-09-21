@@ -123,20 +123,14 @@ class Coderack:
     def remove_codelets(self, number_to_remove: int, temperature: float):
         """Probabilistically remove codelets.
         More likely to remove low urgency, older codelets."""
+        # Conventional weighted sampling without replacement.
+        # matches the intention of the original source code.
         urgency_bin_weights = self.get_urgency_bin_weights(temperature)
         removal_probabilities = [
             (self.number_of_codelets_run - codelet.birth_time)
             * (1 + urgency_bin_weights[-1] - urgency_bin_weights[codelet.urgency_bin])
             for codelet in self.codelets
         ]
-        # The Lisp implementation calculates this probability list once, then
-        # repeatedly indexes the shrinking codelet list with selections from the
-        # unchanged probability list.  After the first removal, probabilities
-        # can therefore refer to different codelets (or to an index beyond the
-        # shortened list).  Here weights are removed together with their
-        # codelets, giving conventional weighted sampling without replacement.
-        # Reproducing the Lisp's exact run-length distribution may require
-        # reproducing its unusual stale-probability-list behaviour instead.
         codelets_to_remove = select_items_from_list(
             self.codelets,
             removal_probabilities,
@@ -144,6 +138,35 @@ class Coderack:
         )
         for codelet in codelets_to_remove:
             self._remove(codelet)
+
+        # Faithful re-implementation of coderack.l:324-371.
+        # The original computes the probability list once,
+        # then repeatedly uses its selected position to
+        # index the shrinking codelet list.
+        # codelets = self.codelets
+        # urgency_bin_weights = self.get_urgency_bin_weights(temperature)
+        # removal_probabilities = [
+        #    (self.number_of_codelets_run - codelet.birth_time)
+        #    * (1 + urgency_bin_weights[-1] - urgency_bin_weights[codelet.urgency_bin])
+        #    for codelet in codelets
+        # ]
+        # number_removed = 0
+        # while number_removed < number_to_remove and codelets:
+        #    probability_sum = sum(removal_probabilities)
+        #    if probability_sum <= 0:
+        #        index = random.randrange(len(removal_probabilities))
+        #    else:
+        #        selected_value = random.randrange(probability_sum)
+        #        cumulative_probability = 0
+        #        for index, probability in enumerate(removal_probabilities):
+        #            cumulative_probability += probability
+        #            if cumulative_probability > selected_value:
+        #                break
+        #    if index >= len(codelets):
+        #        continue
+        #    codelet = codelets.pop(index)
+        #    self._remove(codelet)
+        #    number_removed += 1
 
     def choose(self, temperature: float):
         urgency_bin_weights = self.get_urgency_bin_weights(temperature)
