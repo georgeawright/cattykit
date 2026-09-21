@@ -644,6 +644,377 @@ ORIGINAL_COPYCAT_RESULTS = [
         },
         {"mean": 1067, "standard_error": 22.2},
     ),
+    (
+        "aabbcc -> aabbcd ==> iijjkk -> ?",
+        {
+            "iijjkl": {
+                "frequency": 879,
+                "temperature_mean": 0.32,
+                "temperature_standard_error": 0.004,
+            },
+            "iijjll": {
+                "frequency": 103,
+                "temperature_mean": 0.46,
+                "temperature_standard_error": 0.009,
+            },
+            "iijjkkk": {
+                "frequency": 6,
+                "temperature_mean": 0.39,
+                "temperature_standard_error": 0.016,
+            },
+            "iijjkd": {
+                "frequency": 4,
+                "temperature_mean": 0.51,
+                "temperature_standard_error": 0.105,
+            },
+            "ijjkk": {
+                "frequency": 3,
+                "temperature_mean": 0.56,
+                "temperature_standard_error": 0.027,
+            },
+            "iijjdd": {
+                "frequency": 2,
+                "temperature_mean": 0.62,
+                "temperature_standard_error": 0.015,
+            },
+            "iikkll": {
+                "frequency": 1,
+                "temperature_mean": 0.50,
+                "temperature_standard_error": 0.0,
+            },
+            "jijjkk": {
+                "frequency": 1,
+                "temperature_mean": 0.60,
+                "temperature_standard_error": 0.0,
+            },
+            "iijkll": {
+                "frequency": 1,
+                "temperature_mean": 0.48,
+                "temperature_standard_error": 0.0,
+            },
+        },
+        {"mean": 725, "standard_error": 8.3},
+    ),
+    (
+        "abc -> abd ==> edc -> ?",
+        {
+            "edb": {
+                "frequency": 645,
+                "temperature_mean": 0.13,
+                "temperature_standard_error": 0.001,
+            },
+            "edd": {
+                "frequency": 328,
+                "temperature_mean": 0.38,
+                "temperature_standard_error": 0.005,
+            },
+            "fdc": {
+                "frequency": 26,
+                "temperature_mean": 0.20,
+                "temperature_standard_error": 0.010,
+            },
+            "eed": {
+                "frequency": 1,
+                "temperature_mean": 0.51,
+                "temperature_standard_error": 0.0,
+            },
+        },
+        {"mean": 348, "standard_error": 4.6},
+    ),
+    (
+        "abc -> abd ==> cba -> ?",
+        {
+            "dba": {
+                "frequency": 885,
+                "temperature_mean": 0.16,
+                "temperature_standard_error": 0.004,
+            },
+            "cbb": {
+                "frequency": 88,
+                "temperature_mean": 0.48,
+                "temperature_standard_error": 0.023,
+            },
+            "cbd": {
+                "frequency": 26,
+                "temperature_mean": 0.22,
+                "temperature_standard_error": 0.034,
+            },
+            "ccb": {
+                "frequency": 1,
+                "temperature_mean": 0.45,
+                "temperature_standard_error": 0.0,
+            },
+        },
+        {"mean": 404, "standard_error": 9.8},
+    ),
+    (
+        "abc -> abd ==> mrr -> ?",
+        {
+            "mss": {
+                "frequency": 640,
+                "temperature_mean": 0.42,
+                "temperature_standard_error": 0.001,
+            },
+            "mrs": {
+                "frequency": 338,
+                "temperature_mean": 0.46,
+                "temperature_standard_error": 0.003,
+            },
+            "mrrr": {
+                "frequency": 14,
+                "temperature_mean": 0.21,
+                "temperature_standard_error": 0.01,
+            },
+            "mrd": {
+                "frequency": 5,
+                "temperature_mean": 0.52,
+                "temperature_standard_error": 0.013,
+            },
+            "mdd": {
+                "frequency": 2,
+                "temperature_mean": 0.44,
+                "temperature_standard_error": 0.005,
+            },
+            "mrr": {
+                "frequency": 1,
+                "temperature_mean": 0.77,
+                "temperature_standard_error": 0.0,
+            },
+        },
+        {"mean": 721, "standard_error": 15.5},
+    ),
+    (
+        "abc -> abd ==> mmrrrjjjj -> ?",
+        {
+            "mmrrrkkkk": {
+                "frequency": 688,
+                "temperature_mean": 0.43,
+                "temperature_standard_error": 0.002,
+            },
+            "mmrrrjjjk": {
+                "frequency": 201,
+                "temperature_mean": 0.50,
+                "temperature_standard_error": 0.005,
+            },
+            "mmrrrjkkk": {
+                "frequency": 53,
+                "temperature_mean": 0.45,
+                "temperature_standard_error": 0.06,
+            },
+            "mmrrrjjkk": {
+                "frequency": 39,
+                "temperature_mean": 0.44,
+                "temperature_standard_error": 0.06,
+            },
+            "mmrrrjjjjj": {
+                "frequency": 10,
+                "temperature_mean": 0.22,
+                "temperature_standard_error": 0.01,
+            },
+            "mmrrrjjjd": {
+                "frequency": 4,
+                "temperature_mean": 0.62,
+                "temperature_standard_error": 0.06,
+            },
+            "mmrrrdddd": {
+                "frequency": 2,
+                "temperature_mean": 0.46,
+                "temperature_standard_error": 0.025,
+            },
+            "mmrrrjjjj": {
+                "frequency": 2,
+                "temperature_mean": 0.64,
+                "temperature_standard_error": 0.065,
+            },
+            "mmrrrjjdd": {
+                "frequency": 1,
+                "temperature_mean": 0.47,
+                "temperature_standard_error": 0.0,
+            },
+        },
+        {"mean": 829, "standard_error": 14.5},
+    ),
+    (
+        "abc -> abd ==> rssttt -> ?",
+        {
+            "rssuuu": {
+                "frequency": 704,
+                "temperature_mean": 0.29,
+                "temperature_standard_error": 0.004,
+            },
+            "rssttu": {
+                "frequency": 176,
+                "temperature_mean": 0.48,
+                "temperature_standard_error": 0.006,
+            },
+            "rsstuu": {
+                "frequency": 46,
+                "temperature_mean": 0.45,
+                "temperature_standard_error": 0.07,
+            },
+            "rttuuu": {
+                "frequency": 45,
+                "temperature_mean": 0.43,
+                "temperature_standard_error": 0.03,
+            },
+            "rstuuu": {
+                "frequency": 15,
+                "temperature_mean": 0.45,
+                "temperature_standard_error": 0.017,
+            },
+            "rssddd": {
+                "frequency": 8,
+                "temperature_mean": 0.48,
+                "temperature_standard_error": 0.017,
+            },
+            "rssttd": {
+                "frequency": 3,
+                "temperature_mean": 0.58,
+                "temperature_standard_error": 0.017,
+            },
+            "rsstttt": {
+                "frequency": 2,
+                "temperature_mean": 0.30,
+                "temperature_standard_error": 0.030,
+            },
+            "rsstdd": {
+                "frequency": 1,
+                "temperature_mean": 0.54,
+                "temperature_standard_error": 0.0,
+            },
+        },
+        {"mean": 666, "standard_error": 11.7},
+    ),
+    (
+        "abc -> abd ==> xpqdef -> ?",
+        {
+            "xpqefg": {
+                "frequency": 504,
+                "temperature_mean": 0.46,
+                "temperature_standard_error": 0.002,
+            },
+            "xpqdeg": {
+                "frequency": 434,
+                "temperature_mean": 0.53,
+                "temperature_standard_error": 0.004,
+            },
+            "xpqdfg": {
+                "frequency": 20,
+                "temperature_mean": 0.49,
+                "temperature_standard_error": 0.011,
+            },
+            "xpqcdef": {
+                "frequency": 13,
+                "temperature_mean": 0.23,
+                "temperature_standard_error": 0.017,
+            },
+            "xpqded": {
+                "frequency": 11,
+                "temperature_mean": 0.59,
+                "temperature_standard_error": 0.028,
+            },
+            "xpqdefg": {
+                "frequency": 9,
+                "temperature_mean": 0.22,
+                "temperature_standard_error": 0.012,
+            },
+            "xpqdef": {
+                "frequency": 5,
+                "temperature_mean": 0.62,
+                "temperature_standard_error": 0.010,
+            },
+            "xpqddd": {
+                "frequency": 4,
+                "temperature_mean": 0.54,
+                "temperature_standard_error": 0.033,
+            },
+        },
+        {"mean": 989, "standard_error": 21.5},
+    ),
+    (
+        "abc -> qbc ==> xyz -> ?",
+        {
+            "qyz": {
+                "frequency": 996,
+                "temperature_mean": 0.19,
+                "temperature_standard_error": 0.003,
+            },
+            "xyz": {
+                "frequency": 3,
+                "temperature_mean": 0.73,
+                "temperature_standard_error": 0.09,
+            },
+            "qqz": {
+                "frequency": 1,
+                "temperature_mean": 0.56,
+                "temperature_standard_error": 0.0,
+            },
+        },
+        {"mean": 302, "standard_error": 3.1},
+    ),
+    (
+        "rst -> rsu ==> xyz -> ?",
+        {
+            "xyu": {
+                "frequency": 988,
+                "temperature_mean": 0.22,
+                "temperature_standard_error": 0.004,
+            },
+            "wyz": {
+                "frequency": 8,
+                "temperature_mean": 0.16,
+                "temperature_standard_error": 0.012,
+            },
+            "xyz": {
+                "frequency": 4,
+                "temperature_mean": 0.65,
+                "temperature_standard_error": 0.124,
+            },
+        },
+        {"mean": 3658, "standard_error": 107.2},
+    ),
+    (
+        "abc -> abd ==> glz -> ?",
+        {
+            "hlz": {
+                "frequency": 646,
+                "temperature_mean": 0.43,
+                "temperature_standard_error": 0.003,
+            },
+            "gld": {
+                "frequency": 338,
+                "temperature_mean": 0.49,
+                "temperature_standard_error": 0.005,
+            },
+            "dlz": {
+                "frequency": 14,
+                "temperature_mean": 0.52,
+                "temperature_standard_error": 0.019,
+            },
+            "glz": {
+                "frequency": 2,
+                "temperature_mean": 0.69,
+                "temperature_standard_error": 0.04,
+            },
+        },
+        {"mean": 5823, "standard_error": 143.1},
+    ),
+    (
+        "abc -> abd ==> cmz -> ?",
+        {
+            "dmz": {
+                "frequency": 904,
+                "temperature_mean": 0.40,
+                "temperature_standard_error": 0.002,
+            },
+            "cmd": {
+                "frequency": 96,
+                "temperature_mean": 0.48,
+                "temperature_standard_error": 0.008,
+            },
+        },
+        {"mean": 1779, "standard_error": 50.9},
+    ),
 ]
 
 
