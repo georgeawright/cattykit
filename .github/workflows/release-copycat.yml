@@ -1,0 +1,89 @@
+name: Release Copycat
+
+on:
+  push:
+    tags:
+      - "copycat-v*"
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.13", "3.14"]
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        run: python -m pip install --upgrade pip uv
+
+      - name: Run Copycat unit tests
+        working-directory: models/copycat
+        run: uv run python -m pytest tests/unit
+
+  reproduction:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        run: python -m pip install --upgrade pip uv
+
+      - name: Run Copycat full reproduction tests
+        working-directory: models/copycat
+        run: uv run python -m pytest tests/reproduction --full
+
+  build:
+    needs: reproduction
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Check tag matches package version
+        working-directory: models/copycat
+        run: |
+          PACKAGE_VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+          TAG_VERSION="${GITHUB_REF_NAME#copycat-v}"
+
+          if [ "$PACKAGE_VERSION" != "$TAG_VERSION" ]; then
+            echo "Tag $TAG_VERSION does not match package version $PACKAGE_VERSION"
+            exit 1
+          fi
+
+      - name: Install build tools
+        run: python -m pip install --upgrade build
+
+      - name: Build Copycat wheel
+        run: python -m build --wheel models/copycat
+
+      - name: Upload wheel to GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: models/copycat/dist/*.whl
+          generate_release_notes: true
