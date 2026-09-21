@@ -82,7 +82,7 @@ def run_reproduction(
     iterations: int,
     verbose: bool = True,
     output_file: str | None = None,
-) -> tuple[pd.DataFrame, dict[str, float]]:
+) -> tuple[pd.DataFrame, dict[str, object]]:
     """Compare current model behaviour with previously published behaviour.
     ``gold_behaviour`` maps each problem to a summary table with the same
     columns produced by ``summarize_runs``, except for ``problem``.
@@ -180,6 +180,7 @@ def run_reproduction(
             "observed_mean_codelets_run",
             "expected_mean_codelets_run",
             "mean_codelets_run_difference",
+            "codelets_relative_error_magnitude",
             "observed_codelets_standard_error",
             "expected_codelets_standard_error",
             "codelets_standard_error_difference",
@@ -203,6 +204,7 @@ def run_reproduction(
                 formatters={
                     "tv_distance": lambda x: f"{x:.4f}",
                     "codelets_z_stat": lambda x: f"{x:.2f}",
+                    "codelets_relative_error_magnitude": lambda x: f"{x:.1%}",
                     "temperature_z_stat": lambda x: f"{x:.2f}",
                 },
             )
@@ -247,6 +249,10 @@ def _comparison_row(
             observed_value,
             expected_value,
         )
+    row["codelets_relative_error_magnitude"] = _relative_error_magnitude(
+        row["observed_mean_codelets_run"],
+        row["expected_mean_codelets_run"],
+    )
     return row
 
 
@@ -267,6 +273,16 @@ def _difference(
     if observed is None or expected is None:
         return None
     return observed - expected
+
+
+def _relative_error_magnitude(
+    observed: float | int | None,
+    expected: float | int | None,
+) -> float | None:
+    """Return the magnitude of error relative to the expected value."""
+    if observed is None or expected is None or expected == 0:
+        return None
+    return abs(observed - expected) / expected
 
 
 def _gold_behaviour_dataframe(
@@ -302,17 +318,44 @@ def _total_row(
     return total.iloc[0]
 
 
-def _reproduction_summary(comparison: pd.DataFrame) -> dict[str, float]:
+def _reproduction_summary(comparison: pd.DataFrame) -> dict[str, object]:
     """Calculate aggregate reproduction statistics from a comparison table."""
     tv_distances = comparison["tv_distance"].dropna().tolist()
     codelets_z_scores = comparison["codelets_z_stat"].dropna().tolist()
+    codelets_relative_error_magnitudes = comparison[
+        "codelets_relative_error_magnitude"
+    ].dropna().tolist()
     temperature_z_scores = comparison.loc[
         comparison["expected_frequency"] >= 10,
         "temperature_z_stat",
     ].dropna().tolist()
+    temperature_absolute_error_magnitudes = comparison.loc[
+        comparison["expected_frequency"] >= 10,
+        "mean_temperature_difference",
+    ].dropna().abs().tolist()
     return {
         "mean_total_variation_distance": _mean(tv_distances),
         "max_total_variation_distance": max(tv_distances, default=0.0),
+        "mean_codelets_relative_error_magnitude": _mean(
+            codelets_relative_error_magnitudes,
+        ),
+        "max_codelets_relative_error_magnitude": max(
+            codelets_relative_error_magnitudes,
+            default=0.0,
+        ),
+        "codelets_relative_error_magnitude_quantiles": _deciles(
+            codelets_relative_error_magnitudes,
+        ),
+        "mean_temperature_absolute_error_magnitude": _mean(
+            temperature_absolute_error_magnitudes,
+        ),
+        "max_temperature_absolute_error_magnitude": max(
+            temperature_absolute_error_magnitudes,
+            default=0.0,
+        ),
+        "temperature_absolute_error_magnitude_quantiles": _deciles(
+            temperature_absolute_error_magnitudes,
+        ),
         **_z_score_summary("codelets", codelets_z_scores),
         **_z_score_summary("temperature", temperature_z_scores),
     }
@@ -337,6 +380,23 @@ def _z_score_summary(prefix: str, z_scores: list[float]) -> dict[str, float]:
 
 def _mean(values: list[float]) -> float:
     return sum(values) / len(values) if values else 0.0
+
+
+def _deciles(values: list[float]) -> dict[int, float]:
+    """Return the 10th through 100th percentiles, keyed by percentile."""
+    if not values:
+        return {percentile: 0.0 for percentile in range(10, 101, 10)}
+    ordered = sorted(values)
+    result = {}
+    for percentile in range(10, 101, 10):
+        position = (len(ordered) - 1) * percentile / 100
+        lower = int(position)
+        upper = min(lower + 1, len(ordered) - 1)
+        fraction = position - lower
+        result[percentile] = ordered[lower] + fraction * (
+            ordered[upper] - ordered[lower]
+        )
+    return result
 
 
 def chi_square_survival_function(
