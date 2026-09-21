@@ -169,6 +169,13 @@ class WorkspaceString:
 
     def delete_group(self, group):
         """Delete the only group spanning from one object to another."""
+        # A codelet can retain a group instance that is semantically equivalent
+        # to one subsequently rebuilt in the string.  Reconcile to the
+        # canonical instance before removing it from positional indexes.
+        existing_group = self.get_group_if_present(group)
+        if not existing_group:
+            return
+        group = existing_group
         self._groups[group.left_object] = None
         self.object_positions[group.left_position].remove(group)
         self.object_positions[group.right_position].remove(group)

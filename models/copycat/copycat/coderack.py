@@ -191,9 +191,12 @@ class Coderack:
             except ValueError:
                 pass
         elif isinstance(codelet, (GroupStrengthTester, GroupBuilder)):
-            codelet.proposed_group.string.delete_proposed_group(
-                codelet.proposed_group,
-            )
+            try:  # arguments of group might have been deleted
+                codelet.proposed_group.string.delete_proposed_group(
+                    codelet.proposed_group,
+                )
+            except ValueError:
+                pass
 
     def post_codelet_probability(
         self,
