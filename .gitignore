@@ -13,3 +13,5 @@ dist/
 notes/
 
 tmp/
+
+*.csv

@@ -1,3 +1,4 @@
+import pandas as pd
 import pytest
 
 
@@ -1023,15 +1024,52 @@ def pytest_configure(config):
         raise pytest.UsageError("--basic and --full cannot be used together")
 
 
-def pytest_generate_tests(metafunc):
-    parameter_names = ("problem", "gold_solutions", "gold_codelets")
-    if not set(parameter_names).issubset(metafunc.fixturenames):
-        return
-
-    full_run = metafunc.config.getoption("--full")
+@pytest.fixture
+def gold_behaviour(request) -> dict[str, pd.DataFrame]:
+    """Return the published behaviour for every problem in the selected run."""
+    full_run = request.config.getoption("--full")
     cases = (
         ORIGINAL_COPYCAT_RESULTS
         if full_run
         else [case for case in ORIGINAL_COPYCAT_RESULTS if case[0] in BASIC_PROBLEMS]
     )
-    metafunc.parametrize(parameter_names, cases, ids=[case[0] for case in cases])
+    return {
+        problem: gold_behaviour_dataframe(solutions, codelets)
+        for problem, solutions, codelets in cases
+    }
+
+
+def gold_behaviour_dataframe(
+    gold_solutions: dict[str, dict[str, float | int]],
+    gold_codelets: dict[str, float],
+) -> pd.DataFrame:
+    """Convert Copycat's published data to the experiment summary schema."""
+    solutions = pd.DataFrame.from_dict(gold_solutions, orient="index")
+    solutions.index.name = "solution"
+    solutions = solutions.reset_index().rename(
+        columns={"temperature_mean": "mean_temperature"},
+    )
+    solutions["mean_codelets_run"] = None
+    solutions["codelets_standard_error"] = None
+    totals = pd.DataFrame(
+        [
+            {
+                "solution": "Total",
+                "frequency": int(solutions["frequency"].sum()),
+                "mean_codelets_run": gold_codelets["mean"],
+                "codelets_standard_error": gold_codelets["standard_error"],
+                "mean_temperature": None,
+                "temperature_standard_error": None,
+            }
+        ]
+    )
+    return pd.concat([solutions, totals], ignore_index=True)[
+        [
+            "solution",
+            "frequency",
+            "mean_codelets_run",
+            "codelets_standard_error",
+            "mean_temperature",
+            "temperature_standard_error",
+        ]
+    ]
