@@ -37,3 +37,7 @@ jobs:
       - name: Run Copycat tests
         working-directory: models/copycat
         run: uv run python -m pytest tests/unit
+
+      - name: Run Copycat basic reproduction tests
+        working-directory: models/copycat
+        run: uv run python -m pytest tests/reproduction --basic
