@@ -1,4 +1,5 @@
 from types import SimpleNamespace
+from unittest.mock import Mock
 
 import pytest
 
@@ -10,7 +11,7 @@ def test_logs_answer_letters_created_by_answer_builder():
     events = []
     copycat = Copycat.__new__(Copycat)
     copycat.coderack = SimpleNamespace(number_of_codelets_run=12)
-    copycat.logger = SimpleNamespace(log=events.append)
+    copycat.logger = SimpleNamespace(log=lambda kind, **data: events.append((kind, data)))
     old_letter = SimpleNamespace(hash_id=1)
     new_letter = SimpleNamespace(
         hash_id=2,
@@ -23,15 +24,12 @@ def test_logs_answer_letters_created_by_answer_builder():
 
     copycat._log_answer_letters([old_letter])
 
-    assert [(event.kind, event.data) for event in events] == [
-        ("letter_destroyed", {"letter_id": "letter:1", "time": 12}),
+    assert events == [
+        ("letter_destroyed", {"letter": old_letter, "time": 12}),
         (
             "letter_created",
             {
-                "letter_id": "letter:2",
-                "string_id": "answer",
-                "position": 0,
-                "letter_category": "l",
+                "letter": new_letter,
                 "time": 12,
             },
         ),
@@ -39,21 +37,21 @@ def test_logs_answer_letters_created_by_answer_builder():
 
 
 @pytest.mark.parametrize(
-    "rule_weakness, workspace_unhappiness, expected",
+    "rule_strength, workspace_unhappiness, expected",
     [
-        (1.0, 0.0, 0.2),
-        (1.0, 1.0, 1.0),
+        (0.0, 0.0, 0.2),
+        (0.0, 1.0, 1.0),
         (0.5, 0.0, 0.1),
         (0.5, 1.0, 0.9),
-        (0.0, 0.0, 0.0),
-        (0.0, 1.0, 0.8),
+        (1.0, 0.0, 0.0),
+        (1.0, 1.0, 0.8),
     ],
 )
-def test_update_temperature(rule_weakness, workspace_unhappiness, expected):
+def test_update_temperature(rule_strength, workspace_unhappiness, expected):
     workspace = SimpleNamespace(
         total_unhappiness=workspace_unhappiness,
-        rule=SimpleNamespace(total_weakness=rule_weakness),
+        rule=SimpleNamespace(total_strength=rule_strength),
     )
-    copycat = Copycat(None, None, workspace, None, None, None)
+    copycat = Copycat(None, None, workspace, None, None, None, Mock())
     copycat._update_temperature()
     assert copycat.temperature == pytest.approx(expected)

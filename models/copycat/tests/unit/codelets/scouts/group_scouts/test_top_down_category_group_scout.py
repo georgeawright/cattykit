@@ -4,7 +4,7 @@ from unittest.mock import Mock
 from copycat.codelets.scouts.group_scouts import TopDownCategoryGroupScout
 from copycat.codelets.strength_testers import GroupStrengthTester
 from copycat.codelet_result import Finish, Fizzle, FizzleReason
-from copycat.workspace_objects import Group, Letter
+from copycat.workspace_objects_and_structures import Group, Letter
 from copycat.workspace_string import WorkspaceString
 
 
@@ -104,8 +104,8 @@ def test_run(monkeypatch):
         }
     )
 
-    initial_string = WorkspaceString()
-    target_string = WorkspaceString()
+    initial_string = WorkspaceString("initial", Mock())
+    target_string = WorkspaceString("target", Mock())
     initial_string.intra_string_unhappiness = 1.0
     target_string.intra_string_unhappiness = 0.0
     initial_string.distribution_of_bond_counts = [2]
@@ -137,9 +137,7 @@ def test_run(monkeypatch):
     )
 
     # The chosen object already spans the whole string.
-    initial_string.choose_object.return_value = SimpleNamespace(
-        spans_whole_string=lambda: True
-    )
+    initial_string.choose_object.return_value = SimpleNamespace(spans_whole_string=True)
     result = scout.run(temperature=0.0)
     assert result == Fizzle(FizzleReason.OBJECT_SPANS_WHOLE_STRING)
     assert coderack.post_called == 0
@@ -231,9 +229,10 @@ def test_run(monkeypatch):
     assert proposed_group.direction_category in [left, right]
     assert proposed_group.bond_category == successor
     assert proposed_group in initial_string.proposed_groups
-    assert slipnet.activate_called == 0
+    assert slipnet.activate_called == 2
 
     # Without local support, a sameness singleton group also fizzles.
+    slipnet.activate_called = 0
     initial_string.delete_group(supporting_left_successor_group)
     initial_string.delete_group(supporting_right_successor_group)
     b.group = None
@@ -253,6 +252,7 @@ def test_run(monkeypatch):
     assert slipnet.activate_called == 0
 
     # Strong local support allows a directionless sameness singleton group.
+    slipnet.activate_called = 0
     supporting_sameness_group = Group(
         string=initial_string,
         left_position=1,
@@ -278,12 +278,13 @@ def test_run(monkeypatch):
     assert proposed_group.direction_category is None
     assert proposed_group.bond_category == sameness
     assert proposed_group in initial_string.proposed_groups
-    assert slipnet.activate_called == 0
+    assert slipnet.activate_called == 1  # no direction category to activate
 
     initial_string.delete_group(supporting_sameness_group)
     b.group = None
     bond_facet = SimpleNamespace(name="letter_category")
     a_to_b = SimpleNamespace(
+        hash_id=1,
         bond_category=successor,
         bond_facet=bond_facet,
         direction_category=right,
@@ -291,6 +292,7 @@ def test_run(monkeypatch):
         right_object=b,
     )
     b_to_c = SimpleNamespace(
+        hash_id=2,
         bond_category=successor,
         bond_facet=bond_facet,
         direction_category=right,
@@ -307,6 +309,7 @@ def test_run(monkeypatch):
     c.right_bond = None
 
     # A matching first bond is enough to propose a two-object group.
+    slipnet.activate_called = 0
     initial_string.choose_object.return_value = a
     a_to_b.choose_neighbour = lambda direction: None
     result = scout.run(temperature=0.0)
@@ -319,9 +322,10 @@ def test_run(monkeypatch):
     assert proposed_group.direction_category == right
     assert proposed_group.bond_category == successor
     assert proposed_group in initial_string.proposed_groups
-    assert slipnet.activate_called == 0
+    assert slipnet.activate_called == 2
 
     # Compatible bonds in the scan direction are included in the group.
+    slipnet.activate_called = 0
     a_to_b.choose_neighbour = (
         lambda direction: b_to_c if direction.name == "right" else None
     )
@@ -338,10 +342,11 @@ def test_run(monkeypatch):
     assert proposed_group.direction_category == right
     assert proposed_group.bond_category == successor
     assert proposed_group in initial_string.proposed_groups
-    assert slipnet.activate_called == 0
+    assert slipnet.activate_called == 2
 
     # An oppositely directed predecessor bond is included in flipped form.
-    flipped_b_to_c = SimpleNamespace(name="flipped-b-to-c")
+    slipnet.activate_called = 0
+    flipped_b_to_c = SimpleNamespace(name="flipped-b-to-c", hash_id=3)
     b_to_c.bond_category = predecessor
     b_to_c.direction_category = left
     b_to_c.get_flipped_version = lambda: flipped_b_to_c
@@ -355,9 +360,10 @@ def test_run(monkeypatch):
     assert proposed_group.direction_category == right
     assert proposed_group.bond_category == successor
     assert proposed_group in initial_string.proposed_groups
-    assert slipnet.activate_called == 0
+    assert slipnet.activate_called == 2
 
     # An incompatible second bond stops the scan without preventing a proposal.
+    slipnet.activate_called = 0
     b_to_c.direction_category = right
     result = scout.run(temperature=0.0)
     assert result == Finish()
@@ -369,9 +375,10 @@ def test_run(monkeypatch):
     assert proposed_group.direction_category == right
     assert proposed_group.bond_category == successor
     assert proposed_group in initial_string.proposed_groups
-    assert slipnet.activate_called == 0
+    assert slipnet.activate_called == 2
 
     # A chain of directionless sameness bonds proposes a sameness group.
+    slipnet.activate_called = 0
     a_to_b.bond_category = sameness
     a_to_b.direction_category = None
     b_to_c.bond_category = sameness
@@ -386,9 +393,10 @@ def test_run(monkeypatch):
     assert proposed_group.direction_category is None
     assert proposed_group.bond_category == sameness
     assert proposed_group in initial_string.proposed_groups
-    assert slipnet.activate_called == 0
+    assert slipnet.activate_called == 1
 
     # Scanning left builds the same directed group from the opposite end.
+    slipnet.activate_called = 0
     a_to_b.bond_category = successor
     a_to_b.direction_category = right
     b_to_c.bond_category = successor
@@ -404,4 +412,4 @@ def test_run(monkeypatch):
     assert proposed_group.direction_category == right
     assert proposed_group.bond_category == successor
     assert proposed_group in initial_string.proposed_groups
-    assert slipnet.activate_called == 0
+    assert slipnet.activate_called == 2

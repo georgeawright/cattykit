@@ -114,7 +114,7 @@ def test_transfers_descriptions_and_fizzles_if_group_exists():
     # Run the builder
     result = builder.run(temperature=0.5)
 
-    assert slipnet.activate_node_from_workspace_called == 1
+    assert slipnet.activate_node_from_workspace_called == 3
     assert existing_group.add_description_called == len(proposed_group.descriptions)
     assert workspace_string.delete_proposed_group_called == 1
 
@@ -265,8 +265,8 @@ def test_breaks_incompatible_structures_flips_bonds_and_builds_group():
     proposed_group.left_object = Mock()
     proposed_group.right_object = Mock()
     proposed_group.left_object.get_descriptor.return_value = slipnet["i"]
-    proposed_group.spans_whole_string.return_value = False
-    proposed_group.is_leftmost_in_string.return_value = True
+    proposed_group.spans_whole_string = False
+    proposed_group.is_leftmost_in_string = True
     proposed_group.group_category = slipnet["sameness_group"]
     proposed_group.direction_category = None
     proposed_group.bond_category = slipnet["sameness"]
@@ -278,7 +278,7 @@ def test_breaks_incompatible_structures_flips_bonds_and_builds_group():
     bond_2.bond_facet = slipnet["letter_category"]
 
     def add_description(description):
-        if description.is_bond_description():
+        if description.is_bond_description:
             proposed_group.bond_descriptions.append(description)
         else:
             proposed_group.descriptions.append(description)

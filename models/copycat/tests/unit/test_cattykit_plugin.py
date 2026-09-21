@@ -1,4 +1,3 @@
-from cattykit.logging import ModelEvent
 from cattykit.models import CattyKitModel
 from copycat.cattykit_plugin import create_model, plugin
 
@@ -16,14 +15,15 @@ def test_copycat_factory_returns_a_cattykit_model() -> None:
 
     assert isinstance(model, CattyKitModel)
     assert model.logger is logger
+    assert model.seed == 1234
 
 
 class RecordingLogger:
     def __init__(self) -> None:
-        self.events: list[ModelEvent] = []
+        self.events: list[tuple[str, dict[str, object]]] = []
 
-    def log(self, event: ModelEvent) -> None:
-        self.events.append(event)
+    def log(self, kind: str, **data: object) -> None:
+        self.events.append((kind, data))
 
     def close(self) -> None:
         pass

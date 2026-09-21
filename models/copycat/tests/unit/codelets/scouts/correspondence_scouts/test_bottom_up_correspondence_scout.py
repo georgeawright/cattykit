@@ -75,36 +75,40 @@ def test_run():
         urgency_bin=0, coderack=coderack, slipnet=slipnet, workspace=workspace
     )
 
-    source = SimpleNamespace(spans_whole_string=lambda: True)
-    target = SimpleNamespace(spans_whole_string=lambda: True)
-    source.get_relevant_descriptions = lambda: source.descriptions
-    target.get_relevant_descriptions = lambda: target.descriptions
+    source = SimpleNamespace(spans_whole_string=True)
+    target = SimpleNamespace(spans_whole_string=True)
+    source.descriptions = []
+    target.descriptions = []
+    source.relevant_descriptions = source.descriptions
+    target.relevant_descriptions = target.descriptions
     workspace.initial_string.objects = [source]
     workspace.target_string.objects = [target]
 
     # object 1 spans string but object 2 does not
-    target.spans_whole_string = lambda: False
-    target.is_string_spanning_group = lambda: False
+    target.spans_whole_string = False
+    target.is_string_spanning_group = False
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
     # object 2 spans string but object 1 does not
-    source.spans_whole_string = lambda: True
-    source.is_string_spanning_group = lambda: True
-    target.spans_whole_string = lambda: False
-    target.is_string_spanning_group = lambda: False
+    source.spans_whole_string = True
+    source.is_string_spanning_group = True
+    target.spans_whole_string = False
+    target.is_string_spanning_group = False
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
     # both objects span whole string but concept mappings not possible
-    target.spans_whole_string = lambda: True
-    target.is_string_spanning_group = lambda: True
+    target.spans_whole_string = True
+    target.is_string_spanning_group = True
     description_1 = SimpleNamespace(facet=SimpleNamespace(name="bond"))
     description_2 = SimpleNamespace(facet=SimpleNamespace(name="group"))
     source.descriptions = [description_1]
     target.descriptions = [description_2]
+    source.relevant_descriptions = source.descriptions
+    target.relevant_descriptions = target.descriptions
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
@@ -118,6 +122,8 @@ def test_run():
     )
     source.descriptions = [description_1]
     target.descriptions = [description_2]
+    source.relevant_descriptions = source.descriptions
+    target.relevant_descriptions = target.descriptions
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
@@ -143,6 +149,8 @@ def test_run():
     )
     source.descriptions = [description_1]
     target.descriptions = [description_2]
+    source.relevant_descriptions = source.descriptions
+    target.relevant_descriptions = target.descriptions
     source.is_distinguished_by = lambda descriptor: True
     target.is_distinguished_by = lambda descriptor: True
     result = scout.run(temperature=0.0)

@@ -78,10 +78,12 @@ def test_run():
         urgency_bin=0, coderack=coderack, slipnet=slipnet, workspace=workspace
     )
 
-    source = SimpleNamespace(spans_whole_string=lambda: True)
-    target = SimpleNamespace(spans_whole_string=lambda: True)
-    source.get_relevant_descriptions = lambda: source.descriptions
-    target.get_relevant_descriptions = lambda: target.descriptions
+    source = SimpleNamespace(spans_whole_string=True)
+    target = SimpleNamespace(spans_whole_string=True)
+    source.descriptions = []
+    target.descriptions = []
+    source.relevant_descriptions = []
+    target.relevant_descriptions = []
     workspace.target_string.objects = [target]
 
     # initial string has no objects
@@ -102,43 +104,47 @@ def test_run():
     source.choose_relevant_distinguishing_description_by_conceptual_depth = (
         lambda: description
     )
-    target.get_relevant_descriptions = lambda: []
+    target.relevant_descriptions = []
     result = scout.run(temperature=0.0)
     assert isinstance(result, Fizzle)
     assert result.reason == FizzleReason.NO_OBJECTS_WITH_DESCRIPTOR
 
     # object 1 spans string but object 2 does not
-    target.get_relevant_descriptions = lambda: [description]
-    target.spans_whole_string = lambda: False
+    target.relevant_descriptions = [description]
+    target.spans_whole_string = False
     target.inter_string_salience = 0.5
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
     # object 2 spans string but object 1 does not
-    source.spans_whole_string = lambda: True
-    source.is_string_spanning_group = lambda: True
-    target.spans_whole_string = lambda: False
-    source.is_string_spanning_group = lambda: False
+    source.spans_whole_string = True
+    source.is_string_spanning_group = True
+    target.spans_whole_string = False
+    source.is_string_spanning_group = False
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
     # both objects span whole string but concept mappings not possible
-    target.spans_whole_string = lambda: True
-    target.is_string_spanning_group = lambda: True
-    description_1 = SimpleNamespace(facet=SimpleNamespace(name="bond"))
-    description_2 = SimpleNamespace(facet=SimpleNamespace(name="group"))
+    target.spans_whole_string = True
+    target.is_string_spanning_group = True
+    description_1 = SimpleNamespace(
+        facet=SimpleNamespace(name="bond"), descriptor=Mock()
+    )
+    description_2 = SimpleNamespace(
+        facet=SimpleNamespace(name="group"), descriptor=Mock()
+    )
     source.descriptions = [description_1]
     target.descriptions = [description_2]
-    relevant_descriptions = iter(([description], target.descriptions))
-    target.get_relevant_descriptions = lambda: next(relevant_descriptions)
+    source.relevant_descriptions = source.descriptions
+    target.relevant_descriptions = target.descriptions
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
     # concept mappings possible but not distinguishing
-    target.get_relevant_descriptions = lambda: target.descriptions
+    target.relevant_descriptions = target.descriptions
     description_1 = SimpleNamespace(
         facet=SimpleNamespace(name="group"), descriptor=SimpleNamespace(name="whole")
     )
@@ -147,6 +153,8 @@ def test_run():
     )
     source.descriptions = [description_1]
     target.descriptions = [description_2]
+    source.relevant_descriptions = source.descriptions
+    target.relevant_descriptions = target.descriptions
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
@@ -168,19 +176,17 @@ def test_run():
         facet=SimpleNamespace(name="group"), descriptor=successor_node
     )
     description_2 = SimpleNamespace(
-        facet=description_1.facet, descriptor=predecessor_node
+        facet=description_1.facet, descriptor=successor_node
     )
     source.descriptions = [description_1]
     target.descriptions = [description_2]
     source.choose_relevant_distinguishing_description_by_conceptual_depth = (
         lambda: description_1
     )
-    relevant_descriptions = iter(
-        ([SimpleNamespace(descriptor=successor_node)], target.descriptions)
-    )
-    target.get_relevant_descriptions = lambda: next(relevant_descriptions)
     source.is_distinguished_by = lambda descriptor: True
     target.is_distinguished_by = lambda descriptor: True
+    source.relevant_descriptions = source.descriptions
+    target.relevant_descriptions = target.descriptions
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 1
     assert result == Finish()

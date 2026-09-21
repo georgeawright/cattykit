@@ -3,7 +3,7 @@ from typing import Callable, Dict, List, Optional
 
 import numpy as np
 
-from cattykit.logging import ModelEvent, ModelLogger
+from cattykit.logging import ModelLogger
 
 from .concept_mapping import ConceptMapping
 from .sliplink import Sliplink
@@ -28,7 +28,7 @@ class Slipnet:
         full_activation_threshold: float,
         # probability(jumping to full activation) = activation ** exponent
         full_activation_probability_exponent: int,
-        logger: ModelLogger | None = None,
+        logger: ModelLogger,
     ):
         self.nodes = nodes
         self.adjacency_table = adjacency_table
@@ -43,15 +43,12 @@ class Slipnet:
         self.full_activation_probability_exponent = full_activation_probability_exponent
         self.logger = logger
 
-    def set_logger(self, logger: ModelLogger) -> None:
-        """Attach the logger used to record slipnet state changes."""
-        self.logger = logger
-
     @classmethod
     def create(
         cls,
         nodes: List[Slipnode],
         links: List[Sliplink],
+        logger: ModelLogger,
         workspace_activation: float = 1.0,
         full_activation_threshold: float = 0.50,
         full_activation_probability_exponent: int = 3,
@@ -89,6 +86,7 @@ class Slipnet:
             workspace_activation,
             full_activation_threshold,
             full_activation_probability_exponent,
+            logger,
         )
 
     @classmethod
@@ -100,6 +98,7 @@ class Slipnet:
         full_activation_threshold: float,
         full_activation_probability_exponent: int,
         initially_clamped_nodes: List[str],
+        logger: ModelLogger,
     ):
         nodes = {
             node_data["name"]: Slipnode(
@@ -133,11 +132,12 @@ class Slipnet:
             for link_data in json_data["links"]
         ]
         slipnet = cls.create(
-            list(nodes.values()),
-            links,
-            workspace_activation,
-            full_activation_threshold,
-            full_activation_probability_exponent,
+            nodes=list(nodes.values()),
+            links=links,
+            logger=logger,
+            workspace_activation=workspace_activation,
+            full_activation_threshold=full_activation_threshold,
+            full_activation_probability_exponent=full_activation_probability_exponent,
         )
         for node in initially_clamped_nodes:
             slipnet.clamp_node(node)
@@ -164,39 +164,14 @@ class Slipnet:
     def get_node_activation(self, node_id):
         return self.node_activations[self.node_index_lookup[node_id]]
 
-    def log_definition(self) -> None:
-        """Record the slipnet topology once at the beginning of a run."""
-        links: list[Sliplink] = []
+    def initialize(self) -> None:
+        """Record the network definition and calculate initial activations."""
         for node in self.nodes:
-            if self.logger is not None:
-                self.logger.log(
-                    ModelEvent.create(
-                        "copycat",
-                        "slipnode_initialized",
-                        name=node.name,
-                        conceptual_depth=node.conceptual_depth,
-                        intrinsic_link_length=node.intrinsic_link_length,
-                        shrunk_link_length=node.shrunk_link_length,
-                    )
-                )
-            links.extend(node.outgoing_links)
-        for link in links:
-            if self.logger is not None:
-                self.logger.log(
-                    ModelEvent.create(
-                        "copycat",
-                        "sliplink_initialized",
-                        source=link.source.name,
-                        target=link.target.name,
-                        label=None if link.label is None else link.label.name,
-                        fixed_length=link.fixed_length,
-                        is_category_link=link.is_category_link,
-                        is_instance_link=link.is_instance_link,
-                        is_has_property_link=link.is_has_property_link,
-                        is_lateral_sliplink=link.is_lateral_sliplink,
-                        is_lateral_non_sliplink=link.is_lateral_non_sliplink,
-                    )
-                )
+            self.logger.log("slipnode_initialized", node=node)
+        for node in self.nodes:
+            for link in node.outgoing_links:
+                self.logger.log("sliplink_initialized", link=link)
+        self.update_activations()
 
     def update_activations(self) -> None:
         """Recomputes activations according to:
@@ -217,22 +192,12 @@ class Slipnet:
         self._probabilistically_activate_nodes()
         for node in self.nodes:
             node.activation = self.node_activations[self.node_index_lookup[node.name]]
-            if self.logger is not None:
-                self.logger.log(
-                    ModelEvent.create(
-                        "copycat",
-                        "attribute_updated",
-                        object_id=f"slipnode:{node.name}",
-                        attribute="activation",
-                        value=float(node.activation),
-                    )
-                )
+            self.logger.log("attribute_updated", object=node, attribute="activation")
 
     def clamp_node(self, node_id: str):
         """Clamp a node at full activation."""
         index = self.node_index_lookup[node_id]
         self.clamped_nodes[index] = True
-        self.node_activations[index] = 1.0
         self[node_id].clamped = True
 
     def unclamp_node(self, node_id: str):
@@ -251,7 +216,7 @@ class Slipnet:
         target: "WorkspaceObject",
         source_descriptions=None,
         target_descriptions=None,
-    ) -> List[ConceptMapping]:
+    ) -> list[ConceptMapping]:
         source_descriptions = (
             source.descriptions if source_descriptions is None else source_descriptions
         )
@@ -261,20 +226,24 @@ class Slipnet:
         mappings = []
         for m in [
             ConceptMapping(
-                description_type_1=desc_1.facet,
-                description_type_2=desc_2.facet,
-                descriptor_1=desc_1.descriptor,
-                descriptor_2=desc_2.descriptor,
-                label=self.get_label_node(desc_1.descriptor, desc_2.descriptor),
-                object_1=source,
-                object_2=target,
+                source_facet=source_description.facet,
+                target_facet=target_description.facet,
+                source_descriptor=source_description.descriptor,
+                target_descriptor=target_description.descriptor,
+                label=self.get_label_node(
+                    source_description.descriptor, target_description.descriptor
+                ),
+                source=source,
+                target=target,
             )
-            for desc_1 in source_descriptions
-            for desc_2 in target_descriptions
-            if desc_1.facet == desc_2.facet
+            for source_description in source_descriptions
+            for target_description in target_descriptions
+            if source_description.facet == target_description.facet
             and (
-                desc_1.descriptor == desc_2.descriptor
-                or desc_1.descriptor.is_sliplinked_to(desc_2.descriptor)
+                source_description.descriptor == target_description.descriptor
+                or source_description.descriptor.is_sliplinked_to(
+                    target_description.descriptor
+                )
             )
         ]:
             if m in mappings:

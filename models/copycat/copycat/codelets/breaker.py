@@ -2,8 +2,7 @@ import random
 
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelet import Codelet
-from copycat.workspace_objects import Group
-from copycat.workspace_structures import Bond, Correspondence, Rule
+from copycat.workspace_objects_and_structures import Bond, Correspondence, Group, Rule
 from copycat.tools import temperature_adjust_probability
 
 
@@ -14,21 +13,22 @@ class Breaker(Codelet):
         if temperature < random.random():
             return Fizzle(FizzleReason.TEMPERATURE_TOO_LOW)
         try:
-            structure = random.choice(self.workspace.structures)
+            self.structure = random.choice(self.workspace.structures)
         except IndexError:
             return Fizzle(FizzleReason.NO_STRUCTURES)
         structures_to_break = (
-            [structure, structure.group]
-            if isinstance(structure, Bond) and structure.group is not None
-            else [structure]
+            [self.structure, self.structure.group]
+            if isinstance(self.structure, Bond) and self.structure.group is not None
+            else [self.structure]
         )
-        for structure in structures_to_break:
+        self.structures_to_break = structures_to_break
+        for structure in self.structures_to_break:
             break_probability = temperature_adjust_probability(
                 structure.total_weakness, temperature
             )
             if break_probability < random.random():
                 return Fizzle(FizzleReason.STRUCTURE_TOO_STRONG)
-        for structure in structures_to_break:
+        for structure in self.structures_to_break:
             if isinstance(structure, Bond):
                 self.workspace.break_bond(structure)
             if isinstance(structure, Correspondence):

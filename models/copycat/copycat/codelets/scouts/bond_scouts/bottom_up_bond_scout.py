@@ -4,7 +4,7 @@ from typing import Optional
 from copycat.codelets.scouts.bond_scout import BondScout
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.slipnet import Slipnode
-from copycat.workspace_structures.bond import Bond
+from copycat.workspace_objects_and_structures import Bond
 
 
 class BottomUpBondScout(BondScout):
@@ -15,31 +15,25 @@ class BottomUpBondScout(BondScout):
     of bonds of the bond category."""
 
     def run(self, temperature: float) -> CodeletResult:
-        source = self.workspace.choose_object(
+        self.source = self.workspace.choose_object(
             temperature, lambda x: x.intra_string_salience
         )
-        if source is None:
+        if self.source is None:
             return Fizzle(FizzleReason.NO_OBJECTS)
-        target = source.choose_neighbour()
-        if target is None:
+        self.target = self.source.choose_neighbour()
+        if self.target is None:
             return Fizzle(FizzleReason.NO_NEIGHBOUR)
-        bond_facet = self._choose_bond_facet(source, target)
-        if bond_facet is None:
+        self.bond_facet = self._choose_bond_facet(self.source, self.target)
+        if self.bond_facet is None:
             return Fizzle(FizzleReason.NO_COMMON_BOND_FACET)
-        source_descriptor = source.get_descriptor(bond_facet)
-        target_descriptor = target.get_descriptor(bond_facet)
-        if source_descriptor is None or target_descriptor is None:
+        self.source_descriptor = self.source.get_descriptor(self.bond_facet)
+        self.target_descriptor = self.target.get_descriptor(self.bond_facet)
+        if self.source_descriptor is None or self.target_descriptor is None:
             return Fizzle(FizzleReason.NO_DESCRIPTORS_FOR_BOND_FACET)
-        bond_category = self._get_bond_category(source_descriptor, target_descriptor)
-        if bond_category is None:
-            return Fizzle(FizzleReason.NO_BOND_CATEGORY)
-        self.propose_bond(
-            source,
-            target,
-            bond_category,
-            bond_facet,
-            source_descriptor,
-            target_descriptor,
-            temperature=temperature,
+        self.bond_category = self._get_bond_category(
+            self.source_descriptor, self.target_descriptor
         )
+        if self.bond_category is None:
+            return Fizzle(FizzleReason.NO_BOND_CATEGORY)
+        self.propose_bond(temperature)
         return Finish()

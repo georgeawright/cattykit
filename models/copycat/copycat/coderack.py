@@ -1,9 +1,10 @@
 from __future__ import annotations
 import random
 
-from cattykit.logging import ModelEvent, ModelLogger
+from cattykit.logging import ModelLogger
 
 from .coderack_bin import CoderackBin
+from .codelet_result import Finish, Fizzle
 from .codelets.builders import BondBuilder, CorrespondenceBuilder, GroupBuilder
 from .codelets.strength_testers import (
     BondStrengthTester,
@@ -26,7 +27,7 @@ class Coderack:
         urgency_bins: list,
         urgency_lookup_table: list,
         max_population: int,
-        logger: ModelLogger | None = None,
+        logger: ModelLogger,
     ):
         self._urgency_bins = urgency_bins
         self.urgency_lookup_table = urgency_lookup_table
@@ -35,22 +36,24 @@ class Coderack:
         self.codelets_to_post = []
         self.logger = logger
 
-    def set_logger(self, logger: ModelLogger) -> None:
-        """Attach the logger used to record coderack state changes."""
-        self.logger = logger
-
     @classmethod
-    def create(cls, number_of_bins: int, max_population: int) -> Coderack:
+    def create(
+        cls, number_of_bins: int, max_population: int, logger: ModelLogger
+    ) -> Coderack:
         urgency_bins = [CoderackBin(i + 1) for i in range(number_of_bins)]
         urgency_temperature_lookup_table = [
-            [URGENCY_TEMPERATURE_FUNCTION(u, t) for u in range(number_of_bins)]
+            [round(URGENCY_TEMPERATURE_FUNCTION(u, t)) for u in range(number_of_bins)]
             for t in range(101)
         ]
-        return cls(urgency_bins, urgency_temperature_lookup_table, max_population)
+        return cls(
+            urgency_bins, urgency_temperature_lookup_table, max_population, logger
+        )
 
     @classmethod
-    def from_json(cls, json_data: dict) -> Coderack:
-        return cls.create(json_data["number_of_bins"], json_data["max_population"])
+    def from_json(cls, json_data: dict, logger: ModelLogger) -> Coderack:
+        return cls.create(
+            json_data["number_of_bins"], json_data["max_population"], logger
+        )
 
     @property
     def codelets(self):
@@ -64,8 +67,27 @@ class Coderack:
     def population(self) -> int:
         return sum([len(urgency_bin) for urgency_bin in self._urgency_bins])
 
+    @property
     def is_empty(self) -> bool:
         return self.population == 0
+
+    def run_next_codelet(self, temperature: float):
+        codelet = self.choose(temperature)
+        self.logger.log(
+            "codelet_selected", codelet=codelet, time=self.number_of_codelets_run
+        )
+        codelet.logger = self.logger
+        result = codelet.run(temperature)
+        self.number_of_codelets_run += 1
+        data = {
+            "codelet": codelet,
+            "time": self.number_of_codelets_run,
+            "temperature": temperature,
+            "outcome": "finish" if isinstance(result, Finish) else "fizzle",
+        }
+        if isinstance(result, Fizzle):
+            data["reason"] = result.reason.value
+        self.logger.log("codelet_finished", **data)
 
     def get_urgency_bin(self, urgency_level):
         return self._urgency_bins[urgency_level]
@@ -80,9 +102,9 @@ class Coderack:
         return self.urgency_lookup_table[temperature_index]
 
     def empty(self):
-        self._urgency_bins = [
-            CoderackBin(i + 1) for i, _ in enumerate(self._urgency_bins)
-        ]
+        for codelet in self.codelets:
+            self.get_urgency_bin(codelet.urgency_bin).remove(codelet)
+            self.logger.log("codelet_removed", codelet=codelet)
 
     def post(self, codelet: "Codelet", temperature: float):
         if self.population >= self.max_population:
@@ -101,6 +123,8 @@ class Coderack:
     def remove_codelets(self, number_to_remove: int, temperature: float):
         """Probabilistically remove codelets.
         More likely to remove low urgency, older codelets."""
+        # Conventional weighted sampling without replacement.
+        # matches the intention of the original source code.
         urgency_bin_weights = self.get_urgency_bin_weights(temperature)
         removal_probabilities = [
             (self.number_of_codelets_run - codelet.birth_time)
@@ -115,50 +139,57 @@ class Coderack:
         for codelet in codelets_to_remove:
             self._remove(codelet)
 
+        # Faithful re-implementation of coderack.l:324-371.
+        # The original computes the probability list once,
+        # then repeatedly uses its selected position to
+        # index the shrinking codelet list.
+        # codelets = self.codelets
+        # urgency_bin_weights = self.get_urgency_bin_weights(temperature)
+        # removal_probabilities = [
+        #    (self.number_of_codelets_run - codelet.birth_time)
+        #    * (1 + urgency_bin_weights[-1] - urgency_bin_weights[codelet.urgency_bin])
+        #    for codelet in codelets
+        # ]
+        # number_removed = 0
+        # while number_removed < number_to_remove and codelets:
+        #    probability_sum = sum(removal_probabilities)
+        #    if probability_sum <= 0:
+        #        index = random.randrange(len(removal_probabilities))
+        #    else:
+        #        selected_value = random.randrange(probability_sum)
+        #        cumulative_probability = 0
+        #        for index, probability in enumerate(removal_probabilities):
+        #            cumulative_probability += probability
+        #            if cumulative_probability > selected_value:
+        #                break
+        #    if index >= len(codelets):
+        #        continue
+        #    codelet = codelets.pop(index)
+        #    self._remove(codelet)
+        #    number_removed += 1
+
     def choose(self, temperature: float):
-        chosen_urgency_bin = select_item_from_list(
-            self._urgency_bins,
-            [
-                urgency_bin.total_urgency * urgency_bin_weight
-                for urgency_bin, urgency_bin_weight in zip(
-                    self._urgency_bins, self.get_urgency_bin_weights(temperature)
-                )
-            ],
-        )
+        urgency_bin_weights = self.get_urgency_bin_weights(temperature)
+        weights = [
+            len(urgency_bin) * urgency_bin_weight
+            for urgency_bin, urgency_bin_weight in zip(
+                self._urgency_bins, urgency_bin_weights
+            )
+        ]
+        chosen_urgency_bin = select_item_from_list(self._urgency_bins, weights)
         chosen_codelet = random.choice(chosen_urgency_bin.codelets)
         self._remove(chosen_codelet, discard_proposal=False)
-        self.number_of_codelets_run += 1
-        if self.logger is not None:
-            self.logger.log(
-                ModelEvent.create(
-                    "copycat",
-                    "attribute_updated",
-                    object_id="coderack",
-                    attribute="number_of_codelets_on_coderack",
-                    value=self.population,
-                )
-            )
+        self.logger.log(
+            "attribute_updated",
+            object=self,
+            attribute="population",
+        )
         return chosen_codelet
 
     def _post(self, codelet):
         self.get_urgency_bin(codelet.urgency_bin).add(codelet)
         codelet.birth_time = self.number_of_codelets_run
-        if self.logger is not None:
-            self.logger.log(
-                ModelEvent.create(
-                    "copycat",
-                    "codelet_posted",
-                    codelet_id=f"codelet:{codelet.hash_id}",
-                    codelet_type=type(codelet).__name__,
-                    urgency_bin=codelet.urgency_bin,
-                    birth_time=codelet.birth_time,
-                    arguments={
-                        "proposed_structure": getattr(
-                            codelet, "proposed_structure", None
-                        )
-                    },
-                )
-            )
+        self.logger.log("codelet_posted", codelet=codelet)
 
     def _remove(self, codelet, discard_proposal: bool = True):
         """Remove codelet from coderack and
@@ -167,14 +198,7 @@ class Coderack:
         self.get_urgency_bin(codelet.urgency_bin).remove(codelet)
         if not discard_proposal:
             return
-        if self.logger is not None:
-            self.logger.log(
-                ModelEvent.create(
-                    "copycat",
-                    "codelet_removed",
-                    codelet_id=f"codelet:{codelet.hash_id}",
-                )
-            )
+        self.logger.log("codelet_removed", codelet=codelet)
         if isinstance(codelet, (BondStrengthTester, BondBuilder)):
             try:  # arguments of bond might have been deleted
                 codelet.proposed_bond.string.delete_proposed_bond(
@@ -190,9 +214,12 @@ class Coderack:
             except ValueError:
                 pass
         elif isinstance(codelet, (GroupStrengthTester, GroupBuilder)):
-            codelet.proposed_group.string.delete_proposed_group(
-                codelet.proposed_group,
-            )
+            try:  # arguments of group might have been deleted
+                codelet.proposed_group.string.delete_proposed_group(
+                    codelet.proposed_group,
+                )
+            except ValueError:
+                pass
 
     def post_codelet_probability(
         self,
@@ -207,13 +234,13 @@ class Coderack:
         if structure_category == "description":
             probability = temperature**2
         elif structure_category == "bond":
-            probability = workspace.intra_string_unhappiness()
+            probability = workspace.intra_string_unhappiness
         elif structure_category == "group":
-            probability = workspace.intra_string_unhappiness()
+            probability = workspace.intra_string_unhappiness
         elif structure_category == "replacement":
             probability = 1 if workspace.unreplaced_objects else 0
         elif structure_category == "correspondence":
-            probability = workspace.inter_string_unhappiness()
+            probability = workspace.inter_string_unhappiness
         elif structure_category == "rule":
             probability = 1 if workspace.rule is None else workspace.rule.total_weakness
         elif structure_category == "translated-rule":

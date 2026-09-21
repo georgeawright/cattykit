@@ -1,7 +1,7 @@
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.builder import Builder
 from copycat.tools import structure_beats_structures
-from copycat.workspace_structures import Rule
+from copycat.workspace_objects_and_structures import Rule
 
 
 class RuleBuilder(Builder):
@@ -27,9 +27,8 @@ class RuleBuilder(Builder):
         self.proposed_rule = proposed_rule
 
     def run(self, temperature: float) -> CodeletResult:
-        if (
-            self.workspace.rule is not None
-            and self.workspace.rule == self.proposed_rule
+        if self.workspace.rule is not None and self.workspace.rule.equates_to(
+            self.proposed_rule
         ):
             self._activate_rule_description_nodes()
             return Fizzle(FizzleReason.RULE_ALREADY_EXISTS)
@@ -44,13 +43,13 @@ class RuleBuilder(Builder):
         return Finish()
 
     def _activate_rule_description_nodes(self):
-        if self.proposed_rule.descriptor_1 is not None:
+        if self.proposed_rule.source_descriptor is not None:
             self.slipnet.activate_node_from_workspace(
-                self.proposed_rule.descriptor_1.name
+                self.proposed_rule.source_descriptor.name
             )
         if self.proposed_rule.relation is not None:
             self.slipnet.activate_node_from_workspace(self.proposed_rule.relation.name)
-        if self.proposed_rule.descriptor_2 is not None:
+        if self.proposed_rule.target_descriptor is not None:
             self.slipnet.activate_node_from_workspace(
-                self.proposed_rule.descriptor_2.name
+                self.proposed_rule.target_descriptor.name
             )

@@ -3,7 +3,7 @@ import itertools
 import random
 from typing import Dict, List, Optional
 
-from cattykit.logging import ModelEvent, ModelLogger
+from cattykit.logging import ModelLogger
 
 from .codelets import (
     BottomUpBondScout,
@@ -18,14 +18,17 @@ from .codelets import (
 )
 from .tools import describe_count, select_item_from_list, temperature_adjust
 from .workspace_string import WorkspaceString
-from .workspace_object import WorkspaceObject
-from .workspace_objects import Group
-from .workspace_structure import WorkspaceStructure
-from .workspace_structures import Bond, Correspondence, Description, Replacement, Rule
-
-
-def _object_id(obj: object) -> str:
-    return f"{type(obj).__name__.lower()}:{obj.hash_id}"
+from .workspace_objects_and_structures import (
+    Bond,
+    Correspondence,
+    Description,
+    Group,
+    Letter,
+    Replacement,
+    Rule,
+    WorkspaceObject,
+    WorkspaceStructure,
+)
 
 
 class Workspace:
@@ -35,7 +38,7 @@ class Workspace:
         modified_string: WorkspaceString,
         target_string: WorkspaceString,
         answer_string: WorkspaceString,
-        logger: ModelLogger | None = None,
+        logger: ModelLogger,
     ):
         """
         The workspace contains:
@@ -56,43 +59,110 @@ class Workspace:
         self.target_string = target_string
         self.answer_string = answer_string
         self.logger = logger
-        for workspace_string in (
-            initial_string,
-            modified_string,
-            target_string,
-            answer_string,
-        ):
-            if workspace_string is not None:
-                workspace_string.logger = logger
         self._proposed_correspondences: Dict[
             WorkspaceObject,
             Dict[WorkspaceObject, List[Optional[Correspondence]]],
         ] = defaultdict(lambda: defaultdict(list))
         self._correspondences: Dict[WorkspaceObject, Optional[Correspondence]] = {}
         self.replacements: List[Replacement] = []
-        self.rule: Optional[Rule] = None
-        self.translated_rule: Optional[Rule] = None
+        self._rule: Optional[Rule] = None
+        self._translated_rule: Optional[Rule] = None
         self.snag_object: Optional[WorkspaceObject] = None
 
-    def set_logger(self, logger: ModelLogger) -> None:
-        """Attach the logger used to record workspace mutations."""
-        self.logger = logger
+    @classmethod
+    def setup(cls, logger: ModelLogger):
+        initial_string = WorkspaceString("initial", logger)
+        modified_string = WorkspaceString("modified", logger)
+        target_string = WorkspaceString("target", logger)
+        answer_string = WorkspaceString("answer", logger)
+        return cls(
+            initial_string, modified_string, target_string, answer_string, logger
+        )
+
+    def initialize(self, problem: str, slipnet) -> None:
+        """Populate the workspace and its initial descriptions for one problem."""
+        initial_and_modified, target_and_answer = problem.split("==>")
+        initial_value, modified_value = initial_and_modified.split("->")
+        target_value, answer_value = target_and_answer.split("->")
+        values = {
+            "initial": initial_value.strip(),
+            "modified": modified_value.strip(),
+            "target": target_value.strip(),
+            "answer": answer_value.split("?")[0].strip(),
+        }
+
+        for string_id, value in values.items():
+            workspace_string = getattr(self, f"{string_id}_string")
+            for position, character in enumerate(value):
+                workspace_string.add_letter(
+                    Letter(workspace_string, slipnet[character], position)
+                )
+            self.logger.log(
+                "string_initialized", string_id=string_id, role=string_id, value=value
+            )
+
+        self.initial_string.distribution_of_bond_counts = list(
+            range(len(values["initial"]))
+        )
+        self.target_string.distribution_of_bond_counts = list(
+            range(len(values["target"]))
+        )
+
         for workspace_string in (
             self.initial_string,
             self.modified_string,
             self.target_string,
-            self.answer_string,
         ):
-            if workspace_string is not None:
-                workspace_string.logger = logger
+            for letter in workspace_string.letters:
+                letter.add_description(
+                    Description(
+                        letter,
+                        slipnet["object_category"],
+                        slipnet["letter"],
+                    )
+                )
+                letter.add_description(
+                    Description(
+                        letter,
+                        slipnet["letter_category"],
+                        letter.letter_category,
+                    )
+                )
+            if len(workspace_string) > 1:
+                workspace_string.letters[0].add_description(
+                    Description(
+                        workspace_string.letters[0],
+                        slipnet["string_position_category"],
+                        slipnet["leftmost"],
+                    )
+                )
+                workspace_string.letters[-1].add_description(
+                    Description(
+                        workspace_string.letters[-1],
+                        slipnet["string_position_category"],
+                        slipnet["rightmost"],
+                    )
+                )
+            else:
+                workspace_string.letters[0].add_description(
+                    Description(
+                        workspace_string.letters[0],
+                        slipnet["string_position_category"],
+                        slipnet["single"],
+                    )
+                )
+            if len(workspace_string) == 3:
+                workspace_string.letters[1].add_description(
+                    Description(
+                        workspace_string.letters[1],
+                        slipnet["string_position_category"],
+                        slipnet["middle"],
+                    )
+                )
 
-    @classmethod
-    def setup(cls):
-        initial_string = WorkspaceString("initial")
-        modified_string = WorkspaceString("modified")
-        target_string = WorkspaceString("target")
-        answer_string = WorkspaceString("answer")
-        return cls(initial_string, modified_string, target_string, answer_string)
+        for workspace_object in self.objects:
+            for description in workspace_object.descriptions:
+                slipnet.activate_node_from_workspace(description.descriptor.name)
 
     @property
     def letters(self):
@@ -101,6 +171,34 @@ class Workspace:
     @property
     def objects(self):
         return self.initial_string.objects + self.target_string.objects
+
+    @property
+    def rule(self) -> Optional[Rule]:
+        return self._rule
+
+    @rule.setter
+    def rule(self, value: Optional[Rule]) -> None:
+        if value is self._rule:
+            return
+        if self._rule is not None:
+            self.logger.log("rule_destroyed", rule=self._rule)
+        self._rule = value
+        if value is not None:
+            self.logger.log("rule_created", rule=value)
+
+    @property
+    def translated_rule(self) -> Optional[Rule]:
+        return self._translated_rule
+
+    @translated_rule.setter
+    def translated_rule(self, value: Optional[Rule]) -> None:
+        if value is self._translated_rule:
+            return
+        if self._translated_rule is not None:
+            self.logger.log("translated_rule_destroyed", rule=self._translated_rule)
+        self._translated_rule = value
+        if value is not None:
+            self.logger.log("translated_rule_created", rule=value)
 
     @property
     def unreplaced_objects(self):
@@ -149,17 +247,139 @@ class Workspace:
     @property
     def structures(self):
         """Returns a list of structures (bonds, groups, correspondences, and rules"""
-        structures = self.bonds + self.correspondences + self.groups
+        structures = self.bonds + self.groups + self.correspondences
         if self.rule is not None:
             structures.append(self.rule)
         return structures
 
+    @property
     def all_replacements_found(self) -> bool:
         """True if all letters in the initial string have a replacement."""
         for letter in self.initial_string.letters:
             if letter.replacement is None:
                 return False
         return True
+
+    @property
+    def letters_without_replacement(self) -> list:
+        return [
+            letter
+            for letter in self.initial_string.letters
+            if letter.replacement is None
+        ]
+
+    @property
+    def ungrouped_objects(self) -> list:
+        return [
+            obj
+            for obj in self.objects
+            if not obj.spans_whole_string and obj.group is None
+        ]
+
+    @property
+    def unbonded_objects(self) -> list:
+        return [
+            obj
+            for obj in self.ungrouped_objects
+            if (
+                (obj.is_at_edge_of_string and len(obj.outgoing_and_incoming_bonds) == 0)
+                or (
+                    not obj.is_at_edge_of_string
+                    and len(obj.outgoing_and_incoming_bonds) < 2
+                )
+            )
+        ]
+
+    @property
+    def ungrouped_bonds(self) -> list:
+        return [
+            bond
+            for bond in self.bonds
+            if bond.source.group is None or bond.target.group is None
+        ]
+
+    @property
+    def uncorresponded_objects(self) -> list:
+        return [obj for obj in self.objects if obj.correspondence is None]
+
+    @property
+    def rough_number_of_letters_without_replacement(self):
+        return describe_count(len(self.letters_without_replacement))
+
+    @property
+    def rough_number_of_ungrouped_objects(self):
+        return describe_count(len(self.ungrouped_objects))
+
+    @property
+    def rough_number_of_unbonded_objects(self):
+        return describe_count(len(self.unbonded_objects))
+
+    @property
+    def rough_number_of_uncorresponded_objects(self):
+        return describe_count(len(self.uncorresponded_objects))
+
+    @property
+    def rough_importance_of_uncorresponded_objects(self):
+        max_importance = max(
+            [obj.relative_importance for obj in self.uncorresponded_objects] + [0]
+        )
+        return describe_count(round(max_importance * 10, 0))
+
+    @property
+    def slippages(self) -> list:
+        return list(
+            itertools.chain.from_iterable(
+                [correspondence.slippages for correspondence in self.correspondences]
+            )
+        )
+
+    @property
+    def intra_string_unhappiness(self) -> float:
+        """Returns average of intra-string unhappiness of objects in the workspace
+        weighted by the relative importance of each object in its string."""
+        return min(
+            1,
+            sum(
+                [
+                    obj.relative_importance * obj.intra_string_unhappiness
+                    for obj in self.objects
+                ]
+            )
+            # divided by 2 as there a 2 strings each with total unhappiness  1
+            / 2,
+        )
+
+    @property
+    def inter_string_unhappiness(self) -> float:
+        """Returns average of inter-string unhappiness of objects in the workspace
+        weighted by the relative importance of each object in its string."""
+        return min(
+            1,
+            sum(
+                [
+                    obj.relative_importance * obj.inter_string_unhappiness
+                    for obj in self.objects
+                ]
+            )
+            # divided by 2 as there a 2 strings each with total unhappiness  1
+            / 2,
+        )
+
+    @property
+    def total_unhappiness(self):
+        """Returns average of the total unhappiness of objects in the workspace
+        weighted by the relative importance of each object in its string."""
+        return min(
+            1,
+            sum(
+                [
+                    obj.relative_importance * obj.total_unhappiness
+                    for obj in self.objects
+                ]
+            )
+            # divided by 2 as there a 2 strings each with total unhappiness  1
+            / 2,
+        )
 
     def update(self):
         """Update values for structures and objects."""
@@ -169,91 +389,58 @@ class Workspace:
         self.target_string.update_relative_importances()
         self.initial_string.update_intra_string_unhappiness()
         self.target_string.update_intra_string_unhappiness()
-        if self.logger is not None:
-            for attribute, value in (
-                ("intra_string_unhappiness", self.intra_string_unhappiness()),
-                ("inter_string_unhappiness", self.inter_string_unhappiness()),
-                ("total_unhappiness", self.total_unhappiness),
-            ):
-                self.logger.log(
-                    ModelEvent.create(
-                        "copycat",
-                        "attribute_updated",
-                        object_id="workspace",
-                        attribute=attribute,
-                        value=value,
-                    )
-                )
+        for attribute in (
+            "intra_string_unhappiness",
+            "inter_string_unhappiness",
+            "total_unhappiness",
+        ):
+            self.logger.log("attribute_updated", object=self, attribute=attribute)
 
     def _update_strength_values(self):
         for structure in self.structures:
             structure.update_strength_values()
-            if self.logger is not None:
-                for attribute in (
-                    "internal_strength",
-                    "external_strength",
-                    "total_strength",
-                    "total_weakness",
-                ):
-                    self.logger.log(
-                        ModelEvent.create(
-                            "copycat",
-                            "attribute_updated",
-                            object_id=_object_id(structure),
-                            attribute=attribute,
-                            value=getattr(structure, attribute),
-                        )
-                    )
+            for attribute in (
+                "internal_strength",
+                "external_strength",
+                "total_strength",
+                "total_weakness",
+            ):
+                self.logger.log(
+                    "attribute_updated", object=structure, attribute=attribute
+                )
 
     def _update_object_values(self):
         for obj in self.objects:
             obj.update_values()
-            if self.logger is not None:
-                for attribute in (
-                    "raw_importance",
-                    "intra_string_unhappiness",
-                    "inter_string_unhappiness",
-                    "total_unhappiness",
-                    "intra_string_salience",
-                    "inter_string_salience",
-                    "total_salience",
-                ):
-                    self.logger.log(
-                        ModelEvent.create(
-                            "copycat",
-                            "attribute_updated",
-                            object_id=_object_id(obj),
-                            attribute=attribute,
-                            value=getattr(obj, attribute),
-                        )
-                    )
+            for attribute in (
+                "raw_importance",
+                "intra_string_unhappiness",
+                "inter_string_unhappiness",
+                "total_unhappiness",
+                "intra_string_salience",
+                "inter_string_salience",
+                "total_salience",
+            ):
+                self.logger.log("attribute_updated", object=obj, attribute=attribute)
 
     def add_proposed_correspondence(self, c: Correspondence):
         """Add to a maintained list of proposed correspondences between two objects."""
         self._proposed_correspondences[c.source][c.target].append(c)
-        self._log_correspondence("correspondence_proposed", c)
+        self.logger.log("correspondence_proposed", correspondence=c)
 
     def delete_proposed_correspondence(self, c: Correspondence):
         """Delete from a maintained list of proposed correspondences between two objects."""
         self._proposed_correspondences[c.source][c.target].remove(c)
-        self._log_correspondence("correspondence_destroyed", c)
+        self.logger.log("correspondence_destroyed", correspondence=c)
 
     def add_correspondence(self, c: Correspondence):
         """Add the only correspondence between two objects."""
         self._correspondences[c.source] = c
-        self._log_correspondence("correspondence_created", c)
-        if self.logger is not None:
-            for index, mapping in enumerate(c.concept_mappings):
-                self._log(
-                    "concept_mapping_created",
-                    concept_mapping_id=f"correspondence:{c.hash_id}:mapping:{index}",
-                    correspondence_id=f"correspondence:{c.hash_id}",
-                    description_type_1=mapping.description_type_1.name,
-                    description_type_2=mapping.description_type_2.name,
-                    initial_descriptor=mapping.descriptor_1.name,
-                    target_descriptor=mapping.descriptor_2.name,
-                    label=None if mapping.label is None else mapping.label.name,
-                )
+        self.logger.log("correspondence_created", correspondence=c)
+        for mapping in getattr(c, "concept_mappings", []):
+            self.logger.log(
+                "concept_mapping_created", correspondence=c, concept_mapping=mapping
+            )
 
     def break_correspondence(self, c: Correspondence):
         c.source.correspondence = None
@@ -263,20 +450,19 @@ class Workspace:
     def delete_correspondence(self, c: Correspondence):
         """Delete the only correspondence between two objects."""
         self._correspondences[c.source] = None
-        self._log_correspondence("correspondence_destroyed", c)
+        self.logger.log("correspondence_destroyed", correspondence=c)
 
     def add_replacement(self, replacement: Replacement) -> None:
         """Add a replacement discovered between the initial and modified strings."""
         self.replacements.append(replacement)
-        self._log(
-            "replacement_created",
-            replacement_id=f"replacement:{replacement.hash_id}",
-            source_id=_object_id(replacement.source),
-            target_id=_object_id(replacement.target),
-        )
+        self.logger.log("replacement_created", replacement=replacement)
 
     def delete_translated_rule(self):
         self.translated_rule = None
+
+    def propose_rule(self, rule: Rule) -> None:
+        """Record a rule proposal before it becomes workspace state."""
+        self.logger.log("rule_proposed", rule=rule)
 
     def delete_proposed_structures(self):
         for bond in self.proposed_bonds:
@@ -285,20 +471,6 @@ class Workspace:
             group.string.delete_proposed_group(group)
         for correspondence in self.proposed_correspondences:
             self.delete_proposed_correspondence(correspondence)
-
-    def _log_correspondence(self, kind: str, correspondence: Correspondence) -> None:
-        if self.logger is None:
-            return
-        self._log(
-            kind,
-            correspondence_id=f"correspondence:{correspondence.hash_id}",
-            source_id=_object_id(correspondence.source),
-            target_id=_object_id(correspondence.target),
-        )
-
-    def _log(self, kind: str, **data: object) -> None:
-        if self.logger is not None:
-            self.logger.log(ModelEvent.create("copycat", kind, **data))
 
     def contains_object(self, o: WorkspaceObject) -> bool:
         """Returns True if the workspace contains an equivalent group."""
@@ -389,128 +561,6 @@ class Workspace:
         """Return an object probabilistically according to temperature and method."""
         weights = [temperature_adjust(method(obj), temperature) for obj in self.objects]
         return select_item_from_list(self.objects, weights)
-
-    @property
-    def letters_without_replacement(self) -> list:
-        return [
-            letter
-            for letter in self.initial_string.letters
-            if letter.replacement is None
-        ]
-
-    @property
-    def ungrouped_objects(self) -> list:
-        return [
-            obj
-            for obj in self.objects
-            if not obj.spans_whole_string() and obj.group is None
-        ]
-
-    @property
-    def unbonded_objects(self) -> list:
-        return [
-            obj
-            for obj in self.ungrouped_objects
-            if (
-                (
-                    obj.is_at_edge_of_string()
-                    and len(obj.outgoing_and_incoming_bonds) == 0
-                )
-                or (
-                    not obj.is_at_edge_of_string()
-                    and len(obj.outgoing_and_incoming_bonds) < 2
-                )
-            )
-        ]
-
-    @property
-    def ungrouped_bonds(self) -> list:
-        return [
-            bond
-            for bond in self.bonds
-            if bond.source.group is None or bond.target.group is None
-        ]
-
-    @property
-    def uncorresponded_objects(self) -> list:
-        return [obj for obj in self.objects if obj.correspondence is None]
-
-    @property
-    def rough_number_of_letters_without_replacement(self):
-        return describe_count(len(self.letters_without_replacement))
-
-    @property
-    def rough_number_of_ungrouped_objects(self):
-        return describe_count(len(self.ungrouped_objects))
-
-    @property
-    def rough_number_of_unbonded_objects(self):
-        return describe_count(len(self.unbonded_objects))
-
-    @property
-    def rough_number_of_uncorresponded_objects(self):
-        return describe_count(len(self.uncorresponded_objects))
-
-    @property
-    def rough_importance_of_uncorresponded_objects(self):
-        max_importance = max(
-            [obj.relative_importance for obj in self.uncorresponded_objects] + [0]
-        )
-        return describe_count(round(max_importance * 10, 0))
-
-    @property
-    def slippages(self) -> list:
-        return list(
-            itertools.chain.from_iterable(
-                [correspondence.slippages for correspondence in self.correspondences]
-            )
-        )
-
-    def intra_string_unhappiness(self):
-        """Returns average of intra-string unhappiness of objects in the workspace
-        weighted by the relative importance of each object in its string."""
-        return min(
-            1,
-            sum(
-                [
-                    obj.relative_importance * obj.intra_string_unhappiness
-                    for obj in self.objects
-                ]
-            )
-            # divided by 2 as there a 2 strings each with total unhappiness  1
-            / 2,
-        )
-
-    def inter_string_unhappiness(self):
-        """Returns average of inter-string unhappiness of objects in the workspace
-        weighted by the relative importance of each object in its string."""
-        return min(
-            1,
-            sum(
-                [
-                    obj.relative_importance * obj.inter_string_unhappiness
-                    for obj in self.objects
-                ]
-            )
-            # divided by 2 as there a 2 strings each with total unhappiness  1
-            / 2,
-        )
-
-    @property
-    def total_unhappiness(self):
-        """Returns average of the total unhappiness of objects in the workspace
-        weighted by the relative importance of each object in its string."""
-        return min(
-            1,
-            sum(
-                [
-                    obj.relative_importance * obj.total_unhappiness
-                    for obj in self.objects
-                ]
-            )
-            # divided by 2 as there a 2 strings each with total unhappiness  1
-            / 2,
-        )
 
     def get_bottom_up_codelets(
         self, slipnet: "Slipnet", coderack: "Coderack", temperature: float

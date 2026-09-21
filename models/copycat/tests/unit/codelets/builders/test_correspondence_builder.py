@@ -173,9 +173,9 @@ def test_fizzles_if_not_all_concept_mappings_relevant():
     workspace = MockWorkspace()
 
     mapping_1 = Mock()
-    mapping_1.is_relevant.return_value = True
+    mapping_1.is_relevant = True
     mapping_2 = Mock()
-    mapping_1.is_relevant.return_value = False
+    mapping_1.is_relevant = False
 
     correspondence = Mock()
     correspondence.source = Mock()
@@ -203,13 +203,13 @@ def test_fizzles_if_incompatible_correspondences_win():
     workspace = MockWorkspace()
 
     mapping_1 = Mock()
-    mapping_1.is_relevant.return_value = True
+    mapping_1.is_relevant = True
     mapping_2 = Mock()
-    mapping_1.is_relevant.return_value = True
+    mapping_1.is_relevant = True
 
     correspondence = Mock()
     correspondence.total_strength = 0
-    correspondence.letter_span.return_value = 2
+    correspondence.letter_span = 2
     correspondence.source = Mock()
     correspondence.source.correspondence = None
     correspondence.target = Mock()
@@ -220,7 +220,7 @@ def test_fizzles_if_incompatible_correspondences_win():
     incompatible_correspondence = Mock()
     correspondence.is_incompatible_argumentwise_with.return_value = True
     incompatible_correspondence.total_strength = 1
-    incompatible_correspondence.letter_span.return_value = 10
+    incompatible_correspondence.letter_span = 10
     workspace.correspondences.append(incompatible_correspondence)
 
     builder = CorrespondenceBuilder(
@@ -241,9 +241,9 @@ def test_fizzles_if_incompatible_bond_wins():
     workspace = MockWorkspace()
 
     mapping_1 = Mock()
-    mapping_1.is_relevant.return_value = True
+    mapping_1.is_relevant = True
     mapping_2 = Mock()
-    mapping_1.is_relevant.return_value = True
+    mapping_1.is_relevant = True
 
     correspondence = MagicMock()
     correspondence.total_strength = 0.1
@@ -256,11 +256,11 @@ def test_fizzles_if_incompatible_bond_wins():
     workspace.objects += [correspondence.source, correspondence.target]
 
     source_bond = Mock()
-    correspondence.source.is_leftmost_in_string.return_value = True
+    correspondence.source.is_leftmost_in_string = True
     correspondence.source.right_bond = source_bond
     target_bond = Mock()
     target_bond.total_strength = 1
-    correspondence.target.is_leftmost_in_string.return_value = True
+    correspondence.target.is_leftmost_in_string = True
     correspondence.target.right_bond = target_bond
     mapping_1.is_incompatible_with.return_value = True
 
@@ -282,9 +282,9 @@ def test_fizzles_if_incompatible_group_wins():
     workspace = MockWorkspace()
 
     mapping_1 = Mock()
-    mapping_1.is_relevant.return_value = True
+    mapping_1.is_relevant = True
     mapping_2 = Mock()
-    mapping_1.is_relevant.return_value = True
+    mapping_1.is_relevant = True
 
     correspondence = MagicMock()
     correspondence.total_strength = 0.1
@@ -297,11 +297,11 @@ def test_fizzles_if_incompatible_group_wins():
     workspace.objects += [correspondence.source, correspondence.target]
 
     source_bond = Mock()
-    correspondence.source.is_leftmost_in_string.return_value = True
+    correspondence.source.is_leftmost_in_string = True
     correspondence.source.right_bond = source_bond
     target_bond = Mock()
     target_bond.total_strength = 0.1
-    correspondence.target.is_leftmost_in_string.return_value = True
+    correspondence.target.is_leftmost_in_string = True
     correspondence.target.right_bond = target_bond
     mapping_1.is_incompatible_with.return_value = True
     incompatible_group = Mock()
@@ -359,9 +359,9 @@ def test_fizzles_if_incompatible_rule_wins():
     workspace = MockWorkspace()
 
     mapping_1 = Mock()
-    mapping_1.is_relevant.return_value = True
+    mapping_1.is_relevant = True
     mapping_2 = Mock()
-    mapping_1.is_relevant.return_value = True
+    mapping_1.is_relevant = True
 
     correspondence = MagicMock()
     correspondence.total_strength = 0.1
@@ -371,14 +371,14 @@ def test_fizzles_if_incompatible_rule_wins():
     correspondence.source.correspondence = None
     correspondence.target = Mock()
     correspondence.target.correspondence = None
-    correspondence.target.get_relevant_descriptions = lambda: [Mock()]
+    correspondence.target.relevant_descriptions = [Mock()]
     correspondence.concept_mappings = [mapping_1, mapping_2]
     workspace.objects += [correspondence.source, correspondence.target]
 
-    correspondence.source.is_leftmost_in_string.return_value = False
-    correspondence.source.is_rightmost_in_string.return_value = False
-    correspondence.target.is_leftmost_in_string.return_value = False
-    correspondence.target.is_rightmost_in_string.return_value = False
+    correspondence.source.is_leftmost_in_string = False
+    correspondence.source.is_rightmost_in_string = False
+    correspondence.target.is_leftmost_in_string = False
+    correspondence.target.is_rightmost_in_string = False
 
     workspace.rule = Mock()
     workspace.rule.total_strength = 1
@@ -408,37 +408,37 @@ def test_breaks_incompatible_structures_and_builds_correspondence():
     workspace.target_string.get_group_if_present.return_value = existing_target
 
     mapping_1 = Mock()
-    mapping_1.is_relevant.return_value = True
+    mapping_1.is_relevant = True
     mapping_2 = Mock()
-    mapping_1.is_relevant.return_value = True
+    mapping_1.is_relevant = True
 
     correspondence = Mock()
     correspondence.total_strength = 1
-    correspondence.letter_span.return_value = 4
+    correspondence.letter_span = 4
     correspondence.source = Mock()
     correspondence.source.is_changed_letter = True
     correspondence.source.correspondence = None
     correspondence.target = Mock()
     correspondence.target.bonds = [Mock()]
     correspondence.target.correspondence = None
-    correspondence.target.get_relevant_descriptions = lambda: [Mock()]
+    correspondence.target.relevant_descriptions = [Mock()]
     correspondence.concept_mappings = [mapping_1, mapping_2]
-    correspondence.get_relevant_distinguishing_mappings.return_value = [Mock()]
+    correspondence.relevant_distinguishing_mappings = [Mock()]
     correspondence.accessory_concept_mappings = [Mock()]
     workspace.objects += [correspondence.source, correspondence.target]
 
     incompatible_correspondence = Mock()
     correspondence.is_incompatible_argumentwise_with.return_value = True
     incompatible_correspondence.total_strength = 0
-    incompatible_correspondence.letter_span.return_value = 10
+    incompatible_correspondence.letter_span = 10
     workspace.correspondences.append(incompatible_correspondence)
 
     source_bond = Mock()
-    correspondence.source.is_leftmost_in_string.return_value = True
+    correspondence.source.is_leftmost_in_string = True
     correspondence.source.right_bond = source_bond
     target_bond = Mock()
     target_bond.total_strength = 0
-    correspondence.target.is_leftmost_in_string.return_value = True
+    correspondence.target.is_leftmost_in_string = True
     correspondence.target.right_bond = target_bond
     correspondence.target.objects = [Mock(), Mock()]
     correspondence.target.descriptions = [Mock(), Mock()]

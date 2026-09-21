@@ -3,7 +3,6 @@ from typing import List, Optional
 
 from copycat.codelets.scouts.correspondence_scout import CorrespondenceScout
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
-from copycat.concept_mapping import ConceptMapping
 
 
 class BottomUpCorrespondenceScout(CorrespondenceScout):

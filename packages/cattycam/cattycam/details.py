@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 from pathlib import Path
+from urllib.parse import urlencode
 
 import panel as pn
 
@@ -107,25 +108,40 @@ def _slipnet_activation_list(database: Path, run_id: int, time: int) -> pn.Colum
 
 def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.Viewable:
     """Render executed codelets as reverse-chronological detail cards."""
-    from cattycam.database import codelet_history, codelet_types
+    from cattycam.database import (
+        codelet_arguments,
+        codelet_children,
+        codelet_history,
+        codelet_run_times,
+        codelet_step_value_reprs,
+        codelet_steps,
+        codelet_types,
+    )
 
     codelets = codelet_history(database, run_id, time)
     if not codelets:
         return pn.pane.Markdown(
             "_No codelets have run yet._", height=430, sizing_mode="stretch_width"
         )
-    children_by_parent: dict[str, list[str]] = {}
-    for codelet_id, parent_id, *_ in codelets:
-        if parent_id is not None:
-            children_by_parent.setdefault(parent_id, []).append(codelet_id)
+    children_by_parent = codelet_children(database, run_id)
     types = codelet_types(database, run_id)
+    run_times = codelet_run_times(database, run_id)
+    arguments_by_codelet = codelet_arguments(database, run_id)
+    steps_by_codelet = codelet_steps(database, run_id, time)
+    step_value_reprs = codelet_step_value_reprs(database, run_id)
 
     def codelet_label(codelet_id: str | None) -> str:
         if codelet_id is None:
             return "—"
-        return (
+        label = (
             f"{html.escape(types.get(codelet_id, 'unknown'))} "
             f"{codelet_id.removeprefix('codelet:')}"
+        )
+        if codelet_id not in run_times:
+            return label
+        return (
+            f'<a href="?{urlencode({"run_id": run_id, "time": run_times[codelet_id]})}">'
+            f"{label}</a>"
         )
 
     def card_colors(urgency_bin: int | None, result: str | None) -> tuple[str, str]:
@@ -137,6 +153,41 @@ def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.View
             f"hsl({hue} 42% {max(42, lightness - 22)}%)",
         )
 
+    def duration_label(time_taken: int | None, result: str | None) -> str:
+        outcome = "fizzled" if result == "fizzle" else "finished"
+        return f"{outcome} after {time_taken / 1_000_000:.3f} milliseconds processing"
+
+    def value_repr(value: object) -> str:
+        if isinstance(value, str):
+            if value.startswith("slipnode:"):
+                return value.removeprefix("slipnode:").upper()
+            return step_value_reprs.get(value, value)
+        if isinstance(value, list):
+            return repr([value_repr(item) for item in value])
+        return repr(value)
+
+    def value_html(value: object) -> str:
+        """Render workspace-object references as links to their detail pages."""
+        if isinstance(value, str) and value in step_value_reprs:
+            return (
+                f'<a href="?{urlencode({"run_id": run_id, "object_id": value})}">'
+                f"{html.escape(value_repr(value))}</a>"
+            )
+        if isinstance(value, list):
+            return "[" + ", ".join(value_html(item) for item in value) + "]"
+        return html.escape(value_repr(value))
+
+    def attributes_html(attributes: list[tuple[str, object]]) -> str:
+        if not attributes:
+            return "<div>—</div>"
+        return "".join(
+            "<div>"
+            f"{html.escape(attribute)}: "
+            f"{value_html(value)}"
+            "</div>"
+            for attribute, value in attributes
+        )
+
     cards = "".join(
         "<div style='display:flex; gap:6px; min-height:76px; margin-bottom:8px;'>"
         f"<div style='width:42px; flex:0 0 42px; font-weight:600;'>{run_time}</div>"
@@ -146,13 +197,19 @@ def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.View
         "<div style='display:flex; justify-content:space-between; font-weight:600;'>"
         f"<span>{html.escape(codelet_type)} {codelet_id.removeprefix('codelet:')}</span>"
         f"<span>{urgency_bin if urgency_bin is not None else ''}</span>"
-        "</div><div style='margin-top:4px;'>"
-        f"{html.escape(result or '')} {html.escape(fizzle_reason or '')}"
         "</div><div style='margin-top:4px; font-size:0.9em; color:#4c4c4c;'>"
         f"Parent codelet: {codelet_label(parent_id)} · "
         f"Child codelet: {', '.join(codelet_label(child) for child in children_by_parent.get(codelet_id, [])) or '—'}"
+        "</div><div style='margin-top:4px; font-size:0.9em;'>"
+        "<div style='font-weight:600;'>Arguments</div>"
+        f"{attributes_html(arguments_by_codelet.get(codelet_id, []))}"
+        "<div style='font-weight:600; margin-top:4px;'>Run</div>"
+        f"{attributes_html(steps_by_codelet.get(codelet_id, []))}"
+        f"{html.escape(fizzle_reason) if result == 'fizzle' and fizzle_reason else ''}"
+        "</div><div style='margin-top:4px;'>"
+        f"{duration_label(time_taken, result)}"
         "</div></div></div>"
-        for codelet_id, parent_id, run_time, codelet_type, urgency_bin, result, fizzle_reason in codelets
+        for codelet_id, parent_id, run_time, codelet_type, urgency_bin, time_taken, result, fizzle_reason in codelets
     )
     return pn.pane.HTML(
         cards,

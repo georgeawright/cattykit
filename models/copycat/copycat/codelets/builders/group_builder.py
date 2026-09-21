@@ -5,8 +5,7 @@ from copycat.codelets.builder import Builder
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.concept_mapping import ConceptMapping
 from copycat.tools import structure_beats_structures
-from copycat.workspace_objects import Group
-from copycat.workspace_structures import Description
+from copycat.workspace_objects_and_structures import Description, Group
 
 
 class GroupBuilder(Builder):
@@ -47,7 +46,7 @@ class GroupBuilder(Builder):
         if bonds_to_be_flipped:
             fight_result = structure_beats_structures(
                 self.proposed_group,
-                self.proposed_group.letter_span(),
+                self.proposed_group.letter_span,
                 bonds_to_be_flipped,
                 1,
                 temperature=temperature,
@@ -56,7 +55,12 @@ class GroupBuilder(Builder):
                 return Fizzle(FizzleReason.INCOMPATIBLE_STRUCTURES_WON)
         incompatible_groups = self._get_incompatible_groups()
         for incompatible_group in incompatible_groups:
-            if incompatible_group.group_category == self.proposed_group.group_category:
+            if (
+                incompatible_group.direction_category
+                == self.proposed_group.direction_category
+                and incompatible_group.group_category
+                == self.proposed_group.group_category
+            ):
                 # this is because shorter sameness groups are weaker than longer ones
                 # and there is no group-extender codelet
                 proposed_group_weight = len(self.proposed_group)
@@ -99,12 +103,14 @@ class GroupBuilder(Builder):
         for description in source_group.descriptions:
             if target_group.has_description(description):
                 continue
-            new_description = Description(
+            self.new_description = Description(
                 argument_object=target_group,
                 facet=description.facet,
                 descriptor=description.descriptor,
             )
-            target_group.add_description(new_description)
+            target_group.add_description(self.new_description)
+            self.slipnet.activate_node_from_workspace(description.descriptor.name)
+            self.slipnet.activate_node_from_workspace(description.facet.name)
 
     def _all_bonds_still_exist(self, workspace_string: "WorkspaceString") -> bool:
         for bond in self.proposed_group.bonds:
@@ -138,7 +144,7 @@ class GroupBuilder(Builder):
             (
                 mapping
                 for mapping in correspondence.concept_mappings
-                if mapping.description_type_1.name == "string_position_category"
+                if mapping.source_facet.name == "string_position_category"
             ),
             None,
         )
@@ -146,9 +152,9 @@ class GroupBuilder(Builder):
             return False
         other_obj = correspondence.get_other_object(obj)
         other_bond = None
-        if other_obj.is_leftmost_in_string():
+        if other_obj.is_leftmost_in_string:
             other_bond = other_obj.right_bond
-        elif other_obj.is_rightmost_in_string():
+        elif other_obj.is_rightmost_in_string:
             other_bond = other_obj.left_bond
         if other_bond is None or other_bond.direction_category is None:
             return False
@@ -160,15 +166,15 @@ class GroupBuilder(Builder):
         ):
             return False
         group_concept_mapping = ConceptMapping(
-            description_type_1=self.slipnet["direction_category"],
-            description_type_2=self.slipnet["direction_category"],
-            descriptor_1=self.proposed_group.direction_category,
-            descriptor_2=other_bond.direction_category,
+            source_facet=self.slipnet["direction_category"],
+            target_facet=self.slipnet["direction_category"],
+            source_descriptor=self.proposed_group.direction_category,
+            target_descriptor=other_bond.direction_category,
             label=self.slipnet.get_label_node(
                 self.proposed_group.direction_category, other_bond.direction_category
             ),
-            object_1=None,
-            object_2=None,
+            source=None,
+            target=None,
         )
         return group_concept_mapping.is_incompatible_with(
             string_position_category_concept_mapping

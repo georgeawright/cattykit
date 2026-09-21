@@ -40,6 +40,7 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
     }
     const points = new Map()
     const hits = []
+    const highlighted = new Set(data.snapshot.highlighted_ids || [])
     const lettersByString = {}
     for (const letter of (data.snapshot.letters || [])) {
       ;(lettersByString[letter.string] ||= []).push(letter)
@@ -56,12 +57,14 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
         hits.push({type: 'letter', id: letter.id, x: point.x, y: point.y, descriptions: data.snapshot.descriptions[letter.id] || []})
       })
     }
-    function strokeStyle(proposed, color = '#004D40') {
+    function strokeStyle(proposed, color = '#004D40', isHighlighted = false) {
       ctx.setLineDash(proposed ? [5, 4] : [])
       ctx.strokeStyle = color
       ctx.lineWidth = 1.6
+      ctx.shadowColor = isHighlighted ? 'rgba(250, 204, 21, 0.95)' : 'transparent'
+      ctx.shadowBlur = isHighlighted ? 140 : 0
     }
-    function arrow(from, to, bend, proposed, color) {
+    function arrow(from, to, bend, proposed, color, isHighlighted) {
       if (!from || !to) return
       const mx = (from.x + to.x) / 2
       const my = (from.y + to.y) / 2 + bend
@@ -76,7 +79,11 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
         x: to.x - clearance * (to.x - mx) / targetDistance,
         y: to.y - clearance * (to.y - my) / targetDistance,
       }
-      strokeStyle(proposed, color)
+      if (isHighlighted) {
+        ctx.setLineDash([]); ctx.strokeStyle = 'rgba(250, 204, 21, 0.28)'; ctx.lineWidth = 7
+        ctx.beginPath(); ctx.moveTo(start.x, start.y); ctx.quadraticCurveTo(mx, my, end.x, end.y); ctx.stroke()
+      }
+      strokeStyle(proposed, color, isHighlighted)
       ctx.beginPath(); ctx.moveTo(start.x, start.y); ctx.quadraticCurveTo(mx, my, end.x, end.y); ctx.stroke()
       const angle = Math.atan2(end.y - my, end.x - mx)
       ctx.setLineDash([]); ctx.fillStyle = ctx.strokeStyle
@@ -109,6 +116,7 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
           connection.proposed,
           connection.type === 'correspondence' ? '#D81B60'
             : connection.type === 'replacement' ? '#1E88E5' : '#004D40',
+          highlighted.has(connection.id),
         )
         if (connection.type === 'bond' && curve) {
           hits.push({type: 'bond', id: connection.id, ...curve, facet: connection.facet, category: connection.category, direction: connection.direction})
@@ -126,7 +134,11 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
       const ps = selected.map(letter => points.get(letter.id))
       const left = Math.min(...ps.map(point => point.x)) - 20
       const right = Math.max(...ps.map(point => point.x)) + 20
-      strokeStyle(group.proposed)
+      if (highlighted.has(group.id)) {
+        ctx.setLineDash([]); ctx.strokeStyle = 'rgba(250, 204, 21, 0.28)'; ctx.lineWidth = 7
+        ctx.strokeRect(left, box[1] + 24, right - left, 62)
+      }
+      strokeStyle(group.proposed, '#004D40', highlighted.has(group.id))
       ctx.strokeRect(left, box[1] + 24, right - left, 62)
       hits.push({type: 'group', id: group.id, x: left, y: box[1] + 24, width: right - left, height: 62, descriptions: data.snapshot.descriptions[group.id] || []})
     }
@@ -136,32 +148,43 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
         const point = points.get(letter.id)
         if (!point) continue
         ctx.fillStyle = '#111827'; ctx.font = '22px serif'
+        if (highlighted.has(letter.id)) {
+          ctx.fillStyle = 'rgba(250, 204, 21, 0.28)'
+          ctx.fillText(letter.value, point.x, point.y)
+          ctx.fillStyle = '#111827'
+        }
+        ctx.shadowColor = highlighted.has(letter.id) ? 'rgba(250, 204, 21, 0.95)' : 'transparent'
+        ctx.shadowBlur = highlighted.has(letter.id) ? 140 : 0
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
         ctx.fillText(letter.value, point.x, point.y)
       }
     }
     const rule = data.snapshot.rule
     if (rule) {
-      const secondHalf = rule.relation || rule.descriptor_2 || '—'
-      const ruleText = `Replace ${rule.replaced_description_type || '—'} of ${rule.descriptor || '—'} ${rule.object_category || '—'} by ${secondHalf}`
+      const secondHalf = rule.relation || rule.target_descriptor || '—'
+      const ruleText = `Replace ${rule.replaced_facet || '—'} of ${rule.source_descriptor || '—'} ${rule.source_object_category || '—'} by ${secondHalf}`
       const modifiedBox = layout.modified
       ctx.font = '12px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
       const ruleWidth = Math.min(modifiedBox[2] - 12, ctx.measureText(ruleText).width + 16)
       const ruleX = modifiedBox[0] + (modifiedBox[2] - ruleWidth) / 2
       const ruleY = modifiedBox[1] + 4
+      ctx.shadowColor = highlighted.has(rule.id) ? 'rgba(250, 204, 21, 0.95)' : 'transparent'
+      ctx.shadowBlur = highlighted.has(rule.id) ? 140 : 0
       ctx.fillStyle = 'white'; ctx.strokeStyle = 'black'; ctx.lineWidth = 1
       ctx.fillRect(ruleX, ruleY, ruleWidth, 22); ctx.strokeRect(ruleX, ruleY, ruleWidth, 22)
       ctx.fillStyle = '#111827'; ctx.fillText(ruleText, modifiedBox[0] + modifiedBox[2] / 2, ruleY + 11)
     }
     const translatedRule = data.snapshot.translated_rule
     if (translatedRule) {
-      const secondHalf = translatedRule.relation || translatedRule.descriptor_2 || '—'
-      const ruleText = `Replace ${translatedRule.replaced_description_type || '—'} of ${translatedRule.descriptor || '—'} ${translatedRule.object_category || '—'} by ${secondHalf}`
+      const secondHalf = translatedRule.relation || translatedRule.target_descriptor || '—'
+      const ruleText = `Replace ${translatedRule.replaced_facet || '—'} of ${translatedRule.source_descriptor || '—'} ${translatedRule.source_object_category || '—'} by ${secondHalf}`
       const answerBox = layout.answer
       ctx.font = '12px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
       const ruleWidth = Math.min(answerBox[2] - 12, ctx.measureText(ruleText).width + 16)
       const ruleX = answerBox[0] + (answerBox[2] - ruleWidth) / 2
       const ruleY = answerBox[1] + answerBox[3] - 25
+      ctx.shadowColor = highlighted.has(translatedRule.id) ? 'rgba(250, 204, 21, 0.95)' : 'transparent'
+      ctx.shadowBlur = highlighted.has(translatedRule.id) ? 140 : 0
       ctx.fillStyle = 'white'; ctx.strokeStyle = 'black'; ctx.lineWidth = 1
       ctx.fillRect(ruleX, ruleY, ruleWidth, 22); ctx.strokeRect(ruleX, ruleY, ruleWidth, 22)
       ctx.fillStyle = '#111827'; ctx.fillText(ruleText, answerBox[0] + answerBox[2] / 2, ruleY + 11)
@@ -188,6 +211,7 @@ class WorkspaceCanvas(pn.reactive.ReactiveHTML):
       else ctx.fillText(selection.type === 'correspondence' ? 'No concept mappings' : 'No descriptions', cardX + 8, cardY + 37)
     }
     state.hits = hits
+    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0
     ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic'
     """
     _scripts["render"] = (

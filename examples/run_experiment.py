@@ -13,7 +13,6 @@ def main() -> None:
         ],
         iterations=1000,
     )
-    print(f"Results saved to {results.logging_db}")
 
 
 if __name__ == "__main__":

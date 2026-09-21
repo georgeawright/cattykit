@@ -7,6 +7,13 @@ import pytest
 from copycat import WorkspaceString
 
 
+def create_workspace_string():
+    workspace_string = WorkspaceString("test", Mock())
+    workspace_string._log = Mock()
+    workspace_string._log_structure = Mock()
+    return workspace_string
+
+
 class MockObject:
     def __init__(self, id):
         self.id = id
@@ -54,9 +61,11 @@ class MockGroup(NamedTuple):
     ],
 )
 def test_update_relative_importances(raw_importances, expected_relative_importances):
-    workspace_string = WorkspaceString()
+    workspace_string = create_workspace_string()
     for i, raw_importance in enumerate(raw_importances):
-        obj = SimpleNamespace(raw_importance=raw_importance, relative_importance=None)
+        obj = SimpleNamespace(
+            hash_id=i, raw_importance=raw_importance, relative_importance=None
+        )
         workspace_string.letters.append(obj)
     workspace_string.update_relative_importances()
     for obj, expected in zip(workspace_string.letters, expected_relative_importances):
@@ -74,7 +83,7 @@ def test_update_relative_importances(raw_importances, expected_relative_importan
     ],
 )
 def test_update_intra_string_unhappiness(intra_string_unhappinesses, expected):
-    workspace_string = WorkspaceString()
+    workspace_string = create_workspace_string()
     for intra_string_unhappiness in intra_string_unhappinesses:
         obj = SimpleNamespace(intra_string_unhappiness=intra_string_unhappiness)
         workspace_string.letters.append(obj)
@@ -83,15 +92,19 @@ def test_update_intra_string_unhappiness(intra_string_unhappinesses, expected):
 
 
 def test_add_letter():
-    workspace_string = WorkspaceString()
+    workspace_string = create_workspace_string()
     assert 0 == len(workspace_string.letters)
-    letter = SimpleNamespace()
+    letter = SimpleNamespace(
+        hash_id=1,
+        left_position=0,
+        letter_category=SimpleNamespace(name="a"),
+    )
     workspace_string.add_letter(letter)
     assert 1 == len(workspace_string.letters)
 
 
 def test_add_and_delete_proposed_bond():
-    workspace_string = WorkspaceString()
+    workspace_string = create_workspace_string()
     assert 0 == len(workspace_string.proposed_bonds)
     source = MockObject(id="a")
     target = MockObject(id="b")
@@ -109,7 +122,7 @@ def test_add_and_delete_proposed_bond():
 
 
 def test_add_get_and_delete_sameness_bond():
-    workspace_string = WorkspaceString()
+    workspace_string = create_workspace_string()
     assert 0 == len(workspace_string.bonds)
     source = MockObject(id="a")
     target = MockObject(id="b")
@@ -129,7 +142,7 @@ def test_add_get_and_delete_sameness_bond():
 
 
 def test_add_and_delete_non_sameness_bond():
-    workspace_string = WorkspaceString()
+    workspace_string = create_workspace_string()
     assert 0 == len(workspace_string.bonds)
     source = MockObject(id="a")
     target = MockObject(id="b")
@@ -149,7 +162,7 @@ def test_add_and_delete_non_sameness_bond():
 
 
 def test_add_and_delete_proposed_group():
-    workspace_string = WorkspaceString()
+    workspace_string = create_workspace_string()
     assert 0 == len(workspace_string.proposed_groups)
     left_object = MockObject(id="a")
     right_object = MockObject(id="b")
@@ -166,7 +179,7 @@ def test_add_and_delete_proposed_group():
 
 
 def test_add_get_and_delete_group():
-    workspace_string = WorkspaceString()
+    workspace_string = create_workspace_string()
     assert 0 == len(workspace_string.groups)
     left_object = MockObject(id="a")
     right_object = MockObject(id="b")
@@ -185,10 +198,10 @@ def test_add_get_and_delete_group():
 
 
 def test_choose_from_leftmost_objects():
-    workspace_string = WorkspaceString()
-    a = Mock(id="a", is_leftmost_in_string=lambda: True, relative_importance=0.1)
-    b = Mock(id="b", is_leftmost_in_string=lambda: False, relative_importance=0.1)
-    c = Mock(id="c", is_leftmost_in_string=lambda: False, relative_importance=0.1)
+    workspace_string = create_workspace_string()
+    a = Mock(id="a", is_leftmost_in_string=True, relative_importance=0.1)
+    b = Mock(id="b", is_leftmost_in_string=False, relative_importance=0.1)
+    c = Mock(id="c", is_leftmost_in_string=False, relative_importance=0.1)
     abc = Mock(
         left_object=a,
         left_position=0,
@@ -200,38 +213,84 @@ def test_choose_from_leftmost_objects():
     workspace_string.add_letter(b)
     workspace_string.add_letter(c)
     workspace_string.add_group(abc)
+    a.get_descriptor_with_facet_name = (
+        lambda x: SimpleNamespace(name="leftmost")
+        if x == "string_position_category"
+        else None
+    )
+    abc.get_descriptor_with_facet_name = (
+        lambda x: SimpleNamespace(name="leftmost")
+        if x == "string_position_category"
+        else None
+    )
     assert workspace_string.choose_from_leftmost_objects() in (a, abc)
 
 
 def test_get_local_bond_category_relevance():
-    workspace_string = WorkspaceString()
+    workspace_string = create_workspace_string()
     category = SimpleNamespace(name="category")
     assert workspace_string.get_local_bond_category_relevance(category) == 0.0
 
     bond = SimpleNamespace(bond_category=category)
-    object_1 = SimpleNamespace(right_bond=bond, spans_whole_string=lambda: False)
-    object_2 = SimpleNamespace(right_bond=None, spans_whole_string=lambda: False)
+    object_1 = SimpleNamespace(
+        hash_id=1,
+        left_position=0,
+        letter_category=SimpleNamespace(name="a"),
+        right_bond=bond,
+        spans_whole_string=False,
+    )
+    object_2 = SimpleNamespace(
+        hash_id=2,
+        left_position=1,
+        letter_category=SimpleNamespace(name="b"),
+        right_bond=None,
+        spans_whole_string=False,
+    )
     workspace_string.add_letter(object_1)
     workspace_string.add_letter(object_2)
     assert workspace_string.get_local_bond_category_relevance(category) == 1.0
 
-    object_3 = SimpleNamespace(right_bond=None, spans_whole_string=lambda: False)
+    object_3 = SimpleNamespace(
+        hash_id=3,
+        left_position=2,
+        letter_category=SimpleNamespace(name="c"),
+        right_bond=None,
+        spans_whole_string=False,
+    )
     workspace_string.add_letter(object_3)
     assert workspace_string.get_local_bond_category_relevance(category) == 0.5
 
 
 def test_get_local_direction_category_relevance():
-    workspace_string = WorkspaceString()
+    workspace_string = create_workspace_string()
     category = SimpleNamespace(name="category")
     assert workspace_string.get_local_direction_category_relevance(category) == 0.0
 
     bond = SimpleNamespace(direction_category=category)
-    object_1 = SimpleNamespace(right_bond=bond, spans_whole_string=lambda: False)
-    object_2 = SimpleNamespace(right_bond=None, spans_whole_string=lambda: False)
+    object_1 = SimpleNamespace(
+        hash_id=1,
+        left_position=0,
+        letter_category=SimpleNamespace(name="a"),
+        right_bond=bond,
+        spans_whole_string=False,
+    )
+    object_2 = SimpleNamespace(
+        hash_id=2,
+        left_position=1,
+        letter_category=SimpleNamespace(name="b"),
+        right_bond=None,
+        spans_whole_string=False,
+    )
     workspace_string.add_letter(object_1)
     workspace_string.add_letter(object_2)
     assert workspace_string.get_local_direction_category_relevance(category) == 1.0
 
-    object_3 = SimpleNamespace(right_bond=None, spans_whole_string=lambda: False)
+    object_3 = SimpleNamespace(
+        hash_id=3,
+        left_position=2,
+        letter_category=SimpleNamespace(name="c"),
+        right_bond=None,
+        spans_whole_string=False,
+    )
     workspace_string.add_letter(object_3)
     assert workspace_string.get_local_direction_category_relevance(category) == 0.5

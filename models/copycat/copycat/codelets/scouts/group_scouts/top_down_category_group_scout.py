@@ -5,7 +5,7 @@ from copycat.codelets.scouts.group_scout import GroupScout
 from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.slipnode import Slipnode
 from copycat.tools import select_item_from_list, temperature_adjust_probability
-from copycat.workspace_objects import Group
+from copycat.workspace_objects_and_structures import Group
 
 
 class TopDownCategoryGroupScout(GroupScout):
@@ -26,74 +26,63 @@ class TopDownCategoryGroupScout(GroupScout):
         self.group_category = group_category
 
     def run(self, temperature: float) -> CodeletResult:
-        bond_category = self.group_category.get_related_node("bond_category")
-        workspace_string = self.choose_workspace_string(bond_category)
-        chosen_object = workspace_string.choose_object(
+        self.bond_category = self.group_category.get_related_node("bond_category")
+        self.workspace_string = self.choose_workspace_string(self.bond_category)
+        self.chosen_object = self.workspace_string.choose_object(
             temperature, lambda x: x.intra_string_salience
         )
-        if chosen_object.spans_whole_string():
+        if self.chosen_object.spans_whole_string:
             return Fizzle(FizzleReason.OBJECT_SPANS_WHOLE_STRING)
-        direction_to_scan = self._choose_direction(chosen_object)
-        number_of_bonds = self._choose_number_of_bonds(workspace_string)
-        first_bond = self._get_first_bond(direction_to_scan, chosen_object)
-        if first_bond is None or first_bond.bond_category != bond_category:
-            if isinstance(chosen_object, Group):
+        self.direction_to_scan = self._choose_direction(self.chosen_object)
+        self.number_of_bonds = self._choose_number_of_bonds(self.workspace_string)
+        self.first_bond = self._get_first_bond(
+            self.direction_to_scan, self.chosen_object
+        )
+        if self.first_bond is None or self.first_bond.bond_category != self.bond_category:
+            if isinstance(self.chosen_object, Group):
                 return Fizzle(FizzleReason.CANNOT_MAKE_GROUP_FROM_SINGLE_GROUP)
-            objects = [chosen_object]
-            bonds = []
+            self.objects = [self.chosen_object]
+            self.bonds = []
             if self.group_category == self.slipnet["sameness_group"]:
-                possible_single_letter_group_direction = None
+                self.possible_single_letter_group_direction = None
             else:
                 directions = [self.slipnet["left"], self.slipnet["right"]]
                 supports = [
                     d.get_local_descriptor_support(
-                        workspace_string, self.slipnet["group"]
+                        self.workspace_string, self.slipnet["group"]
                     )
                     for d in directions
                 ]
-                possible_single_letter_group_direction = select_item_from_list(
+                self.possible_single_letter_group_direction = select_item_from_list(
                     directions, supports
                 )
-            left_object = min(objects, key=lambda o: o.left_position)
-            right_object = max(objects, key=lambda o: o.right_position)
-            possible_group = Group(
-                string=workspace_string,
-                left_position=left_object.left_position,
-                right_position=right_object.right_position,
-                objects=objects,
-                bonds=bonds,
+            self.left_object = min(self.objects, key=lambda o: o.left_position)
+            self.right_object = max(self.objects, key=lambda o: o.right_position)
+            self.possible_group = Group(
+                string=self.workspace_string,
+                left_position=self.left_object.left_position,
+                right_position=self.right_object.right_position,
+                objects=self.objects,
+                bonds=self.bonds,
                 group_category=self.group_category,
-                direction_category=possible_single_letter_group_direction,
-                bond_category=bond_category,
+                direction_category=self.possible_single_letter_group_direction,
+                bond_category=self.bond_category,
             )
             single_letter_group_probability = (
                 self._calculate_single_letter_group_probability(
-                    possible_group, temperature
+                    self.possible_group, temperature
                 )
             )
             if random.random() > single_letter_group_probability:
                 return Fizzle(FizzleReason.NOT_ENOUGH_SUPPORT_FOR_SINGLE_LETTER_GROUP)
-            self.propose_group(
-                objects=objects,
-                bonds=bonds,
-                group_category=self.group_category,
-                direction=possible_single_letter_group_direction,
-                bond_category=bond_category,
-                temperature=temperature,
-            )
+            self.direction_category = self.possible_single_letter_group_direction
+            self.propose_group(temperature)
             return Finish()
-        direction_category = first_bond.direction_category
-        bonds, objects = self._get_bonds_and_objects(
-            direction_to_scan, first_bond, number_of_bonds
+        self.direction_category = self.first_bond.direction_category
+        self.bonds, self.objects = self._get_bonds_and_objects(
+            self.direction_to_scan, self.first_bond, self.number_of_bonds
         )
-        self.propose_group(
-            objects=objects,
-            bonds=bonds,
-            group_category=self.group_category,
-            direction=direction_category,
-            bond_category=bond_category,
-            temperature=temperature,
-        )
+        self.propose_group(temperature)
         return Finish()
 
     def choose_workspace_string(self, bond_category: Optional[Slipnode]):

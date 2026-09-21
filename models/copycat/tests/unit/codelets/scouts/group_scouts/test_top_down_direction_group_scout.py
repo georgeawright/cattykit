@@ -103,7 +103,7 @@ def test_run():
 
     # Chosen object spans whole string
     workspace.initial_string.choose_object.return_value = SimpleNamespace(
-        spans_whole_string=lambda: True
+        spans_whole_string=True
     )
     result = scout.run(temperature=0.0)
     assert result == Fizzle(FizzleReason.OBJECT_SPANS_WHOLE_STRING)
@@ -112,9 +112,9 @@ def test_run():
 
     # First bond is None
     workspace.initial_string.choose_object.return_value = SimpleNamespace(
-        is_leftmost_in_string=lambda: True,
+        is_leftmost_in_string=True,
         right_bond=None,
-        spans_whole_string=lambda: False,
+        spans_whole_string=False,
     )
     workspace.initial_string.distribution_of_bond_counts = [2]
     scout.run(temperature=0.0)
@@ -124,9 +124,9 @@ def test_run():
     # First bond has wrong direction
     first_bond = SimpleNamespace(direction_category=SimpleNamespace(name="left"))
     workspace.initial_string.choose_object.return_value = SimpleNamespace(
-        is_leftmost_in_string=lambda: True,
+        is_leftmost_in_string=True,
         right_bond=first_bond,
-        spans_whole_string=lambda: False,
+        spans_whole_string=False,
     )
     scout.run(temperature=0.0)
     assert coderack.post_called == 0
@@ -137,9 +137,9 @@ def test_run():
         string=workspace.initial_string,
         left_position=0,
         right_position=0,
-        is_leftmost_in_string=lambda: True,
+        is_leftmost_in_string=True,
         is_rightmost_in_string=False,
-        spans_whole_string=lambda: False,
+        spans_whole_string=False,
     )
     a.letters = [a]
     b = SimpleNamespace(
@@ -148,7 +148,7 @@ def test_run():
         right_position=1,
         is_leftmost_in_string=False,
         is_rightmost_in_string=False,
-        spans_whole_string=lambda: False,
+        spans_whole_string=False,
     )
     b.letters = [b]
     c = SimpleNamespace(
@@ -157,7 +157,7 @@ def test_run():
         right_position=2,
         is_leftmost_in_string=False,
         is_rightmost_in_string=True,
-        spans_whole_string=lambda: False,
+        spans_whole_string=False,
     )
     c.letters = [c]
     workspace.initial_string.letters = [a, b, c]

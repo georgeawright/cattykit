@@ -4,9 +4,12 @@ from copycat.slipnet import Slipnet
 from copycat.slipnode import Slipnode
 from copycat.snag_exception import SnagException
 from copycat.workspace import Workspace
-from copycat.workspace_object import WorkspaceObject
-from copycat.workspace_objects import Group, Letter
-from copycat.workspace_structures import Description
+from copycat.workspace_objects_and_structures import (
+    Description,
+    Group,
+    Letter,
+    WorkspaceObject,
+)
 
 
 class AnswerBuilder:
@@ -19,7 +22,7 @@ class AnswerBuilder:
     def build(self):
         self.workspace.snag_object = None
         objects_to_change = self._get_objects_to_change()
-        description_type = self.workspace.translated_rule.replaced_description_type
+        description_type = self.workspace.translated_rule.replaced_facet
         modified_letters = []
         for obj in self.workspace.target_string.objects:
             if obj in objects_to_change:
@@ -41,16 +44,16 @@ class AnswerBuilder:
         if not self.workspace.translated_rule.specifies_change():
             return []
         objects_to_change = []
-        rule_facet = self.workspace.translated_rule.descriptor_1_facet
-        rule_descriptor = self.workspace.translated_rule.descriptor_1
-        rule_obj_category = self.workspace.translated_rule.object_category_1
+        rule_facet = self.workspace.translated_rule.source_facet
+        rule_descriptor = self.workspace.translated_rule.source_descriptor
+        rule_obj_category = self.workspace.translated_rule.source_object_category
         for obj in self.workspace.target_string.objects:
             if obj.get_descriptor(self.slipnet["object_category"]) != rule_obj_category:
                 continue
             if obj.get_descriptor(rule_facet) == rule_descriptor:
                 objects_to_change.append(obj)
                 continue
-            tester = self.workspace.translated_rule.descriptor_1.description_tester
+            tester = self.workspace.translated_rule.source_descriptor.description_tester
             if tester is not None and tester(obj):
                 description = Description(obj, rule_facet, rule_descriptor)
                 obj.add_description(description)
@@ -209,7 +212,7 @@ class AnswerBuilder:
         if old_descriptor is None:
             return None
         if not self.workspace.translated_rule.expresses_relation():
-            return self.workspace.translated_rule.descriptor_2
+            return self.workspace.translated_rule.target_descriptor
         return old_descriptor.get_related_node(
             self.workspace.translated_rule.relation.name
         )

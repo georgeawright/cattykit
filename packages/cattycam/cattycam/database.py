@@ -7,6 +7,22 @@ import json
 import sqlite3
 from collections.abc import Sequence
 from pathlib import Path
+from urllib.parse import urlencode
+
+
+# Tables whose rows represent an entity that can have an object-history page.
+# The second value is the column containing Cattykit's stable object identifier.
+_OBJECT_TABLES = {
+    "letters": "letter_id",
+    "descriptions": "description_id",
+    "bonds": "bond_id",
+    "groups": "group_id",
+    "correspondences": "correspondence_id",
+    "replacements": "replacement_id",
+    "rules": "rule_id",
+    "translated_rules": "rule_id",
+    "slipnodes": "name",
+}
 
 
 def table_names(database: str | Path) -> list[str]:
@@ -31,13 +47,32 @@ def table_documentation(
         query, parameters = _table_query(quoted_table, table, run_id)
         rows = connection.execute(query, parameters).fetchall()
     column_names = [column[1] for column in columns]
+    if table in _OBJECT_TABLES and run_id is not None:
+        id_column = _OBJECT_TABLES[table]
+        id_index = column_names.index(id_column)
+        headers = ["View", *column_names]
+        linked_rows = [
+            (
+                f'<a href="?{urlencode({"run_id": run_id, "object_id": _object_id(table, row[id_index])})}">View</a>',
+                *row,
+            )
+            for row in rows
+        ]
+        table_html = _html_table(headers, linked_rows, first_column_html=True)
+    else:
+        table_html = _html_table(column_names, rows)
     return "\n".join(
         (
             f"<h2>{html.escape(table)}</h2>",
             f"<p>{len(rows)} row{'s' if len(rows) != 1 else ''}</p>",
-            _html_table(column_names, rows),
+            table_html,
         )
     )
+
+
+def _object_id(table: str, value: object) -> str:
+    """Return the logged identifier for an entity-table row."""
+    return f"slipnode:{value}" if table == "slipnodes" else str(value)
 
 
 def table_rows(
@@ -117,6 +152,255 @@ def run_overview_series(database: str | Path, run_id: int) -> dict[str, list[tup
     }
 
 
+def run_current_time(database: str | Path, run_id: int) -> int:
+    """Return the latest codelet time available for a run, including live runs.
+
+    ``runs.number_of_codelets_run`` is written when a run finishes. While a
+    logger is still recording, the codelet rows are the authoritative cursor.
+    """
+    with sqlite3.connect(database) as connection:
+        row = connection.execute(
+            """SELECT MAX(run_time) FROM codelets
+               WHERE run_id = ? AND run_time IS NOT NULL""",
+            (run_id,),
+        ).fetchone()
+    return int(row[0] or 0)
+
+
+def run_component_revisions(database: str | Path, run_id: int) -> dict[str, tuple]:
+    """Return stable fingerprints for the data rendered by each run component."""
+    available_tables = set(table_names(database))
+    component_tables = {
+        "header": ("runs", "codelets"),
+        "overview": (
+            "attribute_values", "letters", "groups", "bonds", "correspondences",
+            "replacements", "rules", "snags",
+        ),
+        "coderack": ("codelets",),
+        "history": ("codelets", "codelet_arguments", "codelet_steps"),
+        "workspace": (
+            "strings", "letters", "descriptions", "bonds", "groups",
+            "group_members", "group_bonds", "correspondences", "concept_mappings",
+            "replacements", "rules", "translated_rules",
+        ),
+    }
+    revisions = {
+        component: tuple(
+            (table, table_rows(database, table, run_id=run_id)[1])
+            for table in tables
+            if table in available_tables
+        )
+        for component, tables in component_tables.items()
+    }
+    # Only activation history for a slipnode affects the slipnet panel; changes
+    # to temperature or workspace attributes must not redraw it.
+    with sqlite3.connect(database) as connection:
+        activations = connection.execute(
+            """SELECT time, object_id, value_json FROM attribute_values
+               WHERE run_id = ? AND attribute = 'activation'
+               AND object_id LIKE 'slipnode:%' ORDER BY id""",
+            (run_id,),
+        ).fetchall()
+    revisions["slipnet"] = tuple(
+        (table, table_rows(database, table, run_id=run_id)[1])
+        for table in ("slipnodes", "sliplinks")
+        if table in available_tables
+    ) + (("activations", activations),)
+    return revisions
+
+
+def object_history(database: str | Path, run_id: int, object_id: str) -> dict | None:
+    """Return tracked attributes and lifecycle boundaries for one viewer object."""
+    with sqlite3.connect(database) as connection:
+        tables = {
+            row[0]
+            for row in connection.execute(
+                "SELECT name FROM sqlite_master WHERE type = 'table'"
+            )
+        }
+        attributes = connection.execute(
+            """SELECT time, attribute, value_json FROM attribute_values
+               WHERE run_id = ? AND object_id = ? ORDER BY time, id""",
+            (run_id, object_id),
+        ).fetchall()
+        run_length_row = connection.execute(
+            "SELECT number_of_codelets_run FROM runs WHERE id = ?", (run_id,)
+        ).fetchone()
+
+        lifecycle: tuple[int | None, int | None] | None = None
+        object_table: str | None = None
+        details: list[tuple[str, object]] = []
+        proposal_time: int | None = None
+        group_members: list[str] = []
+        group_bonds: list[str] = []
+        concept_mappings: list[dict[str, object]] = []
+        slipnode_link_arguments: list[dict[str, object]] = []
+        for table, id_column in _OBJECT_TABLES.items():
+            if table not in tables:
+                continue
+            lookup_id = object_id.removeprefix("slipnode:") if table == "slipnodes" else object_id
+            if table == "slipnodes":
+                row = connection.execute(
+                    "SELECT * FROM slipnodes WHERE run_id = ? AND name = ?",
+                    (run_id, lookup_id),
+                ).fetchone()
+                if row:
+                    lifecycle = (None, None)
+                    object_table = table
+                    column_names = [
+                        column[1]
+                        for column in connection.execute("PRAGMA table_info(slipnodes)")
+                    ]
+                    details = _object_row_details(column_names, row, id_column)
+                    if "slipnode_link_arguments" in tables:
+                        slipnode_row = connection.execute(
+                            "SELECT id FROM slipnodes WHERE run_id = ? AND name = ?",
+                            (run_id, lookup_id),
+                        ).fetchone()
+                        if slipnode_row:
+                            link_rows = connection.execute(
+                                """SELECT link_collection, source, target, label
+                                   FROM slipnode_link_arguments
+                                   WHERE slipnode_id = ? ORDER BY link_collection, id""",
+                                slipnode_row,
+                            ).fetchall()
+                            slipnode_link_arguments = [
+                                {
+                                    "collection": collection,
+                                    "source": source,
+                                    "target": target,
+                                    "label": label,
+                                }
+                                for collection, source, target, label in link_rows
+                            ]
+                    break
+            elif object_id.startswith("slipnode:"):
+                continue
+            else:
+                row = connection.execute(
+                    f"SELECT creation_time, destruction_time FROM {_quote_identifier(table)} "
+                    f"WHERE run_id = ? AND {_quote_identifier(id_column)} = ?",
+                    (run_id, lookup_id),
+                ).fetchone()
+                if row:
+                    lifecycle = row
+                    object_table = table
+                    full_row = connection.execute(
+                        f"SELECT * FROM {_quote_identifier(table)} "
+                        f"WHERE run_id = ? AND {_quote_identifier(id_column)} = ?",
+                        (run_id, lookup_id),
+                    ).fetchone()
+                    column_names = [
+                        column[1]
+                        for column in connection.execute(
+                            f"PRAGMA table_info({_quote_identifier(table)})"
+                        )
+                    ]
+                    details = _object_row_details(column_names, full_row, id_column)
+                    proposal_time = next(
+                        (value for attribute, value in details if attribute == "proposal_time"),
+                        None,
+                    )
+                    if table == "groups" and {"group_members", "group_bonds"} <= tables:
+                        group_row = connection.execute(
+                            "SELECT id FROM groups WHERE run_id = ? AND group_id = ?",
+                            (run_id, object_id),
+                        ).fetchone()
+                        if group_row:
+                            group_members = [
+                                value[0]
+                                for value in connection.execute(
+                                    "SELECT object_id FROM group_members WHERE group_id = ? "
+                                    "ORDER BY member_order",
+                                    group_row,
+                                )
+                            ]
+                            group_bonds = [
+                                value[0]
+                                for value in connection.execute(
+                                    "SELECT bond_id FROM group_bonds WHERE group_id = ? "
+                                    "ORDER BY bond_order",
+                                    group_row,
+                                )
+                            ]
+                    if table == "correspondences" and "concept_mappings" in tables:
+                        mapping_rows = connection.execute(
+                            """SELECT concept_mapping_id, source_facet, target_facet,
+                                      source_descriptor, target_descriptor, label
+                               FROM concept_mappings WHERE run_id = ?
+                               AND correspondence_id = ? ORDER BY id""",
+                            (run_id, object_id),
+                        ).fetchall()
+                        concept_mappings = [
+                            {
+                                "id": mapping_id,
+                                "source_facet": source_facet,
+                                "target_facet": target_facet,
+                                "source_descriptor": source_descriptor,
+                                "target_descriptor": target_descriptor,
+                                "label": label,
+                            }
+                            for (
+                                mapping_id,
+                                source_facet,
+                                target_facet,
+                                source_descriptor,
+                                target_descriptor,
+                                label,
+                            ) in mapping_rows
+                        ]
+                    break
+
+    if lifecycle is None and not attributes:
+        return None
+    grouped: dict[str, list[tuple[int, object]]] = {}
+    for time, attribute, value_json in attributes:
+        try:
+            value = json.loads(value_json)
+        except json.JSONDecodeError:
+            value = value_json
+        grouped.setdefault(attribute, []).append((time, value))
+    maximum_time = max((time for time, _, _ in attributes), default=0)
+    run_length = (
+        int(run_length_row[0])
+        if run_length_row and run_length_row[0] is not None
+        else maximum_time
+    )
+    creation_time, destruction_time = lifecycle or (None, None)
+    return {
+        "id": object_id,
+        "table": object_table,
+        "run_length": max(run_length, maximum_time),
+        "creation_time": creation_time,
+        "destruction_time": destruction_time,
+        "proposal_time": proposal_time,
+        "attributes": grouped,
+        "details": details,
+        "group_members": group_members,
+        "group_bonds": group_bonds,
+        "concept_mappings": concept_mappings,
+        "slipnode_link_arguments": slipnode_link_arguments,
+    }
+
+
+def _object_row_details(
+    column_names: list[str], row: Sequence[object], id_column: str
+) -> list[tuple[str, object]]:
+    """Select the user-meaningful fields from an object's database row."""
+    excluded = {"id", "run_id", id_column}
+    details = []
+    for column, value in zip(column_names, row, strict=True):
+        if column in excluded:
+            continue
+        if column.endswith("_json") and isinstance(value, str):
+            try:
+                value = json.loads(value)
+            except json.JSONDecodeError:
+                pass
+        details.append((column.removesuffix("_json"), value))
+    return details
+
+
 def coderack_codelets(
     database: str | Path, run_id: int, time: int
 ) -> list[tuple[int, str, str]]:
@@ -126,23 +410,31 @@ def coderack_codelets(
             """SELECT urgency_bin, codelet_type, codelet_id FROM codelets
                WHERE run_id = ? AND birth_time <= ?
                AND (removal_time IS NULL OR removal_time > ?)
+               AND NOT EXISTS (
+                   SELECT 1 FROM snags
+                   WHERE snags.run_id = codelets.run_id
+                   AND snags.snag_start > codelets.birth_time
+                   AND snags.snag_start <= ?
+               )
                ORDER BY urgency_bin DESC, id""",
-            (run_id, time, time),
+            (run_id, time, time, time),
         ).fetchall()
 
 
 def codelet_history(
     database: str | Path, run_id: int, time: int
-) -> list[tuple[str, str | None, int, str, int | None, str | None, str | None]]:
-    """Return completed codelets up to a selected time, newest first."""
+) -> list[
+    tuple[str, str | None, int, str, int | None, int | None, str | None, str | None]
+]:
+    """Return codelets one display step ahead of the workspace, newest first."""
     with sqlite3.connect(database) as connection:
         return connection.execute(
             """SELECT codelet_id, parent_codelet_id, run_time, codelet_type,
-                      urgency_bin, result, fizzle_reason
+                      urgency_bin, time_taken, result, fizzle_reason
                FROM codelets WHERE run_id = ?
                AND run_time IS NOT NULL AND run_time <= ?
                ORDER BY run_time DESC, id DESC""",
-            (run_id, time),
+            (run_id, time + 1),
         ).fetchall()
 
 
@@ -155,6 +447,163 @@ def codelet_types(database: str | Path, run_id: int) -> dict[str, str]:
                 (run_id,),
             ).fetchall()
         )
+
+
+def codelet_run_times(database: str | Path, run_id: int) -> dict[str, int]:
+    """Return the time at which each codelet in a run executed."""
+    try:
+        with sqlite3.connect(database) as connection:
+            return dict(
+                connection.execute(
+                    """SELECT codelet_id, run_time FROM codelets WHERE run_id = ?
+                       AND run_time IS NOT NULL""",
+                    (run_id,),
+                ).fetchall()
+            )
+    except sqlite3.OperationalError:
+        return {}
+
+
+def codelet_children(database: str | Path, run_id: int) -> dict[str, list[str]]:
+    """Return posted child codelets keyed by their parent, in posting order."""
+    with sqlite3.connect(database) as connection:
+        rows = connection.execute(
+            """SELECT parent_codelet_id, codelet_id FROM codelets WHERE run_id = ?
+               AND parent_codelet_id IS NOT NULL ORDER BY id""",
+            (run_id,),
+        ).fetchall()
+    children: dict[str, list[str]] = {}
+    for parent_id, child_id in rows:
+        children.setdefault(parent_id, []).append(child_id)
+    return children
+
+
+def codelet_steps(
+    database: str | Path, run_id: int, time: int
+) -> dict[str, list[tuple[str, object]]]:
+    """Return each executed codelet's steps in the order they were recorded."""
+    with sqlite3.connect(database) as connection:
+        rows = connection.execute(
+            """SELECT codelet_id, attribute, value_json FROM codelet_steps
+               WHERE run_id = ? AND time <= ? ORDER BY id""",
+            (run_id, time),
+        ).fetchall()
+    result: dict[str, list[tuple[str, object]]] = {}
+    for codelet_id, attribute, value_json in rows:
+        result.setdefault(codelet_id, []).append((attribute, json.loads(value_json)))
+    return result
+
+
+def codelet_arguments(
+    database: str | Path, run_id: int
+) -> dict[str, list[tuple[str, object]]]:
+    """Return each posted codelet's arguments in posting order."""
+    with sqlite3.connect(database) as connection:
+        rows = connection.execute(
+            """SELECT codelet_id, attribute, value_json FROM codelet_arguments
+               WHERE run_id = ? ORDER BY id""",
+            (run_id,),
+        ).fetchall()
+    result: dict[str, list[tuple[str, object]]] = {}
+    for codelet_id, attribute, value_json in rows:
+        result.setdefault(codelet_id, []).append((attribute, json.loads(value_json)))
+    return result
+
+
+def codelet_step_value_reprs(
+    database: str | Path, run_id: int
+) -> dict[str, str]:
+    """Reconstruct display representations for logged workspace identifiers.
+
+    This is deliberately a Cattycam concern: experiments persist only stable
+    identifiers, while the viewer resolves them into the model's familiar
+    object representations on demand.
+    """
+    try:
+        with sqlite3.connect(database) as connection:
+            letters = connection.execute(
+                "SELECT letter_id, string_id, letter_category, position FROM letters WHERE run_id = ?",
+                (run_id,),
+            ).fetchall()
+            groups = connection.execute(
+                """SELECT group_id, string_id, left_position, right_position,
+                          group_category, direction_category
+                   FROM groups WHERE run_id = ?""",
+                (run_id,),
+            ).fetchall()
+            bonds = connection.execute(
+                """SELECT bond_id, source_id, target_id, bond_facet, bond_category,
+                          direction_category FROM bonds WHERE run_id = ?""",
+                (run_id,),
+            ).fetchall()
+            descriptions = connection.execute(
+                "SELECT description_id, object_id, facet, descriptor FROM descriptions WHERE run_id = ?",
+                (run_id,),
+            ).fetchall()
+            correspondences = connection.execute(
+                "SELECT correspondence_id, source_id, target_id FROM correspondences WHERE run_id = ?",
+                (run_id,),
+            ).fetchall()
+    except sqlite3.OperationalError:
+        return {}
+
+    representations = {
+        letter_id: f"{letter_category}@{position}"
+        for letter_id, _, letter_category, position in letters
+    }
+    for group_id, string_id, left, right, category, direction in groups:
+        letters_in_group = "".join(
+            letter_category
+            for _, letter_string_id, letter_category, position in letters
+            if letter_string_id == string_id and left <= position <= right
+        )
+        group_type = "-".join(
+            value for value in (category, direction) if value is not None
+        )
+        representations[group_id] = f"{group_type}({letters_in_group})@{left}-{right}"
+    for bond_id, source_id, target_id, facet, category, direction in bonds:
+        labels = [label.upper() for label in (facet, category, direction) if label]
+        representations[bond_id] = (
+            f"{representations.get(source_id, source_id)} --{labels}--> "
+            f"{representations.get(target_id, target_id)}"
+        )
+    for description_id, object_id, facet, descriptor in descriptions:
+        representations[description_id] = (
+            f"{facet.upper()} of {representations.get(object_id, object_id)} "
+            f"is {descriptor.upper()}"
+        )
+    for correspondence_id, source_id, target_id in correspondences:
+        representations[correspondence_id] = (
+            f"{representations.get(source_id, source_id)} ==> "
+            f"{representations.get(target_id, target_id)}"
+        )
+    return representations
+
+
+def object_display_reprs(database: str | Path, run_id: int) -> dict[str, str]:
+    """Return familiar labels for workspace objects, Slipnet nodes, and codelets."""
+    representations = codelet_step_value_reprs(database, run_id)
+    try:
+        with sqlite3.connect(database) as connection:
+            slipnodes = connection.execute(
+                "SELECT name FROM slipnodes WHERE run_id = ?", (run_id,)
+            ).fetchall()
+            codelets = connection.execute(
+                "SELECT codelet_id, codelet_type FROM codelets WHERE run_id = ?",
+                (run_id,),
+            ).fetchall()
+    except sqlite3.OperationalError:
+        return representations
+    representations.update(
+        {f"slipnode:{name}": str(name).upper() for (name,) in slipnodes}
+    )
+    representations.update(
+        {
+            codelet_id: f"{codelet_type} {str(codelet_id).removeprefix('codelet:')}"
+            for codelet_id, codelet_type in codelets
+        }
+    )
+    return representations
 
 
 def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
@@ -207,14 +656,14 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
             (run_id, time, time, time),
         ).fetchall()
         mappings = connection.execute(
-            """SELECT correspondence_id, description_type_1, description_type_2,
-                      initial_descriptor, target_descriptor, label
+            """SELECT correspondence_id, source_facet, target_facet,
+                      source_descriptor, target_descriptor, label
                FROM concept_mappings WHERE run_id = ? ORDER BY id""",
             (run_id,),
         ).fetchall()
         rules = connection.execute(
-            """SELECT rule_id, object_category_1, descriptor_1,
-                      replaced_description_type, descriptor_2, relation
+            """SELECT rule_id, source_object_category, source_descriptor,
+                      replaced_facet, target_descriptor, relation
                FROM rules WHERE run_id = ?
                AND (proposal_time <= ? OR creation_time <= ?)
                AND (destruction_time IS NULL OR destruction_time > ?)
@@ -222,14 +671,34 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
             (run_id, time, time, time),
         ).fetchall()
         translated_rules = connection.execute(
-            """SELECT rule_id, object_category_1, descriptor_1,
-                      replaced_description_type, descriptor_2, relation
+            """SELECT rule_id, source_object_category, source_descriptor,
+                      replaced_facet, target_descriptor, relation
                FROM translated_rules WHERE run_id = ?
                AND creation_time <= ?
                AND (destruction_time IS NULL OR destruction_time > ?)
                ORDER BY creation_time DESC, id DESC""",
             (run_id, time, time),
         ).fetchall()
+
+    # Highlight lifecycle events when they become visible.
+    highlighted_ids = {
+        row[0]
+        for table, id_column in (
+            ("letters", "letter_id"),
+            ("groups", "group_id"),
+            ("bonds", "bond_id"),
+            ("correspondences", "correspondence_id"),
+            ("replacements", "replacement_id"),
+            ("rules", "rule_id"),
+            ("translated_rules", "rule_id"),
+            ("descriptions", "object_id"),
+        )
+        for row in connection.execute(
+            f"SELECT {id_column} FROM {table} WHERE run_id = ? "
+            "AND (proposal_time = ? OR creation_time = ?)",
+            (run_id, time, time),
+        )
+    }
 
     rule = rules[0] if rules else None
     translated_rule = translated_rules[0] if translated_rules else None
@@ -269,14 +738,14 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
                 "proposed": creation is None,
                 "mappings": [
                     {
-                        "source": initial_descriptor,
+                        "source": source_descriptor,
                         "target": target_descriptor,
                         "label": label,
-                        "source_type": description_type_1,
-                        "target_type": description_type_2,
+                        "source_type": source_facet,
+                        "target_type": target_facet,
                     }
-                    for mapping_correspondence_id, description_type_1, description_type_2,
-                    initial_descriptor, target_descriptor, label in mappings
+                    for mapping_correspondence_id, source_facet, target_facet,
+                    source_descriptor, target_descriptor, label in mappings
                     if mapping_correspondence_id == correspondence_id
                 ],
             }
@@ -302,10 +771,10 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
         "rule": (
             {
                 "id": rule[0],
-                "object_category": rule[1],
-                "descriptor": rule[2],
-                "replaced_description_type": rule[3],
-                "descriptor_2": rule[4],
+                "source_object_category": rule[1],
+                "source_descriptor": rule[2],
+                "replaced_facet": rule[3],
+                "target_descriptor": rule[4],
                 "relation": rule[5],
             }
             if rules
@@ -314,15 +783,16 @@ def workspace_snapshot(database: str | Path, run_id: int, time: int) -> dict:
         "translated_rule": (
             {
                 "id": translated_rule[0],
-                "object_category": translated_rule[1],
-                "descriptor": translated_rule[2],
-                "replaced_description_type": translated_rule[3],
-                "descriptor_2": translated_rule[4],
+                "source_object_category": translated_rule[1],
+                "source_descriptor": translated_rule[2],
+                "replaced_facet": translated_rule[3],
+                "target_descriptor": translated_rule[4],
                 "relation": translated_rule[5],
             }
             if translated_rule
             else None
         ),
+        "highlighted_ids": sorted(highlighted_ids),
     }
 
 
@@ -393,14 +863,23 @@ def _table_query(
     return f"SELECT * FROM {quoted_table} WHERE run_id = ?", (run_id,)
 
 
-def _html_table(headers: Sequence[object], rows: Sequence[Sequence[object]]) -> str:
+def _html_table(
+    headers: Sequence[object],
+    rows: Sequence[Sequence[object]],
+    *,
+    first_column_html: bool = False,
+) -> str:
     """Build a compact, escaped HTML table."""
     header_cells = "".join(f"<th>{html.escape(str(value))}</th>" for value in headers)
     body_rows = "".join(
         "<tr>"
         + "".join(
-            f"<td>{html.escape('' if value is None else str(value))}</td>"
-            for value in row
+            (
+                f"<td>{value}</td>"
+                if first_column_html and index == 0
+                else f"<td>{html.escape('' if value is None else str(value))}</td>"
+            )
+            for index, value in enumerate(row)
         )
         + "</tr>"
         for row in rows

@@ -115,14 +115,14 @@ def test_run():
     bond_category = Mock()
     bond_category.name = "successor"
     bond_category.bond_degree_of_association = 0.5
-    bond_category.is_directed.return_value = False
+    bond_category.is_directed = False
     link.label = bond_category
     scout.run(temperature=0.0)
     assert coderack.post_called == 0
     assert slipnet.activate_called == 0
 
     # Object with neighbour, shared bond facet, and bond category is directed
-    bond_category.is_directed.return_value = True
+    bond_category.is_directed = True
     result = scout.run(temperature=0.0)
     assert coderack.post_called == 1
     assert result == Finish()

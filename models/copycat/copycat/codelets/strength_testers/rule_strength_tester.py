@@ -4,7 +4,7 @@ from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.builders import RuleBuilder
 from copycat.codelets.strength_tester import StrengthTester
 from copycat.tools import temperature_adjust_probability
-from copycat.workspace_structures import Rule
+from copycat.workspace_objects_and_structures import Rule
 
 
 class RuleStrengthTester(StrengthTester):

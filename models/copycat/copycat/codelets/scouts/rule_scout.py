@@ -5,8 +5,12 @@ from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.scout import Scout
 from copycat.codelets.strength_testers import RuleStrengthTester
 from copycat.tools import select_item_from_list, temperature_adjust_list
-from copycat.workspace_object import WorkspaceObject
-from copycat.workspace_structures import Description, ExtrinsicDescription, Rule
+from copycat.workspace_objects_and_structures import (
+    Description,
+    ExtrinsicDescription,
+    Rule,
+    WorkspaceObject,
+)
 
 
 class RuleScout(Scout):
@@ -16,34 +20,34 @@ class RuleScout(Scout):
     with urgency a function of the conceptual depth of the descriptions."""
 
     def run(self, temperature: float) -> CodeletResult:
-        if not self.workspace.all_replacements_found():
+        if not self.workspace.all_replacements_found:
             return Fizzle(FizzleReason.NOT_ALL_REPLACEMENTS_FOUND)
-        changed_objects = self.workspace.initial_string.get_changed_objects()
-        if len(changed_objects) > 1:
+        self.changed_objects = self.workspace.initial_string.get_changed_objects()
+        if len(self.changed_objects) > 1:
             raise Exception("Cannot solve problems with more than one changed letter.")
-        if not changed_objects:
+        if not self.changed_objects:
             self._propose_rule(None, None, None, None, temperature=temperature)
             return Finish()
-        initial_object = changed_objects[0]
-        initial_description = self._get_initial_description(
-            initial_object,
+        self.initial_object = self.changed_objects[0]
+        self.initial_description = self._get_initial_description(
+            self.initial_object,
             temperature,
         )
-        if initial_description is None:
+        if self.initial_description is None:
             return Fizzle(FizzleReason.NO_INITIAL_DESCRIPTIONS)
-        modified_object = initial_object.replacement.target
-        modified_description = self._get_modified_description(
-            modified_object,
-            initial_description,
+        self.modified_object = self.initial_object.replacement.target
+        self.modified_description = self._get_modified_description(
+            self.modified_object,
+            self.initial_description,
             temperature,
         )
-        if modified_description is None:
+        if self.modified_description is None:
             return Fizzle(FizzleReason.NO_MODIFIED_DESCRIPTIONS)
         self._propose_rule(
-            initial_object,
-            initial_description,
-            modified_object,
-            modified_description,
+            self.initial_object,
+            self.initial_description,
+            self.modified_object,
+            self.modified_description,
             temperature=temperature,
         )
         return Finish()
@@ -63,28 +67,36 @@ class RuleScout(Scout):
             and modified_object is None
             and modified_description is None
         ):
-            proposed_rule = Rule(self.workspace)
+            self.proposed_rule = Rule(self.workspace)
         elif isinstance(modified_description, ExtrinsicDescription):
-            proposed_rule = Rule(
+            self.proposed_rule = Rule(
                 self.workspace,
-                object_category_1=initial_object.get_descriptor(object_category_node),
-                descriptor_1_facet=initial_description.facet,
-                descriptor_1=initial_description.descriptor,
-                object_category_2=modified_object.get_descriptor(object_category_node),
-                replaced_description_type=modified_description.description_type_related,
+                source_object_category=initial_object.get_descriptor(
+                    object_category_node
+                ),
+                source_facet=initial_description.facet,
+                source_descriptor=initial_description.descriptor,
+                target_object_category=modified_object.get_descriptor(
+                    object_category_node
+                ),
+                replaced_facet=modified_description.description_type_related,
                 relation=modified_description.relation,
             )
         else:
-            proposed_rule = Rule(
+            self.proposed_rule = Rule(
                 self.workspace,
-                object_category_1=initial_object.get_descriptor(object_category_node),
-                descriptor_1_facet=initial_description.facet,
-                descriptor_1=initial_description.descriptor,
-                object_category_2=modified_object.get_descriptor(object_category_node),
-                replaced_description_type=modified_description.facet,
-                descriptor_2=modified_description.descriptor,
+                source_object_category=initial_object.get_descriptor(
+                    object_category_node
+                ),
+                source_facet=initial_description.facet,
+                source_descriptor=initial_description.descriptor,
+                target_object_category=modified_object.get_descriptor(
+                    object_category_node
+                ),
+                replaced_facet=modified_description.facet,
+                target_descriptor=modified_description.descriptor,
             )
-        self.proposed_rule = proposed_rule
+        self.workspace.propose_rule(self.proposed_rule)
         if initial_description is None:
             urgency = 1.0
         else:
@@ -99,7 +111,7 @@ class RuleScout(Scout):
                 coderack=self.coderack,
                 slipnet=self.slipnet,
                 workspace=self.workspace,
-                proposed_rule=proposed_rule,
+                proposed_rule=self.proposed_rule,
             ),
             temperature=temperature,
         )
@@ -122,7 +134,7 @@ class RuleScout(Scout):
             return initial_object.rule_initial_string_descriptions
         initial_descriptions = []
         relevant_target_descriptions = (
-            initial_object.correspondence.target.get_relevant_descriptions()
+            initial_object.correspondence.target.relevant_descriptions
         )
         for d in initial_object.rule_initial_string_descriptions:
             slipped_d = d.apply_slippages(
@@ -152,13 +164,13 @@ class RuleScout(Scout):
         probabilities = temperature_adjust_list(
             [c.conceptual_depth for c in candidates], temperature
         )
-        choice = select_item_from_list(candidates, probabilities)
-        if isinstance(choice, ExtrinsicDescription):
+        self.choice = select_item_from_list(candidates, probabilities)
+        if isinstance(self.choice, ExtrinsicDescription):
             related_descriptor = initial_description.descriptor.get_related_node(
-                choice.relation.name
+                self.choice.relation.name
             )
             if related_descriptor:
                 for d in modified_object.descriptions:
                     if d.descriptor == related_descriptor:
                         return d
-        return choice
+        return self.choice

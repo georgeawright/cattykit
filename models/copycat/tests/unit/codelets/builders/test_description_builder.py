@@ -107,7 +107,7 @@ def test_adds_description_to_argument_object():
     workspace = MockWorkspace()
 
     proposed_description = Mock()
-    proposed_description.is_bond_description.return_value = False
+    proposed_description.is_bond_description = False
     argument_object = Mock()
     argument_object.add_description_has_been_called = False
     argument_object.add_description = lambda description: setattr(
@@ -132,7 +132,7 @@ def test_adds_description_to_argument_object():
     assert slipnet.activate_called == 2
 
     proposed_bond_description = Mock()
-    proposed_bond_description.is_bond_description.return_value = True
+    proposed_bond_description.is_bond_description = True
     argument_object = Mock()
     argument_object.add_description_has_been_called = False
     argument_object.add_description = lambda description: setattr(

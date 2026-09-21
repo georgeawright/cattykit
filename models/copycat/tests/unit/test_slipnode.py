@@ -27,7 +27,7 @@ def test_category():
 def test_is_active(activation, is_active):
     slipnode = Slipnode("name", 1, 1, 1, lambda x: None)
     slipnode.activation = activation
-    assert is_active == slipnode.is_active()
+    assert is_active == slipnode.is_active
 
 
 def test_is_related_to_and_is_linked_to():

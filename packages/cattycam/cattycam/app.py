@@ -1,6 +1,6 @@
 """Panel application for browsing a Cattycam SQLite database.
 
-Run with ``panel serve cattycam/app.py --show --args path/to/history.sqlite``.
+Run with ``cattycam path/to/history.sqlite``.
 """
 
 from __future__ import annotations

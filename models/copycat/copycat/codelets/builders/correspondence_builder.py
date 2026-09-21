@@ -4,8 +4,7 @@ from copycat.codelet_result import CodeletResult, Finish, Fizzle, FizzleReason
 from copycat.codelets.builder import Builder
 from copycat.concept_mapping import ConceptMapping
 from copycat.tools import structure_beats_structures
-from copycat.workspace_objects import Group, Letter
-from copycat.workspace_structures import Bond, Correspondence
+from copycat.workspace_objects_and_structures import Bond, Correspondence, Group, Letter
 
 
 class CorrespondenceBuilder(Builder):
@@ -33,13 +32,13 @@ class CorrespondenceBuilder(Builder):
 
     def run(self, temperature: float) -> "CodeletResult":
         if self.target_flipped:
-            existing_target = self.workspace.target_string.get_group_if_present(
+            self.existing_target = self.workspace.target_string.get_group_if_present(
                 self.proposed_correspondence.target.get_flipped_version()
             )
         if self.proposed_correspondence.source not in self.workspace.objects:
             return Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
         if self.proposed_correspondence.target not in self.workspace.objects:
-            if self.target_flipped and not existing_target:
+            if self.target_flipped and not self.existing_target:
                 return Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
             if not self.target_flipped:
                 return Fizzle(FizzleReason.OBJECTS_NO_LONGER_EXIST)
@@ -54,9 +53,9 @@ class CorrespondenceBuilder(Builder):
             # correspondences between small groups or letters
             fight_result = structure_beats_structures(
                 self.proposed_correspondence,
-                self.proposed_correspondence.letter_span(),
+                self.proposed_correspondence.letter_span,
                 [incompatible_correspondence],
-                incompatible_correspondence.letter_span(),
+                incompatible_correspondence.letter_span,
                 temperature=temperature,
             )
             if not fight_result:
@@ -87,7 +86,7 @@ class CorrespondenceBuilder(Builder):
             fight_result = structure_beats_structures(
                 self.proposed_correspondence,
                 1,
-                [existing_target],
+                [self.existing_target],
                 1,
                 temperature=temperature,
             )
@@ -111,8 +110,8 @@ class CorrespondenceBuilder(Builder):
         for correspondence in incompatible_correspondences:
             self.workspace.break_correspondence(correspondence)
         if self.target_flipped:
-            self.workspace.break_group(existing_target)
-            for bond in existing_target.bonds:
+            self.workspace.break_group(self.existing_target)
+            for bond in self.existing_target.bonds:
                 self.workspace.break_bond(bond)
             for bond in self.proposed_correspondence.target.bonds:
                 self.workspace.target_string.add_bond(bond)
@@ -141,22 +140,22 @@ class CorrespondenceBuilder(Builder):
         return Finish()
 
     def _augment_existing_correspondence_if_exists(self) -> bool:
-        existing_correspondence = self.workspace.get_existing_correspondence(
+        self.existing_correspondence = self.workspace.get_existing_correspondence(
             self.proposed_correspondence
         )
-        if existing_correspondence is None:
+        if self.existing_correspondence is None:
             return False
         for mapping in self.proposed_correspondence.concept_mappings:
             if mapping.label is not None:
                 self.slipnet.activate_node_from_workspace(mapping.label.name)
-            if mapping in existing_correspondence.concept_mappings:
+            if mapping in self.existing_correspondence.concept_mappings:
                 continue
-            existing_correspondence.concept_mappings.append(mapping)
+            self.existing_correspondence.concept_mappings.append(mapping)
         return True
 
     def _not_all_concept_mappings_relevant(self):
         for mapping in self.proposed_correspondence.concept_mappings:
-            if not mapping.is_relevant():
+            if not mapping.is_relevant:
                 return True
         return False
 
@@ -174,16 +173,16 @@ class CorrespondenceBuilder(Builder):
     def _get_incompatible_bond(self) -> Optional[Bond]:
         source_bond = (
             self.proposed_correspondence.source.right_bond
-            if self.proposed_correspondence.source.is_leftmost_in_string()
+            if self.proposed_correspondence.source.is_leftmost_in_string
             else self.proposed_correspondence.source.left_bond
-            if self.proposed_correspondence.source.is_rightmost_in_string()
+            if self.proposed_correspondence.source.is_rightmost_in_string
             else None
         )
         target_bond = (
             self.proposed_correspondence.target.right_bond
-            if self.proposed_correspondence.target.is_leftmost_in_string()
+            if self.proposed_correspondence.target.is_leftmost_in_string
             else self.proposed_correspondence.target.left_bond
-            if self.proposed_correspondence.target.is_rightmost_in_string()
+            if self.proposed_correspondence.target.is_rightmost_in_string
             else None
         )
         if not (
@@ -194,10 +193,10 @@ class CorrespondenceBuilder(Builder):
         ):
             return None
         bond_concept_mapping = ConceptMapping(
-            description_type_1=self.slipnet["direction_category"],
-            description_type_2=self.slipnet["direction_category"],
-            descriptor_1=source_bond.direction_category,
-            descriptor_2=target_bond.direction_category,
+            source_facet=self.slipnet["direction_category"],
+            target_facet=self.slipnet["direction_category"],
+            source_descriptor=source_bond.direction_category,
+            target_descriptor=target_bond.direction_category,
             label=self.slipnet.get_label_node(
                 source_bond.direction_category, target_bond.direction_category
             ),
@@ -213,18 +212,18 @@ class CorrespondenceBuilder(Builder):
         if not self.workspace.rule:
             return None
         proposed_mapping_descriptors = [
-            m.descriptor_1 for m in self.proposed_correspondence.concept_mappings
+            m.source_descriptor for m in self.proposed_correspondence.concept_mappings
         ]
-        if self.workspace.rule.descriptor_1 in proposed_mapping_descriptors:
+        if self.workspace.rule.source_descriptor in proposed_mapping_descriptors:
             return None
         slippages = [
             d.apply_slippages(self.workspace.slippages)
             for d in [
                 d.descriptor
-                for d in self.proposed_correspondence.target.get_relevant_descriptions()
+                for d in self.proposed_correspondence.target.relevant_descriptions
             ]
         ]
-        if self.workspace.rule.descriptor_1 in slippages:
+        if self.workspace.rule.source_descriptor in slippages:
             return None
         return self.workspace.rule
 
@@ -237,7 +236,7 @@ class CorrespondenceBuilder(Builder):
         )
         self.workspace.add_correspondence(self.proposed_correspondence)
         for mapping in (
-            self.proposed_correspondence.get_relevant_distinguishing_mappings()
+            self.proposed_correspondence.relevant_distinguishing_mappings
             + self.proposed_correspondence.accessory_concept_mappings
         ):
             if not mapping.is_slippage:

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import html
+import json
 import math
-from typing import Any
+from typing import Any, Callable
 
 import pandas as pd
 import panel as pn
@@ -29,6 +31,7 @@ def _solution_metric_boxplot_chart(
     value_label: str,
     title_metric: str | None = None,
     empty_message: str | None = None,
+    fixed_y_range: tuple[float, float] | None = None,
 ) -> pn.viewable.Viewable:
     """Plot per-run values and boxplots for a numeric metric, grouped by solution."""
     if value_column not in solution_runs.columns:
@@ -67,7 +70,6 @@ def _solution_metric_boxplot_chart(
                 "q3": q3,
                 "lower": lower,
                 "upper": upper,
-                "label_y": upper,
                 "label": (
                     f"mean {values.mean():.2f}, std error "
                     f"{'—' if pd.isna(standard_error) else f'{standard_error:.2f}'}"
@@ -87,13 +89,19 @@ def _solution_metric_boxplot_chart(
     minimum = min(runs[value_key].min(), min(boxes.data["lower"]))
     padding = max((maximum - minimum) * 0.1, abs(maximum) * 0.05, 1.0)
 
+    y_range = (
+        Range1d(*fixed_y_range)
+        if fixed_y_range is not None
+        else Range1d(min(0, minimum - padding), maximum + padding)
+    )
+    boxes.data["label_y"] = [y_range.end] * len(boxplot_rows)
     chart = figure(
         title=(
             f"{str(model).capitalize()} "
             f"{title_metric or value_label} by solution for problem {problem}"
         ),
         x_range=FactorRange(*solutions, *padding_factors),
-        y_range=Range1d(min(0, minimum - padding), maximum + padding),
+        y_range=y_range,
         x_axis_label="Solution",
         y_axis_label=value_label,
         height=360,
@@ -153,10 +161,10 @@ def _solution_metric_boxplot_chart(
             x="solution",
             y="label_y",
             text="label",
-            y_offset=8,
+            y_offset=-8,
             text_align="center",
-            text_baseline="bottom",
-            text_font_size="9px",
+            text_baseline="top",
+            text_font_size="11px",
             source=boxes,
         )
     )
@@ -205,6 +213,7 @@ def _solution_temperature_chart(
         value_label="Final temperature",
         title_metric="final temperature",
         empty_message="No final-temperature data was logged.",
+        fixed_y_range=(0, 1),
     )
 
 
@@ -233,6 +242,69 @@ def _run_overview(
             sizing_mode="stretch_width",
         ),
         sizing_mode="stretch_width",
+    )
+
+
+def _object_attribute_charts(
+    history: dict, value_html: Callable[[str, object], str] | None = None
+) -> tuple[pn.Row, pn.pane.HTML]:
+    """Render tracked object attributes and return immutable table properties."""
+    charts = []
+    for attribute, values in history["attributes"].items():
+        numeric = all(
+            isinstance(value, (int, float)) and not isinstance(value, bool)
+            for _, value in values
+        )
+        chart_options = {}
+        if numeric and attribute != "strength":
+            chart_options["y_range"] = Range1d(0, 1)
+        chart = figure(
+            title=attribute.replace("_", " "),
+            x_axis_label="Codelets run",
+            y_axis_label=attribute.replace("_", " "),
+            x_range=Range1d(0, history["run_length"]),
+            height=260,
+            width=380,
+            toolbar_location=None,
+            **chart_options,
+        )
+        times, raw_values = zip(*values)
+        if numeric:
+            chart.line(times, raw_values, line_width=2)
+        else:
+            categories = list(dict.fromkeys(json.dumps(value, sort_keys=True, default=str) for value in raw_values))
+            chart.y_range = FactorRange(*categories)
+            chart.line(times, categories, line_width=2)
+        if history["creation_time"] not in (None, 0):
+            chart.add_layout(
+                Span(
+                    location=history["creation_time"], dimension="height",
+                    line_dash="dotted", line_color="#dc2626", line_width=2,
+                )
+            )
+        if history["destruction_time"] is not None:
+            chart.add_layout(
+                Span(
+                    location=history["destruction_time"], dimension="height",
+                    line_dash="dotted", line_color="#dc2626", line_width=2,
+                )
+            )
+        charts.append(chart)
+    render_value = value_html or (
+        lambda _, value: html.escape(json.dumps(value, sort_keys=True, default=str))
+    )
+    attribute_items = history["details"]
+    attributes_html = "".join(
+        "<li>"
+        f"<strong>{html.escape(attribute.removesuffix('_id').replace('_', ' '))}</strong>: {render_value(attribute.removesuffix('_id'), value)}"
+        "</li>"
+        for attribute, value in attribute_items
+    ) or "<li>None</li>"
+    return (
+        pn.Row(*charts, sizing_mode="stretch_width")
+        if charts
+        else pn.Row(pn.pane.Alert("No tracked attributes were logged.", alert_type="info")),
+        pn.pane.HTML(f"<ul>{attributes_html}</ul>", sizing_mode="stretch_width"),
     )
 
 
@@ -303,16 +375,16 @@ def _add_time_marker(
     value_formatter,
 ) -> None:
     """Add a vertical marker and value label that follow the selected time."""
-    value = _value_at_time(values, codelet_time.value_throttled)
+    value = _value_at_time(values, codelet_time.value)
     marker = Span(
-        location=codelet_time.value_throttled,
+        location=codelet_time.value,
         dimension="height",
         line_color="red",
         line_width=2,
     )
     chart.add_layout(marker)
     label = Label(
-        x=codelet_time.value_throttled,
+        x=codelet_time.value,
         # The plot frame is shorter than the figure because of its title and axes.
         # Keep the screen-positioned label inside that frame.
         y=175,
@@ -331,7 +403,9 @@ def _add_time_marker(
         label.x = event.new
         label.text = value_formatter(_value_at_time(values, event.new))
 
-    codelet_time.param.watch(update_marker, "value_throttled")
+    # Playback and the navigation buttons set ``value`` directly; waiting for
+    # the throttled value leaves the chart marker behind the displayed state.
+    codelet_time.param.watch(update_marker, "value")
 
 
 def _value_at_time(values: list[tuple], time: int) -> object:
