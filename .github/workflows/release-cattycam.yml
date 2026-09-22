@@ -1,0 +1,97 @@
+name: Release Cattycam
+
+on:
+  push:
+    tags:
+      - "cattycam-v*"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.13", "3.14"]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Cattycam and dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e "packages/cattycam"
+          python -m pip install pytest
+
+      - name: Run tests
+        run: pytest packages/cattycam/tests
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Check tag matches package version
+        working-directory: packages/cattycam
+        run: |
+          PACKAGE_VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+          TAG_VERSION="${GITHUB_REF_NAME#cattycam-v}"
+
+          if [ "$PACKAGE_VERSION" != "$TAG_VERSION" ]; then
+            echo "Tag $TAG_VERSION does not match package version $PACKAGE_VERSION"
+            exit 1
+          fi
+
+      - name: Install build tools
+        run: python -m pip install build twine
+
+      - name: Build Cattycam
+        run: python -m build packages/cattycam
+
+      - name: Check distributions
+        run: python -m twine check packages/cattycam/dist/*
+
+      - name: Upload distributions
+        uses: actions/upload-artifact@v4
+        with:
+          name: cattycam-distributions
+          path: packages/cattycam/dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: pypi
+      url: https://pypi.org/p/cattycam
+
+    permissions:
+      id-token: write
+      contents: write
+
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v5
+        with:
+          name: cattycam-distributions
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Upload wheel to GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.whl
