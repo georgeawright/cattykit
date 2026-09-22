@@ -11,7 +11,7 @@ _CONFIG_DIRECTORY = (
 
 def main() -> None:
     random.seed(2)
-    logger = Cattycam("history.sqlite", "copycat")
+    logger = CattycamLogger("history.sqlite", "copycat")
     copycat = Copycat.from_json(
         str(_CONFIG_DIRECTORY / "slipnet.json"),
         str(_CONFIG_DIRECTORY / "coderack.json"),
