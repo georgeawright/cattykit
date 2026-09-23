@@ -12,8 +12,8 @@ import panel as pn
 from .canvases import BrowserHistoryBridge, SlipnetCanvas, WorkspaceCanvas
 from .charts import _object_attribute_charts, _run_overview
 from .details import (
-    _codelet_history,
-    _coderack_badges,
+    CodeletHistoryView,
+    CoderackView,
     _slipnet_activation_list,
 )
 from .views import _problem_overview, _run_group_table
@@ -160,6 +160,8 @@ def create_app(database: str | Path) -> pn.Column:
             snapshot=slipnet_snapshot(database_path, run_id, codelet_time.value),
             sizing_mode="stretch_width",
         )
+        coderack_view = CoderackView(database_path, run_id, codelet_time.value)
+        history_view = CodeletHistoryView(database_path, run_id, codelet_time.value)
 
         def update_workspace(_: object | None = None) -> None:
             workspace_canvas.snapshot = workspace_snapshot(
@@ -171,12 +173,26 @@ def create_app(database: str | Path) -> pn.Column:
                 database_path, run_id, codelet_time.value
             )
 
+        def update_details(_: object | None = None) -> None:
+            coderack_view.update(codelet_time.value)
+            history_view.update(codelet_time.value)
+
+        def refresh_coderack(_: object | None = None) -> None:
+            coderack_view.update(codelet_time.value)
+
+        def refresh_history(_: object | None = None) -> None:
+            history_view.update(codelet_time.value, force=True)
+
         codelet_time.param.watch(update_workspace, "value_throttled")
         playback_version.param.watch(update_workspace, "value")
         refresh_versions["workspace"].param.watch(update_workspace, "value")
         codelet_time.param.watch(update_slipnet, "value_throttled")
         playback_version.param.watch(update_slipnet, "value")
         refresh_versions["slipnet"].param.watch(update_slipnet, "value")
+        codelet_time.param.watch(update_details, "value_throttled")
+        playback_version.param.watch(update_details, "value")
+        refresh_versions["coderack"].param.watch(refresh_coderack, "value")
+        refresh_versions["history"].param.watch(refresh_history, "value")
 
         def render_header(_: int) -> pn.pane.Markdown:
             latest_columns, latest_rows = table_rows(database_path, "runs", run_id=run_id)
@@ -218,9 +234,9 @@ def create_app(database: str | Path) -> pn.Column:
             pn.Row(
                 pn.Column(
                     "### Coderack",
-                    pn.bind(lambda _, __, ___: _coderack_badges(database_path, run_id, codelet_time.value), codelet_time.param.value_throttled, playback_version.param.value, refresh_versions["coderack"].param.value),
+                    coderack_view.view,
                     "### Codelet history",
-                    pn.bind(lambda _, __, ___: _codelet_history(database_path, run_id, codelet_time.value), codelet_time.param.value_throttled, playback_version.param.value, refresh_versions["history"].param.value),
+                    history_view.view,
                     sizing_mode="stretch_width", styles={"flex": "1"},
                 ),
                 pn.Column(
