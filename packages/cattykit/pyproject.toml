@@ -16,6 +16,9 @@ dependencies = [
 ]
 keywords = ["cognitive models", "AI"]
 
+[project.scripts]
+cattykit = "cattykit.cli:main"
+
 [dependency-groups]
 dev = [
     "ipython>=9.11.0",

@@ -31,6 +31,12 @@ print(cattykit.available_models())
 cattykit.install_model("path/to/model")
 ```
 
+The same installation is available from the command line:
+
+```bash
+cattykit install copycat --version 0.1.0
+```
+
 Once you have installed a model, you can ask it to solve a problem.
 
 ```python
