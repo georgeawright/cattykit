@@ -337,49 +337,43 @@ class Workspace:
     def intra_string_unhappiness(self) -> float:
         """Returns average of intra-string unhappiness of objects in the workspace
         weighted by the relative importance of each object in its string."""
-        return min(
-            1,
+        return self._average_weighted_unhappiness(
             sum(
-                [
-                    obj.relative_importance * obj.intra_string_unhappiness
-                    for obj in self.objects
-                ]
+                obj.relative_importance * obj.intra_string_unhappiness
+                for obj in self.objects
             )
-            # divided by 2 as there a 2 strings each with total unhappiness  1
-            / 2,
         )
 
     @property
     def inter_string_unhappiness(self) -> float:
         """Returns average of inter-string unhappiness of objects in the workspace
         weighted by the relative importance of each object in its string."""
-        return min(
-            1,
+        return self._average_weighted_unhappiness(
             sum(
-                [
-                    obj.relative_importance * obj.inter_string_unhappiness
-                    for obj in self.objects
-                ]
+                obj.relative_importance * obj.inter_string_unhappiness
+                for obj in self.objects
             )
-            # divided by 2 as there a 2 strings each with total unhappiness  1
-            / 2,
         )
 
     @property
     def total_unhappiness(self):
         """Returns average of the total unhappiness of objects in the workspace
         weighted by the relative importance of each object in its string."""
-        return min(
-            1,
+        return self._average_weighted_unhappiness(
             sum(
-                [
-                    obj.relative_importance * obj.total_unhappiness
-                    for obj in self.objects
-                ]
+                obj.relative_importance * obj.total_unhappiness
+                for obj in self.objects
             )
-            # divided by 2 as there a 2 strings each with total unhappiness  1
-            / 2,
         )
+
+    @staticmethod
+    def _average_weighted_unhappiness(total_weighted_unhappiness: float) -> float:
+        """Average normalized unhappiness across the two workspace strings.
+
+        pre: 0.0 <= total_weighted_unhappiness <= 2.0
+        post: 0.0 <= _ <= 1.0
+        """
+        return min(1.0, total_weighted_unhappiness / 2)
 
     def update(self):
         """Update values for structures and objects."""

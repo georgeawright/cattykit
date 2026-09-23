@@ -3,7 +3,7 @@ import random
 from typing import List, Optional, Union
 
 
-from copycat.tools import select_item_from_list
+from copycat.tools import fake_reciprocal, select_item_from_list
 
 from .workspace_structure import WorkspaceStructure
 
@@ -298,16 +298,16 @@ class WorkspaceObject:
         return result
 
     def calculate_total_unhappiness(self) -> float:
-        return 1 - self.calculate_total_happiness()
+        return fake_reciprocal(self.calculate_total_happiness())
 
     def calculate_total_happiness(self) -> float:
-        return (
-            self.calculate_intra_string_happiness()
-            + self.calculate_inter_string_happiness()
-        ) / 2
+        return self._average_happiness(
+            self.calculate_intra_string_happiness(),
+            self.calculate_inter_string_happiness(),
+        )
 
     def calculate_intra_string_unhappiness(self) -> float:
-        return 1 - self.calculate_intra_string_happiness()
+        return fake_reciprocal(self.calculate_intra_string_happiness())
 
     def calculate_intra_string_happiness(self) -> float:
         """Represents how well the object fits into the structure of its string.
@@ -325,13 +325,25 @@ class WorkspaceObject:
         return sum(bond.total_strength for bond in bonds) / 6
 
     def calculate_inter_string_unhappiness(self) -> float:
-        return 1 - self.calculate_inter_string_happiness()
+        return fake_reciprocal(self.calculate_inter_string_happiness())
 
     def calculate_inter_string_happiness(self) -> float:
         """Represents how well the object fits into a mapping
         from the initial-string to the target-string.
         It is a function of the strength of its correspondence, if any."""
         return self.correspondence.total_strength if self.correspondence else 0.0
+
+    @staticmethod
+    def _average_happiness(
+        intra_string_happiness: float, inter_string_happiness: float
+    ) -> float:
+        """Average an object's two normalized happiness measures.
+
+        pre: 0.0 <= intra_string_happiness <= 1.0
+        pre: 0.0 <= inter_string_happiness <= 1.0
+        post: 0.0 <= _ <= 1.0
+        """
+        return (intra_string_happiness + inter_string_happiness) / 2
 
     def calculate_total_salience(self) -> float:
         return (self.intra_string_salience + self.inter_string_salience) / 2
@@ -345,7 +357,11 @@ class WorkspaceObject:
         may be domain dependent."""
         if self.salience_is_clamped:
             return 1.0
-        return self.relative_importance * 0.2 + self.intra_string_unhappiness * 0.8
+        return self._weighted_salience(
+            self.relative_importance,
+            self.intra_string_unhappiness,
+            importance_weight=0.2,
+        )
 
     def calculate_inter_string_salience(self) -> float:
         """How much the object is crying out for attention from codelets
@@ -357,4 +373,26 @@ class WorkspaceObject:
         and to pay less attention to mapping unimportant ones."""
         if self.salience_is_clamped:
             return 1.0
-        return self.relative_importance * 0.8 + self.inter_string_unhappiness * 0.2
+        return self._weighted_salience(
+            self.relative_importance,
+            self.inter_string_unhappiness,
+            importance_weight=0.8,
+        )
+
+    @staticmethod
+    def _weighted_salience(
+        relative_importance: float,
+        unhappiness: float,
+        importance_weight: float,
+    ) -> float:
+        """Combine normalized importance and unhappiness into a salience value.
+
+        pre: 0.0 <= relative_importance <= 1.0
+        pre: 0.0 <= unhappiness <= 1.0
+        pre: 0.0 <= importance_weight <= 1.0
+        post: 0.0 <= _ <= 1.0
+        """
+        return (
+            relative_importance * importance_weight
+            + unhappiness * fake_reciprocal(importance_weight)
+        )

@@ -3,6 +3,7 @@ import itertools
 from typing import List, Optional
 
 from copycat.slipnet import Slipnode
+from copycat.tools import fake_reciprocal
 
 from .description import Description
 from .workspace_object import WorkspaceObject
@@ -203,7 +204,7 @@ class Group(WorkspaceObject, WorkspaceStructure):
         )
         length_component = {1: 0.05, 2: 0.2, 3: 0.6}.get(len(self), 0.9)
         bond_component_weight = (100 * bond_component) ** 0.98 / 100
-        length_component_weight = 1 - bond_component_weight
+        length_component_weight = fake_reciprocal(bond_component_weight)
         return (
             bond_component * bond_component_weight
             + length_component * length_component_weight

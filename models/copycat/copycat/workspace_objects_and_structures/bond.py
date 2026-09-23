@@ -2,7 +2,7 @@ from __future__ import annotations
 import itertools
 from typing import Optional
 
-from copycat.tools import select_item_from_list
+from copycat.tools import fake_reciprocal, select_item_from_list
 
 from .workspace_structure import WorkspaceStructure
 
@@ -62,7 +62,7 @@ class Bond(WorkspaceStructure):
 
     @property
     def unhappiness(self) -> float:
-        return 1.0 - self.happiness
+        return fake_reciprocal(self.happiness)
 
     @property
     def is_sameness_bond(self) -> bool:

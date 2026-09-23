@@ -3,16 +3,48 @@ import random
 
 TEMPERATURE_SCALER = 0.3
 TEMPERATURE_EXPONENT_FLOOR = 0.5
+TEMPERATURE_EXPONENT_CEILING = (1 / TEMPERATURE_SCALER) + TEMPERATURE_EXPONENT_FLOOR
+
+
+def fake_reciprocal(value: float) -> float:
+    """Return the Copycat "fake reciprocal" of a normalized value.
+
+    pre: 0.0 <= value <= 1.0
+    post: 0.0 <= _ <= 1.0
+    post: _ + value == 1.0
+    """
+    return 1.0 - value
 
 
 def temperature_adjust(value, temperature) -> float:
-    exponent = (1 - temperature) / TEMPERATURE_SCALER + TEMPERATURE_EXPONENT_FLOOR
+    """Adjust a normalized value according to a normalized temperature.
+
+    pre: 0.0 <= value <= 1.0
+    pre: 0.0 <= temperature <= 1.0
+    post: 0.0 <= _ <= 1.0
+    """
+    exponent = _temperature_exponent(temperature)
     return value**exponent
 
 
 def temperature_adjust_list(values, temperature) -> list[float]:
-    exponent = (1 - temperature) / TEMPERATURE_SCALER + TEMPERATURE_EXPONENT_FLOOR
+    """Adjust each normalized value in a collection by one temperature.
+
+    pre: all(0.0 <= value <= 1.0 for value in values)
+    pre: 0.0 <= temperature <= 1.0
+    post: all(0.0 <= result <= 1.0 for result in _)
+    """
+    exponent = _temperature_exponent(temperature)
     return [value**exponent for value in values]
+
+
+def _temperature_exponent(temperature: float) -> float:
+    """Return the exponent used to adjust values for a temperature.
+
+    pre: 0.0 <= temperature <= 1.0
+    post: TEMPERATURE_EXPONENT_FLOOR <= _ <= TEMPERATURE_EXPONENT_CEILING
+    """
+    return (1 - temperature) / TEMPERATURE_SCALER + TEMPERATURE_EXPONENT_FLOOR
 
 
 def temperature_adjust_probability(probability, temperature) -> float:

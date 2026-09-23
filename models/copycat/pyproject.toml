@@ -30,6 +30,7 @@ testpaths = ["tests"]
 
 [dependency-groups]
 dev = [
+    "crosshair-tool>=0.0.110",
     "ipython>=9.11.0",
     "pytest>=9.0.2",
 ]

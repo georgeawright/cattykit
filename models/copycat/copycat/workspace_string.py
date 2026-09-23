@@ -83,16 +83,16 @@ class WorkspaceString:
             if total_raw_importance == 0:
                 obj.relative_importance = 0
             else:
-                obj.relative_importance = obj.raw_importance / total_raw_importance
+                obj.relative_importance = self._relative_importance(
+                    obj.raw_importance, total_raw_importance
+                )
             self.logger.log(
                 "attribute_updated", object=obj, attribute="relative_importance"
             )
 
     def update_intra_string_unhappiness(self):
-        self.intra_string_unhappiness = (
-            sum(o.intra_string_unhappiness for o in self.objects) / len(self.objects)
-            if self.objects
-            else 0
+        self.intra_string_unhappiness = self._average_unhappiness(
+            [object_.intra_string_unhappiness for object_ in self.objects]
         )
         self.logger.log(
             "attribute_updated", object=self, attribute="intra_string_unhappiness"
@@ -213,29 +213,58 @@ class WorkspaceString:
 
     def get_local_bond_category_relevance(self, bond_category: "Slipnode") -> float:
         """A rough estimate of the relevance of bond category in this string."""
-        if len(self.non_string_spanning_objects) <= 1:
-            return 0
+        objects = self.non_string_spanning_objects
         bond_count = sum(
             1
-            for obj in self.non_string_spanning_objects
+            for obj in objects
             if obj.right_bond is not None
             and obj.right_bond.bond_category == bond_category
         )
-        return bond_count / (len(self.non_string_spanning_objects) - 1)
+        return self._local_relevance(bond_count, max(0, len(objects) - 1))
 
     def get_local_direction_category_relevance(
         self, direction_category: "Slipnode"
     ) -> float:
         """A rough estimate of the relevance of direction category in this string."""
-        if len(self.non_string_spanning_objects) <= 1:
-            return 0
+        objects = self.non_string_spanning_objects
         bond_count = sum(
             1
-            for obj in self.non_string_spanning_objects
+            for obj in objects
             if obj.right_bond is not None
             and obj.right_bond.direction_category == direction_category
         )
-        return bond_count / (len(self.non_string_spanning_objects) - 1)
+        return self._local_relevance(bond_count, max(0, len(objects) - 1))
+
+    @staticmethod
+    def _relative_importance(
+        raw_importance: float, total_raw_importance: float
+    ) -> float:
+        """Return one object's share of its string's raw importance.
+
+        pre: 0.0 <= raw_importance <= total_raw_importance
+        pre: 0.0 < total_raw_importance
+        post: 0.0 <= _ <= 1.0
+        """
+        return raw_importance / total_raw_importance
+
+    @staticmethod
+    def _average_unhappiness(unhappinesses: list[float]) -> float:
+        """Return the average of zero or more normalized unhappiness values.
+
+        pre: all(0.0 <= unhappiness <= 1.0 for unhappiness in unhappinesses)
+        post: 0.0 <= _ <= 1.0
+        """
+        return sum(unhappinesses) / len(unhappinesses) if unhappinesses else 0.0
+
+    @staticmethod
+    def _local_relevance(matching_bond_count: int, available_slots: int) -> float:
+        """Return the proportion of available bond slots that match a category.
+
+        pre: 0 <= available_slots
+        pre: 0 <= matching_bond_count <= available_slots
+        post: 0.0 <= _ <= 1.0
+        """
+        return matching_bond_count / available_slots if available_slots else 0.0
 
     def get_changed_objects(self) -> List["WorkspaceObject"]:
         return [l for l in self.letters if l.is_changed_letter]
