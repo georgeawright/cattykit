@@ -3,7 +3,6 @@ from __future__ import annotations
 import html
 import json
 from pathlib import Path
-from time import monotonic
 from typing import Any, Callable
 from urllib.parse import urlencode
 
@@ -62,7 +61,6 @@ def create_app(database: str | Path) -> pn.Column:
     active_object = pn.widgets.TextInput(value="", visible=False)
     refresh_run: Callable[[], None] | None = None
     advance_playback: Callable[[], None] | None = None
-    last_database_check = monotonic()
     if pn.state.location:
         # This is a standalone Panel application. Reloading after a URL change
         # gives browser Back/Forward a fresh session whose selected run is read
@@ -112,7 +110,6 @@ def create_app(database: str | Path) -> pn.Column:
         )
         playback_version = pn.widgets.IntInput(value=0, visible=False)
         playing = False
-        next_codelet_at: float | None = None
         codelets_per_second = pn.widgets.IntInput(
             name="Codelets per second",
             value=2,
@@ -126,35 +123,26 @@ def create_app(database: str | Path) -> pn.Column:
             playback_version.value += 1
 
         def play(_: object) -> None:
-            nonlocal next_codelet_at, playing
+            nonlocal playing
             playing = True
-            next_codelet_at = monotonic() + 1 / max(1, codelets_per_second.value)
 
         def pause(_: object) -> None:
-            nonlocal next_codelet_at, playing
+            nonlocal playing
             playing = False
-            next_codelet_at = None
 
         def advance() -> None:
-            nonlocal next_codelet_at, playing
-            if (
-                playing
-                and next_codelet_at is not None
-                and monotonic() >= next_codelet_at
-                and codelet_time.value < codelet_time.end
-            ):
-                set_time(codelet_time.value + 1)
-                next_codelet_at = monotonic() + 1 / max(1, codelets_per_second.value)
+            nonlocal playing
+            if playing and codelet_time.value < codelet_time.end:
+                set_time(
+                    min(
+                        codelet_time.value + max(1, codelets_per_second.value),
+                        codelet_time.end,
+                    )
+                )
+                if codelet_time.value >= codelet_time.end:
+                    playing = False
             elif codelet_time.value >= codelet_time.end:
                 playing = False
-                next_codelet_at = None
-
-        def reset_playback_delay(_: object) -> None:
-            nonlocal next_codelet_at
-            if playing:
-                next_codelet_at = monotonic() + 1 / max(1, codelets_per_second.value)
-
-        codelets_per_second.param.watch(reset_playback_delay, "value")
 
         advance_playback = advance
         controls = pn.Row()
@@ -517,22 +505,19 @@ def create_app(database: str | Path) -> pn.Column:
 
     def refresh_when_database_changes() -> None:
         """Re-render this session after the logger commits new SQLite data."""
-        nonlocal last_database_check, last_database_revision
-        now = monotonic()
-        if now - last_database_check >= 0.5:
-            last_database_check = now
-            revision = _database_revision(database_path)
-            if revision != last_database_revision:
-                last_database_revision = revision
-                if refresh_run is not None:
-                    refresh_run()
+        nonlocal last_database_revision
+        revision = _database_revision(database_path)
+        if revision != last_database_revision:
+            last_database_revision = revision
+            if refresh_run is not None:
+                refresh_run()
         if advance_playback is not None:
             advance_playback()
 
     # SQLite's WAL is included in the revision, so this also works for the
     # normal concurrent-reader/writer configuration. Panel runs callbacks in
     # the browser session's event loop, making UI updates safe.
-    pn.state.add_periodic_callback(refresh_when_database_changes, period=100)
+    pn.state.add_periodic_callback(refresh_when_database_changes, period=1000)
     return pn.Column(
         content,
         BrowserHistoryBridge(),

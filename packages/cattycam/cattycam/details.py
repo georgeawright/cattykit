@@ -172,15 +172,20 @@ class CodeletHistoryView:
     def update(self, time: int, *, force: bool = False) -> None:
         cards = _codelet_history_cards(self.database, self.run_id, time)
         card_ids = [codelet_id for codelet_id, _ in cards]
+        new_card_count = len(card_ids) - len(self._card_ids)
         if (
             not force
             and self._time is not None
-            and time == self._time + 1
-            and card_ids[1:] == self._card_ids
+            and time > self._time
+            and new_card_count >= 0
+            and card_ids[new_card_count:] == self._card_ids
         ):
-            # Normal playback: retain every existing card and add one at the top.
-            if card_ids:
-                self._cards.insert(0, pn.pane.HTML(cards[0][1], sizing_mode="stretch_width"))
+            # Playback retains every existing card and prepends its whole batch.
+            if new_card_count:
+                self._cards.objects = [
+                    pn.pane.HTML(card, sizing_mode="stretch_width")
+                    for _, card in cards[:new_card_count]
+                ] + self._cards.objects
         elif force or card_ids != self._card_ids:
             # Slider jumps and backwards navigation need a different history.
             self._cards.objects = [

@@ -497,14 +497,16 @@ def test_codelet_history_links_workspace_object_references(tmp_path) -> None:
     history_view = CodeletHistoryView(database, run_id=1, time=0)
     first_card = history_view._cards[0]
     with sqlite3.connect(database) as connection:
-        connection.execute(
-            "INSERT INTO codelets VALUES (2, 1, 'codelet:2', NULL, 2, 'Tester', 2, 1, 'finish', NULL)"
+        connection.executemany(
+            "INSERT INTO codelets VALUES (?, 1, ?, NULL, ?, 'Tester', 2, 1, 'finish', NULL)",
+            [(2, "codelet:2", 2), (3, "codelet:3", 3)],
         )
 
-    history_view.update(1)
+    history_view.update(2)
 
-    assert history_view._cards[1] is first_card
-    assert "Tester 2" in history_view._cards[0].object
+    assert history_view._cards[2] is first_card
+    assert "Tester 3" in history_view._cards[0].object
+    assert "Tester 2" in history_view._cards[1].object
 
 
 def test_codelet_history_links_only_executed_codelet_references(tmp_path) -> None:
