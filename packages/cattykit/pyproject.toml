@@ -1,6 +1,6 @@
 [project]
 name = "cattykit"
-version = "0.1.1"
+version = "0.1.2"
 description = "A framework for implementing artificial intelligence models using components from the cognitive models of the Fluid Analogies Research Group"
 readme = "README.md"
 authors = [{name="George Alexander Wright", email="me@georgeaw.com"}]
@@ -15,6 +15,9 @@ dependencies = [
     "pandas>=3.0.5",
 ]
 keywords = ["cognitive models", "AI"]
+
+[project.scripts]
+cattykit = "cattykit.cli:main"
 
 [dependency-groups]
 dev = [

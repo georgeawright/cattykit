@@ -89,12 +89,50 @@ class Coderack:
             data["reason"] = result.reason.value
         self.logger.log("codelet_finished", **data)
 
-    def get_urgency_bin(self, urgency_level):
-        return self._urgency_bins[urgency_level]
+    def get_urgency_bin(self, urgency_level: int) -> CoderackBin:
+        """Return the bin for a valid zero-based urgency level.
+
+        pre: 0 <= urgency_level < len(self._urgency_bins)
+        post: _ is self._urgency_bins[urgency_level]
+        """
+        return self._urgency_bins[
+            self._urgency_bin_index(urgency_level, len(self._urgency_bins))
+        ]
+
+    @staticmethod
+    def _urgency_bin_index(urgency_level: int, number_of_bins: int) -> int:
+        """Validate and return a zero-based urgency-bin index.
+
+        pre: 0 < number_of_bins
+        pre: 0 <= urgency_level < number_of_bins
+        post: 0 <= _ < number_of_bins
+        post: _ == urgency_level
+        """
+        return urgency_level
 
     def get_urgency_level_from_activation(self, activation: float):
+        """Map a normalized activation to a valid zero-based urgency level.
+
+        pre: 0.0 <= activation <= 1.0
+        pre: 0 < len(self._urgency_bins)
+        post: 0 <= _ < len(self._urgency_bins)
+        """
+        return self._urgency_level_from_activation(
+            activation, len(self._urgency_bins)
+        )
+
+    @staticmethod
+    def _urgency_level_from_activation(
+        activation: float, number_of_bins: int
+    ) -> int:
+        """Map a normalized activation to a valid zero-based urgency level.
+
+        pre: 0.0 <= activation <= 1.0
+        pre: 0 < number_of_bins
+        post: 0 <= _ < number_of_bins
+        """
         return min(
-            int(activation * len(self._urgency_bins)), len(self._urgency_bins) - 1
+            int(activation * number_of_bins), number_of_bins - 1
         )
 
     def get_urgency_bin_weights(self, temperature: float):

@@ -6,6 +6,7 @@ import numpy as np
 
 from copycat.concept_mapping import ConceptMapping
 from copycat.slipnode import Slipnode
+from copycat.tools import fake_reciprocal
 
 from .workspace_structure import WorkspaceStructure
 
@@ -115,13 +116,13 @@ class Rule(WorkspaceStructure):
                 return 0.0
             shared_descriptor_term = 1.0
         shared_descriptor_weight = (
-            (1 - self.source_descriptor.conceptual_depth) * 10
+            fake_reciprocal(self.source_descriptor.conceptual_depth) * 10
         ) ** 1.4
         depth_diff = abs(source_depth - target_depth)
         depth_mean = (source_depth + target_depth) / 2
         depth_term = 100**0.1 * depth_mean**1.1
         # depth term is rescaled to 0-1.58 to match copycat depth term in 0-158
-        diff_term = 1 - depth_diff
+        diff_term = fake_reciprocal(depth_diff)
         rule_strength = np.average(
             [depth_term, diff_term, shared_descriptor_term],
             weights=[18, 12, shared_descriptor_weight],

@@ -65,6 +65,100 @@ def test_model_name_resolves_through_the_model_source_map() -> None:
     assert source == "https://example.com/fake.whl"
 
 
+def test_model_name_lookup_is_case_insensitive() -> None:
+    kind, source = resolve_model_source(
+        "FAKE",
+        model_sources={"fake": "https://example.com/fake.whl"},
+    )
+
+    assert kind == "name"
+    assert source == "https://example.com/fake.whl"
+
+
+@patch(
+    "cattykit.models.loading._github_tags",
+    return_value=("copycat-v0.1.0", "COPYCAT-v0.2.0", "cattycam-v1.0.0"),
+)
+@patch(
+    "cattykit.models.loading._github_release_wheel",
+    return_value="https://example.com/releases/COPYCAT-v0.2.0/copycat-0.2.0.whl",
+)
+def test_official_model_resolves_to_its_latest_github_release(
+    github_release_wheel: Any,
+    github_tags: Any,
+) -> None:
+    kind, source = resolve_model_source("CopyCat")
+
+    assert kind == "name"
+    assert source == "https://example.com/releases/COPYCAT-v0.2.0/copycat-0.2.0.whl"
+    github_tags.assert_called_once_with()
+    github_release_wheel.assert_called_once_with("COPYCAT-v0.2.0")
+
+
+@patch(
+    "cattykit.models.loading._github_tags",
+    return_value=("copycat-v0.1.0", "copycat-v0.2.0"),
+)
+@patch(
+    "cattykit.models.loading._github_release_wheel",
+    return_value="https://example.com/releases/copycat-v0.1.0/copycat-0.1.0.whl",
+)
+def test_official_model_version_selects_matching_github_release(
+    github_release_wheel: Any,
+    github_tags: Any,
+) -> None:
+    _, source = resolve_model_source("COPYCAT", version="0.1.0")
+
+    assert source == "https://example.com/releases/copycat-v0.1.0/copycat-0.1.0.whl"
+    github_tags.assert_called_once_with()
+    github_release_wheel.assert_called_once_with("copycat-v0.1.0")
+
+
+@patch(
+    "cattykit.models.loading._github_tags",
+    return_value=("cattycam-v1.0.0",),
+)
+@patch(
+    "cattykit.models.loading._github_release_wheel",
+    return_value="https://example.com/releases/cattycam-v1.0.0/cattycam-1.0.0.whl",
+)
+def test_unregistered_official_model_is_discovered_from_its_release_tag(
+    github_release_wheel: Any,
+    github_tags: Any,
+) -> None:
+    _, source = resolve_model_source("CaTtYcAm")
+
+    assert source == "https://example.com/releases/cattycam-v1.0.0/cattycam-1.0.0.whl"
+    github_tags.assert_called_once_with()
+    github_release_wheel.assert_called_once_with("cattycam-v1.0.0")
+
+
+def test_version_is_rejected_for_non_official_sources() -> None:
+    with pytest.raises(ModelSourceError, match="only be selected"):
+        resolve_model_source("https://example.com/fake.whl", version="1.0.0")
+
+
+@patch(
+    "cattykit.models.loading.resolve_model_source",
+    return_value=("name", "https://example.com/fake.whl"),
+)
+@patch("cattykit.models.loading.find_spec", return_value=object())
+@patch("cattykit.models.loading.subprocess.run")
+def test_install_model_passes_version_to_source_resolution(
+    run: Any,
+    _: Any,
+    resolve: Any,
+) -> None:
+    install_model("copycat", version="0.1.0")
+
+    resolve.assert_called_once_with(
+        "copycat",
+        version="0.1.0",
+        model_sources=None,
+    )
+    run.assert_called_once()
+
+
 def test_https_url_is_used_directly() -> None:
     kind, source = resolve_model_source("https://example.com/fake.whl")
 

@@ -62,6 +62,140 @@ def _coderack_badges(database: Path, run_id: int, time: int) -> pn.Column:
     )
 
 
+class CoderackView:
+    """Keep coderack rows alive while the selected time changes.
+
+    Replacing the output of a bound function makes Panel remove and recreate the
+    complete component.  Keeping the rows here lets a playback tick change only
+    the urgency bins whose codelets changed.
+    """
+
+    def __init__(self, database: Path, run_id: int, time: int) -> None:
+        self.database = database
+        self.run_id = run_id
+        self._rows: dict[int, pn.Row] = {}
+        self._codelets: dict[int, list[str]] = {}
+        self._bin_rows = pn.Column(sizing_mode="stretch_width")
+        self._header = pn.Row(pn.pane.Markdown("**Urgency**", width=55))
+        self._empty = pn.pane.Markdown(
+            "_No codelets on the coderack._", sizing_mode="stretch_width"
+        )
+        self.view = pn.Column(
+            self._header,
+            self._empty,
+            self._bin_rows,
+            height=390,
+            scroll=True,
+            sizing_mode="stretch_width",
+        )
+        self.update(time)
+
+    def _codelets_at(self, time: int) -> dict[int, list[str]]:
+        from cattycam.database import coderack_codelets
+
+        codelets: dict[int, list[str]] = {}
+        for urgency_bin, codelet_type, codelet_id in coderack_codelets(
+            self.database, self.run_id, time
+        ):
+            codelets.setdefault(urgency_bin, []).append(
+                f"{codelet_type} {codelet_id.removeprefix('codelet:')}"
+            )
+        return codelets
+
+    def _row(self, urgency_bin: int, codelet_types: list[str]) -> pn.Row:
+        lightness = max(72, 98 - min(urgency_bin, 7) * 3.5)
+        return pn.Row(
+            pn.pane.Markdown(str(urgency_bin), width=55),
+            pn.FlexBox(
+                *[
+                    pn.pane.HTML(
+                        f'<span style="display:inline-block; padding:3px 7px; '
+                        f"border-radius:10px; background:hsl(265 55% {lightness}%); "
+                        f'border:1px solid hsl(265 35% {max(42, lightness - 22)}%);">'
+                        f"{html.escape(codelet_type)}</span>"
+                    )
+                    for codelet_type in codelet_types
+                ],
+                flex_wrap="wrap",
+                sizing_mode="stretch_width",
+            ),
+            sizing_mode="stretch_width",
+        )
+
+    def update(self, time: int) -> None:
+        codelets = self._codelets_at(time)
+        for urgency_bin, codelet_types in codelets.items():
+            if self._codelets.get(urgency_bin) != codelet_types:
+                self._rows[urgency_bin] = self._row(urgency_bin, codelet_types)
+        for urgency_bin in set(self._rows) - set(codelets):
+            del self._rows[urgency_bin]
+        self._codelets = codelets
+        # Panel retains unchanged Row models when only their ordering changes.
+        bins = sorted(self._rows, reverse=True)
+        for index, urgency_bin in enumerate(bins):
+            self._rows[urgency_bin].styles = (
+                {}
+                if index == 0
+                else {
+                    "border-top": "1px solid #d0d0d0",
+                    "margin-top": "6px",
+                    "padding-top": "6px",
+                }
+            )
+        self._bin_rows.objects = [self._rows[bin] for bin in bins]
+        self._header.visible = bool(codelets)
+        self._bin_rows.visible = bool(codelets)
+        self._empty.visible = not codelets
+
+
+class CodeletHistoryView:
+    """Incrementally prepend codelet cards during forward playback."""
+
+    def __init__(self, database: Path, run_id: int, time: int) -> None:
+        self.database = database
+        self.run_id = run_id
+        self._time: int | None = None
+        self._card_ids: list[str] = []
+        self._cards = pn.Column(sizing_mode="stretch_width")
+        self._empty = pn.pane.Markdown(
+            "_No codelets have run yet._", sizing_mode="stretch_width"
+        )
+        self.view = pn.Column(
+            self._empty,
+            self._cards,
+            height=430,
+            scroll=True,
+            sizing_mode="stretch_width",
+        )
+        self.update(time)
+
+    def update(self, time: int, *, force: bool = False) -> None:
+        cards = _codelet_history_cards(self.database, self.run_id, time)
+        card_ids = [codelet_id for codelet_id, _ in cards]
+        new_card_count = len(card_ids) - len(self._card_ids)
+        if (
+            not force
+            and self._time is not None
+            and time > self._time
+            and new_card_count >= 0
+            and card_ids[new_card_count:] == self._card_ids
+        ):
+            # Playback retains every existing card and prepends its whole batch.
+            if new_card_count:
+                self._cards.objects = [
+                    pn.pane.HTML(card, sizing_mode="stretch_width")
+                    for _, card in cards[:new_card_count]
+                ] + self._cards.objects
+        elif force or card_ids != self._card_ids:
+            # Slider jumps and backwards navigation need a different history.
+            self._cards.objects = [
+                pn.pane.HTML(card, sizing_mode="stretch_width") for _, card in cards
+            ]
+        self._empty.visible = not card_ids
+        self._card_ids = card_ids
+        self._time = time
+
+
 def _workspace_canvas(database: Path, run_id: int, time: int) -> WorkspaceCanvas:
     """Render the workspace state for the selected run and codelet time."""
     from cattycam.database import workspace_snapshot
@@ -106,8 +240,8 @@ def _slipnet_activation_list(database: Path, run_id: int, time: int) -> pn.Colum
     )
 
 
-def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.Viewable:
-    """Render executed codelets as reverse-chronological detail cards."""
+def _codelet_history_cards(database: Path, run_id: int, time: int) -> list[tuple[str, str]]:
+    """Return executed-codelet card markup, newest first."""
     from cattycam.database import (
         codelet_arguments,
         codelet_children,
@@ -120,9 +254,7 @@ def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.View
 
     codelets = codelet_history(database, run_id, time)
     if not codelets:
-        return pn.pane.Markdown(
-            "_No codelets have run yet._", height=430, sizing_mode="stretch_width"
-        )
+        return []
     children_by_parent = codelet_children(database, run_id)
     types = codelet_types(database, run_id)
     run_times = codelet_run_times(database, run_id)
@@ -188,7 +320,8 @@ def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.View
             for attribute, value in attributes
         )
 
-    cards = "".join(
+    return [
+        (codelet_id,
         "<div style='display:flex; gap:6px; min-height:76px; margin-bottom:8px;'>"
         f"<div style='width:42px; flex:0 0 42px; font-weight:600;'>{run_time}</div>"
         "<div style='box-sizing:border-box; flex:1; border:1px solid #8296b4; "
@@ -209,10 +342,20 @@ def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.View
         "</div><div style='margin-top:4px;'>"
         f"{duration_label(time_taken, result)}"
         "</div></div></div>"
+        )
         for codelet_id, parent_id, run_time, codelet_type, urgency_bin, time_taken, result, fizzle_reason in codelets
-    )
+    ]
+
+
+def _codelet_history(database: Path, run_id: int, time: int) -> pn.viewable.Viewable:
+    """Render executed codelets as reverse-chronological detail cards."""
+    cards = _codelet_history_cards(database, run_id, time)
+    if not cards:
+        return pn.pane.Markdown(
+            "_No codelets have run yet._", height=430, sizing_mode="stretch_width"
+        )
     return pn.pane.HTML(
-        cards,
+        "".join(card for _, card in cards),
         height=430,
         sizing_mode="stretch_width",
         styles={"overflow-y": "auto"},
