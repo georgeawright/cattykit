@@ -31,6 +31,8 @@ COPYCAT_GOLD_DATA_PATH=/path/to/original_copycat_results.json \
 
 ## Data format
 
+Each problem has a stable string `id`, mirroring Mitchell's grouping of
+problems into five targets and their variants.
 Each `solutions` key is a reported answer string. Its value contains its
 `frequency`, `temperature_mean`, and `temperature_standard_error`. `codelets`
 contains the reported `mean` and `standard_error` for the problem.
