@@ -50,114 +50,140 @@ def _runs_for_problem(problem: str, iterations: int) -> list[dict[str, Any]]:
 def _style_axis(axis: plt.Axes) -> None:
     """Apply a restrained black-and-white, publication-ready chart style."""
     axis.set_facecolor("white")
-    axis.grid(axis="x", color="0.8", linewidth=0.6)
+    axis.grid(axis="x", color="0.8", linewidth=0.25)
     axis.set_axisbelow(True)
     axis.spines["top"].set_visible(False)
     axis.spines["right"].set_visible(False)
     axis.spines["left"].set_color("black")
     axis.spines["bottom"].set_color("black")
-    axis.tick_params(colors="black")
+    axis.spines["left"].set_linewidth(0.4)
+    axis.spines["bottom"].set_linewidth(0.4)
+    axis.tick_params(colors="black", width=0.4, length=3)
     axis.title.set_fontfamily(PUBLICATION_FONT)
-    axis.title.set_fontsize(11)
+    axis.title.set_fontsize(5.5)
     axis.title.set_fontweight("normal")
     axis.xaxis.label.set_fontfamily(PUBLICATION_FONT)
     axis.yaxis.label.set_fontfamily(PUBLICATION_FONT)
-    axis.xaxis.label.set_fontsize(10)
-    axis.yaxis.label.set_fontsize(10)
+    axis.xaxis.label.set_fontsize(5)
+    axis.yaxis.label.set_fontsize(5)
     for label in [*axis.get_xticklabels(), *axis.get_yticklabels()]:
         label.set_fontfamily(PUBLICATION_FONT)
-        label.set_fontsize(9)
+        label.set_fontsize(4.5)
 
 
 def _style_solution_labels(axis: plt.Axes) -> None:
     """Use a fixed-width face for aligned analogy-solution labels."""
     for label in axis.get_yticklabels():
         label.set_fontfamily(SOLUTION_LABEL_FONT)
-        label.set_fontsize(9)
+        label.set_fontsize(4.5)
         label.set_horizontalalignment("right")
 
 
-def _save_problem_figures(
-    problem: str,
-    runs: list[dict[str, Any]],
-    problem_number: int,
-    max_solutions: int,
+def _save_combined_figures(
+    basic_runs_by_problem: list[tuple[str, int, list[dict[str, Any]]]],
     solution_label_width: int,
-    codelets_xlim: tuple[float, float],
 ) -> None:
-    """Save answer, temperature, and codelet distributions for one problem."""
-    frame = pd.DataFrame(runs)
-    solutions = frame["solution"].value_counts(sort=True)
-    solution_order = solutions.index.tolist()
-    stem = f"target_problem_{problem_number:02d}"
-    solution_labels = [
-        f"{solution:>{solution_label_width}}" for solution in solution_order
-    ] + [" " * solution_label_width] * (max_solutions - len(solution_order))
-    figure_height = max(3, max_solutions * 0.55)
+    """Save one compact, single-page figure for each statistic."""
+    rows: list[dict[str, Any]] = []
+    boundaries: list[int] = []
+    problem_labels: list[tuple[float, str]] = []
+    for problem, _problem_number, runs in basic_runs_by_problem:
+        frame = pd.DataFrame(runs)
+        solution_order = frame["solution"].value_counts(sort=True).index.tolist()
+        start = len(rows)
+        for solution in solution_order:
+            solution_runs = frame.loc[frame["solution"] == solution]
+            rows.append(
+                {
+                    "solution": str(solution),
+                    "frequency": len(solution_runs),
+                    "temperature": solution_runs["temperature"].to_numpy(),
+                    "codelets_run": solution_runs["codelets_run"].to_numpy(),
+                }
+            )
+        if start:
+            boundaries.append(start - 0.5)
+        problem_labels.append(((start + len(rows) - 1) / 2, problem))
 
-    figure, axis = plt.subplots(figsize=(8, figure_height))
-    figure.patch.set_facecolor("white")
-    bars = axis.barh(
-        solutions.index,
-        solutions.values,
-        color="black",
-        edgecolor="black",
+    positions = list(range(len(rows)))
+    solution_labels = [f"{row['solution']:>{solution_label_width}}" for row in rows]
+    codelets_axis_maximum = max(
+        10_000,
+        ((max(max(row["codelets_run"]) for row in rows) + 999) // 1_000) * 1_000,
     )
-    frequency_labels = axis.bar_label(bars, padding=3, fmt="%d")
-    for label in frequency_labels:
-        label.set_fontfamily(PUBLICATION_FONT)
-        label.set_fontsize(9)
-    axis.invert_yaxis()
-    axis.margins(x=0.12)
-    axis.set_ylim(max_solutions - 0.5, -0.5)
-    axis.set_yticks(range(max_solutions), labels=solution_labels)
-    axis.set(xlabel="Frequency", ylabel="Solution", title=problem)
-    _style_axis(axis)
-    _style_solution_labels(axis)
-    figure.tight_layout()
-    figure.savefig(FIGURES / f"{stem}-solution-frequency.png", dpi=160)
-    plt.close(figure)
-
-    for column, label, suffix, xlim in (
-        ("temperature", "Final temperature", "temperature", (0.0, 1.0)),
-        ("codelets_run", "Codelets run", "codelets-run", codelets_xlim),
+    for column, x_label, filename, xlim in (
+        ("frequency", "Frequency", "target_problems-solution-frequency.png", None),
+        (
+            "temperature",
+            "Final temperature",
+            "target_problems-temperature-by-solution.png",
+            (0.0, 1.0),
+        ),
+        (
+            "codelets_run",
+            "Codelets run"
+            if codelets_axis_maximum == 10_000
+            else "Codelets run (extended scale)",
+            "target_problems-codelets-run-by-solution.png",
+            (0.0, float(codelets_axis_maximum)),
+        ),
     ):
-        grouped = [
-            frame.loc[frame["solution"] == solution, column].to_numpy()
-            for solution in solution_order
-        ]
-        labels = [str(solution) for solution in solution_order]
-        figure, axis = plt.subplots(figsize=(8, figure_height))
+        figure, axis = plt.subplots(figsize=(4.13, 5.84))
         figure.patch.set_facecolor("white")
-        axis.boxplot(
-            grouped,
-            tick_labels=labels,
-            orientation="horizontal",
-            patch_artist=True,
-            boxprops={"facecolor": "0.85", "edgecolor": "black"},
-            medianprops={"color": "black", "linewidth": 1.5},
-            whiskerprops={"color": "black"},
-            capprops={"color": "black"},
-            flierprops={
-                "marker": "o",
-                "markerfacecolor": "white",
-                "markeredgecolor": "black",
-                "markersize": 3,
-            },
-        )
-        axis.set_xlim(xlim)
-        axis.set_ylim(max_solutions + 0.5, 0.5)
-        axis.set_yticks(range(1, max_solutions + 1), labels=solution_labels)
-        x_label = (
-            f"{label} (extended scale)"
-            if column == "codelets_run" and xlim[1] > 10_000
-            else label
-        )
-        axis.set(xlabel=x_label, ylabel="Solution", title=problem)
+        if column == "frequency":
+            bars = axis.barh(
+                positions,
+                [row[column] for row in rows],
+                color="black",
+                edgecolor="black",
+                linewidth=0.35,
+            )
+            for text in axis.bar_label(bars, padding=1, fmt="%d"):
+                text.set_fontfamily(PUBLICATION_FONT)
+                text.set_fontsize(3.5)
+            axis.margins(x=0.08)
+        else:
+            axis.boxplot(
+                [row[column] for row in rows],
+                positions=positions,
+                orientation="horizontal",
+                patch_artist=True,
+                boxprops={"facecolor": "0.85", "edgecolor": "black", "linewidth": 0.45},
+                medianprops={"color": "black", "linewidth": 0.6},
+                whiskerprops={"color": "black", "linewidth": 0.45},
+                capprops={"color": "black", "linewidth": 0.45},
+                flierprops={
+                    "marker": "o",
+                    "markerfacecolor": "white",
+                    "markeredgecolor": "black",
+                    "markeredgewidth": 0.4,
+                    "markersize": 2,
+                },
+            )
+            axis.set_xlim(xlim)
+        axis.set_ylim(len(rows) - 0.5, -0.5)
+        axis.set_yticks(positions, labels=solution_labels)
+        axis.set(xlabel=x_label, ylabel="Answer")
         _style_axis(axis)
         _style_solution_labels(axis)
-        figure.tight_layout()
-        figure.savefig(FIGURES / f"{stem}-{suffix}-by-solution.png", dpi=160)
+        for label in axis.get_yticklabels():
+            label.set_fontsize(3.5)
+        for boundary in boundaries:
+            axis.axhline(boundary, color="black", linewidth=0.35)
+        for centre, label in problem_labels:
+            axis.text(
+                -0.38,
+                centre,
+                label,
+                transform=axis.get_yaxis_transform(),
+                ha="left",
+                va="center",
+                fontfamily=SOLUTION_LABEL_FONT,
+                fontsize=3.5,
+                clip_on=False,
+            )
+        figure.subplots_adjust(left=0.30, right=0.96, bottom=0.07, top=0.98)
+        figure.savefig(FIGURES / filename, dpi=300)
         plt.close(figure)
 
 
@@ -521,7 +547,7 @@ def main(iterations: int = 1000, gold_path: Path = DEFAULT_GOLD_PATH) -> None:
     }
 
     reproduced_cases = []
-    basic_runs_by_problem: list[tuple[str, list[dict[str, Any]]]] = []
+    basic_runs_by_problem: list[tuple[str, int, list[dict[str, Any]]]] = []
     for i, problem in enumerate((case["problem"] for case in template["results"])):
         print(f"Running {i} {problem} ({iterations} seeds)")
         runs = _runs_for_problem(problem, iterations)
@@ -535,32 +561,19 @@ def main(iterations: int = 1000, gold_path: Path = DEFAULT_GOLD_PATH) -> None:
             )
         )
         if problem in basic_problem_set:
-            basic_runs_by_problem.append((problem, runs))
-    max_solutions = max(
-        len({run["solution"] for run in runs}) for _, runs in basic_runs_by_problem
-    )
-    solution_label_width = max(
-        len(str(run["solution"])) for _, runs in basic_runs_by_problem for run in runs
-    )
-    # A shared 10,000-codelet scale makes ordinary target problems comparable.
-    # Exceptional problems receive a clearly labelled, rounded-up extension.
-    codelets_xlim_by_problem: dict[str, tuple[float, float]] = {}
-    for problem, runs in basic_runs_by_problem:
-        largest_codelets_run = max(run["codelets_run"] for run in runs)
-        codelets_axis_maximum = max(
-            10_000,
-            ((largest_codelets_run + 999) // 1_000) * 1_000,
-        )
-        codelets_xlim_by_problem[problem] = (0.0, float(codelets_axis_maximum))
-    for problem, runs in basic_runs_by_problem:
-        _save_problem_figures(
-            problem,
-            runs,
-            problem_number_by_problem[problem],
-            max_solutions,
-            solution_label_width,
-            codelets_xlim_by_problem[problem],
-        )
+            basic_runs_by_problem.append(
+                (problem, problem_number_by_problem[problem], runs)
+            )
+            if len(basic_runs_by_problem) == len(basic_problems):
+                # Generate the paper figures as soon as all five plotted
+                # problems are available; the remaining variations do not
+                # affect these figures.
+                solution_label_width = max(
+                    len(str(run["solution"]))
+                    for _, _, basic_runs in basic_runs_by_problem
+                    for run in basic_runs
+                )
+                _save_combined_figures(basic_runs_by_problem, solution_label_width)
 
     reproduction = {
         "schema_version": template["schema_version"],
