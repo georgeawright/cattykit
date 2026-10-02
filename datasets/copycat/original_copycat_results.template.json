@@ -1,0 +1,342 @@
+{
+  "schema_version": 1,
+  "source_work": {
+    "citation": "Mitchell, M. (1993). Analogy-Making as Perception: A Computer Model. MIT Press. doi:10.5555/152203",
+    "source_kind": "Numerical labels manually transcribed from bar charts",
+    "transformations": {
+      "temperature": {
+        "source_unit": "integer percent, 0–100",
+        "stored_unit": "decimal proportion, 0–1",
+        "formula": "stored_value = source_value / 100"
+      }
+    }
+  },
+  "basic_problems": [
+    "abc -> abd ==> iijjkk -> ?",
+    "abc -> abd ==> ijk -> ?",
+    "abc -> abd ==> kji -> ?",
+    "abc -> abd ==> mrrjjj -> ?",
+    "abc -> abd ==> xyz -> ?"
+  ],
+  "results": [
+    {
+      "problem": "abc -> abd ==> ijk -> ?",
+      "source": {
+        "page": 76
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "abc -> abd ==> iijjkk -> ?",
+      "source": {
+        "page": 79
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "abc -> abd ==> kji -> ?",
+      "source": {
+        "page": 80
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "abc -> abd ==> mrrjjj -> ?",
+      "source": {
+        "page": 81
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "abc -> abd ==> xyz -> ?",
+      "source": {
+        "page": 82
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "abc -> abd ==> ijklmnop -> ?",
+      "source": {
+        "page": 142
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "abc -> abd ==> xlg -> ?",
+      "source": {
+        "page": 144
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "abc -> abd ==> xcg -> ?",
+      "source": {
+        "page": 145
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "abc -> abd ==> abcd -> ?",
+      "source": {
+        "page": 146
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "abc -> abd ==> cde -> ?",
+      "source": {
+        "page": 147
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "abc -> abd ==> cab -> ?",
+      "source": {
+        "page": 148
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "abc -> abd ==> cmg -> ?",
+      "source": {
+        "page": 149
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "abc -> qbc ==> ijk -> ?",
+      "source": {
+        "page": 150
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "aabc -> aabd ==> ijkk -> ?",
+      "source": {
+        "page": 151
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "abcm -> abcn ==> rijk -> ?",
+      "source": {
+        "page": 152
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "abc -> abd ==> hhwwqq -> ?",
+      "source": {
+        "page": 154
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "abc -> abd ==> lmfgop -> ?",
+      "source": {
+        "page": 156
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "abc -> abd ==> lmnfghopq -> ?",
+      "source": {
+        "page": 157
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "aabbcc -> aabbcd ==> iijjkk -> ?",
+      "source": {
+        "page": 158
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "abc -> abd ==> edc -> ?",
+      "source": {
+        "page": 159
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "abc -> abd ==> cba -> ?",
+      "source": {
+        "page": 159
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "abc -> abd ==> mrr -> ?",
+      "source": {
+        "page": 161
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "abc -> abd ==> mmrrrjjjj -> ?",
+      "source": {
+        "page": 162
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "abc -> abd ==> rssttt -> ?",
+      "source": {
+        "page": 163
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "abc -> abd ==> xpqdef -> ?",
+      "source": {
+        "page": 164
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "abc -> qbc ==> xyz -> ?",
+      "source": {
+        "page": 165
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "rst -> rsu ==> xyz -> ?",
+      "source": {
+        "page": 166
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "abc -> abd ==> glz -> ?",
+      "source": {
+        "page": 167
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    },
+    {
+      "problem": "abc -> abd ==> cmz -> ?",
+      "source": {
+        "page": 168
+      },
+      "solutions": {},
+      "codelets": {
+        "mean": null,
+        "standard_error": null
+      }
+    }
+  ]
+}
