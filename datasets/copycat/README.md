@@ -21,6 +21,19 @@ The source is:
 The local dataset is ignored by Git. The test fixture looks for it at that
 default path, or at the path supplied in `COPYCAT_GOLD_DATA_PATH`.
 
+## Generated reproduction outputs
+
+The reproduction script writes complete per-problem outputs here:
+
+- `reproduction_copycat_results.json` contains the summarized reproduction
+  results.
+- `reproduction_raw_results.csv` contains every run and its seed, answer,
+  temperature, and codelets-run count.
+- `reproduction_comparison.csv` contains all 29 per-problem comparison
+  statistics.
+- `reproduction_comparison_error_summary.csv` summarizes the comparison-error
+  distributions.
+
 For example:
 
 ```sh

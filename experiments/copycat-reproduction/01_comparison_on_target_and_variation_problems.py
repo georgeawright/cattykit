@@ -3,12 +3,19 @@ from __future__ import annotations
 import argparse
 import json
 from collections.abc import Iterable
+from math import sqrt
 from pathlib import Path
 from typing import Any
 
 import matplotlib.pyplot as plt
 import pandas as pd
-from cattykit.experiments import summarize_runs, total_variation_distance
+from cattykit.experiments import (
+    chi_square_survival_function,
+    summarize_runs,
+    total_variation_distance,
+    two_sided_p_value,
+    z_statistic,
+)
 from cattykit.models import load_model
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -20,8 +27,6 @@ RESULTS_PATH = DATASETS / "reproduction_copycat_results.json"
 RAW_RESULTS_PATH = DATASETS / "reproduction_raw_results.csv"
 COMPARISON_CSV_PATH = DATASETS / "reproduction_comparison.csv"
 ERROR_SUMMARY_CSV_PATH = DATASETS / "reproduction_comparison_error_summary.csv"
-COMPARISON_MARKDOWN_PATH = FIGURES / "reproduction_comparison.md"
-SOLUTION_SUMMARY_MARKDOWN_PATH = FIGURES / "reproduction_solution_summary.md"
 PUBLICATION_FONT = "DejaVu Serif"
 SOLUTION_LABEL_FONT = "DejaVu Sans Mono"
 MIN_ORIGINAL_SOLUTION_FREQUENCY = 10
@@ -325,6 +330,19 @@ def _relative_error(observed: float, expected: float) -> float:
     return abs(observed - expected) / abs(expected) if expected else 0.0
 
 
+def _temperature_z_statistics(z_scores: list[float]) -> dict[str, float]:
+    """Summarize independent, retained-answer temperature z statistics."""
+    chi_square = sum(z_score**2 for z_score in z_scores)
+    count = len(z_scores)
+    return {
+        "rms_z_stat": sqrt(chi_square / count) if count else 0.0,
+        "max_absolute_z_stat": max((abs(z_score) for z_score in z_scores), default=0.0),
+        "z_p_value": chi_square_survival_function(chi_square, count),
+        "z_chi_square": chi_square,
+        "z_count": count,
+    }
+
+
 def _error_quantiles(values: list[float], suffix: str) -> dict[str, float]:
     """Return every decile of one problem's error distribution."""
     series = pd.Series(values, dtype=float)
@@ -362,8 +380,8 @@ def _comparison_table(
         )
         temperature_pairs = [
             (
-                observed_solutions[solution]["temperature_mean"],
-                values["temperature_mean"],
+                observed_solutions[solution],
+                values,
             )
             for solution, values in gold_solutions.items()
             if (
@@ -372,21 +390,47 @@ def _comparison_table(
             )
         ]
         if temperature_pairs:
-            observed_temperatures, expected_temperatures = zip(
+            observed_temperature_results, expected_temperature_results = zip(
                 *temperature_pairs, strict=True
             )
             # Temperature is bounded on [0, 1], so absolute error is directly
             # interpretable in the model's fixed, meaningful scale.
             temperature = _absolute_error_statistics(
-                observed_temperatures, expected_temperatures
+                (
+                    result["temperature_mean"]
+                    for result in observed_temperature_results
+                ),
+                (result["temperature_mean"] for result in expected_temperature_results),
+            )
+            temperature_z = _temperature_z_statistics(
+                [
+                    z_statistic(
+                        observed_mean=observed["temperature_mean"],
+                        expected_mean=expected["temperature_mean"],
+                        observed_standard_error=observed[
+                            "temperature_standard_error"
+                        ],
+                        expected_standard_error=expected[
+                            "temperature_standard_error"
+                        ],
+                    )
+                    for observed, expected in temperature_pairs
+                ]
             )
         else:
             temperature = _absolute_error_statistics([], [])
+            temperature_z = _temperature_z_statistics([])
         # Codelets run has no natural upper limit, so relative error is the
         # meaningful comparison across problems with different run lengths.
         # There is one problem-wide codelets mean, hence one relative error.
         codelets_relative_error = _relative_error(
             reproduced["codelets"]["mean"], gold["codelets"]["mean"]
+        )
+        codelets_z = z_statistic(
+            observed_mean=reproduced["codelets"]["mean"],
+            expected_mean=gold["codelets"]["mean"],
+            observed_standard_error=reproduced["codelets"]["standard_error"],
+            expected_standard_error=gold["codelets"]["standard_error"],
         )
         rows.append(
             {
@@ -420,7 +464,11 @@ def _comparison_table(
                     {key: value["frequency"] for key, value in gold_solutions.items()},
                 ),
                 **{f"temperature_{key}": value for key, value in temperature.items()},
+                **{f"temperature_{key}": value for key, value in temperature_z.items()},
                 "codelets_relative_error": codelets_relative_error,
+                "codelets_z_stat": codelets_z,
+                "codelets_z_chi_square": codelets_z**2,
+                "codelets_z_p_value": two_sided_p_value(codelets_z),
             }
         )
     comparison = pd.DataFrame(rows)
@@ -435,8 +483,10 @@ def _id_sort_key(problem_id: str) -> tuple[int, ...]:
     return tuple(int(part) for part in problem_id.split("."))
 
 
-def _grouped_markdown(table: pd.DataFrame) -> str:
-    """Render one table with indented variations and family divider rows."""
+def _grouped_markdown(
+    table: pd.DataFrame, *, separate_families: bool = True
+) -> str:
+    """Render one table with optionally indented variations and dividers."""
     display = table.copy()
     display["id"] = display["id"].map(
         lambda problem_id: (
@@ -454,49 +504,10 @@ def _grouped_markdown(table: pd.DataFrame) -> str:
     }
     lines = [_markdown_row(headings), _markdown_separator(headings, right_aligned)]
     for row_number, row in enumerate(display.itertuples(index=False, name=None)):
-        if "." not in table.iloc[row_number]["id"] and row_number:
+        if separate_families and "." not in table.iloc[row_number]["id"] and row_number:
             lines.append(_markdown_row([""] * len(headings)))
         lines.append(_markdown_row([str(value) for value in row]))
     return "\n".join(lines) + "\n"
-
-
-def _solution_summary_markdown(comparison: pd.DataFrame) -> str:
-    """Render the per-problem and per-solution summary table for the paper."""
-    headings = [
-        "ID",
-        "Problem",
-        "Mean Codelets",
-        "Codelets SE",
-        "Modal Answer",
-        "Freq.",
-        "Mean Temp.",
-        "Temp. SE",
-    ]
-    rows = [_solution_summary_row(row) for row in comparison.itertuples(index=False)]
-    right_aligned = {2, 3, 5, 6, 7}
-    lines = [
-        _markdown_row(headings),
-        _markdown_separator(headings, right_aligned),
-        *(_markdown_row(row) for row in rows),
-    ]
-    return "# Solution Summary\n\n" + "\n".join(lines) + "\n"
-
-
-def _solution_summary_row(row: Any) -> list[str]:
-    """Return one solution-summary table row with duplicated run-level metrics."""
-    problem_id = f"&nbsp;&nbsp;{row.id}" if "." in row.id else row.id
-    codelets_mean = _format_markdown_zero_decimal(row.mean_codelets_run)
-    codelets_error = _format_markdown_one_decimal(row.codelets_run_standard_error)
-    return [
-        problem_id,
-        row.problem,
-        codelets_mean,
-        codelets_error,
-        row.most_frequent_answer,
-        _format_markdown_integer(row.most_frequent_answer_frequency),
-        _format_markdown_number(row.most_frequent_answer_temperature_mean),
-        _format_markdown_number(row.most_frequent_answer_temperature_standard_error),
-    ]
 
 
 def _markdown_row(values: list[str]) -> str:
@@ -516,28 +527,37 @@ def _markdown_column_title(column: str) -> str:
     titles = {
         "id": "ID",
         "solution_total_variation_distance": "Answer TV Distance",
-        "temperature_mean_absolute_error": "Temp. mean absolute error",
-        "temperature_max_absolute_error": "Temp. max absolute error",
+        "temperature_mean_absolute_error": "Temp. Mean Absolute Error",
+        "temperature_max_absolute_error": "Temp. Max Absolute Error",
+        "temperature_rms_z_stat": "Temp. RMS z",
+        "temperature_max_absolute_z_stat": "Temp. Max |z|",
+        "temperature_z_chi_square": "Temp. chi-square",
+        "temperature_z_p_value": "Temp. z p-value",
         "codelets_relative_error": "Codelets-Run Relative Error",
+        "codelets_z_stat": "Codelets-Run z",
+        "codelets_z_chi_square": "Codelets chi-square",
+        "codelets_z_p_value": "Codelets z p-value",
     }
     return titles.get(column, column.replace("_", " ").title())
 
 
 def _comparison_statistics_markdown(
-    comparison: pd.DataFrame, error_summary: pd.DataFrame
+    comparison: pd.DataFrame, error_summary: pd.DataFrame, *, detailed: bool
 ) -> str:
-    """Render per-problem similarity statistics plus one aggregate row."""
+    """Render either the full comparison or its paper-facing summary row."""
     columns = [
         "id",
         "problem",
         "solution_total_variation_distance",
         "temperature_mean_absolute_error",
         "temperature_max_absolute_error",
+        "temperature_rms_z_stat",
+        "temperature_max_absolute_z_stat",
         "codelets_relative_error",
+        "codelets_z_stat",
     ]
-    display = comparison[columns].copy()
     summary = error_summary.set_index("error_metric")
-    display.loc[len(display)] = {
+    summary_row = {
         "id": "Summary",
         "problem": "Across problems",
         # TV distance is averaged unweighted: each target problem contributes
@@ -556,8 +576,48 @@ def _comparison_statistics_markdown(
         "codelets_relative_error": summary.loc[
             "Codelets-run relative error", "mean_error"
         ],
+        "temperature_rms_z_stat": sqrt(
+            comparison["temperature_z_chi_square"].sum()
+            / comparison["temperature_z_count"].sum()
+        ),
+        "temperature_max_absolute_z_stat": comparison[
+            "temperature_max_absolute_z_stat"
+        ].max(),
+        "temperature_z_chi_square": comparison["temperature_z_chi_square"].sum(),
+        "temperature_z_p_value": chi_square_survival_function(
+            comparison["temperature_z_chi_square"].sum(),
+            int(comparison["temperature_z_count"].sum()),
+        ),
+        "codelets_z_stat": sqrt((comparison["codelets_z_stat"] ** 2).mean()),
+        "codelets_z_chi_square": float((comparison["codelets_z_stat"] ** 2).sum()),
+        "codelets_z_p_value": chi_square_survival_function(
+            float((comparison["codelets_z_stat"] ** 2).sum()), len(comparison)
+        ),
     }
-    return "# Comparison statistics\n\n" + _grouped_markdown(display)
+    if detailed:
+        display = comparison[columns].copy()
+        display.loc[len(display)] = summary_row
+        return "# Comparison statistics\n\n" + _grouped_markdown(
+            display, separate_families=True
+        )
+
+    # GitHub-Flavored Markdown requires a header row, but the surrounding
+    # section heading supplies the context, so keep this structural row blank.
+    headings = ["", ""]
+    rows = [
+        [
+            f"**{_markdown_column_title(column)}**",
+            _format_markdown_number(float(summary_row[column])),
+        ]
+        for column in columns[2:]
+    ]
+    return "# Comparison statistics\n\n" + "\n".join(
+        [
+            _markdown_row(headings),
+            _markdown_separator(headings, {1}),
+            *(_markdown_row(row) for row in rows),
+        ]
+    ) + "\n"
 
 
 def _error_summary(comparison: pd.DataFrame) -> pd.DataFrame:
@@ -591,13 +651,25 @@ def _format_markdown_numbers(table: pd.DataFrame) -> pd.DataFrame:
     """Return a display copy with all numeric values at three decimal places."""
     display = table.copy()
     for column in display.select_dtypes(include="number"):
-        display[column] = display[column].map(_format_markdown_number)
+        formatter = (
+            _format_markdown_p_value
+            if column.endswith("_p_value")
+            else _format_markdown_number
+        )
+        display[column] = display[column].map(formatter)
     return display
 
 
 def _format_markdown_number(value: float | int) -> str:
     """Format a numeric paper-table value with three decimal places."""
     return "" if pd.isna(value) else f"{value:.3f}"
+
+
+def _format_markdown_p_value(value: float | int) -> str:
+    """Format p values to three decimals without obscuring very small values."""
+    if pd.isna(value):
+        return ""
+    return "<0.001" if value < 0.001 else f"{value:.3f}"
 
 
 def _format_markdown_integer(value: float | int) -> str:
@@ -708,13 +780,6 @@ def main(
         error_summary = _error_summary(comparison)
         comparison.to_csv(COMPARISON_CSV_PATH, index=False)
         error_summary.to_csv(ERROR_SUMMARY_CSV_PATH, index=False)
-        COMPARISON_MARKDOWN_PATH.write_text(
-            _comparison_statistics_markdown(comparison, error_summary),
-            encoding="utf-8",
-        )
-        SOLUTION_SUMMARY_MARKDOWN_PATH.write_text(
-            _solution_summary_markdown(comparison), encoding="utf-8"
-        )
     else:
         print(f"No original dataset at {gold_path}; skipped comparison table.")
 

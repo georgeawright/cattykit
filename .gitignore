@@ -14,7 +14,5 @@ notes/
 
 tmp/
 
-*.csv
-
 # Locally reconstructed Copycat reference data; use the checked-in template.
 /datasets/copycat/original_copycat_results.json
