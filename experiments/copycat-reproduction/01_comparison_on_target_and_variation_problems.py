@@ -17,12 +17,14 @@ FIGURES = ROOT / "papers" / "copycat-reproduction" / "figures"
 TEMPLATE_PATH = DATASETS / "original_copycat_results.template.json"
 DEFAULT_GOLD_PATH = DATASETS / "original_copycat_results.json"
 RESULTS_PATH = DATASETS / "reproduction_copycat_results.json"
+RAW_RESULTS_PATH = DATASETS / "reproduction_raw_results.csv"
 COMPARISON_CSV_PATH = DATASETS / "reproduction_comparison.csv"
 ERROR_SUMMARY_CSV_PATH = DATASETS / "reproduction_comparison_error_summary.csv"
 COMPARISON_MARKDOWN_PATH = FIGURES / "reproduction_comparison.md"
 SOLUTION_SUMMARY_MARKDOWN_PATH = FIGURES / "reproduction_solution_summary.md"
 PUBLICATION_FONT = "DejaVu Serif"
 SOLUTION_LABEL_FONT = "DejaVu Sans Mono"
+MIN_ORIGINAL_SOLUTION_FREQUENCY = 10
 
 
 def _runs_for_problem(problem: str, iterations: int) -> list[dict[str, Any]]:
@@ -37,6 +39,7 @@ def _runs_for_problem(problem: str, iterations: int) -> list[dict[str, Any]]:
         try:
             runs.append(
                 {
+                    "random_seed": seed,
                     "solution": model.solve(problem),
                     "codelets_run": model.coderack.number_of_codelets_run,
                     "temperature": model.temperature,
@@ -45,6 +48,97 @@ def _runs_for_problem(problem: str, iterations: int) -> list[dict[str, Any]]:
         finally:
             model.close()
     return runs
+
+
+def _save_figures_from_raw_results(raw_results_path: Path) -> None:
+    """Regenerate the combined figures from per-run results without solving."""
+    raw_results = pd.read_csv(raw_results_path)
+    required_columns = {
+        "problem",
+        "random_seed",
+        "answer",
+        "temperature",
+        "codelets_run",
+    }
+    missing_columns = required_columns.difference(raw_results.columns)
+    if missing_columns:
+        missing = ", ".join(sorted(missing_columns))
+        raise ValueError(f"Raw results CSV is missing required columns: {missing}.")
+
+    template = json.loads(TEMPLATE_PATH.read_text(encoding="utf-8"))
+    problem_number_by_problem = {
+        case["problem"]: number
+        for number, case in enumerate(template["results"], start=1)
+    }
+    basic_runs_by_problem: list[tuple[str, int, list[dict[str, Any]]]] = []
+    for problem in template["basic_problems"]:
+        problem_results = raw_results.loc[raw_results["problem"] == problem]
+        if problem_results.empty:
+            raise ValueError(f"Raw results CSV has no runs for {problem!r}.")
+        runs = [
+            {
+                "solution": row.answer,
+                "temperature": row.temperature,
+                "codelets_run": row.codelets_run,
+            }
+            for row in problem_results.itertuples(index=False)
+        ]
+        basic_runs_by_problem.append(
+            (problem, problem_number_by_problem[problem], runs)
+        )
+    solution_label_width = max(
+        len(str(run["solution"]))
+        for _, _, basic_runs in basic_runs_by_problem
+        for run in basic_runs
+    )
+    _save_combined_figures(basic_runs_by_problem, solution_label_width)
+
+
+def _reproduction_from_raw_results(raw_results_path: Path) -> dict[str, Any]:
+    """Rebuild the summary-results JSON from a per-run results CSV."""
+    raw_results = pd.read_csv(raw_results_path)
+    required_columns = {
+        "problem",
+        "random_seed",
+        "answer",
+        "temperature",
+        "codelets_run",
+    }
+    missing_columns = required_columns.difference(raw_results.columns)
+    if missing_columns:
+        missing = ", ".join(sorted(missing_columns))
+        raise ValueError(f"Raw results CSV is missing required columns: {missing}.")
+
+    template = json.loads(TEMPLATE_PATH.read_text(encoding="utf-8"))
+    reproduced_cases = []
+    for case in template["results"]:
+        problem = case["problem"]
+        problem_results = raw_results.loc[raw_results["problem"] == problem]
+        if problem_results.empty:
+            raise ValueError(f"Raw results CSV has no runs for {problem!r}.")
+        runs = [
+            {
+                "random_seed": row.random_seed,
+                "solution": row.answer,
+                "temperature": row.temperature,
+                "codelets_run": row.codelets_run,
+            }
+            for row in problem_results.itertuples(index=False)
+        ]
+        reproduced_cases.append(
+            _result_case(
+                problem,
+                summarize_runs(runs, problem),
+                case["source"],
+                case["id"],
+            )
+        )
+    return {
+        "schema_version": template["schema_version"],
+        "source_work": template["source_work"],
+        "basic_problems": template["basic_problems"],
+        "results": reproduced_cases,
+    }
 
 
 def _style_axis(axis: plt.Axes) -> None:
@@ -121,9 +215,7 @@ def _save_combined_figures(
         ),
         (
             "codelets_run",
-            "Codelets run"
-            if codelets_axis_maximum == 10_000
-            else "Codelets run (extended scale)",
+            "Codelets run",
             "target_problems-codelets-run-by-solution.png",
             (0.0, float(codelets_axis_maximum)),
         ),
@@ -228,21 +320,9 @@ def _absolute_error_statistics(
     }
 
 
-def _relative_error_statistics(
-    observed: Iterable[float], expected: Iterable[float]
-) -> dict[str, float]:
-    """Return relative-error summary statistics."""
-    pairs = list(zip(observed, expected, strict=True))
-    relative = [
-        abs(actual - reference) / abs(reference)
-        for actual, reference in pairs
-        if reference != 0
-    ]
-    return {
-        "mean_relative_error": sum(relative) / len(relative) if relative else 0.0,
-        "max_relative_error": max(relative, default=0.0),
-        **_error_quantiles(relative, "relative_error"),
-    }
+def _relative_error(observed: float, expected: float) -> float:
+    """Return the relative error for one problem-wide measurement."""
+    return abs(observed - expected) / abs(expected) if expected else 0.0
 
 
 def _error_quantiles(values: list[float], suffix: str) -> dict[str, float]:
@@ -286,7 +366,10 @@ def _comparison_table(
                 values["temperature_mean"],
             )
             for solution, values in gold_solutions.items()
-            if solution in observed_solutions
+            if (
+                solution in observed_solutions
+                and values["frequency"] >= MIN_ORIGINAL_SOLUTION_FREQUENCY
+            )
         ]
         if temperature_pairs:
             observed_temperatures, expected_temperatures = zip(
@@ -301,8 +384,9 @@ def _comparison_table(
             temperature = _absolute_error_statistics([], [])
         # Codelets run has no natural upper limit, so relative error is the
         # meaningful comparison across problems with different run lengths.
-        codelets = _relative_error_statistics(
-            [reproduced["codelets"]["mean"]], [gold["codelets"]["mean"]]
+        # There is one problem-wide codelets mean, hence one relative error.
+        codelets_relative_error = _relative_error(
+            reproduced["codelets"]["mean"], gold["codelets"]["mean"]
         )
         rows.append(
             {
@@ -336,7 +420,7 @@ def _comparison_table(
                     {key: value["frequency"] for key, value in gold_solutions.items()},
                 ),
                 **{f"temperature_{key}": value for key, value in temperature.items()},
-                **{f"codelets_{key}": value for key, value in codelets.items()},
+                "codelets_relative_error": codelets_relative_error,
             }
         )
     comparison = pd.DataFrame(rows)
@@ -432,12 +516,9 @@ def _markdown_column_title(column: str) -> str:
     titles = {
         "id": "ID",
         "solution_total_variation_distance": "Answer TV Distance",
-        "temperature_mean_absolute_error": "Temp. Mean absolute error",
-        "temperature_quantile_90_absolute_error": "Temp. P90 absolute error",
-        "temperature_max_absolute_error": "Max Temperature Absolute Error",
-        "codelets_mean_relative_error": "Codelets mean relative error",
-        "codelets_quantile_90_relative_error": "Codelets P90 relative error",
-        "codelets_max_relative_error": "Max Codelets-Run Relative Error",
+        "temperature_mean_absolute_error": "Temp. mean absolute error",
+        "temperature_max_absolute_error": "Temp. max absolute error",
+        "codelets_relative_error": "Codelets-Run Relative Error",
     }
     return titles.get(column, column.replace("_", " ").title())
 
@@ -451,9 +532,8 @@ def _comparison_statistics_markdown(
         "problem",
         "solution_total_variation_distance",
         "temperature_mean_absolute_error",
-        "temperature_quantile_90_absolute_error",
-        "codelets_mean_relative_error",
-        "codelets_quantile_90_relative_error",
+        "temperature_max_absolute_error",
+        "codelets_relative_error",
     ]
     display = comparison[columns].copy()
     summary = error_summary.set_index("error_metric")
@@ -465,17 +545,16 @@ def _comparison_statistics_markdown(
         "solution_total_variation_distance": comparison[
             "solution_total_variation_distance"
         ].mean(),
-        "temperature_mean_absolute_error": summary.loc[
-            "Temperature absolute error", "mean_error"
-        ],
-        "temperature_quantile_90_absolute_error": summary.loc[
-            "Temperature absolute error", "quantile_90"
-        ],
-        "codelets_mean_relative_error": summary.loc[
+        "temperature_mean_absolute_error": comparison[
+            "temperature_mean_absolute_error"
+        ].mean(),
+        # This is the largest retained-answer discrepancy in the entire
+        # reproduction, rather than the mean of the per-problem maxima.
+        "temperature_max_absolute_error": comparison[
+            "temperature_max_absolute_error"
+        ].max(),
+        "codelets_relative_error": summary.loc[
             "Codelets-run relative error", "mean_error"
-        ],
-        "codelets_quantile_90_relative_error": summary.loc[
-            "Codelets-run relative error", "quantile_90"
         ],
     }
     return "# Comparison statistics\n\n" + _grouped_markdown(display)
@@ -484,8 +563,13 @@ def _comparison_statistics_markdown(
 def _error_summary(comparison: pd.DataFrame) -> pd.DataFrame:
     """Summarize the scale-appropriate error from every target problem."""
     metrics = {
-        "Temperature absolute error": comparison["temperature_mean_absolute_error"],
-        "Codelets-run relative error": comparison["codelets_mean_relative_error"],
+        "Temperature mean absolute error": comparison[
+            "temperature_mean_absolute_error"
+        ],
+        "Temperature max absolute error": comparison[
+            "temperature_max_absolute_error"
+        ],
+        "Codelets-run relative error": comparison["codelets_relative_error"],
     }
     rows = []
     for metric, values in metrics.items():
@@ -531,57 +615,93 @@ def _format_markdown_zero_decimal(value: float | int) -> str:
     return "" if pd.isna(value) else f"{value:.0f}"
 
 
-def main(iterations: int = 1000, gold_path: Path = DEFAULT_GOLD_PATH) -> None:
-    """Run the five basic problems and write all reproducibility artifacts."""
+def main(
+    iterations: int = 1000,
+    gold_path: Path = DEFAULT_GOLD_PATH,
+    raw_results_path: Path | None = None,
+) -> None:
+    """Run experiments, or reuse results, then write reproducibility artifacts."""
     if iterations < 1:
         raise ValueError("iterations must be at least 1")
     DATASETS.mkdir(parents=True, exist_ok=True)
     FIGURES.mkdir(parents=True, exist_ok=True)
-    template = json.loads(TEMPLATE_PATH.read_text(encoding="utf-8"))
-    basic_problems = template["basic_problems"]
-    basic_problem_set = set(basic_problems)
-    case_by_problem = {case["problem"]: case for case in template["results"]}
-    problem_number_by_problem = {
-        case["problem"]: number
-        for number, case in enumerate(template["results"], start=1)
-    }
-
-    reproduced_cases = []
-    basic_runs_by_problem: list[tuple[str, int, list[dict[str, Any]]]] = []
-    for i, problem in enumerate((case["problem"] for case in template["results"])):
-        print(f"Running {i} {problem} ({iterations} seeds)")
-        runs = _runs_for_problem(problem, iterations)
-        summary = summarize_runs(runs, problem)
-        reproduced_cases.append(
-            _result_case(
-                problem,
-                summary,
-                case_by_problem[problem]["source"],
-                case_by_problem[problem]["id"],
-            )
+    if raw_results_path is not None:
+        print(f"Rebuilding results from raw runs in {raw_results_path}")
+        reproduction = _reproduction_from_raw_results(raw_results_path)
+        _save_figures_from_raw_results(raw_results_path)
+        RESULTS_PATH.write_text(
+            json.dumps(reproduction, indent=2) + "\n", encoding="utf-8"
         )
-        if problem in basic_problem_set:
-            basic_runs_by_problem.append(
-                (problem, problem_number_by_problem[problem], runs)
-            )
-            if len(basic_runs_by_problem) == len(basic_problems):
-                # Generate the paper figures as soon as all five plotted
-                # problems are available; the remaining variations do not
-                # affect these figures.
-                solution_label_width = max(
-                    len(str(run["solution"]))
-                    for _, _, basic_runs in basic_runs_by_problem
-                    for run in basic_runs
-                )
-                _save_combined_figures(basic_runs_by_problem, solution_label_width)
+    else:
+        template = json.loads(TEMPLATE_PATH.read_text(encoding="utf-8"))
+        basic_problems = template["basic_problems"]
+        basic_problem_set = set(basic_problems)
+        case_by_problem = {case["problem"]: case for case in template["results"]}
+        problem_number_by_problem = {
+            case["problem"]: number
+            for number, case in enumerate(template["results"], start=1)
+        }
 
-    reproduction = {
-        "schema_version": template["schema_version"],
-        "source_work": template["source_work"],
-        "basic_problems": basic_problems,
-        "results": reproduced_cases,
-    }
-    RESULTS_PATH.write_text(json.dumps(reproduction, indent=2) + "\n", encoding="utf-8")
+        reproduced_cases = []
+        raw_result_rows: list[dict[str, Any]] = []
+        basic_runs_by_problem: list[tuple[str, int, list[dict[str, Any]]]] = []
+        for i, problem in enumerate(
+            (case["problem"] for case in template["results"])
+        ):
+            print(f"Running {i} {problem} ({iterations} seeds)")
+            runs = _runs_for_problem(problem, iterations)
+            raw_result_rows.extend(
+                {
+                    "problem": problem,
+                    "random_seed": run["random_seed"],
+                    "answer": run["solution"],
+                    "temperature": run["temperature"],
+                    "codelets_run": run["codelets_run"],
+                }
+                for run in runs
+            )
+            summary = summarize_runs(runs, problem)
+            reproduced_cases.append(
+                _result_case(
+                    problem,
+                    summary,
+                    case_by_problem[problem]["source"],
+                    case_by_problem[problem]["id"],
+                )
+            )
+            if problem in basic_problem_set:
+                basic_runs_by_problem.append(
+                    (problem, problem_number_by_problem[problem], runs)
+                )
+                if len(basic_runs_by_problem) == len(basic_problems):
+                    solution_label_width = max(
+                        len(str(run["solution"]))
+                        for _, _, basic_runs in basic_runs_by_problem
+                        for run in basic_runs
+                    )
+                    _save_combined_figures(
+                        basic_runs_by_problem, solution_label_width
+                    )
+
+        reproduction = {
+            "schema_version": template["schema_version"],
+            "source_work": template["source_work"],
+            "basic_problems": basic_problems,
+            "results": reproduced_cases,
+        }
+        RESULTS_PATH.write_text(
+            json.dumps(reproduction, indent=2) + "\n", encoding="utf-8"
+        )
+        pd.DataFrame(
+            raw_result_rows,
+            columns=[
+                "problem",
+                "random_seed",
+                "answer",
+                "temperature",
+                "codelets_run",
+            ],
+        ).to_csv(RAW_RESULTS_PATH, index=False)
     if gold_path.is_file():
         original = json.loads(gold_path.read_text(encoding="utf-8"))
         comparison = _comparison_table(reproduction, original)
@@ -603,5 +723,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--iterations", type=int, default=1000)
     parser.add_argument("--gold-path", type=Path, default=DEFAULT_GOLD_PATH)
+    parser.add_argument(
+        "--raw-results-path",
+        type=Path,
+        help="Rebuild all artifacts from this per-run CSV without solving.",
+    )
     arguments = parser.parse_args()
-    main(arguments.iterations, arguments.gold_path)
+    main(
+        arguments.iterations,
+        arguments.gold_path,
+        arguments.raw_results_path,
+    )
