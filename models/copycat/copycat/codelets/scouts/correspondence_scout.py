@@ -198,9 +198,14 @@ class CorrespondenceScout(Scout):
             self.slipnet.activate_node_from_workspace(mapping.target_facet.name)
             self.slipnet.activate_node_from_workspace(mapping.target_descriptor.name)
         self.workspace.add_proposed_correspondence(self.proposed_correspondence)
-        self.distinguishing_mappings = self.proposed_correspondence.distinguishing_mappings
-        urgency = sum(mapping.strength for mapping in self.distinguishing_mappings) / len(
-            self.distinguishing_mappings
+        self.distinguishing_mappings = (
+            self.proposed_correspondence.distinguishing_mappings
+        )
+        urgency = (
+            0
+            if not self.distinguishing_mappings
+            else sum(mapping.strength for mapping in self.distinguishing_mappings)
+            / len(self.distinguishing_mappings)
         )
         urgency_bin = self.coderack.get_urgency_level_from_activation(urgency)
         self.coderack.post(
