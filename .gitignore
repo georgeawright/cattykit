@@ -15,4 +15,4 @@ notes/
 tmp/
 
 # Locally reconstructed Copycat reference data; use the checked-in template.
-/datasets/copycat/original_copycat_results.json
+/datasets/copycat-reproduction/original_copycat_results.json

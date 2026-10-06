@@ -7,7 +7,7 @@ import pytest
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[4]
 DEFAULT_DATASET_PATH = (
-    REPOSITORY_ROOT / "datasets/copycat/original_copycat_results.json"
+    REPOSITORY_ROOT / "datasets/copycat-reproduction/original_copycat_results.json"
 )
 
 def pytest_configure(config):
@@ -22,7 +22,7 @@ def gold_behaviour(request) -> dict[str, pd.DataFrame]:
     if not dataset_path.is_file():
         pytest.skip(
             "Copycat gold data is not available. Recreate it from "
-            "datasets/copycat/original_copycat_results.template.json."
+            "datasets/copycat-reproduction/original_copycat_results.template.json."
         )
     dataset = json.loads(dataset_path.read_text(encoding="utf-8"))
     full_run = request.config.getoption("--full")

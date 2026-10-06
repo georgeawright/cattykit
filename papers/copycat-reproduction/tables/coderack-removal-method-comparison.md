@@ -1,0 +1,7 @@
+# Coderack removal method comparison
+
+| method                    |   answer_tv_distance_mean |   temperature_mean_absolute_error |   temperature_rms_z_stat |   temperature_z_chi_square |   temperature_z_p_value |   codelets_run_relative_error |   codelets_run_rms_z_stat |   codelets_run_z_chi_square |   codelets_run_z_p_value |
+|:--------------------------|--------------------------:|----------------------------------:|-------------------------:|---------------------------:|------------------------:|------------------------------:|--------------------------:|----------------------------:|-------------------------:|
+| fixed_weighted_removal    |                     0.022 |                             0.010 |                    1.150 |                    119.075 |                   0.022 |                         0.071 |                     3.857 |                     431.427 |                    0.000 |
+| faithful_original_removal |                     0.025 |                             0.012 |                    1.229 |                    136.002 |                   0.001 |                         0.080 |                     4.166 |                     503.382 |                    0.000 |
+| random_removal            |                     0.026 |                             0.011 |                    1.361 |                    166.615 |                   0.000 |                         0.082 |                     4.159 |                     501.582 |                    0.000 |

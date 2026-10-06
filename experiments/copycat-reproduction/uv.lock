@@ -13,14 +13,22 @@ resolution-markers = [
 [[package]]
 name = "cattykit"
 version = "0.1.2"
-source = { registry = "https://pypi.org/simple" }
+source = { editable = "../../packages/cattykit" }
 dependencies = [
     { name = "numpy" },
     { name = "pandas" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b4/74/0f0df39f4a807f522bcff6f23d8c3e351ff57d109d10527cc174652a9db0/cattykit-0.1.2.tar.gz", hash = "sha256:2e89a24d775e082d02160ddb755b6119cd116d6607ef0fa79e84b870a0a650f3", size = 57682, upload-time = "2026-09-23T21:15:22.672Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/90/73/fffe847cf45b035486687c2562666c10837bd5e827990967a35f0990e9ac/cattykit-0.1.2-py3-none-any.whl", hash = "sha256:bf528c169292dd204de88f9ebdac0c4df349e2c970914f3d13bc0609501d3e86", size = 48647, upload-time = "2026-09-23T21:15:21.437Z" },
+
+[package.metadata]
+requires-dist = [
+    { name = "numpy", specifier = ">=2.4.3" },
+    { name = "pandas", specifier = ">=3.0.5" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "ipython", specifier = ">=9.11.0" },
+    { name = "pytest", specifier = ">=9.0.2" },
 ]
 
 [[package]]
@@ -95,19 +103,23 @@ wheels = [
 [[package]]
 name = "copycat"
 version = "0.1.0"
-source = { url = "https://github.com/georgeawright/cattykit/releases/download/copycat-v0.1.0/copycat-0.1.0-py3-none-any.whl" }
+source = { editable = "../../models/copycat" }
 dependencies = [
     { name = "cattykit" },
     { name = "numpy" },
 ]
-wheels = [
-    { url = "https://github.com/georgeawright/cattykit/releases/download/copycat-v0.1.0/copycat-0.1.0-py3-none-any.whl", hash = "sha256:f075ba6fad825f8e0619c3672c1f8c897e788964b8180944197a303c2b6d37a8" },
-]
 
 [package.metadata]
 requires-dist = [
-    { name = "cattykit", specifier = ">=0.1.0" },
+    { name = "cattykit", editable = "../../packages/cattykit" },
     { name = "numpy", specifier = ">=2.4.3" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "crosshair-tool", specifier = ">=0.0.110" },
+    { name = "ipython", specifier = ">=9.11.0" },
+    { name = "pytest", specifier = ">=9.0.2" },
 ]
 
 [[package]]
@@ -123,8 +135,8 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "cattykit", specifier = "==0.1.2" },
-    { name = "copycat", url = "https://github.com/georgeawright/cattykit/releases/download/copycat-v0.1.0/copycat-0.1.0-py3-none-any.whl" },
+    { name = "cattykit", editable = "../../packages/cattykit" },
+    { name = "copycat", editable = "../../models/copycat" },
     { name = "matplotlib", specifier = ">=3.10.8" },
     { name = "tabulate", specifier = ">=0.9.0" },
 ]
