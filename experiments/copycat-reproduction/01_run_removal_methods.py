@@ -50,12 +50,6 @@ def faithful_original_removal(
         removed += 1
 
 
-def random_removal(coderack: Coderack, count: int, _temperature: float) -> None:
-    """Remove uniformly sampled, distinct pending codelets."""
-    for codelet in random.sample(coderack.codelets, count):
-        coderack._remove(codelet)
-
-
 @contextmanager
 def patched_removal(method: RemovalMethod) -> Iterator[None]:
     """Install one alternative removal method only for the enclosed work."""
@@ -110,7 +104,6 @@ def main(iterations: int = 1000) -> None:
         raise ValueError("iterations must be at least 1")
     DATASETS.mkdir(parents=True, exist_ok=True)
     run_method("faithful_original_removal", faithful_original_removal, iterations)
-    run_method("random_removal", random_removal, iterations)
 
 
 if __name__ == "__main__":

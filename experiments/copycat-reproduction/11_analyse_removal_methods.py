@@ -30,10 +30,6 @@ def main(gold_path: Path = GOLD_PATH) -> None:
             "faithful_original_removal",
             DATASETS / "coderack_removal_faithful_original_removal_raw_results.csv",
         ),
-        (
-            "random_removal",
-            DATASETS / "coderack_removal_random_removal_raw_results.csv",
-        ),
     )
     summary_rows = []
     for name, raw_path in raw_paths:
