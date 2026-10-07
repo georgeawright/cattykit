@@ -2,7 +2,8 @@
 
 | Measure                               |   Fixed weighted removal |   Faithful original removal |
 |:--------------------------------------|-------------------------:|----------------------------:|
-| Answer TV distance                    |                    0.022 |                       0.025 |
+| Mean answer TV distance               |                    0.022 |                       0.025 |
+| Max answer TV distance                |                    0.058 |                       0.086 |
 | Temperature mean absolute error       |                    0.01  |                       0.012 |
 | Temperature max absolute error        |                    0.078 |                       0.127 |
 | Temperature RMS z                     |                    1.15  |                       1.229 |

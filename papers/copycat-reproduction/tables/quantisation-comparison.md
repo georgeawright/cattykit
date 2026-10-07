@@ -2,7 +2,8 @@
 
 | Measure                               |   Full precision |   Two-decimal quantisation |
 |:--------------------------------------|-----------------:|---------------------------:|
-| Answer TV distance                    |            0.022 |                      0.021 |
+| Mean answer TV distance               |            0.022 |                      0.021 |
+| Max answer TV distance                |            0.058 |                      0.055 |
 | Temperature mean absolute error       |            0.01  |                      0.011 |
 | Temperature max absolute error        |            0.078 |                      0.085 |
 | Temperature RMS z                     |            1.15  |                      1.055 |

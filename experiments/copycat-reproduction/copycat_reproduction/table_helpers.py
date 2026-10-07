@@ -196,8 +196,12 @@ def comparison_markdown(comparison: pd.DataFrame, error: pd.DataFrame) -> str:
     table = pd.DataFrame(
         [
             (
-                "Answer TV distance",
+                "Mean answer TV distance",
                 comparison["solution_total_variation_distance"].mean(),
+            ),
+            (
+                "Max answer TV distance",
+                comparison["solution_total_variation_distance"].max(),
             ),
             (
                 "Temperature mean absolute error",
@@ -252,6 +256,9 @@ def method_summary_row(
         "answer_tv_distance_mean": comparison[
             "solution_total_variation_distance"
         ].mean(),
+        "answer_tv_distance_max": comparison[
+            "solution_total_variation_distance"
+        ].max(),
         "temperature_mean_absolute_error": comparison[
             "temperature_mean_absolute_error"
         ].mean(),
@@ -286,7 +293,8 @@ def method_comparison_markdown(
 ) -> str:
     """Render method columns using the same measures as the baseline table."""
     measures = (
-        ("Answer TV distance", "answer_tv_distance_mean"),
+        ("Mean answer TV distance", "answer_tv_distance_mean"),
+        ("Max answer TV distance", "answer_tv_distance_max"),
         ("Temperature mean absolute error", "temperature_mean_absolute_error"),
         ("Temperature max absolute error", "temperature_max_absolute_error"),
         ("Temperature RMS z", "temperature_rms_z_stat"),

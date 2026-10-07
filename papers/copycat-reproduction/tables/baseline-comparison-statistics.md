@@ -2,7 +2,8 @@
 
 | Measure                         |   Value |
 |:--------------------------------|--------:|
-| Answer TV distance              |   0.022 |
+| Mean answer TV distance         |   0.022 |
+| Max answer TV distance          |   0.058 |
 | Temperature mean absolute error |   0.010 |
 | Temperature max absolute error  |   0.078 |
 | Temperature RMS z               |   1.150 |
