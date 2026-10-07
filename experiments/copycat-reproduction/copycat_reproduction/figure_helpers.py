@@ -190,7 +190,10 @@ def _save_problem_snag_count_figure(
     _style_axis(axis)
     figure.subplots_adjust(left=0.30, right=0.96, bottom=0.24, top=0.94)
     figure.savefig(
-        FIGURES / f"{filename_prefix}all_problems-snag-count.png", dpi=300
+        FIGURES / f"{filename_prefix}all_problems-snag-count.png",
+        dpi=300,
+        bbox_inches="tight",
+        pad_inches=0.02,
     )
     plt.close(figure)
 
