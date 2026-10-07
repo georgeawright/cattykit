@@ -319,7 +319,15 @@ def method_comparison_markdown(
             },
         }
     )
-    return f"# {title}\n\n" + table.to_markdown(index=False) + "\n"
+    return (
+        f"# {title}\n\n"
+        + table.to_markdown(
+            index=False,
+            disable_numparse=True,
+            colalign=("left", *("right" for _ in method_labels)),
+        )
+        + "\n"
+    )
 
 
 def _format_method_summary_value(field: str, value: object) -> str:
