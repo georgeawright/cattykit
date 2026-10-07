@@ -1,4 +1,4 @@
-"""Plot baseline answer frequencies, temperatures, and codelets for five targets."""
+"""Plot baseline answers, temperature, codelets, and snags for five targets."""
 
 from __future__ import annotations
 

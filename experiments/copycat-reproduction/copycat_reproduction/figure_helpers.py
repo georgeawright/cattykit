@@ -48,7 +48,7 @@ def _style_solution_labels(axis: plt.Axes) -> None:
 
 
 def _save_combined_figures(
-    basic_runs_by_problem: list[tuple[str, int, list[dict[str, Any]]]],
+    basic_runs_by_problem: list[tuple[str, str, list[dict[str, Any]]]],
     solution_label_width: int,
     filename_prefix: str,
 ) -> None:
@@ -154,6 +154,47 @@ def _save_combined_figures(
         plt.close(figure)
 
 
+def _save_problem_snag_count_figure(
+    all_runs_by_problem: list[tuple[str, str, list[dict[str, Any]]]],
+    filename_prefix: str,
+) -> None:
+    """Save the per-run snag distributions in the existing box-plot style."""
+    problems = [problem for problem, _, _ in all_runs_by_problem]
+    snag_counts = [
+        [run["snag_count"] for run in runs]
+        for _, _, runs in all_runs_by_problem
+    ]
+    positions = list(range(len(problems)))
+    figure, axis = plt.subplots(figsize=(4.13, 5.84))
+    figure.patch.set_facecolor("white")
+    axis.boxplot(
+        snag_counts,
+        positions=positions,
+        orientation="horizontal",
+        patch_artist=True,
+        boxprops={"facecolor": "0.85", "edgecolor": "black", "linewidth": 0.45},
+        medianprops={"color": "black", "linewidth": 0.6},
+        whiskerprops={"color": "black", "linewidth": 0.45},
+        capprops={"color": "black", "linewidth": 0.45},
+        flierprops={
+            "marker": "o",
+            "markerfacecolor": "white",
+            "markeredgecolor": "black",
+            "markeredgewidth": 0.4,
+            "markersize": 2,
+        },
+    )
+    axis.set_yticks(positions, labels=problems)
+    axis.set_ylim(len(problems) - 0.5, -0.5)
+    axis.set(xlabel="Snags per run", ylabel="Problem")
+    _style_axis(axis)
+    figure.subplots_adjust(left=0.30, right=0.96, bottom=0.24, top=0.94)
+    figure.savefig(
+        FIGURES / f"{filename_prefix}all_problems-snag-count.png", dpi=300
+    )
+    plt.close(figure)
+
+
 def save_basic_problem_figures(
     raw_results_path: Path, *, filename_prefix: str = ""
 ) -> None:
@@ -165,6 +206,7 @@ def save_basic_problem_figures(
         "answer",
         "temperature",
         "codelets_run",
+        "snag_count",
     }
     missing_columns = required_columns.difference(raw_results.columns)
     if missing_columns:
@@ -172,12 +214,11 @@ def save_basic_problem_figures(
         raise ValueError(f"Raw results CSV is missing required columns: {missing}.")
 
     template = json.loads(TEMPLATE_PATH.read_text(encoding="utf-8"))
-    basic_runs_by_problem: list[tuple[str, int, list[dict[str, Any]]]] = []
+    basic_runs_by_problem: list[tuple[str, str, list[dict[str, Any]]]] = []
+    all_runs_by_problem: list[tuple[str, str, list[dict[str, Any]]]] = []
     basic_problems = set(template["basic_problems"])
     for case in template["results"]:
         problem = case["problem"]
-        if problem not in basic_problems:
-            continue
         problem_results = raw_results.loc[raw_results["problem"] == problem]
         if problem_results.empty:
             raise ValueError(f"Raw results CSV has no runs for {problem!r}.")
@@ -186,12 +227,13 @@ def save_basic_problem_figures(
                 "solution": row.answer,
                 "temperature": row.temperature,
                 "codelets_run": row.codelets_run,
+                "snag_count": row.snag_count,
             }
             for row in problem_results.itertuples(index=False)
         ]
-        basic_runs_by_problem.append(
-            (problem, int(case["id"]), runs)
-        )
+        all_runs_by_problem.append((problem, str(case["id"]), runs))
+        if problem in basic_problems:
+            basic_runs_by_problem.append((problem, str(case["id"]), runs))
     solution_label_width = max(
         len(str(run["solution"]))
         for _, _, basic_runs in basic_runs_by_problem
@@ -199,3 +241,4 @@ def save_basic_problem_figures(
     )
     FIGURES.mkdir(parents=True, exist_ok=True)
     _save_combined_figures(basic_runs_by_problem, solution_label_width, filename_prefix)
+    _save_problem_snag_count_figure(all_runs_by_problem, filename_prefix)

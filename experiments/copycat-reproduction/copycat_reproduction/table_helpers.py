@@ -232,8 +232,18 @@ def comparison_markdown(comparison: pd.DataFrame, error: pd.DataFrame) -> str:
     )
 
 
-def method_summary_row(method: str, comparison: pd.DataFrame) -> dict[str, Any]:
+def method_summary_row(
+    method: str,
+    comparison: pd.DataFrame,
+    raw_runs: pd.DataFrame,
+    snaggable_problems: set[str],
+) -> dict[str, Any]:
     """Build one row of the three-method comparison table."""
+    if "snag_count" not in raw_runs.columns:
+        raise ValueError("Raw results must include snag_count for method summaries.")
+    snaggable_runs = raw_runs.loc[raw_runs["problem"].isin(snaggable_problems)]
+    if snaggable_runs.empty:
+        raise ValueError("Raw results contain no runs for the snaggable problem set.")
     temperature_count = int(comparison["temperature_z_count"].sum())
     temperature_chi_square = float(comparison["temperature_z_chi_square"].sum())
     codelets_chi_square = float((comparison["codelets_z_stat"] ** 2).sum())
@@ -264,6 +274,10 @@ def method_summary_row(method: str, comparison: pd.DataFrame) -> dict[str, Any]:
         "codelets_run_z_p_value": chi_square_survival_function(
             codelets_chi_square, len(comparison)
         ),
+        "mean_snag_count_on_snaggable_problems": round(
+            snaggable_runs["snag_count"].sum() / len(snaggable_runs), 3
+        ),
+        "max_snag_count": int(raw_runs["snag_count"].max()),
     }
 
 
@@ -279,16 +293,31 @@ def method_comparison_markdown(
         (r"Temperature max \|z\|", "temperature_max_absolute_z_stat"),
         ("Codelets-run relative error", "codelets_run_relative_error"),
         ("Codelets-run RMS z", "codelets_run_rms_z_stat"),
+        (
+            "Mean snag count on snaggable problems",
+            "mean_snag_count_on_snaggable_problems",
+        ),
+        ("Max snag count", "max_snag_count"),
     )
     table = pd.DataFrame(
         {
             "Measure": [label for label, _ in measures],
             **{
                 method_labels[row.method]: [
-                    getattr(row, field) for _, field in measures
+                    _format_method_summary_value(field, getattr(row, field))
+                    for _, field in measures
                 ]
                 for row in summary.itertuples(index=False)
             },
         }
     )
-    return f"# {title}\n\n" + table.to_markdown(index=False, floatfmt=".3f") + "\n"
+    return f"# {title}\n\n" + table.to_markdown(index=False) + "\n"
+
+
+def _format_method_summary_value(field: str, value: object) -> str:
+    """Apply metric-specific display precision to a method-summary value."""
+    if field == "mean_snag_count_on_snaggable_problems":
+        return f"{float(value):.3f}"
+    if field == "max_snag_count":
+        return str(int(value))
+    return f"{float(value):.3f}"
