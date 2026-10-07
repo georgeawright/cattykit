@@ -198,6 +198,40 @@ def _save_problem_snag_count_figure(
     plt.close(figure)
 
 
+def _save_problem_5_xyd_scatter(raw_results: pd.DataFrame) -> None:
+    """Plot codelets against snags for the ``xyd`` runs of template problem 5."""
+    template = json.loads(TEMPLATE_PATH.read_text(encoding="utf-8"))
+    problem = next(
+        case["problem"] for case in template["results"] if str(case["id"]) == "5"
+    )
+    runs = raw_results.loc[
+        (raw_results["problem"] == problem) & (raw_results["answer"] == "xyd")
+    ]
+    if runs.empty:
+        raise ValueError(f"Raw results contain no xyd runs for problem 5: {problem!r}.")
+
+    figure, axis = plt.subplots(figsize=(4.13, 3.0))
+    figure.patch.set_facecolor("white")
+    axis.scatter(
+        runs["codelets_run"],
+        runs["snag_count"],
+        s=8,
+        facecolors="white",
+        edgecolors="black",
+        linewidths=0.35,
+    )
+    axis.set(xlabel="Codelets run", ylabel="Snags encountered")
+    axis.set_xlim(left=0)
+    axis.set_ylim(bottom=0)
+    axis.margins(x=0.04, y=0.08)
+    _style_axis(axis)
+    figure.subplots_adjust(left=0.18, right=0.96, bottom=0.18, top=0.96)
+    figure.savefig(
+        FIGURES / "problem_5_xyd-codelets-vs-snags.png", dpi=300
+    )
+    plt.close(figure)
+
+
 def save_basic_problem_figures(
     raw_results_path: Path, *, filename_prefix: str = ""
 ) -> None:
@@ -245,3 +279,4 @@ def save_basic_problem_figures(
     FIGURES.mkdir(parents=True, exist_ok=True)
     _save_combined_figures(basic_runs_by_problem, solution_label_width, filename_prefix)
     _save_problem_snag_count_figure(all_runs_by_problem, filename_prefix)
+    _save_problem_5_xyd_scatter(raw_results)
