@@ -10,13 +10,15 @@ artefacts in [papers/copycat-reproduction](../../papers/copycat-reproduction/).
 Scripts produce outputs which are consumed by subsequent scripts according to the dependency graph:
 
 ```text
-00_run_baseline.py ─────> 10_analyse_baseline.py ─────> 21_plot_basic_problems.py
-  │
-  │
-  ├──> 01_run_removal_methods.py ──> 11_analyse_removal_methods.py
-  │
-  └──> 02_run_with_quantization.py ──> 12_analyse_quantisation.py
-                                     └──> 23_plot_quantized_basic_problems.py
+00_run_baseline.py ─────> 10_analyse_baseline.py ─────> 20_plot_basic_problems.py
+ │
+ ├──────────────────────> 13_analyse_codelets_vs_temperature.py
+ │
+ ├──────────────────────> 14_analyse_codelets_vs_snags.py
+ │
+ ├─> 01_run_removal_methods.py ─> 11_analyse_removal_methods.py
+ │
+ └─> 02_run_with_quantization.py ─> 12_analyse_quantisation.py ─> 22_plot_quantized_basic_problems.py
 ```
 
 Scripts beginning with `0` run Copycat or altered versions of Copycat and generate raw CSV outputs
