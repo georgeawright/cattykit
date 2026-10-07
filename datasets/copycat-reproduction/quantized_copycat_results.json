@@ -1,0 +1,1265 @@
+{
+  "schema_version": 1,
+  "source_work": {
+    "citation": "Mitchell, M. (1993). Analogy-Making as Perception: A Computer Model. MIT Press. doi:10.5555/152203",
+    "source_kind": "Numerical labels manually transcribed from bar charts",
+    "transformations": {
+      "temperature": {
+        "source_unit": "integer percent, 0\u2013100",
+        "stored_unit": "decimal proportion, 0\u20131",
+        "formula": "stored_value = source_value / 100"
+      }
+    }
+  },
+  "basic_problems": [
+    "abc -> abd ==> iijjkk -> ?",
+    "abc -> abd ==> ijk -> ?",
+    "abc -> abd ==> kji -> ?",
+    "abc -> abd ==> mrrjjj -> ?",
+    "abc -> abd ==> xyz -> ?"
+  ],
+  "results": [
+    {
+      "problem": "abc -> abd ==> ijk -> ?",
+      "source": {
+        "page": 76
+      },
+      "solutions": {
+        "ijl": {
+          "frequency": 979,
+          "temperature_mean": 0.16867211440245147,
+          "temperature_standard_error": 0.002975445232611291
+        },
+        "ijd": {
+          "frequency": 20,
+          "temperature_mean": 0.194,
+          "temperature_standard_error": 0.017687343080947965
+        },
+        "ijk": {
+          "frequency": 1,
+          "temperature_mean": 0.56,
+          "temperature_standard_error": 0.0
+        }
+      },
+      "codelets": {
+        "mean": 290.765,
+        "standard_error": 3.1056582052582486
+      },
+      "id": "1"
+    },
+    {
+      "problem": "abc -> abd ==> iijjkk -> ?",
+      "source": {
+        "page": 79
+      },
+      "solutions": {
+        "iijjll": {
+          "frequency": 831,
+          "temperature_mean": 0.27320096269554756,
+          "temperature_standard_error": 0.003044307528762413
+        },
+        "iijjkl": {
+          "frequency": 147,
+          "temperature_mean": 0.4719727891156462,
+          "temperature_standard_error": 0.006629736114543975
+        },
+        "iikkll": {
+          "frequency": 10,
+          "temperature_mean": 0.41200000000000003,
+          "temperature_standard_error": 0.008137703743822465
+        },
+        "iijjkd": {
+          "frequency": 6,
+          "temperature_mean": 0.49333333333333335,
+          "temperature_standard_error": 0.017061978522759643
+        },
+        "iijjdd": {
+          "frequency": 3,
+          "temperature_mean": 0.41333333333333333,
+          "temperature_standard_error": 0.04666666666666667
+        },
+        "iijkll": {
+          "frequency": 2,
+          "temperature_mean": 0.45499999999999996,
+          "temperature_standard_error": 0.02500000000000001
+        },
+        "hhjjkk": {
+          "frequency": 1,
+          "temperature_mean": 0.21,
+          "temperature_standard_error": 0.0
+        }
+      },
+      "codelets": {
+        "mean": 613.696,
+        "standard_error": 7.85730353256146
+      },
+      "id": "2"
+    },
+    {
+      "problem": "abc -> abd ==> kji -> ?",
+      "source": {
+        "page": 80
+      },
+      "solutions": {
+        "kjh": {
+          "frequency": 550,
+          "temperature_mean": 0.1407818181818182,
+          "temperature_standard_error": 0.0015490691489694224
+        },
+        "kjj": {
+          "frequency": 224,
+          "temperature_mean": 0.4375446428571429,
+          "temperature_standard_error": 0.006623073423187665
+        },
+        "lji": {
+          "frequency": 207,
+          "temperature_mean": 0.17777777777777776,
+          "temperature_standard_error": 0.0027247171807482035
+        },
+        "kjd": {
+          "frequency": 16,
+          "temperature_mean": 0.29000000000000004,
+          "temperature_standard_error": 0.04176322145939734
+        },
+        "dji": {
+          "frequency": 1,
+          "temperature_mean": 0.2,
+          "temperature_standard_error": 0.0
+        },
+        "kkj": {
+          "frequency": 1,
+          "temperature_mean": 0.53,
+          "temperature_standard_error": 0.0
+        },
+        "kji": {
+          "frequency": 1,
+          "temperature_mean": 0.78,
+          "temperature_standard_error": 0.0
+        }
+      },
+      "codelets": {
+        "mean": 399.409,
+        "standard_error": 5.198189578487293
+      },
+      "id": "3"
+    },
+    {
+      "problem": "abc -> abd ==> mrrjjj -> ?",
+      "source": {
+        "page": 81
+      },
+      "solutions": {
+        "mrrkkk": {
+          "frequency": 693,
+          "temperature_mean": 0.43278499278499283,
+          "temperature_standard_error": 0.001950007097324002
+        },
+        "mrrjjk": {
+          "frequency": 208,
+          "temperature_mean": 0.49687499999999996,
+          "temperature_standard_error": 0.005044093825959588
+        },
+        "mrrjjjj": {
+          "frequency": 47,
+          "temperature_mean": 0.2123404255319149,
+          "temperature_standard_error": 0.005626460266472927
+        },
+        "mrrjkk": {
+          "frequency": 37,
+          "temperature_mean": 0.46297297297297296,
+          "temperature_standard_error": 0.006973403622895892
+        },
+        "mrrjjd": {
+          "frequency": 9,
+          "temperature_mean": 0.6044444444444443,
+          "temperature_standard_error": 0.035398960715719976
+        },
+        "mrrddd": {
+          "frequency": 6,
+          "temperature_mean": 0.48,
+          "temperature_standard_error": 0.0196638416050035
+        }
+      },
+      "codelets": {
+        "mean": 838.43,
+        "standard_error": 14.91868399800171
+      },
+      "id": "4"
+    },
+    {
+      "problem": "abc -> abd ==> xyz -> ?",
+      "source": {
+        "page": 82
+      },
+      "solutions": {
+        "xyd": {
+          "frequency": 835,
+          "temperature_mean": 0.22076646706586828,
+          "temperature_standard_error": 0.00455534555629874
+        },
+        "wyz": {
+          "frequency": 101,
+          "temperature_mean": 0.14475247524752477,
+          "temperature_standard_error": 0.0037931518788937592
+        },
+        "yyz": {
+          "frequency": 53,
+          "temperature_mean": 0.44679245283018865,
+          "temperature_standard_error": 0.014903593397130774
+        },
+        "dyz": {
+          "frequency": 8,
+          "temperature_mean": 0.26625,
+          "temperature_standard_error": 0.06662628985618214
+        },
+        "xyy": {
+          "frequency": 2,
+          "temperature_mean": 0.35,
+          "temperature_standard_error": 0.019999999999999976
+        },
+        "xyz": {
+          "frequency": 1,
+          "temperature_mean": 0.33,
+          "temperature_standard_error": 0.0
+        }
+      },
+      "codelets": {
+        "mean": 3142.618,
+        "standard_error": 86.97139207299786
+      },
+      "id": "5"
+    },
+    {
+      "problem": "abc -> abd ==> ijklmnop -> ?",
+      "source": {
+        "page": 142
+      },
+      "solutions": {
+        "ijklmnoq": {
+          "frequency": 928,
+          "temperature_mean": 0.27707974137931035,
+          "temperature_standard_error": 0.004634688109933107
+        },
+        "ijklnopq": {
+          "frequency": 18,
+          "temperature_mean": 0.43777777777777777,
+          "temperature_standard_error": 0.006445120541501205
+        },
+        "ijkmnopq": {
+          "frequency": 15,
+          "temperature_mean": 0.4666666666666667,
+          "temperature_standard_error": 0.012934511482912194
+        },
+        "ijklmopq": {
+          "frequency": 11,
+          "temperature_mean": 0.4572727272727273,
+          "temperature_standard_error": 0.012217045401696248
+        },
+        "ijklmnod": {
+          "frequency": 10,
+          "temperature_mean": 0.483,
+          "temperature_standard_error": 0.06117461347105785
+        },
+        "ijlmnopq": {
+          "frequency": 6,
+          "temperature_mean": 0.4683333333333333,
+          "temperature_standard_error": 0.016210421887717114
+        },
+        "ijklmnpq": {
+          "frequency": 5,
+          "temperature_mean": 0.516,
+          "temperature_standard_error": 0.04523273151159458
+        },
+        "iklmnopq": {
+          "frequency": 4,
+          "temperature_mean": 0.43,
+          "temperature_standard_error": 0.004082482904638634
+        },
+        "ijklmnop": {
+          "frequency": 2,
+          "temperature_mean": 0.605,
+          "temperature_standard_error": 0.0050000000000000044
+        },
+        "ijkddddd": {
+          "frequency": 1,
+          "temperature_mean": 0.52,
+          "temperature_standard_error": 0.0
+        }
+      },
+      "codelets": {
+        "mean": 582.861,
+        "standard_error": 9.369653039311386
+      },
+      "id": "1.1"
+    },
+    {
+      "problem": "abc -> abd ==> xlg -> ?",
+      "source": {
+        "page": 144
+      },
+      "solutions": {
+        "xlh": {
+          "frequency": 988,
+          "temperature_mean": 0.4211943319838057,
+          "temperature_standard_error": 0.001085950709172779
+        },
+        "xld": {
+          "frequency": 9,
+          "temperature_mean": 0.49,
+          "temperature_standard_error": 0.019220937657784664
+        },
+        "ylg": {
+          "frequency": 2,
+          "temperature_mean": 0.6000000000000001,
+          "temperature_standard_error": 0.04000000000000001
+        },
+        "xlg": {
+          "frequency": 1,
+          "temperature_mean": 0.86,
+          "temperature_standard_error": 0.0
+        }
+      },
+      "codelets": {
+        "mean": 329.252,
+        "standard_error": 5.485988750313709
+      },
+      "id": "1.2"
+    },
+    {
+      "problem": "abc -> abd ==> xcg -> ?",
+      "source": {
+        "page": 145
+      },
+      "solutions": {
+        "xch": {
+          "frequency": 974,
+          "temperature_mean": 0.42997946611909654,
+          "temperature_standard_error": 0.001417416638973853
+        },
+        "xdg": {
+          "frequency": 15,
+          "temperature_mean": 0.5846666666666667,
+          "temperature_standard_error": 0.014987825747416486
+        },
+        "xcd": {
+          "frequency": 11,
+          "temperature_mean": 0.509090909090909,
+          "temperature_standard_error": 0.028618320433994895
+        }
+      },
+      "codelets": {
+        "mean": 493.371,
+        "standard_error": 10.373875681521138
+      },
+      "id": "1.3"
+    },
+    {
+      "problem": "abc -> abd ==> abcd -> ?",
+      "source": {
+        "page": 146
+      },
+      "solutions": {
+        "abce": {
+          "frequency": 925,
+          "temperature_mean": 0.17625945945945945,
+          "temperature_standard_error": 0.003082588043533035
+        },
+        "abdd": {
+          "frequency": 59,
+          "temperature_mean": 0.24135593220338983,
+          "temperature_standard_error": 0.015542888810783353
+        },
+        "abcd": {
+          "frequency": 9,
+          "temperature_mean": 0.27888888888888885,
+          "temperature_standard_error": 0.053448948759136417
+        },
+        "abde": {
+          "frequency": 5,
+          "temperature_mean": 0.418,
+          "temperature_standard_error": 0.007348469228349529
+        },
+        "acde": {
+          "frequency": 2,
+          "temperature_mean": 0.405,
+          "temperature_standard_error": 0.0049999999999999906
+        }
+      },
+      "codelets": {
+        "mean": 340.432,
+        "standard_error": 3.9611556558825263
+      },
+      "id": "1.4"
+    },
+    {
+      "problem": "abc -> abd ==> cde -> ?",
+      "source": {
+        "page": 147
+      },
+      "solutions": {
+        "cdf": {
+          "frequency": 800,
+          "temperature_mean": 0.17653749999999999,
+          "temperature_standard_error": 0.0032789360918681685
+        },
+        "bde": {
+          "frequency": 128,
+          "temperature_mean": 0.150390625,
+          "temperature_standard_error": 0.0028569106188898854
+        },
+        "dde": {
+          "frequency": 42,
+          "temperature_mean": 0.40095238095238095,
+          "temperature_standard_error": 0.013783667571863884
+        },
+        "cdd": {
+          "frequency": 27,
+          "temperature_mean": 0.2748148148148148,
+          "temperature_standard_error": 0.031225539123493323
+        },
+        "cef": {
+          "frequency": 3,
+          "temperature_mean": 0.4366666666666667,
+          "temperature_standard_error": 0.0033333333333333383
+        }
+      },
+      "codelets": {
+        "mean": 303.66,
+        "standard_error": 3.176369582357148
+      },
+      "id": "1.5"
+    },
+    {
+      "problem": "abc -> abd ==> cab -> ?",
+      "source": {
+        "page": 148
+      },
+      "solutions": {
+        "dab": {
+          "frequency": 462,
+          "temperature_mean": 0.4094588744588744,
+          "temperature_standard_error": 0.002755022167257665
+        },
+        "cac": {
+          "frequency": 372,
+          "temperature_mean": 0.4417204301075269,
+          "temperature_standard_error": 0.0036877546390290212
+        },
+        "cbc": {
+          "frequency": 159,
+          "temperature_mean": 0.4574842767295597,
+          "temperature_standard_error": 0.002540913608699558
+        },
+        "cad": {
+          "frequency": 3,
+          "temperature_mean": 0.57,
+          "temperature_standard_error": 0.08326663997864531
+        },
+        "cabc": {
+          "frequency": 3,
+          "temperature_mean": 0.26,
+          "temperature_standard_error": 0.015275252316519456
+        },
+        "cdd": {
+          "frequency": 1,
+          "temperature_mean": 0.49,
+          "temperature_standard_error": 0.0
+        }
+      },
+      "codelets": {
+        "mean": 698.689,
+        "standard_error": 16.167509289795866
+      },
+      "id": "1.6"
+    },
+    {
+      "problem": "abc -> abd ==> cmg -> ?",
+      "source": {
+        "page": 149
+      },
+      "solutions": {
+        "cmh": {
+          "frequency": 710,
+          "temperature_mean": 0.41991549295774644,
+          "temperature_standard_error": 0.0014750047547567046
+        },
+        "dmg": {
+          "frequency": 280,
+          "temperature_mean": 0.4084285714285714,
+          "temperature_standard_error": 0.002924000153900017
+        },
+        "cmd": {
+          "frequency": 10,
+          "temperature_mean": 0.51,
+          "temperature_standard_error": 0.03183289703016886
+        }
+      },
+      "codelets": {
+        "mean": 318.535,
+        "standard_error": 4.9232972315949635
+      },
+      "id": "1.7"
+    },
+    {
+      "problem": "abc -> qbc ==> ijk -> ?",
+      "source": {
+        "page": 150
+      },
+      "solutions": {
+        "qjk": {
+          "frequency": 996,
+          "temperature_mean": 0.18969879518072288,
+          "temperature_standard_error": 0.002414343502569352
+        },
+        "qqk": {
+          "frequency": 2,
+          "temperature_mean": 0.49,
+          "temperature_standard_error": 0.010000000000000009
+        },
+        "ijk": {
+          "frequency": 1,
+          "temperature_mean": 0.76,
+          "temperature_standard_error": 0.0
+        },
+        "ijq": {
+          "frequency": 1,
+          "temperature_mean": 0.2,
+          "temperature_standard_error": 0.0
+        }
+      },
+      "codelets": {
+        "mean": 307.582,
+        "standard_error": 3.204075119808113
+      },
+      "id": "1.8"
+    },
+    {
+      "problem": "aabc -> aabd ==> ijkk -> ?",
+      "source": {
+        "page": 151
+      },
+      "solutions": {
+        "ijll": {
+          "frequency": 589,
+          "temperature_mean": 0.2874363327674024,
+          "temperature_standard_error": 0.0046183685548596715
+        },
+        "ijkl": {
+          "frequency": 238,
+          "temperature_mean": 0.49298319327731094,
+          "temperature_standard_error": 0.006325595105371575
+        },
+        "jjkk": {
+          "frequency": 106,
+          "temperature_mean": 0.4877358490566038,
+          "temperature_standard_error": 0.01035253094729485
+        },
+        "hjkk": {
+          "frequency": 46,
+          "temperature_mean": 0.18934782608695655,
+          "temperature_standard_error": 0.004908852044765202
+        },
+        "ijkd": {
+          "frequency": 8,
+          "temperature_mean": 0.535,
+          "temperature_standard_error": 0.03417392489687338
+        },
+        "jkkk": {
+          "frequency": 7,
+          "temperature_mean": 0.3842857142857143,
+          "temperature_standard_error": 0.015408275892727079
+        },
+        "ijdd": {
+          "frequency": 3,
+          "temperature_mean": 0.48,
+          "temperature_standard_error": 0.04932882862316245
+        },
+        "djkk": {
+          "frequency": 1,
+          "temperature_mean": 0.69,
+          "temperature_standard_error": 0.0
+        },
+        "ddkk": {
+          "frequency": 1,
+          "temperature_mean": 0.38,
+          "temperature_standard_error": 0.0
+        },
+        "jklk": {
+          "frequency": 1,
+          "temperature_mean": 0.5,
+          "temperature_standard_error": 0.0
+        }
+      },
+      "codelets": {
+        "mean": 799.004,
+        "standard_error": 13.50462968788878
+      },
+      "id": "1.9"
+    },
+    {
+      "problem": "abcm -> abcn ==> rijk -> ?",
+      "source": {
+        "page": 152
+      },
+      "solutions": {
+        "rijl": {
+          "frequency": 420,
+          "temperature_mean": 0.6397619047619048,
+          "temperature_standard_error": 0.0045435950646327
+        },
+        "sijk": {
+          "frequency": 418,
+          "temperature_mean": 0.6797846889952153,
+          "temperature_standard_error": 0.0020009415445914323
+        },
+        "rjkl": {
+          "frequency": 136,
+          "temperature_mean": 0.5975,
+          "temperature_standard_error": 0.004338295298872343
+        },
+        "rikl": {
+          "frequency": 11,
+          "temperature_mean": 0.6236363636363635,
+          "temperature_standard_error": 0.01515212120000049
+        },
+        "rijn": {
+          "frequency": 8,
+          "temperature_mean": 0.71625,
+          "temperature_standard_error": 0.030174344589875876
+        },
+        "nijk": {
+          "frequency": 5,
+          "temperature_mean": 0.708,
+          "temperature_standard_error": 0.027820855486487123
+        },
+        "rijk": {
+          "frequency": 1,
+          "temperature_mean": 0.82,
+          "temperature_standard_error": 0.0
+        },
+        "qijk": {
+          "frequency": 1,
+          "temperature_mean": 0.69,
+          "temperature_standard_error": 0.0
+        }
+      },
+      "codelets": {
+        "mean": 1821.446,
+        "standard_error": 52.08138369524769
+      },
+      "id": "1.10"
+    },
+    {
+      "problem": "abc -> abd ==> hhwwqq -> ?",
+      "source": {
+        "page": 154
+      },
+      "solutions": {
+        "hhwwrr": {
+          "frequency": 713,
+          "temperature_mean": 0.42838709677419357,
+          "temperature_standard_error": 0.002004928942067515
+        },
+        "hhwwqr": {
+          "frequency": 263,
+          "temperature_mean": 0.47612167300380226,
+          "temperature_standard_error": 0.004277280472379249
+        },
+        "hhxxrr": {
+          "frequency": 11,
+          "temperature_mean": 0.42454545454545456,
+          "temperature_standard_error": 0.01568807516808034
+        },
+        "hhwwqd": {
+          "frequency": 6,
+          "temperature_mean": 0.5533333333333333,
+          "temperature_standard_error": 0.03200694369108749
+        },
+        "hhwwdd": {
+          "frequency": 6,
+          "temperature_mean": 0.5183333333333334,
+          "temperature_standard_error": 0.025221243250702595
+        },
+        "hhwwqq": {
+          "frequency": 1,
+          "temperature_mean": 0.43,
+          "temperature_standard_error": 0.0
+        }
+      },
+      "codelets": {
+        "mean": 849.31,
+        "standard_error": 14.942278460314732
+      },
+      "id": "2.1"
+    },
+    {
+      "problem": "abc -> abd ==> lmfgop -> ?",
+      "source": {
+        "page": 156
+      },
+      "solutions": {
+        "lmfgoq": {
+          "frequency": 533,
+          "temperature_mean": 0.5127767354596623,
+          "temperature_standard_error": 0.0033235156314200447
+        },
+        "lmfgpq": {
+          "frequency": 446,
+          "temperature_mean": 0.4551121076233184,
+          "temperature_standard_error": 0.002664211297958834
+        },
+        "lmfgod": {
+          "frequency": 10,
+          "temperature_mean": 0.508,
+          "temperature_standard_error": 0.013564659966250534
+        },
+        "lmfgdd": {
+          "frequency": 6,
+          "temperature_mean": 0.5133333333333333,
+          "temperature_standard_error": 0.016261747890200615
+        },
+        "lmfgop": {
+          "frequency": 3,
+          "temperature_mean": 0.58,
+          "temperature_standard_error": 0.05567764362830024
+        },
+        "mmfgop": {
+          "frequency": 1,
+          "temperature_mean": 0.61,
+          "temperature_standard_error": 0.0
+        },
+        "lmfhpq": {
+          "frequency": 1,
+          "temperature_mean": 0.63,
+          "temperature_standard_error": 0.0
+        }
+      },
+      "codelets": {
+        "mean": 1049.663,
+        "standard_error": 23.371792402618826
+      },
+      "id": "2.2"
+    },
+    {
+      "problem": "abc -> abd ==> lmnfghopq -> ?",
+      "source": {
+        "page": 157
+      },
+      "solutions": {
+        "lmnfghpqr": {
+          "frequency": 513,
+          "temperature_mean": 0.46485380116959063,
+          "temperature_standard_error": 0.0029025438907248624
+        },
+        "lmnfghopr": {
+          "frequency": 438,
+          "temperature_mean": 0.5345433789954338,
+          "temperature_standard_error": 0.0033813599267419614
+        },
+        "lmnfghoqr": {
+          "frequency": 26,
+          "temperature_mean": 0.49269230769230765,
+          "temperature_standard_error": 0.012019953824404999
+        },
+        "lmnfghopq": {
+          "frequency": 9,
+          "temperature_mean": 0.6322222222222221,
+          "temperature_standard_error": 0.012222222222222216
+        },
+        "lmnfghopd": {
+          "frequency": 9,
+          "temperature_mean": 0.5777777777777778,
+          "temperature_standard_error": 0.01801062786383036
+        },
+        "lmnfghddd": {
+          "frequency": 3,
+          "temperature_mean": 0.5033333333333333,
+          "temperature_standard_error": 0.01855921454276675
+        },
+        "lmnfghopp": {
+          "frequency": 1,
+          "temperature_mean": 0.75,
+          "temperature_standard_error": 0.0
+        },
+        "lmnghipqr": {
+          "frequency": 1,
+          "temperature_mean": 0.43,
+          "temperature_standard_error": 0.0
+        }
+      },
+      "codelets": {
+        "mean": 1181.085,
+        "standard_error": 24.989061626559252
+      },
+      "id": "2.3"
+    },
+    {
+      "problem": "aabbcc -> aabbcd ==> iijjkk -> ?",
+      "source": {
+        "page": 158
+      },
+      "solutions": {
+        "iijjkl": {
+          "frequency": 880,
+          "temperature_mean": 0.3307840909090909,
+          "temperature_standard_error": 0.00447839861029833
+        },
+        "iijjll": {
+          "frequency": 102,
+          "temperature_mean": 0.45862745098039215,
+          "temperature_standard_error": 0.007441011426678256
+        },
+        "iijjkd": {
+          "frequency": 8,
+          "temperature_mean": 0.57,
+          "temperature_standard_error": 0.031679195516480976
+        },
+        "iikkll": {
+          "frequency": 3,
+          "temperature_mean": 0.42,
+          "temperature_standard_error": 0.01732050807568877
+        },
+        "iijjdd": {
+          "frequency": 2,
+          "temperature_mean": 0.53,
+          "temperature_standard_error": 0.010000000000000009
+        },
+        "iijjkkk": {
+          "frequency": 2,
+          "temperature_mean": 0.39,
+          "temperature_standard_error": 0.019999999999999976
+        },
+        "jijjkk": {
+          "frequency": 1,
+          "temperature_mean": 0.6,
+          "temperature_standard_error": 0.0
+        },
+        "iijjkk": {
+          "frequency": 1,
+          "temperature_mean": 0.56,
+          "temperature_standard_error": 0.0
+        },
+        "iijkll": {
+          "frequency": 1,
+          "temperature_mean": 0.43,
+          "temperature_standard_error": 0.0
+        }
+      },
+      "codelets": {
+        "mean": 752.508,
+        "standard_error": 9.019629463101666
+      },
+      "id": "2.4"
+    },
+    {
+      "problem": "abc -> abd ==> edc -> ?",
+      "source": {
+        "page": 159
+      },
+      "solutions": {
+        "edb": {
+          "frequency": 659,
+          "temperature_mean": 0.12849772382397573,
+          "temperature_standard_error": 0.0012910921697156126
+        },
+        "edd": {
+          "frequency": 315,
+          "temperature_mean": 0.3765714285714286,
+          "temperature_standard_error": 0.005910306866454405
+        },
+        "fdc": {
+          "frequency": 24,
+          "temperature_mean": 0.19083333333333333,
+          "temperature_standard_error": 0.006165491466554356
+        },
+        "edc": {
+          "frequency": 2,
+          "temperature_mean": 0.605,
+          "temperature_standard_error": 0.0050000000000000044
+        }
+      },
+      "codelets": {
+        "mean": 343.235,
+        "standard_error": 4.435249622536956
+      },
+      "id": "3.1"
+    },
+    {
+      "problem": "abc -> abd ==> cba -> ?",
+      "source": {
+        "page": 159
+      },
+      "solutions": {
+        "dba": {
+          "frequency": 877,
+          "temperature_mean": 0.1665564424173318,
+          "temperature_standard_error": 0.0036883071762087737
+        },
+        "cbb": {
+          "frequency": 92,
+          "temperature_mean": 0.4294565217391304,
+          "temperature_standard_error": 0.016044881606384478
+        },
+        "cbd": {
+          "frequency": 30,
+          "temperature_mean": 0.23966666666666667,
+          "temperature_standard_error": 0.024562766576990237
+        },
+        "dca": {
+          "frequency": 1,
+          "temperature_mean": 0.43,
+          "temperature_standard_error": 0.0
+        }
+      },
+      "codelets": {
+        "mean": 392.48,
+        "standard_error": 9.710909296217288
+      },
+      "id": "3.2"
+    },
+    {
+      "problem": "abc -> abd ==> mrr -> ?",
+      "source": {
+        "page": 161
+      },
+      "solutions": {
+        "mss": {
+          "frequency": 678,
+          "temperature_mean": 0.41870206489675516,
+          "temperature_standard_error": 0.0007847319210931891
+        },
+        "mrs": {
+          "frequency": 307,
+          "temperature_mean": 0.45456026058631926,
+          "temperature_standard_error": 0.003294814222676371
+        },
+        "mrrr": {
+          "frequency": 11,
+          "temperature_mean": 0.2218181818181818,
+          "temperature_standard_error": 0.009517274420583564
+        },
+        "mrd": {
+          "frequency": 3,
+          "temperature_mean": 0.51,
+          "temperature_standard_error": 0.03000000000000002
+        },
+        "mdd": {
+          "frequency": 1,
+          "temperature_mean": 0.45,
+          "temperature_standard_error": 0.0
+        }
+      },
+      "codelets": {
+        "mean": 732.184,
+        "standard_error": 14.581206937004211
+      },
+      "id": "4.1"
+    },
+    {
+      "problem": "abc -> abd ==> mmrrrjjjj -> ?",
+      "source": {
+        "page": 162
+      },
+      "solutions": {
+        "mmrrrkkkk": {
+          "frequency": 712,
+          "temperature_mean": 0.4262219101123596,
+          "temperature_standard_error": 0.0019397363519922336
+        },
+        "mmrrrjjjk": {
+          "frequency": 170,
+          "temperature_mean": 0.503,
+          "temperature_standard_error": 0.005878956555164768
+        },
+        "mmrrrjkkk": {
+          "frequency": 55,
+          "temperature_mean": 0.4470909090909091,
+          "temperature_standard_error": 0.00416553703695505
+        },
+        "mmrrrjjkk": {
+          "frequency": 45,
+          "temperature_mean": 0.452,
+          "temperature_standard_error": 0.007450849046595395
+        },
+        "mmrrrjjjjj": {
+          "frequency": 12,
+          "temperature_mean": 0.19583333333333333,
+          "temperature_standard_error": 0.01400532005699941
+        },
+        "mmrrrdddd": {
+          "frequency": 3,
+          "temperature_mean": 0.5399999999999999,
+          "temperature_standard_error": 0.08504900548115382
+        },
+        "mmrrrjjjj": {
+          "frequency": 2,
+          "temperature_mean": 0.595,
+          "temperature_standard_error": 0.10499999999999998
+        },
+        "mmrrrjjjd": {
+          "frequency": 1,
+          "temperature_mean": 0.67,
+          "temperature_standard_error": 0.0
+        }
+      },
+      "codelets": {
+        "mean": 948.657,
+        "standard_error": 17.388727877800843
+      },
+      "id": "4.2"
+    },
+    {
+      "problem": "abc -> abd ==> rssttt -> ?",
+      "source": {
+        "page": 163
+      },
+      "solutions": {
+        "rssuuu": {
+          "frequency": 703,
+          "temperature_mean": 0.31,
+          "temperature_standard_error": 0.004259108163750795
+        },
+        "rssttu": {
+          "frequency": 197,
+          "temperature_mean": 0.4778172588832487,
+          "temperature_standard_error": 0.005318902484857346
+        },
+        "rttuuu": {
+          "frequency": 48,
+          "temperature_mean": 0.43354166666666666,
+          "temperature_standard_error": 0.005109523712148898
+        },
+        "rsstuu": {
+          "frequency": 35,
+          "temperature_mean": 0.4465714285714286,
+          "temperature_standard_error": 0.007263849213892095
+        },
+        "rstuuu": {
+          "frequency": 11,
+          "temperature_mean": 0.42363636363636364,
+          "temperature_standard_error": 0.00800826019838009
+        },
+        "rssttd": {
+          "frequency": 4,
+          "temperature_mean": 0.6225,
+          "temperature_standard_error": 0.06687986742411103
+        },
+        "rssddd": {
+          "frequency": 1,
+          "temperature_mean": 0.32,
+          "temperature_standard_error": 0.0
+        },
+        "rssttt": {
+          "frequency": 1,
+          "temperature_mean": 0.85,
+          "temperature_standard_error": 0.0
+        }
+      },
+      "codelets": {
+        "mean": 679.166,
+        "standard_error": 10.304419221843581
+      },
+      "id": "4.3"
+    },
+    {
+      "problem": "abc -> abd ==> xpqdef -> ?",
+      "source": {
+        "page": 164
+      },
+      "solutions": {
+        "xpqefg": {
+          "frequency": 522,
+          "temperature_mean": 0.46113026819923375,
+          "temperature_standard_error": 0.002224546540738783
+        },
+        "xpqdeg": {
+          "frequency": 415,
+          "temperature_mean": 0.5196867469879518,
+          "temperature_standard_error": 0.0032445476842345405
+        },
+        "xpqdfg": {
+          "frequency": 17,
+          "temperature_mean": 0.4970588235294117,
+          "temperature_standard_error": 0.012624809430196915
+        },
+        "xpqded": {
+          "frequency": 17,
+          "temperature_mean": 0.58,
+          "temperature_standard_error": 0.027653315937748606
+        },
+        "xpqcdef": {
+          "frequency": 9,
+          "temperature_mean": 0.22444444444444445,
+          "temperature_standard_error": 0.010555555555555558
+        },
+        "xpqdefg": {
+          "frequency": 8,
+          "temperature_mean": 0.23875,
+          "temperature_standard_error": 0.015170165739748147
+        },
+        "xpqddd": {
+          "frequency": 6,
+          "temperature_mean": 0.5066666666666667,
+          "temperature_standard_error": 0.009545214042184249
+        },
+        "xpqdef": {
+          "frequency": 4,
+          "temperature_mean": 0.5974999999999999,
+          "temperature_standard_error": 0.004787135538781686
+        },
+        "xqrefg": {
+          "frequency": 1,
+          "temperature_mean": 0.44,
+          "temperature_standard_error": 0.0
+        },
+        "ypqdef": {
+          "frequency": 1,
+          "temperature_mean": 0.61,
+          "temperature_standard_error": 0.0
+        }
+      },
+      "codelets": {
+        "mean": 970.86,
+        "standard_error": 21.66019705673373
+      },
+      "id": "4.4"
+    },
+    {
+      "problem": "abc -> qbc ==> xyz -> ?",
+      "source": {
+        "page": 165
+      },
+      "solutions": {
+        "qyz": {
+          "frequency": 996,
+          "temperature_mean": 0.1912248995983936,
+          "temperature_standard_error": 0.0026119281570120825
+        },
+        "xyz": {
+          "frequency": 2,
+          "temperature_mean": 0.465,
+          "temperature_standard_error": 0.07500000000000001
+        },
+        "qqz": {
+          "frequency": 1,
+          "temperature_mean": 0.48,
+          "temperature_standard_error": 0.0
+        },
+        "xyq": {
+          "frequency": 1,
+          "temperature_mean": 0.16,
+          "temperature_standard_error": 0.0
+        }
+      },
+      "codelets": {
+        "mean": 308.485,
+        "standard_error": 3.067119658245827
+      },
+      "id": "5.1"
+    },
+    {
+      "problem": "rst -> rsu ==> xyz -> ?",
+      "source": {
+        "page": 166
+      },
+      "solutions": {
+        "xyu": {
+          "frequency": 982,
+          "temperature_mean": 0.21133401221995926,
+          "temperature_standard_error": 0.0035626439060962804
+        },
+        "wyz": {
+          "frequency": 7,
+          "temperature_mean": 0.1642857142857143,
+          "temperature_standard_error": 0.02102800206268535
+        },
+        "xyz": {
+          "frequency": 6,
+          "temperature_mean": 0.6883333333333334,
+          "temperature_standard_error": 0.10903872910321563
+        },
+        "yyz": {
+          "frequency": 2,
+          "temperature_mean": 0.85,
+          "temperature_standard_error": 0.15000000000000002
+        },
+        "xxyz": {
+          "frequency": 1,
+          "temperature_mean": 0.23,
+          "temperature_standard_error": 0.0
+        },
+        "uyz": {
+          "frequency": 1,
+          "temperature_mean": 0.59,
+          "temperature_standard_error": 0.0
+        },
+        "xyy": {
+          "frequency": 1,
+          "temperature_mean": 0.36,
+          "temperature_standard_error": 0.0
+        }
+      },
+      "codelets": {
+        "mean": 3475.517,
+        "standard_error": 98.42394137580017
+      },
+      "id": "5.2"
+    },
+    {
+      "problem": "abc -> abd ==> glz -> ?",
+      "source": {
+        "page": 167
+      },
+      "solutions": {
+        "hlz": {
+          "frequency": 634,
+          "temperature_mean": 0.4200157728706625,
+          "temperature_standard_error": 0.0029818389709739337
+        },
+        "gld": {
+          "frequency": 355,
+          "temperature_mean": 0.4865352112676056,
+          "temperature_standard_error": 0.005494731744720602
+        },
+        "dlz": {
+          "frequency": 10,
+          "temperature_mean": 0.5359999999999999,
+          "temperature_standard_error": 0.036642416223096795
+        },
+        "glz": {
+          "frequency": 1,
+          "temperature_mean": 0.86,
+          "temperature_standard_error": 0.0
+        }
+      },
+      "codelets": {
+        "mean": 5954.019,
+        "standard_error": 146.23303558818827
+      },
+      "id": "5.3"
+    },
+    {
+      "problem": "abc -> abd ==> cmz -> ?",
+      "source": {
+        "page": 168
+      },
+      "solutions": {
+        "dmz": {
+          "frequency": 909,
+          "temperature_mean": 0.3991969196919692,
+          "temperature_standard_error": 0.0020755170981766537
+        },
+        "cmd": {
+          "frequency": 91,
+          "temperature_mean": 0.47604395604395605,
+          "temperature_standard_error": 0.009691050616333104
+        }
+      },
+      "codelets": {
+        "mean": 1892.714,
+        "standard_error": 60.43896718971097
+      },
+      "id": "5.4"
+    }
+  ]
+}

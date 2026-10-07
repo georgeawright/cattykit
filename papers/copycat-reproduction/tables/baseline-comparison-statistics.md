@@ -4,8 +4,8 @@
 |:--------------------------------|--------:|
 | Answer TV distance              |   0.022 |
 | Temperature mean absolute error |   0.010 |
+| Temperature max absolute error  |   0.078 |
 | Temperature RMS z               |   1.150 |
-| Temperature z p-value           |   0.022 |
+| Temperature max \|z\|           |   3.913 |
 | Codelets-run relative error     |   0.071 |
 | Codelets-run RMS z              |   3.857 |
-| Codelets-run z p-value          |   0.000 |

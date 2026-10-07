@@ -1,4 +1,4 @@
-"""Compare baseline and alternative coderack-removal results from raw CSVs."""
+"""Compare baseline and two-decimal-quantised Copycat results from raw CSVs."""
 
 from __future__ import annotations
 
@@ -15,22 +15,19 @@ from copycat_reproduction.table_helpers import (
     method_summary_row,
 )
 
-SUMMARY_CSV_PATH = DATASETS / "coderack_removal_method_comparison.csv"
-SUMMARY_MARKDOWN_PATH = TABLES / "coderack-removal-method-comparison.md"
+SUMMARY_CSV_PATH = DATASETS / "quantisation_comparison.csv"
+SUMMARY_MARKDOWN_PATH = TABLES / "quantisation-comparison.md"
 
 
 def main(gold_path: Path = GOLD_PATH) -> None:
-    """Generate three-way tables exclusively from saved baseline/alternative runs."""
+    """Generate comparison tables exclusively from completed experiment runs."""
     if not gold_path.is_file():
         raise FileNotFoundError(f"Missing original result data: {gold_path}")
     TABLES.mkdir(parents=True, exist_ok=True)
     original = json.loads(gold_path.read_text(encoding="utf-8"))
     raw_paths = (
-        ("fixed_weighted_removal", DATASETS / "reproduction_raw_results.csv"),
-        (
-            "faithful_original_removal",
-            DATASETS / "coderack_removal_faithful_original_removal_raw_results.csv",
-        ),
+        ("full_precision", DATASETS / "reproduction_raw_results.csv"),
+        ("two_decimal_quantisation", DATASETS / "quantized_raw_results.csv"),
     )
     summary_rows = []
     for name, raw_path in raw_paths:
@@ -38,19 +35,17 @@ def main(gold_path: Path = GOLD_PATH) -> None:
             raise FileNotFoundError(f"Required raw results are missing: {raw_path}")
         reproduction = reproduction_from_raw_results(pd.read_csv(raw_path))
         comparison = comparison_table(reproduction, original)
-        comparison.to_csv(
-            DATASETS / f"coderack_removal_{name}_comparison.csv", index=False
-        )
+        comparison.to_csv(DATASETS / f"quantisation_{name}_comparison.csv", index=False)
         summary_rows.append(method_summary_row(name, comparison))
     summary = pd.DataFrame(summary_rows)
     summary.to_csv(SUMMARY_CSV_PATH, index=False)
     SUMMARY_MARKDOWN_PATH.write_text(
         method_comparison_markdown(
-            "Coderack removal method comparison",
+            "Numeric quantisation comparison",
             summary,
             {
-                "fixed_weighted_removal": "Fixed weighted removal",
-                "faithful_original_removal": "Faithful original removal",
+                "full_precision": "Full precision",
+                "two_decimal_quantisation": "Two-decimal quantisation",
             },
         ),
         encoding="utf-8",

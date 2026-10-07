@@ -50,6 +50,7 @@ def _style_solution_labels(axis: plt.Axes) -> None:
 def _save_combined_figures(
     basic_runs_by_problem: list[tuple[str, int, list[dict[str, Any]]]],
     solution_label_width: int,
+    filename_prefix: str,
 ) -> None:
     """Save the original compact, single-page figure for each statistic."""
     rows: list[dict[str, Any]] = []
@@ -149,11 +150,13 @@ def _save_combined_figures(
                 clip_on=False,
             )
         figure.subplots_adjust(left=0.30, right=0.96, bottom=0.07, top=0.98)
-        figure.savefig(FIGURES / filename, dpi=300)
+        figure.savefig(FIGURES / f"{filename_prefix}{filename}", dpi=300)
         plt.close(figure)
 
 
-def save_basic_problem_figures(raw_results_path: Path) -> None:
+def save_basic_problem_figures(
+    raw_results_path: Path, *, filename_prefix: str = ""
+) -> None:
     """Regenerate the original figures from saved per-run results."""
     raw_results = pd.read_csv(raw_results_path)
     required_columns = {
@@ -195,4 +198,4 @@ def save_basic_problem_figures(raw_results_path: Path) -> None:
         for run in basic_runs
     )
     FIGURES.mkdir(parents=True, exist_ok=True)
-    _save_combined_figures(basic_runs_by_problem, solution_label_width)
+    _save_combined_figures(basic_runs_by_problem, solution_label_width, filename_prefix)

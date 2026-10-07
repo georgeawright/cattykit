@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+from collections.abc import Mapping
 from math import sqrt
 from typing import Any
 
@@ -10,7 +10,6 @@ import pandas as pd
 from cattykit.experiments import (
     chi_square_survival_function,
     mean_absolute_error,
-    run_experiment,
     total_variation_distance,
     two_sided_p_value,
     z_statistic,
@@ -109,6 +108,10 @@ def comparison_table(
             )
             for observed, expected in retained
         ]
+        temperature_absolute_errors = [
+            abs(observed["temperature_mean"] - expected["temperature_mean"])
+            for observed, expected in retained
+        ]
         codelets_z = z_statistic(
             observed_mean=reproduced["codelets"]["mean"],
             expected_mean=gold["codelets"]["mean"],
@@ -133,10 +136,16 @@ def comparison_table(
                     (observed["temperature_mean"] for observed, _ in retained),
                     (expected["temperature_mean"] for _, expected in retained),
                 ),
+                "temperature_max_absolute_error": max(
+                    temperature_absolute_errors, default=0.0
+                ),
                 "temperature_z_chi_square": sum(
                     score**2 for score in temperature_z_scores
                 ),
                 "temperature_z_count": len(temperature_z_scores),
+                "temperature_max_absolute_z_stat": max(
+                    (abs(score) for score in temperature_z_scores), default=0.0
+                ),
                 "codelets_relative_error": (
                     abs(reproduced["codelets"]["mean"] - gold["codelets"]["mean"])
                     / abs(gold["codelets"]["mean"])
@@ -163,6 +172,9 @@ def error_summary(comparison: pd.DataFrame) -> pd.DataFrame:
         "Temperature mean absolute error": comparison[
             "temperature_mean_absolute_error"
         ],
+        "Temperature max absolute error": comparison[
+            "temperature_max_absolute_error"
+        ],
         "Codelets-run relative error": comparison["codelets_relative_error"],
     }
     return pd.DataFrame(
@@ -177,6 +189,7 @@ def error_summary(comparison: pd.DataFrame) -> pd.DataFrame:
 
 def comparison_markdown(comparison: pd.DataFrame, error: pd.DataFrame) -> str:
     """Render a concise paper-facing baseline summary table."""
+    errors = error.set_index("error_metric")
     temperature_count = int(comparison["temperature_z_count"].sum())
     temperature_chi_square = float(comparison["temperature_z_chi_square"].sum())
     codelet_chi_square = float((comparison["codelets_z_stat"] ** 2).sum())
@@ -186,7 +199,14 @@ def comparison_markdown(comparison: pd.DataFrame, error: pd.DataFrame) -> str:
                 "Answer TV distance",
                 comparison["solution_total_variation_distance"].mean(),
             ),
-            ("Temperature mean absolute error", error.iloc[1].mean_error),
+            (
+                "Temperature mean absolute error",
+                errors.loc["Temperature mean absolute error", "mean_error"],
+            ),
+            (
+                "Temperature max absolute error",
+                comparison["temperature_max_absolute_error"].max(),
+            ),
             (
                 "Temperature RMS z",
                 sqrt(temperature_chi_square / temperature_count)
@@ -194,15 +214,14 @@ def comparison_markdown(comparison: pd.DataFrame, error: pd.DataFrame) -> str:
                 else 0.0,
             ),
             (
-                "Temperature z p-value",
-                chi_square_survival_function(temperature_chi_square, temperature_count),
+                r"Temperature max \|z\|",
+                comparison["temperature_max_absolute_z_stat"].max(),
             ),
-            ("Codelets-run relative error", error.iloc[2].mean_error),
-            ("Codelets-run RMS z", sqrt(codelet_chi_square / len(comparison))),
             (
-                "Codelets-run z p-value",
-                chi_square_survival_function(codelet_chi_square, len(comparison)),
+                "Codelets-run relative error",
+                errors.loc["Codelets-run relative error", "mean_error"],
             ),
+            ("Codelets-run RMS z", sqrt(codelet_chi_square / len(comparison))),
         ],
         columns=["Measure", "Value"],
     )
@@ -226,9 +245,15 @@ def method_summary_row(method: str, comparison: pd.DataFrame) -> dict[str, Any]:
         "temperature_mean_absolute_error": comparison[
             "temperature_mean_absolute_error"
         ].mean(),
+        "temperature_max_absolute_error": comparison[
+            "temperature_max_absolute_error"
+        ].max(),
         "temperature_rms_z_stat": sqrt(temperature_chi_square / temperature_count)
         if temperature_count
         else 0.0,
+        "temperature_max_absolute_z_stat": comparison[
+            "temperature_max_absolute_z_stat"
+        ].max(),
         "temperature_z_chi_square": temperature_chi_square,
         "temperature_z_p_value": chi_square_survival_function(
             temperature_chi_square, temperature_count
@@ -240,3 +265,30 @@ def method_summary_row(method: str, comparison: pd.DataFrame) -> dict[str, Any]:
             codelets_chi_square, len(comparison)
         ),
     }
+
+
+def method_comparison_markdown(
+    title: str, summary: pd.DataFrame, method_labels: Mapping[str, str]
+) -> str:
+    """Render method columns using the same measures as the baseline table."""
+    measures = (
+        ("Answer TV distance", "answer_tv_distance_mean"),
+        ("Temperature mean absolute error", "temperature_mean_absolute_error"),
+        ("Temperature max absolute error", "temperature_max_absolute_error"),
+        ("Temperature RMS z", "temperature_rms_z_stat"),
+        (r"Temperature max \|z\|", "temperature_max_absolute_z_stat"),
+        ("Codelets-run relative error", "codelets_run_relative_error"),
+        ("Codelets-run RMS z", "codelets_run_rms_z_stat"),
+    )
+    table = pd.DataFrame(
+        {
+            "Measure": [label for label, _ in measures],
+            **{
+                method_labels[row.method]: [
+                    getattr(row, field) for _, field in measures
+                ]
+                for row in summary.itertuples(index=False)
+            },
+        }
+    )
+    return f"# {title}\n\n" + table.to_markdown(index=False, floatfmt=".3f") + "\n"
