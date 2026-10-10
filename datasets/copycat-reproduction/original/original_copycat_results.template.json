@@ -7,7 +7,19 @@
       "temperature": {
         "source_unit": "integer percent, 0–100",
         "stored_unit": "decimal proportion, 0–1",
-        "formula": "stored_value = source_value / 100"
+        "formula": "stored_value = source_value / 100",
+        "reported_precision": {
+          "mean": "whole percentage point (stored rounding half-width: 0.005)",
+          "standard_error": "0.1 percentage point (stored rounding half-width: 0.0005; lower bound truncated at zero)"
+        }
+      },
+      "codelets": {
+        "source_unit": "codelets run",
+        "stored_unit": "codelets run",
+        "reported_precision": {
+          "mean": "whole codelet (rounding half-width: 0.5)",
+          "standard_error": "0.1 codelet (rounding half-width: 0.05; lower bound truncated at zero)"
+        }
       }
     }
   },

@@ -20,7 +20,9 @@ Scripts produce outputs which are consumed by subsequent scripts according to th
  │
  ├─> 02_run_with_quantization.py ─> 12_analyse_quantisation.py ─> 22_plot_quantized_basic_problems.py
  │
- └───────────────────────> 15_analyse_frequence_sampling_variation.py
+ ├──────────────────────> 15_analyse_frequence_sampling_variation.py
+ │
+ └──────────────────────> 16_analyse_transcription_precision.py
 ```
 
 Scripts beginning with `0` run Copycat or altered versions of Copycat and generate raw CSV outputs
