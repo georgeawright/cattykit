@@ -22,11 +22,20 @@ Scripts produce outputs which are consumed by subsequent scripts according to th
 ```
 
 Scripts beginning with `0` run Copycat or altered versions of Copycat and generate raw CSV outputs
-saved in [datasets/copycat-reproduction](../../datasets/copycat-reproduction/).
+saved under [datasets/copycat-reproduction](../../datasets/copycat-reproduction/):
+
+- `reproduction/` for baseline runs and baseline-derived analysis;
+- `coderack_removal/` for coderack-removal runs and comparisons; and
+- `quantization/` for quantized runs and comparisons.
 
 Scripts beginning with `1` use these CSV files to generate tables of summary statistics saved in
-[datasets/copycat-reproduction](../../datasets/copycat-reproduction/) and
+[the matching dataset subdirectory](../../datasets/copycat-reproduction/) and
 [papers/copycat-reproduction/tables](../../papers/copycat-reproduction/tables/).
+
+The original Copycat reference data is input only and lives in
+[`datasets/copycat-reproduction/original/`](../../datasets/copycat-reproduction/original/).
+The snag-correlation analysis reads baseline runs from `reproduction/` and writes its
+result to `snags/`.
 
 Scripts beginning with `2` use previously generated tables to draw PNG figures saved in
 [papers/copycat-reproduction/figures](../../papers/copycat-reproduction/figures/).

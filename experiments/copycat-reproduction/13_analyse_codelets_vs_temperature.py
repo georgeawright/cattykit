@@ -12,10 +12,10 @@ from statistics import NormalDist
 
 import pandas as pd
 
-from copycat_reproduction.paths import DATASETS
+from copycat_reproduction.paths import REPRODUCTION_DATASETS
 
-RAW_RESULTS_PATH = DATASETS / "reproduction_raw_results.csv"
-OUTPUT_PATH = DATASETS / "temperature_codelets_correlations.csv"
+RAW_RESULTS_PATH = REPRODUCTION_DATASETS / "reproduction_raw_results.csv"
+OUTPUT_PATH = REPRODUCTION_DATASETS / "temperature_codelets_correlations.csv"
 MINIMUM_EXAMPLES = 100
 
 
@@ -86,6 +86,7 @@ def _pooled_row(cells: pd.DataFrame, column: str) -> dict[str, object]:
 
 
 def main() -> None:
+    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     raw_runs = pd.read_csv(RAW_RESULTS_PATH)
     required = {"problem", "answer", "temperature", "codelets_run"}
     missing = required.difference(raw_runs.columns)

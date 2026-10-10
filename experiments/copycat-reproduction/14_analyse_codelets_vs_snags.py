@@ -1,4 +1,4 @@
-"""Estimate within-answer codelet-run/snag correlations from baseline runs.
+"""Estimate within-answer Pearson codelet-run/snag correlations.
 
 Per-cell rows condition on both the input problem and answer. The final rows
 pool those cells with a Fisher-z DerSimonian--Laird random-effects
@@ -12,10 +12,10 @@ from statistics import NormalDist
 
 import pandas as pd
 
-from copycat_reproduction.paths import DATASETS
+from copycat_reproduction.paths import REPRODUCTION_DATASETS, SNAGS_DATASETS
 
-RAW_RESULTS_PATH = DATASETS / "reproduction_raw_results.csv"
-OUTPUT_PATH = DATASETS / "codelets_snags_correlations.csv"
+RAW_RESULTS_PATH = REPRODUCTION_DATASETS / "reproduction_raw_results.csv"
+OUTPUT_PATH = SNAGS_DATASETS / "codelets_snags_correlations.csv"
 MINIMUM_EXAMPLES = 100
 
 
@@ -37,30 +37,26 @@ def _correlation_and_p_value(
 
 
 def _correlation_row(problem: str, answer: str, runs: pd.DataFrame) -> dict[str, object]:
-    """Return linear and rank correlations for one problem/answer cell."""
+    """Return the linear correlation for one problem/answer cell."""
     count = len(runs)
     pearson, pearson_p_value = _correlation_and_p_value(
         runs["codelets_run"], runs["snag_count"], count
     )
-    spearman, spearman_p_value = _correlation_and_p_value(
-        runs["codelets_run"].rank(), runs["snag_count"].rank(), count
-    )
     return {
-        "row_type": "problem_answer",
         "problem": problem,
         "answer": answer,
         "examples": count,
         "pearson_correlation": pearson,
-        "spearman_correlation": spearman,
         "pearson_p_value": pearson_p_value,
-        "spearman_p_value": spearman_p_value,
     }
 
 
-def _pooled_row(cells: pd.DataFrame, column: str) -> dict[str, object]:
+def _pooled_row(cells: pd.DataFrame) -> dict[str, object]:
     """Pool cell correlations using DerSimonian--Laird random effects."""
-    valid_cells = cells.dropna(subset=[column])
-    correlations = valid_cells[column].clip(lower=-0.999999, upper=0.999999)
+    valid_cells = cells.dropna(subset=["pearson_correlation"])
+    correlations = valid_cells["pearson_correlation"].clip(
+        lower=-0.999999, upper=0.999999
+    )
     fisher_z = correlations.map(math.atanh)
     variances = 1 / (valid_cells["examples"] - 3)
     fixed_weights = 1 / variances
@@ -74,23 +70,11 @@ def _pooled_row(cells: pd.DataFrame, column: str) -> dict[str, object]:
     random_standard_error = math.sqrt(1 / random_weights.sum())
     correlation = math.tanh(random_z)
     return {
-        "row_type": "pooled_random_effects",
         "problem": "",
         "answer": "",
         "examples": int(valid_cells["examples"].sum()),
-        "pearson_correlation": correlation if column == "pearson_correlation" else None,
-        "spearman_correlation": correlation if column == "spearman_correlation" else None,
-        "pearson_p_value": (
-            _two_sided_p_value(random_z / random_standard_error)
-            if column == "pearson_correlation"
-            else None
-        ),
-        "spearman_p_value": (
-            _two_sided_p_value(random_z / random_standard_error)
-            if column == "spearman_correlation"
-            else None
-        ),
-        "correlation_type": column.removesuffix("_correlation"),
+        "pearson_correlation": correlation,
+        "pearson_p_value": _two_sided_p_value(random_z / random_standard_error),
         "cells_pooled": len(valid_cells),
         "fixed_effect_correlation": math.tanh(fixed_z),
         "heterogeneity_q": heterogeneity_q,
@@ -100,6 +84,7 @@ def _pooled_row(cells: pd.DataFrame, column: str) -> dict[str, object]:
 
 
 def main() -> None:
+    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     raw_runs = pd.read_csv(RAW_RESULTS_PATH)
     required = {"problem", "answer", "codelets_run", "snag_count"}
     missing = required.difference(raw_runs.columns)
@@ -115,14 +100,11 @@ def main() -> None:
     if cells.empty:
         raise ValueError(f"No problem/answer cells have {MINIMUM_EXAMPLES} examples.")
 
-    pooled = [
-        _pooled_row(cells, column)
-        for column in ("pearson_correlation", "spearman_correlation")
-    ]
-    pd.concat([cells, pd.DataFrame(pooled)], ignore_index=True).to_csv(
+    pooled = _pooled_row(cells)
+    pd.concat([cells, pd.DataFrame([pooled])], ignore_index=True).to_csv(
         OUTPUT_PATH, index=False
     )
-    print(f"Wrote {len(cells)} cell rows and {len(pooled)} pooled rows to {OUTPUT_PATH}")
+    print(f"Wrote {len(cells)} cell rows and one pooled row to {OUTPUT_PATH}")
 
 
 if __name__ == "__main__":

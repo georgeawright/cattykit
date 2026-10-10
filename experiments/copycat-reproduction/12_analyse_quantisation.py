@@ -8,14 +8,19 @@ from pathlib import Path
 
 import pandas as pd
 from copycat_reproduction.experiment_helpers import reproduction_from_raw_results
-from copycat_reproduction.paths import DATASETS, GOLD_PATH, TABLES
+from copycat_reproduction.paths import (
+    GOLD_PATH,
+    QUANTIZATION_DATASETS,
+    REPRODUCTION_DATASETS,
+    TABLES,
+)
 from copycat_reproduction.table_helpers import (
     comparison_table,
     method_comparison_markdown,
     method_summary_row,
 )
 
-SUMMARY_CSV_PATH = DATASETS / "quantisation_comparison.csv"
+SUMMARY_CSV_PATH = QUANTIZATION_DATASETS / "quantisation_comparison.csv"
 SUMMARY_MARKDOWN_PATH = TABLES / "quantisation-comparison.md"
 
 
@@ -25,13 +30,21 @@ def main(gold_path: Path = GOLD_PATH) -> None:
         raise FileNotFoundError(f"Missing original result data: {gold_path}")
     TABLES.mkdir(parents=True, exist_ok=True)
     original = json.loads(gold_path.read_text(encoding="utf-8"))
-    baseline_runs = pd.read_csv(DATASETS / "reproduction_raw_results.csv")
+    baseline_runs = pd.read_csv(
+        REPRODUCTION_DATASETS / "reproduction_raw_results.csv"
+    )
     snaggable_problems = set(
         baseline_runs.loc[baseline_runs["snag_count"] > 0, "problem"]
     )
     raw_paths = (
-        ("full_precision", DATASETS / "reproduction_raw_results.csv"),
-        ("two_decimal_quantisation", DATASETS / "quantized_raw_results.csv"),
+        (
+            "full_precision",
+            REPRODUCTION_DATASETS / "reproduction_raw_results.csv",
+        ),
+        (
+            "two_decimal_quantisation",
+            QUANTIZATION_DATASETS / "quantized_raw_results.csv",
+        ),
     )
     summary_rows = []
     for name, raw_path in raw_paths:
@@ -40,7 +53,10 @@ def main(gold_path: Path = GOLD_PATH) -> None:
         raw_runs = pd.read_csv(raw_path)
         reproduction = reproduction_from_raw_results(raw_runs)
         comparison = comparison_table(reproduction, original)
-        comparison.to_csv(DATASETS / f"quantisation_{name}_comparison.csv", index=False)
+        comparison.to_csv(
+            QUANTIZATION_DATASETS / f"quantisation_{name}_comparison.csv",
+            index=False,
+        )
         summary_rows.append(
             method_summary_row(name, comparison, raw_runs, snaggable_problems)
         )

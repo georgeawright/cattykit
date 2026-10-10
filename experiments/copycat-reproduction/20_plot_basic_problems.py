@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from copycat_reproduction.figure_helpers import save_basic_problem_figures
-from copycat_reproduction.paths import DATASETS, FIGURES
+from copycat_reproduction.paths import FIGURES, REPRODUCTION_DATASETS
 
-RAW_RESULTS_PATH = DATASETS / "reproduction_raw_results.csv"
+RAW_RESULTS_PATH = REPRODUCTION_DATASETS / "reproduction_raw_results.csv"
 
 
 def main() -> None:

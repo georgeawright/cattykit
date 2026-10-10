@@ -8,14 +8,19 @@ from pathlib import Path
 
 import pandas as pd
 from copycat_reproduction.experiment_helpers import reproduction_from_raw_results
-from copycat_reproduction.paths import DATASETS, GOLD_PATH, TABLES
+from copycat_reproduction.paths import (
+    CODERACK_REMOVAL_DATASETS,
+    GOLD_PATH,
+    REPRODUCTION_DATASETS,
+    TABLES,
+)
 from copycat_reproduction.table_helpers import (
     comparison_table,
     method_comparison_markdown,
     method_summary_row,
 )
 
-SUMMARY_CSV_PATH = DATASETS / "coderack_removal_method_comparison.csv"
+SUMMARY_CSV_PATH = CODERACK_REMOVAL_DATASETS / "coderack_removal_method_comparison.csv"
 SUMMARY_MARKDOWN_PATH = TABLES / "coderack-removal-method-comparison.md"
 
 
@@ -25,15 +30,21 @@ def main(gold_path: Path = GOLD_PATH) -> None:
         raise FileNotFoundError(f"Missing original result data: {gold_path}")
     TABLES.mkdir(parents=True, exist_ok=True)
     original = json.loads(gold_path.read_text(encoding="utf-8"))
-    baseline_runs = pd.read_csv(DATASETS / "reproduction_raw_results.csv")
+    baseline_runs = pd.read_csv(
+        REPRODUCTION_DATASETS / "reproduction_raw_results.csv"
+    )
     snaggable_problems = set(
         baseline_runs.loc[baseline_runs["snag_count"] > 0, "problem"]
     )
     raw_paths = (
-        ("fixed_weighted_removal", DATASETS / "reproduction_raw_results.csv"),
+        (
+            "fixed_weighted_removal",
+            REPRODUCTION_DATASETS / "reproduction_raw_results.csv",
+        ),
         (
             "faithful_original_removal",
-            DATASETS / "coderack_removal_faithful_original_removal_raw_results.csv",
+            CODERACK_REMOVAL_DATASETS
+            / "coderack_removal_faithful_original_removal_raw_results.csv",
         ),
     )
     summary_rows = []
@@ -44,7 +55,8 @@ def main(gold_path: Path = GOLD_PATH) -> None:
         reproduction = reproduction_from_raw_results(raw_runs)
         comparison = comparison_table(reproduction, original)
         comparison.to_csv(
-            DATASETS / f"coderack_removal_{name}_comparison.csv", index=False
+            CODERACK_REMOVAL_DATASETS / f"coderack_removal_{name}_comparison.csv",
+            index=False,
         )
         summary_rows.append(
             method_summary_row(name, comparison, raw_runs, snaggable_problems)

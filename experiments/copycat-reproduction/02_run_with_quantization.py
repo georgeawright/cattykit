@@ -22,10 +22,10 @@ import numpy as np
 from cattykit.experiments import run_experiment, summarize_runs
 from copycat import tools
 from copycat_reproduction.experiment_helpers import result_case
-from copycat_reproduction.paths import DATASETS, TEMPLATE_PATH
+from copycat_reproduction.paths import QUANTIZATION_DATASETS, TEMPLATE_PATH
 
-RAW_RESULTS_PATH = DATASETS / "quantized_raw_results.csv"
-RESULTS_PATH = DATASETS / "quantized_copycat_results.json"
+RAW_RESULTS_PATH = QUANTIZATION_DATASETS / "quantized_raw_results.csv"
+RESULTS_PATH = QUANTIZATION_DATASETS / "quantized_copycat_results.json"
 
 
 def quantize(value: object, decimals: int = 2) -> object:
@@ -139,7 +139,7 @@ def main(iterations: int = 1000, decimals: int = 2) -> None:
         raise ValueError("iterations must be at least 1")
     if decimals < 0:
         raise ValueError("decimals must not be negative")
-    DATASETS.mkdir(parents=True, exist_ok=True)
+    QUANTIZATION_DATASETS.mkdir(parents=True, exist_ok=True)
     template = json.loads(TEMPLATE_PATH.read_text(encoding="utf-8"))
     cases_by_problem = {case["problem"]: case for case in template["results"]}
     with quantized_copycat(decimals):

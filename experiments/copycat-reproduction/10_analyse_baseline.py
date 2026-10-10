@@ -8,17 +8,17 @@ from pathlib import Path
 
 import pandas as pd
 from copycat_reproduction.experiment_helpers import reproduction_from_raw_results
-from copycat_reproduction.paths import DATASETS, GOLD_PATH, TABLES
+from copycat_reproduction.paths import GOLD_PATH, REPRODUCTION_DATASETS, TABLES
 from copycat_reproduction.table_helpers import (
     comparison_markdown,
     comparison_table,
     error_summary,
 )
 
-RAW_RESULTS_PATH = DATASETS / "reproduction_raw_results.csv"
-RESULTS_PATH = DATASETS / "reproduction_copycat_results.json"
-COMPARISON_CSV_PATH = DATASETS / "reproduction_comparison.csv"
-ERROR_SUMMARY_CSV_PATH = DATASETS / "reproduction_comparison_error_summary.csv"
+RAW_RESULTS_PATH = REPRODUCTION_DATASETS / "reproduction_raw_results.csv"
+RESULTS_PATH = REPRODUCTION_DATASETS / "reproduction_copycat_results.json"
+COMPARISON_CSV_PATH = REPRODUCTION_DATASETS / "reproduction_comparison.csv"
+ERROR_SUMMARY_CSV_PATH = REPRODUCTION_DATASETS / "reproduction_comparison_error_summary.csv"
 MARKDOWN_PATH = TABLES / "baseline-comparison-statistics.md"
 
 

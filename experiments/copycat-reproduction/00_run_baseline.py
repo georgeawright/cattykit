@@ -8,19 +8,19 @@ import json
 from cattykit.experiments import run_experiment, summarize_runs
 from copycat_reproduction.experiment_helpers import result_case
 from copycat_reproduction.paths import (
-    DATASETS,
+    REPRODUCTION_DATASETS,
     TEMPLATE_PATH,
 )
 
-RAW_RESULTS_PATH = DATASETS / "reproduction_raw_results.csv"
-RESULTS_PATH = DATASETS / "reproduction_copycat_results.json"
+RAW_RESULTS_PATH = REPRODUCTION_DATASETS / "reproduction_raw_results.csv"
+RESULTS_PATH = REPRODUCTION_DATASETS / "reproduction_copycat_results.json"
 
 
 def main(iterations: int = 1000) -> None:
     """Run every source problem once per seed; do not perform analysis or plotting."""
     if iterations < 1:
         raise ValueError("iterations must be at least 1")
-    DATASETS.mkdir(parents=True, exist_ok=True)
+    REPRODUCTION_DATASETS.mkdir(parents=True, exist_ok=True)
     template = json.loads(TEMPLATE_PATH.read_text(encoding="utf-8"))
     cases_by_problem = {case["problem"]: case for case in template["results"]}
     result = run_experiment(

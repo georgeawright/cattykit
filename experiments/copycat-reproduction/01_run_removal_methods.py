@@ -13,7 +13,7 @@ from cattykit.experiments import run_experiment, summarize_runs
 from copycat.coderack import Coderack
 from copycat_reproduction.experiment_helpers import result_case
 from copycat_reproduction.paths import (
-    DATASETS,
+    CODERACK_REMOVAL_DATASETS,
     TEMPLATE_PATH,
 )
 
@@ -92,8 +92,11 @@ def run_method(name: str, method: RemovalMethod, iterations: int) -> None:
         "results": cases,
     }
     raw_runs = result.raw_runs.assign(method=name)
-    raw_runs.to_csv(DATASETS / f"coderack_removal_{name}_raw_results.csv", index=False)
-    (DATASETS / f"coderack_removal_{name}_results.json").write_text(
+    raw_runs.to_csv(
+        CODERACK_REMOVAL_DATASETS / f"coderack_removal_{name}_raw_results.csv",
+        index=False,
+    )
+    (CODERACK_REMOVAL_DATASETS / f"coderack_removal_{name}_results.json").write_text(
         json.dumps(reproduction, indent=2) + "\n", encoding="utf-8"
     )
 
@@ -102,7 +105,7 @@ def main(iterations: int = 1000) -> None:
     """Run alternatives only; script 00 exclusively owns the baseline run."""
     if iterations < 1:
         raise ValueError("iterations must be at least 1")
-    DATASETS.mkdir(parents=True, exist_ok=True)
+    CODERACK_REMOVAL_DATASETS.mkdir(parents=True, exist_ok=True)
     run_method("faithful_original_removal", faithful_original_removal, iterations)
 
 
