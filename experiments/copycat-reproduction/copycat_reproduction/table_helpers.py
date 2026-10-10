@@ -175,7 +175,7 @@ def error_summary(comparison: pd.DataFrame) -> pd.DataFrame:
         "Temperature max absolute error": comparison[
             "temperature_max_absolute_error"
         ],
-        "Codelets-run relative error": comparison["codelets_relative_error"],
+        "Codelets-run mean relative error": comparison["codelets_relative_error"],
     }
     return pd.DataFrame(
         {
@@ -222,8 +222,12 @@ def comparison_markdown(comparison: pd.DataFrame, error: pd.DataFrame) -> str:
                 comparison["temperature_max_absolute_z_stat"].max(),
             ),
             (
-                "Codelets-run relative error",
-                errors.loc["Codelets-run relative error", "mean_error"],
+                "Codelets-run mean relative error",
+                errors.loc["Codelets-run mean relative error", "mean_error"],
+            ),
+            (
+                "Codelets-run max relative error",
+                errors.loc["Codelets-run mean relative error", "max_error"],
             ),
             ("Codelets-run RMS z", sqrt(codelet_chi_square / len(comparison))),
         ],
@@ -275,7 +279,8 @@ def method_summary_row(
         "temperature_z_p_value": chi_square_survival_function(
             temperature_chi_square, temperature_count
         ),
-        "codelets_run_relative_error": comparison["codelets_relative_error"].mean(),
+        "codelets_run_mean_relative_error": comparison["codelets_relative_error"].mean(),
+        "codelets_run_max_relative_error": comparison["codelets_relative_error"].max(),
         "codelets_run_rms_z_stat": sqrt(codelets_chi_square / len(comparison)),
         "codelets_run_z_chi_square": codelets_chi_square,
         "codelets_run_z_p_value": chi_square_survival_function(
@@ -299,7 +304,8 @@ def method_comparison_markdown(
         ("Temperature max absolute error", "temperature_max_absolute_error"),
         ("Temperature RMS z", "temperature_rms_z_stat"),
         (r"Temperature max \|z\|", "temperature_max_absolute_z_stat"),
-        ("Codelets-run relative error", "codelets_run_relative_error"),
+        ("Codelets-run mean relative error", "codelets_run_mean_relative_error"),
+        ("Codelets-run max relative error", "codelets_run_max_relative_error"),
         ("Codelets-run RMS z", "codelets_run_rms_z_stat"),
         (
             "Mean snag count on snaggable problems",

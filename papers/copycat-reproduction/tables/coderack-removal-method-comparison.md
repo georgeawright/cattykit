@@ -8,7 +8,8 @@
 | Temperature max absolute error        |                    0.078 |                       0.127 |
 | Temperature RMS z                     |                    1.150 |                       1.229 |
 | Temperature max \|z\|                 |                    3.913 |                       4.617 |
-| Codelets-run relative error           |                    0.071 |                       0.080 |
+| Codelets-run mean relative error      |                    0.071 |                       0.080 |
+| Codelets-run max relative error       |                    0.418 |                       0.414 |
 | Codelets-run RMS z                    |                    3.857 |                       4.166 |
 | Mean snag count on snaggable problems |                    3.086 |                       3.097 |
 | Max snag count                        |                       72 |                          91 |
