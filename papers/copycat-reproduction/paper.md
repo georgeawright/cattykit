@@ -1,6 +1,6 @@
-# Paper Title
+# Reproducing Copycat: a Python Re-implementation of a Classic Model of Analogy-Making
 George Alexander Wright
-2026-09-29
+2026-10-11
 
 # Introduction
 
