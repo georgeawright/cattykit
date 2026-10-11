@@ -1,5 +1,3 @@
-# Comparison statistics
-
 | Measure                                    |   Value |
 |:-------------------------------------------|--------:|
 | Mean answer TV distance                    |   0.022 |
@@ -13,3 +11,5 @@
 | Codelets-run mean relative error           |   0.071 |
 | Codelets-run max relative error            |   0.418 |
 | Codelets-run RMS z                         |   3.857 |
+
+: Across-problem statistics comparing the Copycat reproduction with the original implementation over all 29 target and variation problems. The full per-problem comparison and solution summaries are supplied in the reproduction dataset. Z-statistics may be sensitive to rounding in the means and standard errors reported by Mitchell [@Mitchell1993]; a Monte Carlo sensitivity analysis that perturbed the published values within their rounding intervals produced similar aggregate z summaries. {#tbl-comparison-statistics}
