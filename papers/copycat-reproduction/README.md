@@ -1,5 +1,7 @@
 # Reproducing Copycat: a Python Re-implementation of a Classic Model of Analogy-Making
 
+George Alexander Wright
+
 ## Abstract
 
 Copycat is a stochastic computer model of analogy-making developed by

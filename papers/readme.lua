@@ -42,11 +42,12 @@ function Pandoc(document)
   end
 
   local title = metadata_text(document.meta.title)
+  local author = metadata_text(document.meta.author)
   local abstract = metadata_text(document.meta.abstract)
   local citation = bibtex_entry(document.meta)
 
-  if title == "" or abstract == "" then
-    error("README rendering requires title and abstract metadata")
+  if title == "" or author == "" or abstract == "" then
+    error("README rendering requires title, author, and abstract metadata")
   end
 
   document.meta.title = nil
@@ -57,6 +58,7 @@ function Pandoc(document)
   document.meta.bibliography = nil
   document.blocks = {
     pandoc.Header(1, title),
+    pandoc.Para(author),
     pandoc.Header(2, "Abstract"),
     pandoc.Para(abstract),
     pandoc.Header(2, "Cite this paper"),

@@ -275,7 +275,8 @@ reported for the original Lisp implementation.
 
 <div id="fig-target-problems-solution-frequency">
 
-![](figures/target_problems-solution-frequency.png)
+<img src="figures/target_problems-solution-frequency.png"
+style="width:90.0%" />
 
 Figure 1: Answer-frequency distributions for the five basic target
 problems. Horizontal rules separate problems; answer labels are ordered
@@ -285,7 +286,8 @@ by frequency within each problem.
 
 <div id="fig-target-problems-temperature-by-solution">
 
-![](figures/target_problems-temperature-by-solution.png)
+<img src="figures/target_problems-temperature-by-solution.png"
+style="width:90.0%" />
 
 Figure 2: Final-temperature distributions for answers to the five basic
 target problems. Horizontal rules separate problems; answer labels are
@@ -295,7 +297,8 @@ ordered by frequency within each problem.
 
 <div id="fig-target-problems-codelets-run-by-solution">
 
-![](figures/target_problems-codelets-run-by-solution.png)
+<img src="figures/target_problems-codelets-run-by-solution.png"
+style="width:90.0%" />
 
 Figure 3: Codelets-run distributions for answers to the five basic
 target problems. Horizontal rules separate problems; answer labels are
@@ -435,7 +438,7 @@ some of the disagreement.
 
 <div id="fig-all-problems-snag-count">
 
-![](figures/all_problems-snag-count.png)
+<img src="figures/all_problems-snag-count.png" style="width:90.0%" />
 
 Figure 4: Snag count distributions across the 29 problems.
 
@@ -507,7 +510,8 @@ subject of a future reproduction study.
 
 <div id="fig-problem-5-xyd-codelets-vs-snags">
 
-![](figures/problem_5_xyd-codelets-vs-snags.png)
+<img src="figures/problem_5_xyd-codelets-vs-snags.png"
+style="width:90.0%" />
 
 Figure 5: Codelets run vs snags encountered for runs on problem abc -\>
 abd ==\> xyz with answer xyd
