@@ -22,7 +22,7 @@ format:
 
 This paper describes a reproduction study of Copycat, a computer model of analogy-making that solves string analogies of the form "if _abc_ is transformed to _abd_, what is _ijk_ transformed to?" [@Mitchell1993].
 Copycat is based on research by Douglas Hofstadter and the Fluid Analogies Research Group (FARG) into the flexible use of concepts by humans when they perceive and think about the world [@Hofstadter1995].
-While the original implementation of Copycat is available online (https://melaniemitchell.me/ExplorationsContent/how-to-get-copycat.html), it is written in a dialect of Lisp that is not compatible with the standard implementations available today and makes use of now non-existent dependencies.
+While the original implementation of Copycat is available online,[^original-copycat-download] it is written in a dialect of Lisp that is not compatible with the standard implementations available today and makes use of now non-existent dependencies.
 
 The Python re-implementation of Copycat described herein is the first step in a project that aims to construct a general library for building FARG-type models so that they can continue to be experimented on and better understood.
 Copycat makes a good starting point for this research program as it is one of the best-documented models and it informed subsequent models produced by FARG and others.
@@ -66,11 +66,11 @@ Jumbo [@Hofstadter1995jumbo] and Numbo [@Defays1995] build hierarchical structur
 Seqsee [@Mahabal2010] finds patterns in sequences of numbers in order to predict the next element;
 Musicat [@Nichols2012] finds patterns in sequences of musical notes.
 
-The original code for many (but not all) of these models is available online (https://github.com/fargonauts). The models were developed over an extended period of time using different programming languages, many of which are no longer supported on modern computers.
+The original code for many (but not all) of these models is available online.[^fargonauts] The models were developed over an extended period of time using different programming languages, many of which are no longer supported on modern computers.
 
 ## The original Copycat
 
-The original implementation of Copycat (https://melaniemitchell.me/ExplorationsContent/how-to-get-copycat.html) consists of nearly 12,000 lines of Common Lisp, but which will not run with modern Lisp interpreters as it relies on outdated dependencies.
+The original implementation of Copycat[^original-copycat-source] consists of nearly 12,000 lines of Common Lisp, but which will not run with modern Lisp interpreters as it relies on outdated dependencies.
 
 The code includes the implementations of the various components described above as well as the method for building answers and handling snags described below.
 Code is interspersed with calls to a graphical user interface used to display the workspace structures and slipnet activations and is written in a mixed object-oriented/procedural style.
@@ -81,11 +81,11 @@ Readers should consult Mitchell [@Mitchell1993] or Hofstadter [@Hofstadter1995] 
 
 ## Other implementations and generalizations
 
-As one of the better known FARG models, Copycat has been reproduced before with implementations made available online, including in Java (https://archive.org/details/JavaCopycat) and in Python (https://github.com/LSaldyt/copycat).
-Metacat, which is an extension of Copycat implemented in Scheme (https://science.slc.edu/~jmarshall/metacat/), also has a lot in common with the original Copycat implementation.
+As one of the better known FARG models, Copycat has been reproduced before with implementations made available online, including in Java[^java-copycat] and in Python.[^python-copycat]
+Metacat, which is an extension of Copycat implemented in Scheme,[^metacat] also has a lot in common with the original Copycat implementation.
 
 Apart from Metacat, none of these projects appear to have been made with a view to extending Copycat or to building a more general model.
-Other projects exist online which have sought to build a more general FARG model, such as Paradex (https://github.com/fargonauts/paradex) and PySeqsee (https://github.com/amahabal/PySeqsee), but they no longer seem to be active.
+Other projects exist online which have sought to build a more general FARG model, such as Paradex[^paradex] and PySeqsee,[^pyseqsee] but they no longer seem to be active.
 
 # Methods
 
@@ -93,13 +93,13 @@ The benchmark comprises the five target problems and 24 variations reported by M
 
 The experiments used Python 3.13, Copycat 0.1.0, and Cattykit 0.1.2. Each implementation was run 1,000 times on every problem, with the model instantiated anew using seeds 0--999; all runs continued until an answer was produced and no experimental runs were excluded. The same seed set was used for the full-precision baseline, the two-decimal quantization variant, and the faithful-original coderack-removal variant. The quantization and coderack patches are described in their respective sections below.
 
-Answer distributions were compared using total variation (TV) distance, with empirical overlap defined as one minus TV distance. Temperature error was calculated only for answers observed in both implementations and summarized both equally across answers and weighted by the published answer frequencies; unmatched answer categories were counted separately. For a mean difference, the standardized discrepancy was calculated using the square root of the sum of the two squared standard errors; RMS z is the root mean square of these discrepancies across comparisons. Codelet-count error is the absolute difference between means divided by the published mean. Monte Carlo analyses used 10,000 samples with seed 0. The experiment scripts, locked software environment, raw results, and generated summaries are provided in `experiments/copycat-reproduction` and `datasets/copycat-reproduction`.
+Answer distributions were compared using total variation (TV) distance, with empirical overlap defined as one minus TV distance. Temperature error was calculated only for answers observed in both implementations and summarized both equally across answers and weighted by the published answer frequencies; unmatched answer categories were counted separately. For a mean difference, the standardized discrepancy was calculated using the square root of the sum of the two squared standard errors; RMS z is the root mean square of these discrepancies across comparisons. Codelet-count error is the absolute difference between means divided by the published mean. Monte Carlo analyses used 10,000 samples with seed 0.[^reproduction-artifacts]
 
 # The re-implementation of Copycat
 
-The Python re-implementation described in this paper has been designed for the future purpose of building a generalized library out of the components of FARG models called Cattykit (https://github.com/georgeawright/cattykit). Eventually it is planned that Cattykit will contain the components needed to recreate previously built models for the purpose of experimentation; to develop novel models with a similar structure; and to integrate these models within a neuro-symbolic architecture as described by Wright [@Wright2026].
+The Python re-implementation described in this paper has been designed for the future purpose of building a generalized library out of the components of FARG models called Cattykit.[^cattykit] Eventually it is planned that Cattykit will contain the components needed to recreate previously built models for the purpose of experimentation; to develop novel models with a similar structure; and to integrate these models within a neuro-symbolic architecture as described by Wright [@Wright2026].
 
-The current state of the Copycat re-implementation (https://github.com/georgeawright/cattykit/tree/main/models/copycat) is still a self-contained model, but it has been written in a style that will facilitate this future abstraction: components are object-oriented; and parameters are largely kept out of the code and placed in configuration files, especially the nodes and link weights of the Slipnet.
+The current state of the Copycat re-implementation[^copycat-source] is still a self-contained model, but it has been written in a style that will facilitate this future abstraction: components are object-oriented; and parameters are largely kept out of the code and placed in configuration files, especially the nodes and link weights of the Slipnet.
 
 The main differences introduced in this re-implementation include:
 
@@ -233,3 +233,15 @@ Evaluation therefore assesses reproduction primarily through effect sizes, rathe
 This Copycat re-implementation is situated within a broader program of research and software engineering that aims to build a more generalized library - Cattykit - for use in the development of FARG-style models of Artificial Intelligence which could in future be used as part of experimental neuro-symbolic architectures. The most likely next steps in this program will be: a reproduction study of Metacat, an architecture which extends Copycat with so-called _self-watching_ capabilities; and the abstraction of common components from Copycat and Metacat into a shared library. Concurrent with the development of the Cattykit library, will be the development of Cattycam, a tool for observing the inner workings of Cattykit models.
 
 # References
+
+[^original-copycat-download]: <https://melaniemitchell.me/ExplorationsContent/how-to-get-copycat.html>
+[^fargonauts]: <https://github.com/fargonauts>
+[^original-copycat-source]: <https://melaniemitchell.me/ExplorationsContent/how-to-get-copycat.html>
+[^java-copycat]: <https://archive.org/details/JavaCopycat>
+[^python-copycat]: <https://github.com/LSaldyt/copycat>
+[^metacat]: <https://science.slc.edu/~jmarshall/metacat/>
+[^paradex]: <https://github.com/fargonauts/paradex>
+[^pyseqsee]: <https://github.com/amahabal/PySeqsee>
+[^cattykit]: <https://github.com/georgeawright/cattykit>
+[^copycat-source]: <https://github.com/georgeawright/cattykit/tree/main/models/copycat>
+[^reproduction-artifacts]: The experiment scripts, locked software environment, raw results, and generated summaries are provided at <https://github.com/georgeawright/cattykit/tree/main/experiments/copycat-reproduction> and <https://github.com/georgeawright/cattykit/tree/main/datasets/copycat-reproduction>.

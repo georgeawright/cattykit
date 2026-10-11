@@ -11,11 +11,9 @@ Copycat is based on research by Douglas Hofstadter and the Fluid
 Analogies Research Group (FARG) into the flexible use of concepts by
 humans when they perceive and think about the world (Hofstadter and
 Fluid Analogies Research Group 1995). While the original implementation
-of Copycat is available online
-(https://melaniemitchell.me/ExplorationsContent/how-to-get-copycat.html),
-it is written in a dialect of Lisp that is not compatible with the
-standard implementations available today and makes use of now
-non-existent dependencies.
+of Copycat is available online,[^1] it is written in a dialect of Lisp
+that is not compatible with the standard implementations available today
+and makes use of now non-existent dependencies.
 
 The Python re-implementation of Copycat described herein is the first
 step in a project that aims to construct a general library for building
@@ -152,16 +150,15 @@ sequences of numbers in order to predict the next element; Musicat
 (Nichols 2012) finds patterns in sequences of musical notes.
 
 The original code for many (but not all) of these models is available
-online (https://github.com/fargonauts). The models were developed over
-an extended period of time using different programming languages, many
-of which are no longer supported on modern computers.
+online.[^2] The models were developed over an extended period of time
+using different programming languages, many of which are no longer
+supported on modern computers.
 
 ## The original Copycat
 
-The original implementation of Copycat
-(https://melaniemitchell.me/ExplorationsContent/how-to-get-copycat.html)
-consists of nearly 12,000 lines of Common Lisp, but which will not run
-with modern Lisp interpreters as it relies on outdated dependencies.
+The original implementation of Copycat[^3] consists of nearly 12,000
+lines of Common Lisp, but which will not run with modern Lisp
+interpreters as it relies on outdated dependencies.
 
 The code includes the implementations of the various components
 described above as well as the method for building answers and handling
@@ -185,19 +182,16 @@ architecture provides a large amount of implementation detail.
 ## Other implementations and generalizations
 
 As one of the better known FARG models, Copycat has been reproduced
-before with implementations made available online, including in Java
-(https://archive.org/details/JavaCopycat) and in Python
-(https://github.com/LSaldyt/copycat). Metacat, which is an extension of
-Copycat implemented in Scheme
-(https://science.slc.edu/~jmarshall/metacat/), also has a lot in common
-with the original Copycat implementation.
+before with implementations made available online, including in Java[^4]
+and in Python.[^5] Metacat, which is an extension of Copycat implemented
+in Scheme,[^6] also has a lot in common with the original Copycat
+implementation.
 
 Apart from Metacat, none of these projects appear to have been made with
 a view to extending Copycat or to building a more general model. Other
 projects exist online which have sought to build a more general FARG
-model, such as Paradex (https://github.com/fargonauts/paradex) and
-PySeqsee (https://github.com/amahabal/PySeqsee), but they no longer seem
-to be active.
+model, such as Paradex[^7] and PySeqsee,[^8] but they no longer seem to
+be active.
 
 # Methods
 
@@ -227,28 +221,23 @@ the square root of the sum of the two squared standard errors; RMS z is
 the root mean square of these discrepancies across comparisons.
 Codelet-count error is the absolute difference between means divided by
 the published mean. Monte Carlo analyses used 10,000 samples with seed
-0. The experiment scripts, locked software environment, raw results, and
-generated summaries are provided in `experiments/copycat-reproduction`
-and `datasets/copycat-reproduction`.
+0.[^9]
 
 # The re-implementation of Copycat
 
 The Python re-implementation described in this paper has been designed
 for the future purpose of building a generalized library out of the
-components of FARG models called Cattykit
-(https://github.com/georgeawright/cattykit). Eventually it is planned
+components of FARG models called Cattykit.[^10] Eventually it is planned
 that Cattykit will contain the components needed to recreate previously
 built models for the purpose of experimentation; to develop novel models
 with a similar structure; and to integrate these models within a
 neuro-symbolic architecture as described by Wright (Wright 2026).
 
-The current state of the Copycat re-implementation
-(https://github.com/georgeawright/cattykit/tree/main/models/copycat) is
-still a self-contained model, but it has been written in a style that
-will facilitate this future abstraction: components are object-oriented;
-and parameters are largely kept out of the code and placed in
-configuration files, especially the nodes and link weights of the
-Slipnet.
+The current state of the Copycat re-implementation[^11] is still a
+self-contained model, but it has been written in a style that will
+facilitate this future abstraction: components are object-oriented; and
+parameters are largely kept out of the code and placed in configuration
+files, especially the nodes and link weights of the Slipnet.
 
 The main differences introduced in this re-implementation include:
 
@@ -764,3 +753,29 @@ Kolonin, and Michael Bennett. Springer Nature Switzerland.
 </div>
 
 </div>
+
+[^1]: <https://melaniemitchell.me/ExplorationsContent/how-to-get-copycat.html>
+
+[^2]: <https://github.com/fargonauts>
+
+[^3]: <https://melaniemitchell.me/ExplorationsContent/how-to-get-copycat.html>
+
+[^4]: <https://archive.org/details/JavaCopycat>
+
+[^5]: <https://github.com/LSaldyt/copycat>
+
+[^6]: <https://science.slc.edu/~jmarshall/metacat/>
+
+[^7]: <https://github.com/fargonauts/paradex>
+
+[^8]: <https://github.com/amahabal/PySeqsee>
+
+[^9]: The experiment scripts, locked software environment, raw results,
+    and generated summaries are provided at
+    <https://github.com/georgeawright/cattykit/tree/main/experiments/copycat-reproduction>
+    and
+    <https://github.com/georgeawright/cattykit/tree/main/datasets/copycat-reproduction>.
+
+[^10]: <https://github.com/georgeawright/cattykit>
+
+[^11]: <https://github.com/georgeawright/cattykit/tree/main/models/copycat>
