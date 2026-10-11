@@ -8,6 +8,8 @@ Models solve problems represented by graph-like structures in a workspace which 
 
 This repository was initially motivated by the lack of a common software framework for FARG models, which were typically developed as isolated projects, often using different programming languages (some of which are now obsolete). This hinders further research into the models and, despite the promise they show as an approach to symbolic AI, acts as a barrier to their adoption in AI more widely.
 
+This repository hosts the software packages, computer models, experiment scripts, datasets, and research papers that make up the totality of this project.
+
 ## Status
 
 This project is in a state of active development and its APIs may change.
@@ -16,12 +18,12 @@ Currently, work is focused on a faithful reproduction of Copycat, a model of ana
 
 ## Repository structure
 
-This repository hosts the packages:
+### Packages
 
 * **Cattykit** a general purpose library for developing and testing models
 * **Cattycam** a web-app based tool for viewing the internal structures and processes in Cattykit models and debugging models in development
 
-This repository also hosts model implementations:
+### Models
 
 * **Copycat** a reproduction of the original FARG model which solves analogies between strings, translated from the [original Lisp source](https://melaniemitchell.me/ExplorationsContent/how-to-get-copycat.html) and following the description in Mitchell 1993.
 
