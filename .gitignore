@@ -13,6 +13,3 @@ dist/
 notes/
 
 tmp/
-
-# Locally reconstructed Copycat reference data; use the checked-in template.
-/datasets/copycat-reproduction/original_copycat_results.json

@@ -13,8 +13,8 @@ The source is:
 > MIT Press. https://doi.org/10.5555/152203
 
 1. Obtain lawful access to the source.
-2. Copy `original_copycat_results.template.json` to
-   `original_copycat_results.json`.
+2. In the `original/` directory, copy `original_copycat_results.template.json`
+   to `original_copycat_results.json`.
 3. For each problem, transcribe the labelled values on its `source.page` into
    `solutions` and `codelets`.
 

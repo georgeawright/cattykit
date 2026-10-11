@@ -3,19 +3,12 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 from typing import Any
 
 import pandas as pd
-from cattykit.experiments import (
-    run_experiment,
-    summarize_runs,
-    total_variation_distance,
-    z_statistic,
-)
+from cattykit.experiments import summarize_runs
 
 from .paths import TEMPLATE_PATH
-from .table_helpers import comparison_row, reproduction_summary
 
 
 def result_case(
@@ -85,54 +78,3 @@ def reproduction_from_raw_results(raw_results: pd.DataFrame) -> dict[str, Any]:
         "basic_problems": template["basic_problems"],
         "results": reproduced_cases,
     }
-
-
-def run_reproduction(
-    model_name: str,
-    gold_behaviour: dict[str, pd.DataFrame | list[dict]],
-    iterations: int,
-    output_file: str | Path | None = None,
-) -> tuple[pd.DataFrame, dict[str, Any]]:
-    """Run Copycat and compare its summaries to the supplied published data."""
-    observed = run_experiment(
-        model_name, list(gold_behaviour), iterations, verbose=False
-    ).summary
-    rows = []
-    for problem, behaviour in gold_behaviour.items():
-        gold = (
-            behaviour
-            if isinstance(behaviour, pd.DataFrame)
-            else pd.DataFrame(behaviour)
-        )
-        actual = observed[observed.problem == problem]
-        actual_answers, gold_answers = (
-            actual[actual.solution != "Total"],
-            gold[gold.solution != "Total"],
-        )
-        tv = total_variation_distance(
-            dict(zip(actual_answers.solution, actual_answers.frequency, strict=True)),
-            dict(zip(gold_answers.solution, gold_answers.frequency, strict=True)),
-        )
-        actual_total, gold_total = (
-            actual[actual.solution == "Total"].iloc[0],
-            gold[gold.solution == "Total"].iloc[0],
-        )
-        rows.append(
-            comparison_row(
-                problem=problem,
-                solution="Total",
-                observed=actual_total,
-                expected=gold_total,
-                tv_distance=tv,
-                codelets_z_stat=z_statistic(
-                    actual_total.mean_codelets_run,
-                    gold_total.mean_codelets_run,
-                    actual_total.codelets_standard_error,
-                    gold_total.codelets_standard_error,
-                ),
-            )
-        )
-    comparison = pd.DataFrame(rows)
-    if output_file:
-        comparison.to_csv(output_file, index=False)
-    return comparison, reproduction_summary(comparison)

@@ -22,4 +22,4 @@ baseline:
 	uv run python 13_analyse_codelets_vs_temperature.py
 	uv run python 14_analyse_codelets_vs_snags.py
 	uv run python 16_analyse_transcription_precision.py
-	uv run python 21_plot_basic_problems.py
+	uv run python 20_plot_basic_problems.py
