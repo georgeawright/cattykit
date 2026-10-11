@@ -12,6 +12,7 @@ bibtex:
   type: misc
   key: wright2026copycat-reproduction
   fields:
+    url: "https://github.com/georgeawright/cattykit/tree/main/papers/copycat-reproduction"
     year: "2026"
 format:
   gfm: default
