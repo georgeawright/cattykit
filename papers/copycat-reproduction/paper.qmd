@@ -116,11 +116,11 @@ Fidelity of the Python re-implementation was assessed by comparing its answers, 
 
 As discussed in the following sections, statistics collected from runs of the re-implementation display close similarity to the statistics reported for the original Lisp implementation.
 
-![Answer-frequency distributions for the five basic target problems. Horizontal rules separate problems; answer labels are ordered by frequency within each problem.](figures/target_problems-solution-frequency.png){#fig-target-problems-solution-frequency}
+![Answer-frequency distributions for the five basic target problems. Horizontal rules separate problems; answer labels are ordered by frequency within each problem.](figures/target_problems-solution-frequency.png){#fig-target-problems-solution-frequency width=90%}
 
-![Final-temperature distributions for answers to the five basic target problems. Horizontal rules separate problems; answer labels are ordered by frequency within each problem.](figures/target_problems-temperature-by-solution.png){#fig-target-problems-temperature-by-solution}
+![Final-temperature distributions for answers to the five basic target problems. Horizontal rules separate problems; answer labels are ordered by frequency within each problem.](figures/target_problems-temperature-by-solution.png){#fig-target-problems-temperature-by-solution width=90%}
 
-![Codelets-run distributions for answers to the five basic target problems. Horizontal rules separate problems; answer labels are ordered by frequency within each problem.](figures/target_problems-codelets-run-by-solution.png){#fig-target-problems-codelets-run-by-solution}
+![Codelets-run distributions for answers to the five basic target problems. Horizontal rules separate problems; answer labels are ordered by frequency within each problem.](figures/target_problems-codelets-run-by-solution.png){#fig-target-problems-codelets-run-by-solution width=90%}
 
 ## Comparison statistics
 
@@ -173,7 +173,7 @@ As discussed below, a variant using two-decimal quantization produces mean run l
 
 ## Snags
 
-![Snag count distributions across the 29 problems.](figures/all_problems-snag-count.png){#fig-all-problems-snag-count}
+![Snag count distributions across the 29 problems.](figures/all_problems-snag-count.png){#fig-all-problems-snag-count width=90%}
 
 Sometimes when solving a problem, Copycat can encounter a _snag_ (also referred to by Mitchell [@Mitchell1993] as an _impasse_). This happens when a rule is built that cannot be applied to the letters in the target string. For example, when producing a solution for the problem `abc -> abd ==> xyz`, Copycat might construct a rule to replace the letter `z` with its successor. Since `z` has no successor, Copycat cannot apply the rule.
 
@@ -185,7 +185,7 @@ Handling snags allows Copycat to continue trying to find a solution. As noted by
 
 Snag handling is deterministic, requires a more global view of the workspace, and is tailored to a specific subset of Copycat's problems. This deviates from the broader style of the architecture in which responsibility for observing and editing the workspace is usually delegated to codelets stochastically selected from the coderack. It might therefore be judged to be incompatible with the broader FARG approach to AI and it has indeed been further addressed in the model Metacat, an extension of Copycat which Marshall [@Marshall1999] describes as having _self-watching_ capabilities. This will be the subject of a future reproduction study.
 
-![Codelets run vs snags encountered for runs on problem abc -> abd ==> xyz with answer xyd](figures/problem_5_xyd-codelets-vs-snags.png){#fig-problem-5-xyd-codelets-vs-snags}
+![Codelets run vs snags encountered for runs on problem abc -> abd ==> xyz with answer xyd](figures/problem_5_xyd-codelets-vs-snags.png){#fig-problem-5-xyd-codelets-vs-snags width=90%}
 
 ## Comparison of numeric quantization methods
 
