@@ -1,6 +1,6 @@
-# Numeric quantisation comparison
+# Numeric quantization comparison
 
-| Measure                                    |   Full precision |   Two-decimal quantisation |
+| Measure                                    |   Full precision |   Two-decimal quantization |
 |:-------------------------------------------|-----------------:|---------------------------:|
 | Mean answer TV distance                    |            0.022 |                      0.021 |
 | Max answer TV distance                     |            0.058 |                      0.055 |

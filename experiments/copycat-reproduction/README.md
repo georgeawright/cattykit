@@ -18,7 +18,7 @@ Scripts produce outputs which are consumed by subsequent scripts according to th
  │
  ├─> 01_run_removal_methods.py ─> 11_analyse_removal_methods.py
  │
- ├─> 02_run_with_quantization.py ─> 12_analyse_quantisation.py ─> 22_plot_quantized_basic_problems.py
+ ├─> 02_run_with_quantization.py ─> 12_analyse_quantization.py ─> 22_plot_quantized_basic_problems.py
  │
  ├──────────────────────> 15_analyse_frequence_sampling_variation.py
  │

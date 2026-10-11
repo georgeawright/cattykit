@@ -1,4 +1,4 @@
-"""Plot basic-problem results from Copycat's two-decimal quantisation run."""
+"""Plot basic-problem results from Copycat's two-decimal quantization run."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ RAW_RESULTS_PATH = QUANTIZATION_DATASETS / "quantized_raw_results.csv"
 
 
 def main() -> None:
-    """Generate quantised figures from saved runs; this stage never solves."""
+    """Generate quantized figures from saved runs; this stage never solves."""
     if not RAW_RESULTS_PATH.is_file():
         raise FileNotFoundError(f"Run 02 first; missing {RAW_RESULTS_PATH}")
     FIGURES.mkdir(parents=True, exist_ok=True)

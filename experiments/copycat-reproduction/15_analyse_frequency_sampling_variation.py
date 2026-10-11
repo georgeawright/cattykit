@@ -52,10 +52,10 @@ STUDIES = (
         / "coderack_removal_faithful_original_removal_tv_monte_carlo_baseline.csv",
     ),
     Study(
-        "two-decimal quantisation",
-        QUANTIZATION_DATASETS / "quantisation_two_decimal_quantisation_comparison.csv",
+        "two-decimal quantization",
+        QUANTIZATION_DATASETS / "quantization_two_decimal_quantization_comparison.csv",
         QUANTIZATION_DATASETS
-        / "quantisation_two_decimal_quantisation_tv_monte_carlo_baseline.csv",
+        / "quantization_two_decimal_quantization_tv_monte_carlo_baseline.csv",
     ),
 )
 

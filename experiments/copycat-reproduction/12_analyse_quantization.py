@@ -1,4 +1,4 @@
-"""Compare baseline and two-decimal-quantised Copycat results from raw CSVs."""
+"""Compare baseline and two-decimal-quantized Copycat results from raw CSVs."""
 
 from __future__ import annotations
 
@@ -20,8 +20,8 @@ from copycat_reproduction.table_helpers import (
     method_summary_row,
 )
 
-SUMMARY_CSV_PATH = QUANTIZATION_DATASETS / "quantisation_comparison.csv"
-SUMMARY_MARKDOWN_PATH = TABLES / "quantisation-comparison.md"
+SUMMARY_CSV_PATH = QUANTIZATION_DATASETS / "quantization_comparison.csv"
+SUMMARY_MARKDOWN_PATH = TABLES / "quantization-comparison.md"
 
 
 def main(gold_path: Path = GOLD_PATH) -> None:
@@ -42,7 +42,7 @@ def main(gold_path: Path = GOLD_PATH) -> None:
             REPRODUCTION_DATASETS / "reproduction_raw_results.csv",
         ),
         (
-            "two_decimal_quantisation",
+            "two_decimal_quantization",
             QUANTIZATION_DATASETS / "quantized_raw_results.csv",
         ),
     )
@@ -54,7 +54,7 @@ def main(gold_path: Path = GOLD_PATH) -> None:
         reproduction = reproduction_from_raw_results(raw_runs)
         comparison = comparison_table(reproduction, original)
         comparison.to_csv(
-            QUANTIZATION_DATASETS / f"quantisation_{name}_comparison.csv",
+            QUANTIZATION_DATASETS / f"quantization_{name}_comparison.csv",
             index=False,
         )
         summary_rows.append(
@@ -64,11 +64,11 @@ def main(gold_path: Path = GOLD_PATH) -> None:
     summary.to_csv(SUMMARY_CSV_PATH, index=False)
     SUMMARY_MARKDOWN_PATH.write_text(
         method_comparison_markdown(
-            "Numeric quantisation comparison",
+            "Numeric quantization comparison",
             summary,
             {
                 "full_precision": "Full precision",
-                "two_decimal_quantisation": "Two-decimal quantisation",
+                "two_decimal_quantization": "Two-decimal quantization",
             },
         ),
         encoding="utf-8",
