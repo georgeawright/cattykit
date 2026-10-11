@@ -13,12 +13,18 @@ from copycat_reproduction.table_helpers import (
     comparison_markdown,
     comparison_table,
     error_summary,
+    temperature_coverage_summary,
 )
 
 RAW_RESULTS_PATH = REPRODUCTION_DATASETS / "reproduction_raw_results.csv"
 RESULTS_PATH = REPRODUCTION_DATASETS / "reproduction_copycat_results.json"
 COMPARISON_CSV_PATH = REPRODUCTION_DATASETS / "reproduction_comparison.csv"
-ERROR_SUMMARY_CSV_PATH = REPRODUCTION_DATASETS / "reproduction_comparison_error_summary.csv"
+ERROR_SUMMARY_CSV_PATH = (
+    REPRODUCTION_DATASETS / "reproduction_comparison_error_summary.csv"
+)
+TEMPERATURE_COVERAGE_CSV_PATH = (
+    REPRODUCTION_DATASETS / "temperature_analysis_coverage.csv"
+)
 MARKDOWN_PATH = TABLES / "baseline-comparison-statistics.md"
 
 
@@ -36,6 +42,9 @@ def main(gold_path: Path = GOLD_PATH) -> None:
     error = error_summary(comparison)
     comparison.to_csv(COMPARISON_CSV_PATH, index=False)
     error.to_csv(ERROR_SUMMARY_CSV_PATH, index=False)
+    temperature_coverage_summary(comparison).to_csv(
+        TEMPERATURE_COVERAGE_CSV_PATH, index=False
+    )
     MARKDOWN_PATH.write_text(
         comparison_markdown(comparison, error),
         encoding="utf-8",

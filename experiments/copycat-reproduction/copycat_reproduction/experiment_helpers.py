@@ -3,26 +3,19 @@
 from __future__ import annotations
 
 import json
-from math import sqrt
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
 from cattykit.experiments import (
-    chi_square_survival_function,
-    mean_absolute_error,
     run_experiment,
     summarize_runs,
     total_variation_distance,
-    two_sided_p_value,
     z_statistic,
 )
 
-from .paths import FIGURES, TEMPLATE_PATH
+from .paths import TEMPLATE_PATH
 from .table_helpers import comparison_row, reproduction_summary
-
-
-MIN_ORIGINAL_SOLUTION_FREQUENCY = 10
 
 
 def result_case(

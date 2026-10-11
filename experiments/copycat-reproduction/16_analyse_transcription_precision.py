@@ -5,15 +5,13 @@ from __future__ import annotations
 import argparse
 import json
 from dataclasses import dataclass
-from math import inf, sqrt
+from math import inf, isfinite, sqrt
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 import pandas as pd
-
 from copycat_reproduction.paths import GOLD_PATH, REPRODUCTION_DATASETS
-from copycat_reproduction.table_helpers import MIN_ORIGINAL_SOLUTION_FREQUENCY
 
 DEFAULT_RESAMPLES = 10_000
 DEFAULT_SEED = 0
@@ -51,7 +49,9 @@ def _z_magnitude(
     return abs(difference) / denominator
 
 
-def _interval(value: float, half_width: float, lower_bound: float | None) -> tuple[float, float]:
+def _interval(
+    value: float, half_width: float, lower_bound: float | None
+) -> tuple[float, float]:
     """Return the interval implied by round-to-nearest at displayed precision."""
     lower = value - half_width
     if lower_bound is not None:
@@ -73,7 +73,16 @@ def _temperature_comparisons(
         published = original_cases[reproduced["problem"]]
         for solution, expected in published["solutions"].items():
             observed = reproduced["solutions"].get(solution)
-            if observed is None or expected["frequency"] < MIN_ORIGINAL_SOLUTION_FREQUENCY:
+            if observed is None:
+                continue
+            if not isfinite(
+                _z_magnitude(
+                    float(observed["temperature_mean"])
+                    - float(expected["temperature_mean"]),
+                    float(observed["temperature_standard_error"]),
+                    float(expected["temperature_standard_error"]),
+                )
+            ):
                 continue
             comparisons.append(
                 Comparison(
