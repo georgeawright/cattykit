@@ -1,0 +1,6 @@
+error_metric,mean_error,max_error
+Answer TV distance,0.021586206896551725,0.058000000000000024
+Temperature unweighted mean absolute error,0.027227320662856904,0.13079881414427677
+Temperature weighted mean absolute error,0.004951103522828726,0.012166383611017616
+Temperature max absolute error,0.06711895209469974,0.2591993664138064
+Codelets-run mean relative error,0.07133673094573761,0.41843343653250775

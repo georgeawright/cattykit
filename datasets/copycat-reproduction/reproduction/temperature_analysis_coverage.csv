@@ -1,0 +1,31 @@
+id,problem,temperature_comparable_solution_count,temperature_comparable_run_count,temperature_original_only_solution_count,temperature_original_only_run_count,temperature_reproduction_only_solution_count,temperature_reproduction_only_run_count
+1,abc -> abd ==> ijk -> ?,2,996,3,4,0,0
+1.1,abc -> abd ==> ijklmnop -> ?,7,984,2,16,3,16
+1.2,abc -> abd ==> xlg -> ?,3,1000,0,0,0,0
+1.3,abc -> abd ==> xcg -> ?,3,1000,0,0,0,0
+1.4,abc -> abd ==> abcd -> ?,5,1000,0,0,1,1
+1.5,abc -> abd ==> cde -> ?,5,1000,0,0,0,0
+1.6,abc -> abd ==> cab -> ?,6,999,1,1,0,0
+1.7,abc -> abd ==> cmg -> ?,3,1000,0,0,0,0
+1.8,abc -> qbc ==> ijk -> ?,2,1000,0,0,0,0
+1.9,aabc -> aabd ==> ijkk -> ?,8,999,1,1,0,0
+1.10,abcm -> abcn ==> rijk -> ?,8,996,2,4,0,0
+2,abc -> abd ==> iijjkk -> ?,7,1000,0,0,1,3
+2.1,abc -> abd ==> hhwwqq -> ?,6,999,1,1,1,1
+2.2,abc -> abd ==> lmfgop -> ?,5,1000,0,0,2,3
+2.3,abc -> abd ==> lmnfghopq -> ?,6,1000,0,0,1,1
+2.4,aabbcc -> aabbcd ==> iijjkk -> ?,8,997,1,3,0,0
+3,abc -> abd ==> kji -> ?,5,999,1,1,0,0
+3.1,abc -> abd ==> edc -> ?,4,1000,0,0,1,1
+3.2,abc -> abd ==> cba -> ?,3,999,1,1,0,0
+4,abc -> abd ==> mrrjjj -> ?,5,998,1,2,3,11
+4.1,abc -> abd ==> mrr -> ?,5,999,1,1,0,0
+4.2,abc -> abd ==> mmrrrjjjj -> ?,8,999,1,1,1,1
+4.3,abc -> abd ==> rssttt -> ?,8,998,1,2,2,3
+4.4,abc -> abd ==> xpqdef -> ?,8,1000,0,0,0,0
+5,abc -> abd ==> xyz -> ?,6,999,1,1,0,0
+5.1,abc -> qbc ==> xyz -> ?,2,999,1,1,0,0
+5.2,rst -> rsu ==> xyz -> ?,3,1000,0,0,0,0
+5.3,abc -> abd ==> glz -> ?,4,1000,0,0,0,0
+5.4,abc -> abd ==> cmz -> ?,2,1000,0,0,0,0
+Total,All problems,147,28960,19,40,16,41

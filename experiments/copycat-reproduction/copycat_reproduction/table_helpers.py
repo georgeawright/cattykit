@@ -1,0 +1,452 @@
+"""Copycat-reproduction comparison logic, separate from Cattykit itself."""
+
+from __future__ import annotations
+
+from collections.abc import Mapping
+from math import isfinite, sqrt
+from typing import Any
+
+import pandas as pd
+from cattykit.experiments import (
+    chi_square_survival_function,
+    mean_absolute_error,
+    total_variation_distance,
+    two_sided_p_value,
+    z_statistic,
+)
+
+
+def comparison_row(
+    *,
+    problem: str,
+    solution: str,
+    observed: pd.Series | None,
+    expected: pd.Series | dict[str, object] | None,
+    tv_distance: float | None = None,
+    codelets_z_stat: float | None = None,
+    temperature_z_stat: float | None = None,
+) -> dict[str, object]:
+    """Build one Copycat observed-versus-published comparison row."""
+    row: dict[str, object] = {
+        "problem": problem,
+        "solution": solution,
+        "tv_distance": tv_distance,
+        "codelets_z_stat": codelets_z_stat,
+        "temperature_z_stat": temperature_z_stat,
+    }
+    for field in (
+        "frequency",
+        "mean_codelets_run",
+        "codelets_standard_error",
+        "mean_temperature",
+        "temperature_standard_error",
+    ):
+        actual = (
+            None
+            if observed is None or pd.isna(observed.get(field))
+            else observed.get(field)
+        )
+        reference = (
+            None
+            if expected is None or pd.isna(expected.get(field))
+            else expected.get(field)
+        )
+        row[f"observed_{field}"] = actual
+        row[f"expected_{field}"] = reference
+        row[f"{field}_difference"] = (
+            actual - reference if actual is not None and reference is not None else None
+        )
+    actual_codelets = row["observed_mean_codelets_run"]
+    expected_codelets = row["expected_mean_codelets_run"]
+    row["codelets_relative_error_magnitude"] = (
+        abs(actual_codelets - expected_codelets) / expected_codelets
+        if actual_codelets is not None and expected_codelets not in (None, 0)
+        else None
+    )
+    return row
+
+
+def reproduction_summary(comparison: pd.DataFrame) -> dict[str, Any]:
+    """Summarize the Copycat-specific reproduction comparison table."""
+    totals = comparison[comparison["solution"] == "Total"]
+    errors = totals["codelets_relative_error_magnitude"].dropna()
+    return {
+        "mean_total_variation_distance": totals["tv_distance"].mean(),
+        "max_total_variation_distance": totals["tv_distance"].max(),
+        "mean_codelets_relative_error_magnitude": errors.mean(),
+        "max_codelets_relative_error_magnitude": errors.max(),
+        "codelets_relative_error_magnitude_quantiles": {
+            percentile: errors.quantile(percentile / 100)
+            for percentile in range(10, 101, 10)
+        },
+    }
+
+
+def comparison_table(
+    reproduction: dict[str, Any], original: dict[str, Any]
+) -> pd.DataFrame:
+    """Compute per-problem answer, temperature, and codelet comparison measures."""
+    original_cases = {case["problem"]: case for case in original["results"]}
+    rows = []
+    for reproduced in reproduction["results"]:
+        gold = original_cases[reproduced["problem"]]
+        observed_solutions = reproduced["solutions"]
+        retained = [
+            (observed_solutions[solution], expected)
+            for solution, expected in gold["solutions"].items()
+            if solution in observed_solutions
+        ]
+        temperature_z_scores = []
+        for observed, expected in retained:
+            if not (
+                isfinite(observed["temperature_standard_error"])
+                and isfinite(expected["temperature_standard_error"])
+            ):
+                continue
+            score = z_statistic(
+                observed_mean=observed["temperature_mean"],
+                expected_mean=expected["temperature_mean"],
+                observed_standard_error=observed["temperature_standard_error"],
+                expected_standard_error=expected["temperature_standard_error"],
+            )
+            if isfinite(score):
+                temperature_z_scores.append(score)
+        temperature_absolute_errors = [
+            abs(observed["temperature_mean"] - expected["temperature_mean"])
+            for observed, expected in retained
+        ]
+        comparable_run_count = sum(expected["frequency"] for _, expected in retained)
+        weighted_temperature_absolute_error = (
+            sum(
+                abs(observed["temperature_mean"] - expected["temperature_mean"])
+                * expected["frequency"]
+                for observed, expected in retained
+            )
+            / comparable_run_count
+            if comparable_run_count
+            else 0.0
+        )
+        original_only_solutions = gold["solutions"].keys() - observed_solutions.keys()
+        reproduction_only_solutions = (
+            observed_solutions.keys() - gold["solutions"].keys()
+        )
+        codelets_z = z_statistic(
+            observed_mean=reproduced["codelets"]["mean"],
+            expected_mean=gold["codelets"]["mean"],
+            observed_standard_error=reproduced["codelets"]["standard_error"],
+            expected_standard_error=gold["codelets"]["standard_error"],
+        )
+        rows.append(
+            {
+                "id": gold["id"],
+                "problem": reproduced["problem"],
+                "solution_total_variation_distance": total_variation_distance(
+                    {
+                        key: value["frequency"]
+                        for key, value in observed_solutions.items()
+                    },
+                    {
+                        key: value["frequency"]
+                        for key, value in gold["solutions"].items()
+                    },
+                ),
+                "temperature_mean_absolute_error": mean_absolute_error(
+                    (observed["temperature_mean"] for observed, _ in retained),
+                    (expected["temperature_mean"] for _, expected in retained),
+                ),
+                "temperature_run_frequency_weighted_mean_absolute_error": (
+                    weighted_temperature_absolute_error
+                ),
+                "temperature_max_absolute_error": max(
+                    temperature_absolute_errors, default=0.0
+                ),
+                "temperature_z_chi_square": sum(
+                    score**2 for score in temperature_z_scores
+                ),
+                "temperature_z_count": len(temperature_z_scores),
+                "temperature_max_absolute_z_stat": max(
+                    (abs(score) for score in temperature_z_scores), default=0.0
+                ),
+                "temperature_comparable_solution_count": len(retained),
+                "temperature_comparable_run_count": comparable_run_count,
+                "temperature_original_only_solution_count": len(
+                    original_only_solutions
+                ),
+                "temperature_original_only_run_count": sum(
+                    gold["solutions"][solution]["frequency"]
+                    for solution in original_only_solutions
+                ),
+                "temperature_reproduction_only_solution_count": len(
+                    reproduction_only_solutions
+                ),
+                "temperature_reproduction_only_run_count": sum(
+                    observed_solutions[solution]["frequency"]
+                    for solution in reproduction_only_solutions
+                ),
+                "codelets_relative_error": (
+                    abs(reproduced["codelets"]["mean"] - gold["codelets"]["mean"])
+                    / abs(gold["codelets"]["mean"])
+                    if gold["codelets"]["mean"]
+                    else 0.0
+                ),
+                "codelets_z_stat": codelets_z,
+                "codelets_z_p_value": two_sided_p_value(codelets_z),
+            }
+        )
+    return pd.DataFrame(rows).sort_values(
+        "id", key=lambda values: values.map(_id_sort_key)
+    )
+
+
+def temperature_coverage_summary(comparison: pd.DataFrame) -> pd.DataFrame:
+    """Report answer categories lacking a cross-implementation comparison."""
+    columns = [
+        "id",
+        "problem",
+        "temperature_comparable_solution_count",
+        "temperature_comparable_run_count",
+        "temperature_original_only_solution_count",
+        "temperature_original_only_run_count",
+        "temperature_reproduction_only_solution_count",
+        "temperature_reproduction_only_run_count",
+    ]
+    summary = comparison.loc[:, columns].copy()
+    total = pd.DataFrame(
+        [
+            {
+                "id": "Total",
+                "problem": "All problems",
+                **{
+                    column: int(summary[column].sum())
+                    for column in columns[2:]
+                },
+            }
+        ]
+    )
+    return pd.concat([summary, total], ignore_index=True)
+
+
+def _id_sort_key(problem_id: str) -> tuple[int, ...]:
+    return tuple(int(part) for part in problem_id.split("."))
+
+
+def error_summary(comparison: pd.DataFrame) -> pd.DataFrame:
+    """Summarize the scale-appropriate errors across all 29 problems."""
+    metrics = {
+        "Answer TV distance": comparison["solution_total_variation_distance"],
+        "Temperature unweighted mean absolute error": comparison[
+            "temperature_mean_absolute_error"
+        ],
+        "Temperature weighted mean absolute error": comparison[
+            "temperature_run_frequency_weighted_mean_absolute_error"
+        ],
+        "Temperature max absolute error": comparison[
+            "temperature_max_absolute_error"
+        ],
+        "Codelets-run mean relative error": comparison["codelets_relative_error"],
+    }
+    return pd.DataFrame(
+        {
+            "error_metric": name,
+            "mean_error": values.mean(),
+            "max_error": values.max(),
+        }
+        for name, values in metrics.items()
+    )
+
+
+def comparison_markdown(comparison: pd.DataFrame, error: pd.DataFrame) -> str:
+    """Render a concise paper-facing baseline summary table."""
+    errors = error.set_index("error_metric")
+    temperature_count = int(comparison["temperature_z_count"].sum())
+    temperature_chi_square = float(comparison["temperature_z_chi_square"].sum())
+    codelet_chi_square = float((comparison["codelets_z_stat"] ** 2).sum())
+    table = pd.DataFrame(
+        [
+            (
+                "Mean answer TV distance",
+                comparison["solution_total_variation_distance"].mean(),
+            ),
+            (
+                "Max answer TV distance",
+                comparison["solution_total_variation_distance"].max(),
+            ),
+            (
+                "Mean runs with reproduction-only answers",
+                comparison["temperature_reproduction_only_run_count"].mean(),
+            ),
+            (
+                "Temperature unweighted mean absolute error",
+                errors.loc[
+                    "Temperature unweighted mean absolute error", "mean_error"
+                ],
+            ),
+            (
+                "Temperature weighted mean absolute error",
+                errors.loc[
+                    "Temperature weighted mean absolute error",
+                    "mean_error",
+                ],
+            ),
+            (
+                "Temperature max absolute error",
+                comparison["temperature_max_absolute_error"].max(),
+            ),
+            (
+                "Temperature RMS z",
+                sqrt(temperature_chi_square / temperature_count)
+                if temperature_count
+                else 0.0,
+            ),
+            (
+                r"Temperature max \|z\|",
+                comparison["temperature_max_absolute_z_stat"].max(),
+            ),
+            (
+                "Codelets-run mean relative error",
+                errors.loc["Codelets-run mean relative error", "mean_error"],
+            ),
+            (
+                "Codelets-run max relative error",
+                errors.loc["Codelets-run mean relative error", "max_error"],
+            ),
+            ("Codelets-run RMS z", sqrt(codelet_chi_square / len(comparison))),
+        ],
+        columns=["Measure", "Value"],
+    )
+    table["Value"] = table["Value"].map(
+        lambda value: value if isinstance(value, str) else f"{float(value):.3f}"
+    )
+    return (
+        "# Comparison statistics\n\n"
+        + table.to_markdown(
+            index=False,
+            disable_numparse=True,
+            colalign=("left", "right"),
+        )
+        + "\n"
+    )
+
+
+def method_summary_row(
+    method: str,
+    comparison: pd.DataFrame,
+    raw_runs: pd.DataFrame,
+    snaggable_problems: set[str],
+) -> dict[str, Any]:
+    """Build one row of the three-method comparison table."""
+    if "snag_count" not in raw_runs.columns:
+        raise ValueError("Raw results must include snag_count for method summaries.")
+    snaggable_runs = raw_runs.loc[raw_runs["problem"].isin(snaggable_problems)]
+    if snaggable_runs.empty:
+        raise ValueError("Raw results contain no runs for the snaggable problem set.")
+    temperature_count = int(comparison["temperature_z_count"].sum())
+    temperature_chi_square = float(comparison["temperature_z_chi_square"].sum())
+    codelets_chi_square = float((comparison["codelets_z_stat"] ** 2).sum())
+    return {
+        "method": method,
+        "answer_tv_distance_mean": comparison[
+            "solution_total_variation_distance"
+        ].mean(),
+        "answer_tv_distance_max": comparison[
+            "solution_total_variation_distance"
+        ].max(),
+        "temperature_mean_absolute_error": comparison[
+            "temperature_mean_absolute_error"
+        ].mean(),
+        "temperature_run_frequency_weighted_mean_absolute_error": comparison[
+            "temperature_run_frequency_weighted_mean_absolute_error"
+        ].mean(),
+        "temperature_max_absolute_error": comparison[
+            "temperature_max_absolute_error"
+        ].max(),
+        "temperature_rms_z_stat": sqrt(temperature_chi_square / temperature_count)
+        if temperature_count
+        else 0.0,
+        "temperature_max_absolute_z_stat": comparison[
+            "temperature_max_absolute_z_stat"
+        ].max(),
+        "temperature_z_chi_square": temperature_chi_square,
+        "temperature_z_p_value": chi_square_survival_function(
+            temperature_chi_square, temperature_count
+        ),
+        "mean_reproduction_only_answer_run_count": comparison[
+            "temperature_reproduction_only_run_count"
+        ].mean(),
+        "codelets_run_mean_relative_error": comparison[
+            "codelets_relative_error"
+        ].mean(),
+        "codelets_run_max_relative_error": comparison["codelets_relative_error"].max(),
+        "codelets_run_rms_z_stat": sqrt(codelets_chi_square / len(comparison)),
+        "codelets_run_z_chi_square": codelets_chi_square,
+        "codelets_run_z_p_value": chi_square_survival_function(
+            codelets_chi_square, len(comparison)
+        ),
+        "mean_snag_count_on_snaggable_problems": round(
+            snaggable_runs["snag_count"].sum() / len(snaggable_runs), 3
+        ),
+        "max_snag_count": int(raw_runs["snag_count"].max()),
+    }
+
+
+def method_comparison_markdown(
+    title: str, summary: pd.DataFrame, method_labels: Mapping[str, str]
+) -> str:
+    """Render method columns using the same measures as the baseline table."""
+    measures = (
+        ("Mean answer TV distance", "answer_tv_distance_mean"),
+        ("Max answer TV distance", "answer_tv_distance_max"),
+        (
+            "Mean runs with reproduction-only answers",
+            "mean_reproduction_only_answer_run_count",
+        ),
+        (
+            "Temperature unweighted mean absolute error",
+            "temperature_mean_absolute_error",
+        ),
+        (
+            "Temperature weighted mean absolute error",
+            "temperature_run_frequency_weighted_mean_absolute_error",
+        ),
+        ("Temperature max absolute error", "temperature_max_absolute_error"),
+        ("Temperature RMS z", "temperature_rms_z_stat"),
+        (r"Temperature max \|z\|", "temperature_max_absolute_z_stat"),
+        ("Codelets-run mean relative error", "codelets_run_mean_relative_error"),
+        ("Codelets-run max relative error", "codelets_run_max_relative_error"),
+        ("Codelets-run RMS z", "codelets_run_rms_z_stat"),
+        (
+            "Mean snag count on snaggable problems",
+            "mean_snag_count_on_snaggable_problems",
+        ),
+        ("Max snag count", "max_snag_count"),
+    )
+    table = pd.DataFrame(
+        {
+            "Measure": [label for label, _ in measures],
+            **{
+                method_labels[row.method]: [
+                    _format_method_summary_value(field, getattr(row, field))
+                    for _, field in measures
+                ]
+                for row in summary.itertuples(index=False)
+            },
+        }
+    )
+    return (
+        f"# {title}\n\n"
+        + table.to_markdown(
+            index=False,
+            disable_numparse=True,
+            colalign=("left", *("right" for _ in method_labels)),
+        )
+        + "\n"
+    )
+
+
+def _format_method_summary_value(field: str, value: object) -> str:
+    """Apply metric-specific display precision to a method-summary value."""
+    if field == "mean_snag_count_on_snaggable_problems":
+        return f"{float(value):.3f}"
+    if field == "max_snag_count":
+        return str(int(value))
+    return f"{float(value):.3f}"

@@ -167,7 +167,7 @@ dev = [
 
 [[package]]
 name = "cattykit"
-version = "0.1.1"
+version = "0.1.3"
 source = { editable = "packages/cattykit" }
 dependencies = [
     { name = "numpy" },
@@ -315,7 +315,7 @@ wheels = [
 
 [[package]]
 name = "copycat"
-version = "0.1.0"
+version = "0.1.1"
 source = { editable = "models/copycat" }
 dependencies = [
     { name = "cattykit" },
