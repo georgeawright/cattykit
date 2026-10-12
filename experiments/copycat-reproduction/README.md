@@ -5,6 +5,10 @@ as part of a reproduction study of the model Copycat. The scripts go hand in had
 stored in [datasets/copycat-reproduction](../../datasets/copycat-reproduction/) and output
 artefacts in [papers/copycat-reproduction](../../papers/copycat-reproduction/).
 
+The experiments run using Cattykit v0.1.3 (installed from PyPI)
+and Copycat v0.1.1 (installed from the GitHub release wheel).
+Changing these in the local workspace will not effect the experiments.
+
 ## Running the scripts
 
 Scripts produce outputs which are consumed by subsequent scripts according to the dependency graph:
