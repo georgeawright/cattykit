@@ -202,7 +202,7 @@ problem-level codelet-count means and standard errors were transcribed
 from the source. The problems are treated as a fixed benchmark, not as a
 random sample from a wider population of analogy problems.
 
-The experiments used Python 3.13, Copycat 0.1.0, and Cattykit 0.1.2.
+The experiments used Python 3.13, Copycat 0.1.1, and Cattykit 0.1.3.
 Each implementation was run 1,000 times on every problem, with the model
 instantiated anew using seeds 0–999; all runs continued until an answer
 was produced and no experimental runs were excluded. The same seed set
@@ -308,16 +308,7 @@ ordered by frequency within each problem.
 
 ## Comparison statistics
 
-<div id="tbl-comparison-statistics">
-
-Table 1: Across-problem statistics comparing the Copycat reproduction
-with the original implementation over all 29 target and variation
-problems. The full per-problem comparison and solution summaries are
-supplied in the reproduction dataset. Z-statistics may be sensitive to
-rounding in the means and standard errors reported by Mitchell (Mitchell
-1993); a Monte Carlo sensitivity analysis that perturbed the published
-values within their rounding intervals produced similar aggregate z
-summaries.
+# Comparison statistics
 
 | Measure                                    |  Value |
 |:-------------------------------------------|-------:|
@@ -333,8 +324,6 @@ summaries.
 | Codelets-run max relative error            |  0.418 |
 | Codelets-run RMS z                         |  3.857 |
 
-</div>
-
 ## Answer distributions
 
 The re-implementation of Copycat outputs similar answers with similar
@@ -345,18 +334,18 @@ reproduction on average generates between one and two new answers not
 reported in the original results but only once generates a previously
 unreported answer at a frequency above 1%.
 
-<a href="#tbl-comparison-statistics" class="quarto-xref">Table 1</a>
-quantifies the similarity of answer distribution between the two
-distributions with total variation distance (TV distance). Each answer
-distribution is represented as a probability vector, with one component
-for each answer observed in either distribution. TV distance is half the
-sum of the absolute differences between corresponding answer
-probabilities. A distance of zero indicates identical distributions;
-values closer to 1 indicate greater discrepancy. Subtracting the TV
-distance from one gives an estimate of the probability mass overlap
-between the two implementations. The average TV distance across all
-problems is 0.022, indicating a mean empirical overlap of 97.8%. Overlap
-is (slightly) below 95% for just two of the 29 problems tested.
+**?@tbl-comparison-statistics** quantifies the similarity of answer
+distribution between the two distributions with total variation distance
+(TV distance). Each answer distribution is represented as a probability
+vector, with one component for each answer observed in either
+distribution. TV distance is half the sum of the absolute differences
+between corresponding answer probabilities. A distance of zero indicates
+identical distributions; values closer to 1 indicate greater
+discrepancy. Subtracting the TV distance from one gives an estimate of
+the probability mass overlap between the two implementations. The
+average TV distance across all problems is 0.022, indicating a mean
+empirical overlap of 97.8%. Overlap is (slightly) below 95% for just two
+of the 29 problems tested.
 
 22 out of the 29 problems resulted in an answer distribution that has a
 TV distance within the 95% Monte Carlo reference ranges found with 1,000
@@ -392,20 +381,19 @@ solution (the absolute error between the means) is usually close to zero
 and the size of the difference is usually acceptable considering the
 variance recorded in reference results.
 
-<a href="#tbl-comparison-statistics" class="quarto-xref">Table 1</a>
-reports the mean and maximum of absolute error for the temperatures
-associated with the answers of each problem, both unweighted (giving
-equal emphasis to the mean temperature scores of each answer regardless
-of output frequency), and weighted by answer frequency. Mean
-temperatures are rarely more than one percentage point away from those
-of the original implementation, though in the worst case (with
-infrequent answers) the temperature can be 26 percentage points away.
-The unweighted mean absolute error across all 29 problems is 0.027, but
-the answer frequency weighted mean is 0.005. The root mean square of the
-standardized temperature-mean discrepancies is 1.583. This summarizes
-mean-level disagreement relative to the reported sampling errors; it
-does not establish that the underlying temperature distributions have
-the same shape.
+**?@tbl-comparison-statistics** reports the mean and maximum of absolute
+error for the temperatures associated with the answers of each problem,
+both unweighted (giving equal emphasis to the mean temperature scores of
+each answer regardless of output frequency), and weighted by answer
+frequency. Mean temperatures are rarely more than one percentage point
+away from those of the original implementation, though in the worst case
+(with infrequent answers) the temperature can be 26 percentage points
+away. The unweighted mean absolute error across all 29 problems is
+0.027, but the answer frequency weighted mean is 0.005. The root mean
+square of the standardized temperature-mean discrepancies is 1.583. This
+summarizes mean-level disagreement relative to the reported sampling
+errors; it does not establish that the underlying temperature
+distributions have the same shape.
 
 ## Run lengths
 
@@ -520,10 +508,7 @@ abd ==\> xyz with answer xyd
 
 ## Comparison of numeric quantization methods
 
-<div id="tbl-quantization-comparison">
-
-Table 2: Comparison of Copycat with full-precision values and with
-two-decimal quantization.
+# Numeric quantization comparison
 
 | Measure | Full precision | Two-decimal quantization |
 |:---|---:|---:|
@@ -541,8 +526,6 @@ two-decimal quantization.
 | Mean snag count on snaggable problems | 3.086 | 3.079 |
 | Max snag count | 72 | 64 |
 
-</div>
-
 As described above, this re-implementation of Copycat makes use of
 floating point numbers for values such as slipnode activation. This was
 motivated by the use of floating point to allow for richer
@@ -554,13 +537,12 @@ shows that both variants have similar agreement with the published
 answers and temperature means, while the quantized variant agrees more
 closely with the published mean run lengths.
 
-<a href="#tbl-quantization-comparison" class="quarto-xref">Table 2</a>
-shows that the two variants have similar levels of agreement with the
-published answer frequencies and temperature means. The quantized
-version’s answer distributions are slightly closer to the published
-results (with 23 out of the 29 problems within the 95% Monte Carlo
-reference range), while the full-precision version has slightly smaller
-temperature-error measures.
+**?@tbl-quantization-comparison** shows that the two variants have
+similar levels of agreement with the published answer frequencies and
+temperature means. The quantized version’s answer distributions are
+slightly closer to the published results (with 23 out of the 29 problems
+within the 95% Monte Carlo reference range), while the full-precision
+version has slightly smaller temperature-error measures.
 
 The main difference between the two is evident in search effort
 (measured in codelets executed). In this experiment, quantization is
@@ -589,10 +571,7 @@ reduced time spent exploring pathways that do not lead to a solution.
 
 ## Comparison of coderack removal methods
 
-<div id="tbl-coderack-removal-comparison">
-
-Table 3: Comparison of the corrected and original coderack-removal
-methods.
+# Coderack removal method comparison
 
 | Measure | Fixed weighted removal | Faithful original removal |
 |:---|---:|---:|
@@ -610,8 +589,6 @@ methods.
 | Mean snag count on snaggable problems | 3.086 | 3.097 |
 | Max snag count | 72 | 91 |
 
-</div>
-
 One change to the program introduced in the re-implementation is the
 method for removing codelets from the coderack. In Copycat, the coderack
 cannot contain more than 100 codelets, so when codelets are added that
@@ -621,12 +598,11 @@ the original implementation removes codelets without removing their
 corresponding removal probability weight and codelets therefore lose
 alignment with their probability of being removed.
 
-As shown by <a href="#tbl-coderack-removal-comparison"
-class="quarto-xref">Table 3</a>, the fixed and faithful-original
-variants have similar levels of agreement with the published answer
-frequencies, temperature means, and mean run lengths. This comparison is
-relative to the historical summaries and does not directly estimate a
-paired effect of the bug fix.
+As shown by **?@tbl-coderack-removal-comparison**, the fixed and
+faithful-original variants have similar levels of agreement with the
+published answer frequencies, temperature means, and mean run lengths.
+This comparison is relative to the historical summaries and does not
+directly estimate a paired effect of the bug fix.
 
 # Conclusion
 
@@ -776,9 +752,9 @@ Kolonin, and Michael Bennett. Springer Nature Switzerland.
 
 [^9]: The experiment scripts, locked software environment, raw results,
     and generated summaries are provided at
-    <https://github.com/georgeawright/cattykit/tree/main/experiments/copycat-reproduction>
+    <https://github.com/georgeawright/cattykit/tree/copycat-reproduction-v0.1.0/experiments/copycat-reproduction>
     and
-    <https://github.com/georgeawright/cattykit/tree/main/datasets/copycat-reproduction>.
+    <https://github.com/georgeawright/cattykit/tree/copycat-reproduction-v0.1.0/datasets/copycat-reproduction>.
 
 [^10]: <https://github.com/georgeawright/cattykit>
 
