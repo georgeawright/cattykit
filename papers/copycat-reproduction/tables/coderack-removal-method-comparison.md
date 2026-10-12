@@ -1,3 +1,5 @@
+# Coderack removal method comparison
+
 | Measure                                    |   Fixed weighted removal |   Faithful original removal |
 |:-------------------------------------------|-------------------------:|----------------------------:|
 | Mean answer TV distance                    |                    0.022 |                       0.025 |
@@ -13,5 +15,3 @@
 | Codelets-run RMS z                         |                    3.857 |                       4.166 |
 | Mean snag count on snaggable problems      |                    3.086 |                       3.097 |
 | Max snag count                             |                       72 |                          91 |
-
-: Comparison of the corrected and original coderack-removal methods. {#tbl-coderack-removal-comparison}

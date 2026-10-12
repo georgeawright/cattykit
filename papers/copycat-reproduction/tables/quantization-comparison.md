@@ -1,3 +1,5 @@
+# Numeric quantization comparison
+
 | Measure                                    |   Full precision |   Two-decimal quantization |
 |:-------------------------------------------|-----------------:|---------------------------:|
 | Mean answer TV distance                    |            0.022 |                      0.021 |
@@ -13,5 +15,3 @@
 | Codelets-run RMS z                         |            3.857 |                      1.693 |
 | Mean snag count on snaggable problems      |            3.086 |                      3.079 |
 | Max snag count                             |               72 |                         64 |
-
-: Comparison of Copycat with full-precision values and with two-decimal quantization. {#tbl-quantization-comparison}
