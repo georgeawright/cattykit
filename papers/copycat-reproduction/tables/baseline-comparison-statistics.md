@@ -1,5 +1,3 @@
-# Comparison statistics
-
 | Measure                                    |   Value |
 |:-------------------------------------------|--------:|
 | Mean answer TV distance                    |   0.022 |

@@ -71,7 +71,7 @@ from cattykit.logging import CattycamLogger
 
 cattycam_logger = CattycamLogger("history.sqlite", "copycat")
 
-copycat = cattykit.load_model(
+copycat = load_model(
     "copycat",
 	config={"seed": 1234},
 	logger=cattycam_logger

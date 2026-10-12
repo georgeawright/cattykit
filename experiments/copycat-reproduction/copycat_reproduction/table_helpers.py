@@ -318,8 +318,7 @@ def comparison_markdown(comparison: pd.DataFrame, error: pd.DataFrame) -> str:
         lambda value: value if isinstance(value, str) else f"{float(value):.3f}"
     )
     return (
-        "# Comparison statistics\n\n"
-        + table.to_markdown(
+        table.to_markdown(
             index=False,
             disable_numparse=True,
             colalign=("left", "right"),
@@ -390,7 +389,7 @@ def method_summary_row(
 
 
 def method_comparison_markdown(
-    title: str, summary: pd.DataFrame, method_labels: Mapping[str, str]
+    summary: pd.DataFrame, method_labels: Mapping[str, str]
 ) -> str:
     """Render method columns using the same measures as the baseline table."""
     measures = (
@@ -433,8 +432,7 @@ def method_comparison_markdown(
         }
     )
     return (
-        f"# {title}\n\n"
-        + table.to_markdown(
+        table.to_markdown(
             index=False,
             disable_numparse=True,
             colalign=("left", *("right" for _ in method_labels)),

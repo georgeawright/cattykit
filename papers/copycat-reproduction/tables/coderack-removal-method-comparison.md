@@ -1,5 +1,3 @@
-# Coderack removal method comparison
-
 | Measure                                    |   Fixed weighted removal |   Faithful original removal |
 |:-------------------------------------------|-------------------------:|----------------------------:|
 | Mean answer TV distance                    |                    0.022 |                       0.025 |
