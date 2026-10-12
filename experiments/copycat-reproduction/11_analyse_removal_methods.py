@@ -65,7 +65,6 @@ def main(gold_path: Path = GOLD_PATH) -> None:
     summary.to_csv(SUMMARY_CSV_PATH, index=False)
     SUMMARY_MARKDOWN_PATH.write_text(
         method_comparison_markdown(
-            "Coderack removal method comparison",
             summary,
             {
                 "fixed_weighted_removal": "Fixed weighted removal",

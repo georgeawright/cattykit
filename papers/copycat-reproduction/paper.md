@@ -308,8 +308,6 @@ ordered by frequency within each problem.
 
 ## Comparison statistics
 
-# Comparison statistics
-
 | Measure                                    |  Value |
 |:-------------------------------------------|-------:|
 | Mean answer TV distance                    |  0.022 |
@@ -508,8 +506,6 @@ abd ==\> xyz with answer xyd
 
 ## Comparison of numeric quantization methods
 
-# Numeric quantization comparison
-
 | Measure | Full precision | Two-decimal quantization |
 |:---|---:|---:|
 | Mean answer TV distance | 0.022 | 0.021 |
@@ -570,8 +566,6 @@ between beneficial and harmful structures, slipnodes, and codelets and
 reduced time spent exploring pathways that do not lead to a solution.
 
 ## Comparison of coderack removal methods
-
-# Coderack removal method comparison
 
 | Measure | Fixed weighted removal | Faithful original removal |
 |:---|---:|---:|
