@@ -22,9 +22,9 @@ Scripts produce outputs which are consumed by subsequent scripts according to th
  │
  ├─> 01_run_removal_methods.py ─> 11_analyse_removal_methods.py
  │
- ├─> 02_run_with_quantization.py ─> 12_analyse_quantization.py ─> 22_plot_quantized_basic_problems.py
+ ├─> 02_run_without_quantization.py ─> 12_analyse_quantization.py ─> 22_plot_unquantized_basic_problems.py
  │
- ├──────────────────────> 15_analyse_frequence_sampling_variation.py
+ ├──────────────────────> 15_analyse_frequency_sampling_variation.py
  │
  └──────────────────────> 16_analyse_transcription_precision.py
 ```
@@ -34,7 +34,7 @@ saved under [datasets/copycat-reproduction](../../datasets/copycat-reproduction/
 
 - `reproduction/` for baseline runs and baseline-derived analysis;
 - `coderack_removal/` for coderack-removal runs and comparisons; and
-- `quantization/` for quantized runs and comparisons.
+- `quantization/` for unquantized runs and comparisons.
 
 Scripts beginning with `1` use these CSV files to generate tables of summary statistics saved in
 [the matching dataset subdirectory](../../datasets/copycat-reproduction/) and

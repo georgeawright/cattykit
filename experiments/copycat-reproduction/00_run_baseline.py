@@ -7,6 +7,7 @@ import json
 
 from cattykit.experiments import run_experiment, summarize_runs
 from copycat_reproduction.experiment_helpers import result_case
+from copycat_reproduction.quantization import quantized_copycat
 from copycat_reproduction.paths import (
     REPRODUCTION_DATASETS,
     TEMPLATE_PATH,
@@ -23,17 +24,18 @@ def main(iterations: int = 1000) -> None:
     REPRODUCTION_DATASETS.mkdir(parents=True, exist_ok=True)
     template = json.loads(TEMPLATE_PATH.read_text(encoding="utf-8"))
     cases_by_problem = {case["problem"]: case for case in template["results"]}
-    result = run_experiment(
-        "copycat",
-        list(cases_by_problem),
-        iterations,
-        verbose=False,
-        record_attributes=["snag_count"],
-        summary_function=summarize_runs,
-        progress_callback=lambda number, total, problem: print(
-            f"[{number}/{total}] {problem}"
-        ),
-    )
+    with quantized_copycat(2):
+        result = run_experiment(
+            "copycat",
+            list(cases_by_problem),
+            iterations,
+            verbose=False,
+            record_attributes=["snag_count"],
+            summary_function=summarize_runs,
+            progress_callback=lambda number, total, problem: print(
+                f"[{number}/{total}] {problem}"
+            ),
+        )
     result.save_raw_runs_csv(RAW_RESULTS_PATH)
     reproduced_cases = []
     for problem, case in cases_by_problem.items():

@@ -38,19 +38,24 @@
       },
       "solutions": {
         "ijl": {
-          "frequency": 988,
-          "temperature_mean": 0.1690412360039127,
-          "temperature_standard_error": 0.0031371159019456256
+          "frequency": 979,
+          "temperature_mean": 0.16867211440245147,
+          "temperature_standard_error": 0.002975445232611291
         },
         "ijd": {
-          "frequency": 12,
-          "temperature_mean": 0.2016591065406198,
-          "temperature_standard_error": 0.0345066462573887
+          "frequency": 20,
+          "temperature_mean": 0.194,
+          "temperature_standard_error": 0.017687343080947965
+        },
+        "ijk": {
+          "frequency": 1,
+          "temperature_mean": 0.56,
+          "temperature_standard_error": 0.0
         }
       },
       "codelets": {
-        "mean": 290.735,
-        "standard_error": 2.9331403115239967
+        "mean": 290.765,
+        "standard_error": 3.1056582052582486
       },
       "id": "1"
     },
@@ -61,49 +66,44 @@
       },
       "solutions": {
         "iijjll": {
-          "frequency": 828,
-          "temperature_mean": 0.27148850902079824,
-          "temperature_standard_error": 0.003201964727137116
+          "frequency": 831,
+          "temperature_mean": 0.27320096269554756,
+          "temperature_standard_error": 0.003044307528762413
         },
         "iijjkl": {
-          "frequency": 148,
-          "temperature_mean": 0.4712674595195644,
-          "temperature_standard_error": 0.0071183838482027535
-        },
-        "iijjdd": {
-          "frequency": 7,
-          "temperature_mean": 0.36390777761327087,
-          "temperature_standard_error": 0.03839147067748945
+          "frequency": 147,
+          "temperature_mean": 0.4719727891156462,
+          "temperature_standard_error": 0.006629736114543975
         },
         "iikkll": {
-          "frequency": 6,
-          "temperature_mean": 0.4112218549523818,
-          "temperature_standard_error": 0.012530574674674992
+          "frequency": 10,
+          "temperature_mean": 0.41200000000000003,
+          "temperature_standard_error": 0.008137703743822465
         },
         "iijjkd": {
-          "frequency": 5,
-          "temperature_mean": 0.5686138635078652,
-          "temperature_standard_error": 0.03390343514870556
+          "frequency": 6,
+          "temperature_mean": 0.49333333333333335,
+          "temperature_standard_error": 0.017061978522759643
         },
-        "iijjkk": {
+        "iijjdd": {
           "frequency": 3,
-          "temperature_mean": 0.6566668705783972,
-          "temperature_standard_error": 0.12894012673925098
+          "temperature_mean": 0.41333333333333333,
+          "temperature_standard_error": 0.04666666666666667
         },
         "iijkll": {
           "frequency": 2,
-          "temperature_mean": 0.4564863271032688,
-          "temperature_standard_error": 0.0021746171195607955
+          "temperature_mean": 0.45499999999999996,
+          "temperature_standard_error": 0.02500000000000001
         },
-        "ijkkll": {
+        "hhjjkk": {
           "frequency": 1,
-          "temperature_mean": 0.4227641981917692,
+          "temperature_mean": 0.21,
           "temperature_standard_error": 0.0
         }
       },
       "codelets": {
-        "mean": 609.975,
-        "standard_error": 6.98515459812879
+        "mean": 613.696,
+        "standard_error": 7.85730353256146
       },
       "id": "2"
     },
@@ -114,34 +114,44 @@
       },
       "solutions": {
         "kjh": {
-          "frequency": 576,
-          "temperature_mean": 0.1380332196041894,
-          "temperature_standard_error": 0.0015017014521728495
+          "frequency": 550,
+          "temperature_mean": 0.1407818181818182,
+          "temperature_standard_error": 0.0015490691489694224
         },
         "kjj": {
-          "frequency": 226,
-          "temperature_mean": 0.44496566967119444,
-          "temperature_standard_error": 0.00722459054826879
+          "frequency": 224,
+          "temperature_mean": 0.4375446428571429,
+          "temperature_standard_error": 0.006623073423187665
         },
         "lji": {
-          "frequency": 185,
-          "temperature_mean": 0.17504451895966733,
-          "temperature_standard_error": 0.0033992622311305957
+          "frequency": 207,
+          "temperature_mean": 0.17777777777777776,
+          "temperature_standard_error": 0.0027247171807482035
         },
         "kjd": {
-          "frequency": 12,
-          "temperature_mean": 0.3750805844033542,
-          "temperature_standard_error": 0.052759078067520955
+          "frequency": 16,
+          "temperature_mean": 0.29000000000000004,
+          "temperature_standard_error": 0.04176322145939734
+        },
+        "dji": {
+          "frequency": 1,
+          "temperature_mean": 0.2,
+          "temperature_standard_error": 0.0
         },
         "kkj": {
           "frequency": 1,
-          "temperature_mean": 0.441842591491884,
+          "temperature_mean": 0.53,
+          "temperature_standard_error": 0.0
+        },
+        "kji": {
+          "frequency": 1,
+          "temperature_mean": 0.78,
           "temperature_standard_error": 0.0
         }
       },
       "codelets": {
-        "mean": 401.751,
-        "standard_error": 5.1680419557755775
+        "mean": 399.409,
+        "standard_error": 5.198189578487293
       },
       "id": "3"
     },
@@ -152,49 +162,39 @@
       },
       "solutions": {
         "mrrkkk": {
-          "frequency": 709,
-          "temperature_mean": 0.433723257887264,
-          "temperature_standard_error": 0.0019636951725974395
+          "frequency": 693,
+          "temperature_mean": 0.43278499278499283,
+          "temperature_standard_error": 0.001950007097324002
         },
         "mrrjjk": {
-          "frequency": 202,
-          "temperature_mean": 0.48588990302807633,
-          "temperature_standard_error": 0.0047273247037897224
-        },
-        "mrrjkk": {
-          "frequency": 35,
-          "temperature_mean": 0.46929391411699006,
-          "temperature_standard_error": 0.00891773969436025
+          "frequency": 208,
+          "temperature_mean": 0.49687499999999996,
+          "temperature_standard_error": 0.005044093825959588
         },
         "mrrjjjj": {
-          "frequency": 32,
-          "temperature_mean": 0.21432423258163705,
-          "temperature_standard_error": 0.00811308371671426
+          "frequency": 47,
+          "temperature_mean": 0.2123404255319149,
+          "temperature_standard_error": 0.005626460266472927
+        },
+        "mrrjkk": {
+          "frequency": 37,
+          "temperature_mean": 0.46297297297297296,
+          "temperature_standard_error": 0.006973403622895892
         },
         "mrrjjd": {
-          "frequency": 11,
-          "temperature_mean": 0.6171202167600272,
-          "temperature_standard_error": 0.03459846696545688
+          "frequency": 9,
+          "temperature_mean": 0.6044444444444443,
+          "temperature_standard_error": 0.035398960715719976
         },
         "mrrddd": {
-          "frequency": 8,
-          "temperature_mean": 0.47812090403226926,
-          "temperature_standard_error": 0.016252017506152964
-        },
-        "mrrjdd": {
-          "frequency": 2,
-          "temperature_mean": 0.51113403827049,
-          "temperature_standard_error": 0.003953135875895852
-        },
-        "msskkk": {
-          "frequency": 1,
-          "temperature_mean": 0.5932979203295543,
-          "temperature_standard_error": 0.0
+          "frequency": 6,
+          "temperature_mean": 0.48,
+          "temperature_standard_error": 0.0196638416050035
         }
       },
       "codelets": {
-        "mean": 877.615,
-        "standard_error": 16.0826134452778
+        "mean": 838.43,
+        "standard_error": 14.91868399800171
       },
       "id": "4"
     },
@@ -205,39 +205,39 @@
       },
       "solutions": {
         "xyd": {
-          "frequency": 821,
-          "temperature_mean": 0.21527846080093213,
-          "temperature_standard_error": 0.004347537371741859
+          "frequency": 835,
+          "temperature_mean": 0.22076646706586828,
+          "temperature_standard_error": 0.00455534555629874
         },
         "wyz": {
-          "frequency": 123,
-          "temperature_mean": 0.14281223427648698,
-          "temperature_standard_error": 0.0026591531897523103
+          "frequency": 101,
+          "temperature_mean": 0.14475247524752477,
+          "temperature_standard_error": 0.0037931518788937592
         },
         "yyz": {
-          "frequency": 50,
-          "temperature_mean": 0.43580801997418434,
-          "temperature_standard_error": 0.017283534885567706
+          "frequency": 53,
+          "temperature_mean": 0.44679245283018865,
+          "temperature_standard_error": 0.014903593397130774
         },
         "dyz": {
-          "frequency": 3,
-          "temperature_mean": 0.24138351234842656,
-          "temperature_standard_error": 0.08354540026985124
+          "frequency": 8,
+          "temperature_mean": 0.26625,
+          "temperature_standard_error": 0.06662628985618214
         },
         "xyy": {
           "frequency": 2,
-          "temperature_mean": 0.3559402333628569,
-          "temperature_standard_error": 0.011863858356990609
+          "temperature_mean": 0.35,
+          "temperature_standard_error": 0.019999999999999976
         },
         "xyz": {
           "frequency": 1,
-          "temperature_mean": 0.5659996768164866,
+          "temperature_mean": 0.33,
           "temperature_standard_error": 0.0
         }
       },
       "codelets": {
-        "mean": 3166.273,
-        "standard_error": 83.97080479862943
+        "mean": 3142.618,
+        "standard_error": 86.97139207299786
       },
       "id": "5"
     },
@@ -248,59 +248,59 @@
       },
       "solutions": {
         "ijklmnoq": {
-          "frequency": 917,
-          "temperature_mean": 0.28161784077468727,
-          "temperature_standard_error": 0.004893848606666448
+          "frequency": 928,
+          "temperature_mean": 0.27707974137931035,
+          "temperature_standard_error": 0.004634688109933107
         },
         "ijklnopq": {
-          "frequency": 17,
-          "temperature_mean": 0.4543166223605627,
-          "temperature_standard_error": 0.009256605510889639
+          "frequency": 18,
+          "temperature_mean": 0.43777777777777777,
+          "temperature_standard_error": 0.006445120541501205
         },
-        "ijlmnopq": {
-          "frequency": 12,
-          "temperature_mean": 0.45543046837097134,
-          "temperature_standard_error": 0.009763404139378947
-        },
-        "ijklmnpq": {
-          "frequency": 12,
-          "temperature_mean": 0.44786160466304414,
-          "temperature_standard_error": 0.00916944665550085
+        "ijkmnopq": {
+          "frequency": 15,
+          "temperature_mean": 0.4666666666666667,
+          "temperature_standard_error": 0.012934511482912194
         },
         "ijklmopq": {
           "frequency": 11,
-          "temperature_mean": 0.4707641026412428,
-          "temperature_standard_error": 0.015826325574999495
+          "temperature_mean": 0.4572727272727273,
+          "temperature_standard_error": 0.012217045401696248
         },
         "ijklmnod": {
-          "frequency": 11,
-          "temperature_mean": 0.5213667069533662,
-          "temperature_standard_error": 0.07152526515324563
+          "frequency": 10,
+          "temperature_mean": 0.483,
+          "temperature_standard_error": 0.06117461347105785
         },
-        "ijkmnopq": {
-          "frequency": 9,
-          "temperature_mean": 0.4463132073551439,
-          "temperature_standard_error": 0.010368020314853909
+        "ijlmnopq": {
+          "frequency": 6,
+          "temperature_mean": 0.4683333333333333,
+          "temperature_standard_error": 0.016210421887717114
+        },
+        "ijklmnpq": {
+          "frequency": 5,
+          "temperature_mean": 0.516,
+          "temperature_standard_error": 0.04523273151159458
         },
         "iklmnopq": {
-          "frequency": 6,
-          "temperature_mean": 0.43496182260795807,
-          "temperature_standard_error": 0.006177539737744999
+          "frequency": 4,
+          "temperature_mean": 0.43,
+          "temperature_standard_error": 0.004082482904638634
         },
         "ijklmnop": {
-          "frequency": 4,
-          "temperature_mean": 0.6092532829661331,
-          "temperature_standard_error": 0.1122175699270495
+          "frequency": 2,
+          "temperature_mean": 0.605,
+          "temperature_standard_error": 0.0050000000000000044
         },
-        "ijklmndd": {
+        "ijkddddd": {
           "frequency": 1,
-          "temperature_mean": 0.5128083958492465,
+          "temperature_mean": 0.52,
           "temperature_standard_error": 0.0
         }
       },
       "codelets": {
-        "mean": 598.547,
-        "standard_error": 9.308117900512963
+        "mean": 582.861,
+        "standard_error": 9.369653039311386
       },
       "id": "1.1"
     },
@@ -311,24 +311,29 @@
       },
       "solutions": {
         "xlh": {
-          "frequency": 981,
-          "temperature_mean": 0.4262740105595499,
-          "temperature_standard_error": 0.0012531923033532722
+          "frequency": 988,
+          "temperature_mean": 0.4211943319838057,
+          "temperature_standard_error": 0.001085950709172779
         },
         "xld": {
-          "frequency": 18,
-          "temperature_mean": 0.5088985766233137,
-          "temperature_standard_error": 0.020421602107369808
+          "frequency": 9,
+          "temperature_mean": 0.49,
+          "temperature_standard_error": 0.019220937657784664
+        },
+        "ylg": {
+          "frequency": 2,
+          "temperature_mean": 0.6000000000000001,
+          "temperature_standard_error": 0.04000000000000001
         },
         "xlg": {
           "frequency": 1,
-          "temperature_mean": 0.8658570905611188,
+          "temperature_mean": 0.86,
           "temperature_standard_error": 0.0
         }
       },
       "codelets": {
-        "mean": 458.154,
-        "standard_error": 9.149122073659239
+        "mean": 329.252,
+        "standard_error": 5.485988750313709
       },
       "id": "1.2"
     },
@@ -339,24 +344,24 @@
       },
       "solutions": {
         "xch": {
-          "frequency": 972,
-          "temperature_mean": 0.4368521439549663,
-          "temperature_standard_error": 0.0016925090004971436
+          "frequency": 974,
+          "temperature_mean": 0.42997946611909654,
+          "temperature_standard_error": 0.001417416638973853
         },
         "xdg": {
-          "frequency": 18,
-          "temperature_mean": 0.5848068997882695,
-          "temperature_standard_error": 0.016080400705653773
+          "frequency": 15,
+          "temperature_mean": 0.5846666666666667,
+          "temperature_standard_error": 0.014987825747416486
         },
         "xcd": {
-          "frequency": 10,
-          "temperature_mean": 0.4760763711997386,
-          "temperature_standard_error": 0.020944386074612072
+          "frequency": 11,
+          "temperature_mean": 0.509090909090909,
+          "temperature_standard_error": 0.028618320433994895
         }
       },
       "codelets": {
-        "mean": 595.215,
-        "standard_error": 13.164892676135805
+        "mean": 493.371,
+        "standard_error": 10.373875681521138
       },
       "id": "1.3"
     },
@@ -367,39 +372,34 @@
       },
       "solutions": {
         "abce": {
-          "frequency": 923,
-          "temperature_mean": 0.1712396822153038,
-          "temperature_standard_error": 0.0028602796846648503
+          "frequency": 925,
+          "temperature_mean": 0.17625945945945945,
+          "temperature_standard_error": 0.003082588043533035
         },
         "abdd": {
-          "frequency": 57,
-          "temperature_mean": 0.24609092029566343,
-          "temperature_standard_error": 0.017236443708444175
+          "frequency": 59,
+          "temperature_mean": 0.24135593220338983,
+          "temperature_standard_error": 0.015542888810783353
         },
         "abcd": {
-          "frequency": 13,
-          "temperature_mean": 0.2480899124943932,
-          "temperature_standard_error": 0.03421260758953548
-        },
-        "acde": {
-          "frequency": 5,
-          "temperature_mean": 0.4112348576008875,
-          "temperature_standard_error": 0.006119144201708144
-        },
-        "addd": {
-          "frequency": 1,
-          "temperature_mean": 0.4478332548549105,
-          "temperature_standard_error": 0.0
+          "frequency": 9,
+          "temperature_mean": 0.27888888888888885,
+          "temperature_standard_error": 0.053448948759136417
         },
         "abde": {
-          "frequency": 1,
-          "temperature_mean": 0.4243132639056305,
-          "temperature_standard_error": 0.0
+          "frequency": 5,
+          "temperature_mean": 0.418,
+          "temperature_standard_error": 0.007348469228349529
+        },
+        "acde": {
+          "frequency": 2,
+          "temperature_mean": 0.405,
+          "temperature_standard_error": 0.0049999999999999906
         }
       },
       "codelets": {
-        "mean": 340.694,
-        "standard_error": 3.904913662901488
+        "mean": 340.432,
+        "standard_error": 3.9611556558825263
       },
       "id": "1.4"
     },
@@ -410,34 +410,34 @@
       },
       "solutions": {
         "cdf": {
-          "frequency": 819,
-          "temperature_mean": 0.17727264416696153,
-          "temperature_standard_error": 0.003423847526614733
+          "frequency": 800,
+          "temperature_mean": 0.17653749999999999,
+          "temperature_standard_error": 0.0032789360918681685
         },
         "bde": {
-          "frequency": 123,
-          "temperature_mean": 0.15972515333868315,
-          "temperature_standard_error": 0.002803301525989715
+          "frequency": 128,
+          "temperature_mean": 0.150390625,
+          "temperature_standard_error": 0.0028569106188898854
         },
         "dde": {
-          "frequency": 33,
-          "temperature_mean": 0.38862012643485794,
-          "temperature_standard_error": 0.020287989350208025
+          "frequency": 42,
+          "temperature_mean": 0.40095238095238095,
+          "temperature_standard_error": 0.013783667571863884
         },
         "cdd": {
-          "frequency": 24,
-          "temperature_mean": 0.21127019433945485,
-          "temperature_standard_error": 0.02545569328814108
+          "frequency": 27,
+          "temperature_mean": 0.2748148148148148,
+          "temperature_standard_error": 0.031225539123493323
         },
         "cef": {
-          "frequency": 1,
-          "temperature_mean": 0.4305124898867898,
-          "temperature_standard_error": 0.0
+          "frequency": 3,
+          "temperature_mean": 0.4366666666666667,
+          "temperature_standard_error": 0.0033333333333333383
         }
       },
       "codelets": {
-        "mean": 301.842,
-        "standard_error": 3.3047954110214914
+        "mean": 303.66,
+        "standard_error": 3.176369582357148
       },
       "id": "1.5"
     },
@@ -448,39 +448,39 @@
       },
       "solutions": {
         "dab": {
-          "frequency": 480,
-          "temperature_mean": 0.4150238280421788,
-          "temperature_standard_error": 0.0030669090531547333
+          "frequency": 462,
+          "temperature_mean": 0.4094588744588744,
+          "temperature_standard_error": 0.002755022167257665
         },
         "cac": {
-          "frequency": 370,
-          "temperature_mean": 0.44818057128142075,
-          "temperature_standard_error": 0.003760470190878584
+          "frequency": 372,
+          "temperature_mean": 0.4417204301075269,
+          "temperature_standard_error": 0.0036877546390290212
         },
         "cbc": {
-          "frequency": 136,
-          "temperature_mean": 0.4597508142156577,
-          "temperature_standard_error": 0.002495876212913366
+          "frequency": 159,
+          "temperature_mean": 0.4574842767295597,
+          "temperature_standard_error": 0.002540913608699558
         },
         "cad": {
-          "frequency": 7,
-          "temperature_mean": 0.5471788730218087,
-          "temperature_standard_error": 0.04196873252311938
-        },
-        "cdd": {
-          "frequency": 5,
-          "temperature_mean": 0.5248416279764204,
-          "temperature_standard_error": 0.023328103330100165
+          "frequency": 3,
+          "temperature_mean": 0.57,
+          "temperature_standard_error": 0.08326663997864531
         },
         "cabc": {
-          "frequency": 2,
-          "temperature_mean": 0.25973189410221836,
-          "temperature_standard_error": 0.05610391866010297
+          "frequency": 3,
+          "temperature_mean": 0.26,
+          "temperature_standard_error": 0.015275252316519456
+        },
+        "cdd": {
+          "frequency": 1,
+          "temperature_mean": 0.49,
+          "temperature_standard_error": 0.0
         }
       },
       "codelets": {
-        "mean": 714.493,
-        "standard_error": 16.586459797063373
+        "mean": 698.689,
+        "standard_error": 16.167509289795866
       },
       "id": "1.6"
     },
@@ -491,24 +491,24 @@
       },
       "solutions": {
         "cmh": {
-          "frequency": 678,
-          "temperature_mean": 0.4206964607661147,
-          "temperature_standard_error": 0.0014494251578991279
+          "frequency": 710,
+          "temperature_mean": 0.41991549295774644,
+          "temperature_standard_error": 0.0014750047547567046
         },
         "dmg": {
-          "frequency": 311,
-          "temperature_mean": 0.4123208307262385,
-          "temperature_standard_error": 0.003064336112550544
+          "frequency": 280,
+          "temperature_mean": 0.4084285714285714,
+          "temperature_standard_error": 0.002924000153900017
         },
         "cmd": {
-          "frequency": 11,
-          "temperature_mean": 0.4993899673957074,
-          "temperature_standard_error": 0.018318272892108023
+          "frequency": 10,
+          "temperature_mean": 0.51,
+          "temperature_standard_error": 0.03183289703016886
         }
       },
       "codelets": {
-        "mean": 402.21,
-        "standard_error": 8.051523391814056
+        "mean": 318.535,
+        "standard_error": 4.9232972315949635
       },
       "id": "1.7"
     },
@@ -519,19 +519,29 @@
       },
       "solutions": {
         "qjk": {
-          "frequency": 999,
-          "temperature_mean": 0.19239826187474712,
-          "temperature_standard_error": 0.0027790926529796586
+          "frequency": 996,
+          "temperature_mean": 0.18969879518072288,
+          "temperature_standard_error": 0.002414343502569352
+        },
+        "qqk": {
+          "frequency": 2,
+          "temperature_mean": 0.49,
+          "temperature_standard_error": 0.010000000000000009
         },
         "ijk": {
           "frequency": 1,
-          "temperature_mean": 0.5591993664138064,
+          "temperature_mean": 0.76,
+          "temperature_standard_error": 0.0
+        },
+        "ijq": {
+          "frequency": 1,
+          "temperature_mean": 0.2,
           "temperature_standard_error": 0.0
         }
       },
       "codelets": {
-        "mean": 307.952,
-        "standard_error": 2.9011277528296193
+        "mean": 307.582,
+        "standard_error": 3.204075119808113
       },
       "id": "1.8"
     },
@@ -542,49 +552,59 @@
       },
       "solutions": {
         "ijll": {
-          "frequency": 594,
-          "temperature_mean": 0.29490398638994164,
-          "temperature_standard_error": 0.004889420026455142
+          "frequency": 589,
+          "temperature_mean": 0.2874363327674024,
+          "temperature_standard_error": 0.0046183685548596715
         },
         "ijkl": {
-          "frequency": 244,
-          "temperature_mean": 0.49347390974299665,
-          "temperature_standard_error": 0.006208202284702803
+          "frequency": 238,
+          "temperature_mean": 0.49298319327731094,
+          "temperature_standard_error": 0.006325595105371575
         },
         "jjkk": {
-          "frequency": 112,
-          "temperature_mean": 0.493850322629497,
-          "temperature_standard_error": 0.009345023145854746
+          "frequency": 106,
+          "temperature_mean": 0.4877358490566038,
+          "temperature_standard_error": 0.01035253094729485
         },
         "hjkk": {
-          "frequency": 37,
-          "temperature_mean": 0.17271848044914942,
-          "temperature_standard_error": 0.0039592692405046375
+          "frequency": 46,
+          "temperature_mean": 0.18934782608695655,
+          "temperature_standard_error": 0.004908852044765202
+        },
+        "ijkd": {
+          "frequency": 8,
+          "temperature_mean": 0.535,
+          "temperature_standard_error": 0.03417392489687338
         },
         "jkkk": {
-          "frequency": 6,
-          "temperature_mean": 0.4089060784944724,
-          "temperature_standard_error": 0.026131200103719138
+          "frequency": 7,
+          "temperature_mean": 0.3842857142857143,
+          "temperature_standard_error": 0.015408275892727079
         },
         "ijdd": {
           "frequency": 3,
-          "temperature_mean": 0.47835355865542,
-          "temperature_standard_error": 0.007040744374748441
+          "temperature_mean": 0.48,
+          "temperature_standard_error": 0.04932882862316245
         },
-        "ijkd": {
-          "frequency": 2,
-          "temperature_mean": 0.5595753801556531,
-          "temperature_standard_error": 0.02258446584367313
+        "djkk": {
+          "frequency": 1,
+          "temperature_mean": 0.69,
+          "temperature_standard_error": 0.0
         },
-        "ijkk": {
-          "frequency": 2,
-          "temperature_mean": 0.5950280464485511,
-          "temperature_standard_error": 0.00794204820592545
+        "ddkk": {
+          "frequency": 1,
+          "temperature_mean": 0.38,
+          "temperature_standard_error": 0.0
+        },
+        "jklk": {
+          "frequency": 1,
+          "temperature_mean": 0.5,
+          "temperature_standard_error": 0.0
         }
       },
       "codelets": {
-        "mean": 762.473,
-        "standard_error": 11.972213043383256
+        "mean": 799.004,
+        "standard_error": 13.50462968788878
       },
       "id": "1.9"
     },
@@ -594,50 +614,50 @@
         "page": 152
       },
       "solutions": {
-        "sijk": {
-          "frequency": 419,
-          "temperature_mean": 0.6793465138570121,
-          "temperature_standard_error": 0.0021032567972305944
-        },
         "rijl": {
-          "frequency": 404,
-          "temperature_mean": 0.630752894782974,
-          "temperature_standard_error": 0.004237651716929394
+          "frequency": 420,
+          "temperature_mean": 0.6397619047619048,
+          "temperature_standard_error": 0.0045435950646327
+        },
+        "sijk": {
+          "frequency": 418,
+          "temperature_mean": 0.6797846889952153,
+          "temperature_standard_error": 0.0020009415445914323
         },
         "rjkl": {
-          "frequency": 149,
-          "temperature_mean": 0.6002968272252068,
-          "temperature_standard_error": 0.004524598527680439
-        },
-        "rijn": {
-          "frequency": 14,
-          "temperature_mean": 0.6792468333816837,
-          "temperature_standard_error": 0.016611013999593496
-        },
-        "nijk": {
-          "frequency": 6,
-          "temperature_mean": 0.721783606031455,
-          "temperature_standard_error": 0.011843124006579466
+          "frequency": 136,
+          "temperature_mean": 0.5975,
+          "temperature_standard_error": 0.004338295298872343
         },
         "rikl": {
-          "frequency": 4,
-          "temperature_mean": 0.5898950590198833,
-          "temperature_standard_error": 0.002002304346225627
+          "frequency": 11,
+          "temperature_mean": 0.6236363636363635,
+          "temperature_standard_error": 0.01515212120000049
+        },
+        "rijn": {
+          "frequency": 8,
+          "temperature_mean": 0.71625,
+          "temperature_standard_error": 0.030174344589875876
+        },
+        "nijk": {
+          "frequency": 5,
+          "temperature_mean": 0.708,
+          "temperature_standard_error": 0.027820855486487123
         },
         "rijk": {
-          "frequency": 3,
-          "temperature_mean": 0.7799908676376598,
-          "temperature_standard_error": 0.028897049393717403
+          "frequency": 1,
+          "temperature_mean": 0.82,
+          "temperature_standard_error": 0.0
         },
         "qijk": {
           "frequency": 1,
-          "temperature_mean": 0.5122391748607753,
+          "temperature_mean": 0.69,
           "temperature_standard_error": 0.0
         }
       },
       "codelets": {
-        "mean": 1806.37,
-        "standard_error": 51.56070613866258
+        "mean": 1821.446,
+        "standard_error": 52.08138369524769
       },
       "id": "1.10"
     },
@@ -648,44 +668,39 @@
       },
       "solutions": {
         "hhwwrr": {
-          "frequency": 718,
-          "temperature_mean": 0.42780335664946795,
-          "temperature_standard_error": 0.0018385990631914386
+          "frequency": 713,
+          "temperature_mean": 0.42838709677419357,
+          "temperature_standard_error": 0.002004928942067515
         },
         "hhwwqr": {
-          "frequency": 253,
-          "temperature_mean": 0.4716837565135702,
-          "temperature_standard_error": 0.003777799065376341
+          "frequency": 263,
+          "temperature_mean": 0.47612167300380226,
+          "temperature_standard_error": 0.004277280472379249
         },
         "hhxxrr": {
-          "frequency": 15,
-          "temperature_mean": 0.3939978315893293,
-          "temperature_standard_error": 0.008624066948487184
+          "frequency": 11,
+          "temperature_mean": 0.42454545454545456,
+          "temperature_standard_error": 0.01568807516808034
         },
         "hhwwqd": {
           "frequency": 6,
-          "temperature_mean": 0.559569468616083,
-          "temperature_standard_error": 0.0452778905800291
+          "temperature_mean": 0.5533333333333333,
+          "temperature_standard_error": 0.03200694369108749
         },
         "hhwwdd": {
-          "frequency": 5,
-          "temperature_mean": 0.4486732814501305,
-          "temperature_standard_error": 0.022135459129659384
+          "frequency": 6,
+          "temperature_mean": 0.5183333333333334,
+          "temperature_standard_error": 0.025221243250702595
         },
         "hhwwqq": {
-          "frequency": 2,
-          "temperature_mean": 0.6231369750788515,
-          "temperature_standard_error": 0.19203238274822065
-        },
-        "iiwwqq": {
           "frequency": 1,
-          "temperature_mean": 0.5782832336398768,
+          "temperature_mean": 0.43,
           "temperature_standard_error": 0.0
         }
       },
       "codelets": {
-        "mean": 889.366,
-        "standard_error": 15.835836250534854
+        "mean": 849.31,
+        "standard_error": 14.942278460314732
       },
       "id": "2.1"
     },
@@ -696,44 +711,44 @@
       },
       "solutions": {
         "lmfgoq": {
-          "frequency": 544,
-          "temperature_mean": 0.5129819622304789,
-          "temperature_standard_error": 0.003291887465634961
+          "frequency": 533,
+          "temperature_mean": 0.5127767354596623,
+          "temperature_standard_error": 0.0033235156314200447
         },
         "lmfgpq": {
-          "frequency": 431,
-          "temperature_mean": 0.46174930102980777,
-          "temperature_standard_error": 0.0029615778516861274
+          "frequency": 446,
+          "temperature_mean": 0.4551121076233184,
+          "temperature_standard_error": 0.002664211297958834
         },
         "lmfgod": {
-          "frequency": 14,
-          "temperature_mean": 0.6153018576529813,
-          "temperature_standard_error": 0.02548424200917991
-        },
-        "lmfgop": {
-          "frequency": 6,
-          "temperature_mean": 0.626672524734223,
-          "temperature_standard_error": 0.014334748263804152
-        },
-        "lmfhpq": {
-          "frequency": 2,
-          "temperature_mean": 0.4260506659708069,
-          "temperature_standard_error": 0.025478116362703987
+          "frequency": 10,
+          "temperature_mean": 0.508,
+          "temperature_standard_error": 0.013564659966250534
         },
         "lmfgdd": {
-          "frequency": 2,
-          "temperature_mean": 0.48084253792831294,
-          "temperature_standard_error": 0.027317635965413534
+          "frequency": 6,
+          "temperature_mean": 0.5133333333333333,
+          "temperature_standard_error": 0.016261747890200615
+        },
+        "lmfgop": {
+          "frequency": 3,
+          "temperature_mean": 0.58,
+          "temperature_standard_error": 0.05567764362830024
         },
         "mmfgop": {
           "frequency": 1,
-          "temperature_mean": 0.7021141833793517,
+          "temperature_mean": 0.61,
+          "temperature_standard_error": 0.0
+        },
+        "lmfhpq": {
+          "frequency": 1,
+          "temperature_mean": 0.63,
           "temperature_standard_error": 0.0
         }
       },
       "codelets": {
-        "mean": 1022.018,
-        "standard_error": 23.275429777069796
+        "mean": 1049.663,
+        "standard_error": 23.371792402618826
       },
       "id": "2.2"
     },
@@ -744,44 +759,49 @@
       },
       "solutions": {
         "lmnfghpqr": {
-          "frequency": 532,
-          "temperature_mean": 0.4722751029654146,
-          "temperature_standard_error": 0.0031442631445943036
+          "frequency": 513,
+          "temperature_mean": 0.46485380116959063,
+          "temperature_standard_error": 0.0029025438907248624
         },
         "lmnfghopr": {
-          "frequency": 429,
-          "temperature_mean": 0.5332018246953042,
-          "temperature_standard_error": 0.0036513982719484374
+          "frequency": 438,
+          "temperature_mean": 0.5345433789954338,
+          "temperature_standard_error": 0.0033813599267419614
         },
         "lmnfghoqr": {
-          "frequency": 17,
-          "temperature_mean": 0.4843672834369965,
-          "temperature_standard_error": 0.004546339963595486
-        },
-        "lmnfghopd": {
-          "frequency": 11,
-          "temperature_mean": 0.6684623279771226,
-          "temperature_standard_error": 0.04431659106589866
+          "frequency": 26,
+          "temperature_mean": 0.49269230769230765,
+          "temperature_standard_error": 0.012019953824404999
         },
         "lmnfghopq": {
-          "frequency": 7,
-          "temperature_mean": 0.6281105511895849,
-          "temperature_standard_error": 0.009373679702558138
+          "frequency": 9,
+          "temperature_mean": 0.6322222222222221,
+          "temperature_standard_error": 0.012222222222222216
+        },
+        "lmnfghopd": {
+          "frequency": 9,
+          "temperature_mean": 0.5777777777777778,
+          "temperature_standard_error": 0.01801062786383036
         },
         "lmnfghddd": {
           "frequency": 3,
-          "temperature_mean": 0.4911804467879959,
-          "temperature_standard_error": 0.013783494623835445
+          "temperature_mean": 0.5033333333333333,
+          "temperature_standard_error": 0.01855921454276675
+        },
+        "lmnfghopp": {
+          "frequency": 1,
+          "temperature_mean": 0.75,
+          "temperature_standard_error": 0.0
         },
         "lmnghipqr": {
           "frequency": 1,
-          "temperature_mean": 0.4306595121611478,
+          "temperature_mean": 0.43,
           "temperature_standard_error": 0.0
         }
       },
       "codelets": {
-        "mean": 1182.221,
-        "standard_error": 25.330199311417907
+        "mean": 1181.085,
+        "standard_error": 24.989061626559252
       },
       "id": "2.3"
     },
@@ -792,49 +812,54 @@
       },
       "solutions": {
         "iijjkl": {
-          "frequency": 882,
-          "temperature_mean": 0.3314326897811213,
-          "temperature_standard_error": 0.00440696127624828
+          "frequency": 880,
+          "temperature_mean": 0.3307840909090909,
+          "temperature_standard_error": 0.00447839861029833
         },
         "iijjll": {
-          "frequency": 95,
-          "temperature_mean": 0.4715384233668952,
-          "temperature_standard_error": 0.00858220558598267
-        },
-        "iijjkkk": {
-          "frequency": 8,
-          "temperature_mean": 0.4095890757199296,
-          "temperature_standard_error": 0.01680386564257301
+          "frequency": 102,
+          "temperature_mean": 0.45862745098039215,
+          "temperature_standard_error": 0.007441011426678256
         },
         "iijjkd": {
-          "frequency": 6,
-          "temperature_mean": 0.41464781426913744,
-          "temperature_standard_error": 0.04058260538517336
+          "frequency": 8,
+          "temperature_mean": 0.57,
+          "temperature_standard_error": 0.031679195516480976
         },
         "iikkll": {
-          "frequency": 4,
-          "temperature_mean": 0.4291027359039823,
-          "temperature_standard_error": 0.02228521343951206
+          "frequency": 3,
+          "temperature_mean": 0.42,
+          "temperature_standard_error": 0.01732050807568877
         },
         "iijjdd": {
-          "frequency": 3,
-          "temperature_mean": 0.5176964921416745,
-          "temperature_standard_error": 0.06285999641486278
+          "frequency": 2,
+          "temperature_mean": 0.53,
+          "temperature_standard_error": 0.010000000000000009
+        },
+        "iijjkkk": {
+          "frequency": 2,
+          "temperature_mean": 0.39,
+          "temperature_standard_error": 0.019999999999999976
         },
         "jijjkk": {
           "frequency": 1,
-          "temperature_mean": 0.5213880281946968,
+          "temperature_mean": 0.6,
+          "temperature_standard_error": 0.0
+        },
+        "iijjkk": {
+          "frequency": 1,
+          "temperature_mean": 0.56,
           "temperature_standard_error": 0.0
         },
         "iijkll": {
           "frequency": 1,
-          "temperature_mean": 0.4409669130722435,
+          "temperature_mean": 0.43,
           "temperature_standard_error": 0.0
         }
       },
       "codelets": {
-        "mean": 761.924,
-        "standard_error": 9.28647170785443
+        "mean": 752.508,
+        "standard_error": 9.019629463101666
       },
       "id": "2.4"
     },
@@ -845,34 +870,29 @@
       },
       "solutions": {
         "edb": {
-          "frequency": 675,
-          "temperature_mean": 0.13119031845811652,
-          "temperature_standard_error": 0.0012538025985048469
+          "frequency": 659,
+          "temperature_mean": 0.12849772382397573,
+          "temperature_standard_error": 0.0012910921697156126
         },
         "edd": {
-          "frequency": 290,
-          "temperature_mean": 0.37689929547664514,
-          "temperature_standard_error": 0.0053268046628420565
+          "frequency": 315,
+          "temperature_mean": 0.3765714285714286,
+          "temperature_standard_error": 0.005910306866454405
         },
         "fdc": {
-          "frequency": 33,
-          "temperature_mean": 0.17386878234420336,
-          "temperature_standard_error": 0.006332275092846216
+          "frequency": 24,
+          "temperature_mean": 0.19083333333333333,
+          "temperature_standard_error": 0.006165491466554356
         },
         "edc": {
-          "frequency": 1,
-          "temperature_mean": 0.5995497836461152,
-          "temperature_standard_error": 0.0
-        },
-        "eed": {
-          "frequency": 1,
-          "temperature_mean": 0.4711895794430596,
-          "temperature_standard_error": 0.0
+          "frequency": 2,
+          "temperature_mean": 0.605,
+          "temperature_standard_error": 0.0050000000000000044
         }
       },
       "codelets": {
-        "mean": 348.461,
-        "standard_error": 4.46985033765573
+        "mean": 343.235,
+        "standard_error": 4.435249622536956
       },
       "id": "3.1"
     },
@@ -883,24 +903,29 @@
       },
       "solutions": {
         "dba": {
-          "frequency": 883,
-          "temperature_mean": 0.1622047385858438,
-          "temperature_standard_error": 0.0036853057322541517
+          "frequency": 877,
+          "temperature_mean": 0.1665564424173318,
+          "temperature_standard_error": 0.0036883071762087737
         },
         "cbb": {
-          "frequency": 90,
-          "temperature_mean": 0.4284501538657116,
-          "temperature_standard_error": 0.015763364398256097
+          "frequency": 92,
+          "temperature_mean": 0.4294565217391304,
+          "temperature_standard_error": 0.016044881606384478
         },
         "cbd": {
-          "frequency": 27,
-          "temperature_mean": 0.2318061543401457,
-          "temperature_standard_error": 0.02252334703417082
+          "frequency": 30,
+          "temperature_mean": 0.23966666666666667,
+          "temperature_standard_error": 0.024562766576990237
+        },
+        "dca": {
+          "frequency": 1,
+          "temperature_mean": 0.43,
+          "temperature_standard_error": 0.0
         }
       },
       "codelets": {
-        "mean": 409.873,
-        "standard_error": 10.38262258404507
+        "mean": 392.48,
+        "standard_error": 9.710909296217288
       },
       "id": "3.2"
     },
@@ -911,34 +936,34 @@
       },
       "solutions": {
         "mss": {
-          "frequency": 650,
-          "temperature_mean": 0.4231712936321186,
-          "temperature_standard_error": 0.0011259044789900447
+          "frequency": 678,
+          "temperature_mean": 0.41870206489675516,
+          "temperature_standard_error": 0.0007847319210931891
         },
         "mrs": {
-          "frequency": 330,
-          "temperature_mean": 0.4586497255463477,
-          "temperature_standard_error": 0.0033118665086516786
+          "frequency": 307,
+          "temperature_mean": 0.45456026058631926,
+          "temperature_standard_error": 0.003294814222676371
         },
         "mrrr": {
-          "frequency": 10,
-          "temperature_mean": 0.2059533684502039,
-          "temperature_standard_error": 0.014672199911123373
+          "frequency": 11,
+          "temperature_mean": 0.2218181818181818,
+          "temperature_standard_error": 0.009517274420583564
         },
         "mrd": {
-          "frequency": 7,
-          "temperature_mean": 0.5353120653404465,
-          "temperature_standard_error": 0.04461678602615026
+          "frequency": 3,
+          "temperature_mean": 0.51,
+          "temperature_standard_error": 0.03000000000000002
         },
         "mdd": {
-          "frequency": 3,
-          "temperature_mean": 0.48367287259684283,
-          "temperature_standard_error": 0.034889017099540245
+          "frequency": 1,
+          "temperature_mean": 0.45,
+          "temperature_standard_error": 0.0
         }
       },
       "codelets": {
-        "mean": 735.467,
-        "standard_error": 16.387531543862885
+        "mean": 732.184,
+        "standard_error": 14.581206937004211
       },
       "id": "4.1"
     },
@@ -950,53 +975,48 @@
       "solutions": {
         "mmrrrkkkk": {
           "frequency": 712,
-          "temperature_mean": 0.42996945510586665,
-          "temperature_standard_error": 0.0019087145170577872
+          "temperature_mean": 0.4262219101123596,
+          "temperature_standard_error": 0.0019397363519922336
         },
         "mmrrrjjjk": {
-          "frequency": 163,
-          "temperature_mean": 0.49790062102576965,
-          "temperature_standard_error": 0.006381607934907773
+          "frequency": 170,
+          "temperature_mean": 0.503,
+          "temperature_standard_error": 0.005878956555164768
         },
         "mmrrrjkkk": {
-          "frequency": 53,
-          "temperature_mean": 0.4466589439021511,
-          "temperature_standard_error": 0.0056287772223751345
+          "frequency": 55,
+          "temperature_mean": 0.4470909090909091,
+          "temperature_standard_error": 0.00416553703695505
         },
         "mmrrrjjkk": {
-          "frequency": 40,
-          "temperature_mean": 0.46779510158892074,
-          "temperature_standard_error": 0.01007938241260796
+          "frequency": 45,
+          "temperature_mean": 0.452,
+          "temperature_standard_error": 0.007450849046595395
         },
         "mmrrrjjjjj": {
-          "frequency": 10,
-          "temperature_mean": 0.21652830902148165,
-          "temperature_standard_error": 0.011989638402132003
-        },
-        "mmrrrjjjd": {
-          "frequency": 10,
-          "temperature_mean": 0.5658412925202042,
-          "temperature_standard_error": 0.031088277765256262
+          "frequency": 12,
+          "temperature_mean": 0.19583333333333333,
+          "temperature_standard_error": 0.01400532005699941
         },
         "mmrrrdddd": {
-          "frequency": 10,
-          "temperature_mean": 0.46972373009806156,
-          "temperature_standard_error": 0.016053595516124505
-        },
-        "mmrrrjddd": {
-          "frequency": 1,
-          "temperature_mean": 0.5105408566516435,
-          "temperature_standard_error": 0.0
+          "frequency": 3,
+          "temperature_mean": 0.5399999999999999,
+          "temperature_standard_error": 0.08504900548115382
         },
         "mmrrrjjjj": {
+          "frequency": 2,
+          "temperature_mean": 0.595,
+          "temperature_standard_error": 0.10499999999999998
+        },
+        "mmrrrjjjd": {
           "frequency": 1,
-          "temperature_mean": 0.5842582857179741,
+          "temperature_mean": 0.67,
           "temperature_standard_error": 0.0
         }
       },
       "codelets": {
-        "mean": 944.459,
-        "standard_error": 16.36232881111742
+        "mean": 948.657,
+        "standard_error": 17.388727877800843
       },
       "id": "4.2"
     },
@@ -1007,59 +1027,49 @@
       },
       "solutions": {
         "rssuuu": {
-          "frequency": 730,
-          "temperature_mean": 0.29205312679499096,
-          "temperature_standard_error": 0.004037159741830865
+          "frequency": 703,
+          "temperature_mean": 0.31,
+          "temperature_standard_error": 0.004259108163750795
         },
         "rssttu": {
-          "frequency": 176,
-          "temperature_mean": 0.49260735645170556,
-          "temperature_standard_error": 0.006061060853724541
+          "frequency": 197,
+          "temperature_mean": 0.4778172588832487,
+          "temperature_standard_error": 0.005318902484857346
         },
         "rttuuu": {
-          "frequency": 47,
-          "temperature_mean": 0.4313309172467497,
-          "temperature_standard_error": 0.003088261707493359
+          "frequency": 48,
+          "temperature_mean": 0.43354166666666666,
+          "temperature_standard_error": 0.005109523712148898
         },
         "rsstuu": {
-          "frequency": 27,
-          "temperature_mean": 0.4468999656075309,
-          "temperature_standard_error": 0.008678403075036839
+          "frequency": 35,
+          "temperature_mean": 0.4465714285714286,
+          "temperature_standard_error": 0.007263849213892095
         },
         "rstuuu": {
-          "frequency": 10,
-          "temperature_mean": 0.43462177874360214,
-          "temperature_standard_error": 0.006288663132563231
-        },
-        "rssddd": {
-          "frequency": 4,
-          "temperature_mean": 0.47853865762816294,
-          "temperature_standard_error": 0.015757770670850286
-        },
-        "rssttt": {
-          "frequency": 2,
-          "temperature_mean": 0.734495916160034,
-          "temperature_standard_error": 0.12179684589272743
+          "frequency": 11,
+          "temperature_mean": 0.42363636363636364,
+          "temperature_standard_error": 0.00800826019838009
         },
         "rssttd": {
-          "frequency": 2,
-          "temperature_mean": 0.5579802611311342,
-          "temperature_standard_error": 0.010643602215451464
+          "frequency": 4,
+          "temperature_mean": 0.6225,
+          "temperature_standard_error": 0.06687986742411103
         },
-        "rsstdd": {
+        "rssddd": {
           "frequency": 1,
-          "temperature_mean": 0.4670544171974706,
+          "temperature_mean": 0.32,
           "temperature_standard_error": 0.0
         },
-        "rsstt": {
+        "rssttt": {
           "frequency": 1,
-          "temperature_mean": 0.2953784593156262,
+          "temperature_mean": 0.85,
           "temperature_standard_error": 0.0
         }
       },
       "codelets": {
-        "mean": 672.834,
-        "standard_error": 9.093054056590454
+        "mean": 679.166,
+        "standard_error": 10.304419221843581
       },
       "id": "4.3"
     },
@@ -1070,49 +1080,59 @@
       },
       "solutions": {
         "xpqefg": {
-          "frequency": 531,
-          "temperature_mean": 0.46550751316500405,
-          "temperature_standard_error": 0.0025346549186166926
+          "frequency": 522,
+          "temperature_mean": 0.46113026819923375,
+          "temperature_standard_error": 0.002224546540738783
         },
         "xpqdeg": {
-          "frequency": 409,
-          "temperature_mean": 0.5220892185672185,
-          "temperature_standard_error": 0.0036900388305998863
+          "frequency": 415,
+          "temperature_mean": 0.5196867469879518,
+          "temperature_standard_error": 0.0032445476842345405
         },
         "xpqdfg": {
-          "frequency": 29,
-          "temperature_mean": 0.4840020488180723,
-          "temperature_standard_error": 0.005034101024092439
-        },
-        "xpqcdef": {
-          "frequency": 12,
-          "temperature_mean": 0.20287575068971656,
-          "temperature_standard_error": 0.010259408246492267
+          "frequency": 17,
+          "temperature_mean": 0.4970588235294117,
+          "temperature_standard_error": 0.012624809430196915
         },
         "xpqded": {
+          "frequency": 17,
+          "temperature_mean": 0.58,
+          "temperature_standard_error": 0.027653315937748606
+        },
+        "xpqcdef": {
           "frequency": 9,
-          "temperature_mean": 0.6301173427642208,
-          "temperature_standard_error": 0.046010129666055465
+          "temperature_mean": 0.22444444444444445,
+          "temperature_standard_error": 0.010555555555555558
         },
         "xpqdefg": {
-          "frequency": 5,
-          "temperature_mean": 0.21547652696876268,
-          "temperature_standard_error": 0.02257968699841099
+          "frequency": 8,
+          "temperature_mean": 0.23875,
+          "temperature_standard_error": 0.015170165739748147
         },
         "xpqddd": {
-          "frequency": 3,
-          "temperature_mean": 0.4811567635235347,
-          "temperature_standard_error": 0.014952304359743665
+          "frequency": 6,
+          "temperature_mean": 0.5066666666666667,
+          "temperature_standard_error": 0.009545214042184249
         },
         "xpqdef": {
-          "frequency": 2,
-          "temperature_mean": 0.5998531665576049,
-          "temperature_standard_error": 0.0037883379423305774
+          "frequency": 4,
+          "temperature_mean": 0.5974999999999999,
+          "temperature_standard_error": 0.004787135538781686
+        },
+        "xqrefg": {
+          "frequency": 1,
+          "temperature_mean": 0.44,
+          "temperature_standard_error": 0.0
+        },
+        "ypqdef": {
+          "frequency": 1,
+          "temperature_mean": 0.61,
+          "temperature_standard_error": 0.0
         }
       },
       "codelets": {
-        "mean": 994.638,
-        "standard_error": 21.54033925385511
+        "mean": 970.86,
+        "standard_error": 21.66019705673373
       },
       "id": "4.4"
     },
@@ -1123,19 +1143,29 @@
       },
       "solutions": {
         "qyz": {
-          "frequency": 998,
-          "temperature_mean": 0.18977570325808515,
-          "temperature_standard_error": 0.0026101468306710526
+          "frequency": 996,
+          "temperature_mean": 0.1912248995983936,
+          "temperature_standard_error": 0.0026119281570120825
         },
         "xyz": {
           "frequency": 2,
-          "temperature_mean": 0.5520422390271977,
-          "temperature_standard_error": 0.007172780915592175
+          "temperature_mean": 0.465,
+          "temperature_standard_error": 0.07500000000000001
+        },
+        "qqz": {
+          "frequency": 1,
+          "temperature_mean": 0.48,
+          "temperature_standard_error": 0.0
+        },
+        "xyq": {
+          "frequency": 1,
+          "temperature_mean": 0.16,
+          "temperature_standard_error": 0.0
         }
       },
       "codelets": {
-        "mean": 313.23,
-        "standard_error": 3.4094629397512946
+        "mean": 308.485,
+        "standard_error": 3.067119658245827
       },
       "id": "5.1"
     },
@@ -1146,24 +1176,44 @@
       },
       "solutions": {
         "xyu": {
-          "frequency": 996,
-          "temperature_mean": 0.2162254157847143,
-          "temperature_standard_error": 0.0042223484307127536
+          "frequency": 982,
+          "temperature_mean": 0.21133401221995926,
+          "temperature_standard_error": 0.0035626439060962804
         },
         "wyz": {
-          "frequency": 3,
-          "temperature_mean": 0.1762818411646482,
-          "temperature_standard_error": 0.019335226499317206
+          "frequency": 7,
+          "temperature_mean": 0.1642857142857143,
+          "temperature_standard_error": 0.02102800206268535
         },
         "xyz": {
+          "frequency": 6,
+          "temperature_mean": 0.6883333333333334,
+          "temperature_standard_error": 0.10903872910321563
+        },
+        "yyz": {
+          "frequency": 2,
+          "temperature_mean": 0.85,
+          "temperature_standard_error": 0.15000000000000002
+        },
+        "xxyz": {
           "frequency": 1,
-          "temperature_mean": 0.6768421038085415,
+          "temperature_mean": 0.23,
+          "temperature_standard_error": 0.0
+        },
+        "uyz": {
+          "frequency": 1,
+          "temperature_mean": 0.59,
+          "temperature_standard_error": 0.0
+        },
+        "xyy": {
+          "frequency": 1,
+          "temperature_mean": 0.36,
           "temperature_standard_error": 0.0
         }
       },
       "codelets": {
-        "mean": 3737.758,
-        "standard_error": 106.13060376013364
+        "mean": 3475.517,
+        "standard_error": 98.42394137580017
       },
       "id": "5.2"
     },
@@ -1174,29 +1224,29 @@
       },
       "solutions": {
         "hlz": {
-          "frequency": 591,
-          "temperature_mean": 0.4228530213662926,
-          "temperature_standard_error": 0.0032204761865757938
+          "frequency": 634,
+          "temperature_mean": 0.4200157728706625,
+          "temperature_standard_error": 0.0029818389709739337
         },
         "gld": {
-          "frequency": 395,
-          "temperature_mean": 0.4797879591871944,
-          "temperature_standard_error": 0.00406245299842336
+          "frequency": 355,
+          "temperature_mean": 0.4865352112676056,
+          "temperature_standard_error": 0.005494731744720602
         },
         "dlz": {
-          "frequency": 11,
-          "temperature_mean": 0.5023408948685226,
-          "temperature_standard_error": 0.025794556342987003
+          "frequency": 10,
+          "temperature_mean": 0.5359999999999999,
+          "temperature_standard_error": 0.036642416223096795
         },
         "glz": {
-          "frequency": 3,
-          "temperature_mean": 0.8394917982150932,
-          "temperature_standard_error": 0.10114322706721342
+          "frequency": 1,
+          "temperature_mean": 0.86,
+          "temperature_standard_error": 0.0
         }
       },
       "codelets": {
-        "mean": 7204.33,
-        "standard_error": 189.8035781416551
+        "mean": 5954.019,
+        "standard_error": 146.23303558818827
       },
       "id": "5.3"
     },
@@ -1208,18 +1258,18 @@
       "solutions": {
         "dmz": {
           "frequency": 909,
-          "temperature_mean": 0.40012159857675705,
-          "temperature_standard_error": 0.002057309912950477
+          "temperature_mean": 0.3991969196919692,
+          "temperature_standard_error": 0.0020755170981766537
         },
         "cmd": {
           "frequency": 91,
-          "temperature_mean": 0.5029778271898712,
-          "temperature_standard_error": 0.012682493923807554
+          "temperature_mean": 0.47604395604395605,
+          "temperature_standard_error": 0.009691050616333104
         }
       },
       "codelets": {
-        "mean": 2019.211,
-        "standard_error": 64.3954177119871
+        "mean": 1892.714,
+        "standard_error": 60.43896718971097
       },
       "id": "5.4"
     }

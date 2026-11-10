@@ -12,6 +12,7 @@ from typing import Any
 from cattykit.experiments import run_experiment, summarize_runs
 from copycat.coderack import Coderack
 from copycat_reproduction.experiment_helpers import result_case
+from copycat_reproduction.quantization import quantized_copycat
 from copycat_reproduction.paths import (
     CODERACK_REMOVAL_DATASETS,
     TEMPLATE_PATH,
@@ -64,7 +65,7 @@ def patched_removal(method: RemovalMethod) -> Iterator[None]:
 def run_method(name: str, method: RemovalMethod, iterations: int) -> None:
     """Run one alternative and save its raw CSV and summary JSON."""
     template = json.loads(TEMPLATE_PATH.read_text(encoding="utf-8"))
-    with patched_removal(method):
+    with quantized_copycat(2), patched_removal(method):
         result = run_experiment(
             "copycat",
             [case["problem"] for case in template["results"]],

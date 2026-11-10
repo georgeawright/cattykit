@@ -1,13 +1,13 @@
 | Measure                                    |   Value |
 |:-------------------------------------------|--------:|
-| Mean answer TV distance                    |   0.022 |
-| Max answer TV distance                     |   0.058 |
-| Mean runs with reproduction-only answers   |   1.414 |
-| Temperature unweighted mean absolute error |   0.027 |
+| Mean answer TV distance                    |   0.021 |
+| Max answer TV distance                     |   0.055 |
+| Mean runs with reproduction-only answers   |   1.586 |
+| Temperature unweighted mean absolute error |   0.037 |
 | Temperature weighted mean absolute error   |   0.005 |
-| Temperature max absolute error             |   0.259 |
-| Temperature RMS z                          |   1.583 |
-| Temperature max \|z\|                      |  12.180 |
-| Codelets-run mean relative error           |   0.071 |
-| Codelets-run max relative error            |   0.418 |
-| Codelets-run RMS z                         |   3.857 |
+| Temperature max absolute error             |   0.460 |
+| Temperature RMS z                          |   1.593 |
+| Temperature max \|z\|                      |   9.412 |
+| Codelets-run mean relative error           |   0.033 |
+| Codelets-run max relative error            |   0.144 |
+| Codelets-run RMS z                         |   1.693 |

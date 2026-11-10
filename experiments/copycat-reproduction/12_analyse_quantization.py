@@ -1,4 +1,4 @@
-"""Compare baseline and two-decimal-quantized Copycat results from raw CSVs."""
+"""Compare the quantized baseline with unquantized Copycat runs."""
 
 from __future__ import annotations
 
@@ -38,12 +38,12 @@ def main(gold_path: Path = GOLD_PATH) -> None:
     )
     raw_paths = (
         (
-            "full_precision",
+            "two_decimal_quantization",
             REPRODUCTION_DATASETS / "reproduction_raw_results.csv",
         ),
         (
-            "two_decimal_quantization",
-            QUANTIZATION_DATASETS / "quantized_raw_results.csv",
+            "full_precision",
+            QUANTIZATION_DATASETS / "unquantized_raw_results.csv",
         ),
     )
     summary_rows = []
@@ -66,8 +66,8 @@ def main(gold_path: Path = GOLD_PATH) -> None:
         method_comparison_markdown(
             summary,
             {
-                "full_precision": "Full precision",
                 "two_decimal_quantization": "Two-decimal quantization",
+                "full_precision": "Full precision",
             },
         ),
         encoding="utf-8",
