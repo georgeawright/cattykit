@@ -98,6 +98,10 @@ def comparison_table(
         ]
         temperature_z_scores = []
         for observed, expected in retained:
+            # Singletons cannot provide an estimated standard error, even when
+            # their serialized summary substitutes zero for the missing value.
+            if observed["frequency"] < 2 or expected["frequency"] < 2:
+                continue
             if not (
                 isfinite(observed["temperature_standard_error"])
                 and isfinite(expected["temperature_standard_error"])

@@ -6,8 +6,8 @@
 | Temperature unweighted mean absolute error |                    0.037 |                       0.027 |
 | Temperature weighted mean absolute error   |                    0.005 |                       0.005 |
 | Temperature max absolute error             |                    0.460 |                       0.250 |
-| Temperature RMS z                          |                    1.587 |                       1.354 |
-| Temperature max \|z\|                      |                    9.412 |                       6.400 |
+| Temperature RMS z                          |                    1.194 |                       1.228 |
+| Temperature max \|z\|                      |                    4.992 |                       3.608 |
 | Codelets-run mean relative error           |                    0.033 |                       0.034 |
 | Codelets-run max relative error            |                    0.144 |                       0.190 |
 | Codelets-run RMS z                         |                    1.693 |                       1.885 |
