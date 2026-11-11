@@ -30,12 +30,6 @@ def main(gold_path: Path = GOLD_PATH) -> None:
         raise FileNotFoundError(f"Missing original result data: {gold_path}")
     TABLES.mkdir(parents=True, exist_ok=True)
     original = json.loads(gold_path.read_text(encoding="utf-8"))
-    baseline_runs = pd.read_csv(
-        REPRODUCTION_DATASETS / "reproduction_raw_results.csv"
-    )
-    snaggable_problems = set(
-        baseline_runs.loc[baseline_runs["snag_count"] > 0, "problem"]
-    )
     raw_paths = (
         (
             "two_decimal_quantization",
@@ -46,11 +40,18 @@ def main(gold_path: Path = GOLD_PATH) -> None:
             QUANTIZATION_DATASETS / "unquantized_raw_results.csv",
         ),
     )
-    summary_rows = []
+    runs_by_method = {}
     for name, raw_path in raw_paths:
         if not raw_path.is_file():
             raise FileNotFoundError(f"Required raw results are missing: {raw_path}")
-        raw_runs = pd.read_csv(raw_path)
+        runs_by_method[name] = pd.read_csv(raw_path)
+    snaggable_problems = {
+        problem
+        for runs in runs_by_method.values()
+        for problem in runs.loc[runs["snag_count"] > 0, "problem"]
+    }
+    summary_rows = []
+    for name, raw_runs in runs_by_method.items():
         reproduction = reproduction_from_raw_results(raw_runs)
         comparison = comparison_table(reproduction, original)
         comparison.to_csv(

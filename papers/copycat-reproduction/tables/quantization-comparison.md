@@ -11,5 +11,5 @@
 | Codelets-run mean relative error           |                      0.033 |            0.071 |
 | Codelets-run max relative error            |                      0.144 |            0.418 |
 | Codelets-run RMS z                         |                      1.693 |            3.857 |
-| Mean snag count on snaggable problems      |                      3.421 |            3.428 |
+| Mean snag count on snaggable problems      |                      3.079 |            3.086 |
 | Max snag count                             |                         64 |               72 |
