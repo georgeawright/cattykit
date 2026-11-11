@@ -1,19 +1,30 @@
-# Reproducing Copycat: a Python Re-implementation of a Classic Model of Analogy-Making
+# \[Re\] Copycat: a Replication of the Classic Model of Analogy-Making
 George Alexander Wright
-2026-10-11
+2026-11-11
 
 # Introduction
 
-This paper describes a reproduction study of Copycat, a computer model
-of analogy-making that solves string analogies of the form “if *abc* is
+This paper describes a replication study of Copycat, a computer model of
+analogy-making that solves string analogies of the form “if *abc* is
 transformed to *abd*, what is *ijk* transformed to?” (Mitchell 1993).
+The primary target for replication is the experimental evaluation
+reported in Chapters 4 and 5 of Mitchell (Mitchell 1993), comprising
+1,000 runs on each of a fixed benchmark of five target problems and 24
+variants problems.
+
 Copycat is based on research by Douglas Hofstadter and the Fluid
 Analogies Research Group (FARG) into the flexible use of concepts by
 humans when they perceive and think about the world (Hofstadter and
-Fluid Analogies Research Group 1995). While the original implementation
-of Copycat is available online,[^1] it is written in a dialect of Lisp
-that is not compatible with the standard implementations available today
-and makes use of now non-existent dependencies.
+Fluid Analogies Research Group 1995). Copycat and related models
+represent an approach to artificial intelligence at the intersection of
+symbolic and statistical approaches and fit into a *middle-out* approach
+to AI advocated for by Wang and Thórisson (Wang and Thórisson 2025).
+
+While the original implementation of Copycat is available online,[^1] it
+is written in a dialect of Common Lisp that is not compatible with the
+standard implementations available today and makes use of now
+non-existent dependencies. This makes the historically important result
+difficult to reproduce or build directly upon.
 
 The Python re-implementation of Copycat described herein is the first
 step in a project that aims to construct a general library for building
@@ -26,10 +37,10 @@ Across the fixed 29-problem benchmark, the Python re-implementation
 produces answer frequencies and mean temperatures similar to those
 reported for the original Lisp Copycat. This close re-implementation
 makes possible further analysis of the Copycat architecture, for
-example: a statistical and critical analysis of Copycat’s encounters
-with and approach to handling *snags* when solving certain problems; and
-experiments to show how quantization of temperature and other values
-impacts on the efficiency of Copycat’s search for solutions.
+example: experiments to show how quantization of temperature and other
+values impacts on the efficiency of Copycat’s search for solutions; and
+a statistical and critical analysis of Copycat’s encounters with and
+approach to handling *snags* when solving certain problems.
 
 # Background
 
@@ -45,134 +56,62 @@ a *slipnet* whose nodes receive activation from the workspace and once
 fully active can post codelets to the coderack. Events such as codelet
 selection happen with a degree of randomness determined by the program’s
 changing *temperature*, a measure of the quality of structures in the
-workspace. The program lacks a central orchestrator and choices are
-mostly made as a result of the interactions of many small components.
-
-Copycat was originally motivated by Hofstadter’s desire for more
-cognitively plausible Artificial Intelligence models that focus on the
-flexible way that concepts form and change as people think. Hofstadter
-and Mitchell describe Copycat and related architectures as models of
-*high level perception* and place them in between the levels modeled by
-*bottom-up* neural/connectionist and *top-down* logic-based approaches
-to AI which had become two sides in a long-standing debate in both AI
-and Cognitive Science research. It fits instead into a *middle-out*
-approach to AI for which Wang and Thórisson (Wang and Thórisson 2025)
-advocate.
-
-Copycat and similar computer models produced by the Fluid Analogies
-Research Group appeared on the scene at a time when expert systems based
-on logic and rules were increasingly seen to have failed as an approach
-to AI and when neural networks were first producing successful results
-(but before they were as successful and as widely adopted as they are
-today).
-
-Being both conceptually and chronologically sandwiched between these two
-large competing camps is perhaps one reason why the Copycat architecture
-and its underpinning ideas were not more widely adopted in AI research.
-Other substantial problems include the practical difficulty in building
-a program like Copycat. As described above, it is a complex system with
-many interacting components and is thus difficult to debug. Furthermore,
-the models of the Fluid Analogies Research Group were focused on
-*micro-domains* (also disparagingly known as *toy problems*) and while
-they may make convincing abstract theoretical models of important
-cognitive processes such as analogy-making and pattern recognition, the
-challenge of applying these approaches in practical domains is
-significant.
-
-Despite this, Copycat can be seen to prefigure some important trends in
-contemporary AI and its increasing orientation towards a synthesis of
-neural and symbolic methods:
-
-- *In-context learning* Hofstadter initially described Jumbo (a
-  precursor to Copycat developed in the 1980s) as a model of machine
-  learning, but this work was excluded from early machine learning
-  research p.95 (Hofstadter and Fluid Analogies Research Group 1995).
-  *Machine learning* has typically referred to the use of statistical
-  techniques to induce functions to predict correct labels or
-  regressions from datasets. More recently, with the discovery that
-  large language models can learn new tasks at inference time, there is
-  increasing interest in in-context or few-shot machine learning,
-  whereby examples given in a prompt can be used to teach a model a
-  skill that was not present in its original training data. Copycat is
-  in essence a *one-shot* learner: it is given one example string
-  transformation, uses it to form an abstract rule for string
-  transformations, and applies that rule to a new string. It therefore
-  fits more neatly with modern machine learning research into how models
-  are conditioned by their inputs.
-
-- *Tool use* Beyond natural language processing, LLMs are now typically
-  used within so-called *agentic* systems which give the model access to
-  external tools such as web search, calculators, program interpreters,
-  or other more specialized neural networks. This allows them to augment
-  their context beyond the initial prompt using information that could
-  not be reliably produced from decoding the model (e.g. with facts that
-  post-date the model’s training data or with the results of novel
-  calculations). In such a system the tools and context play a similar
-  role to the codelets and workspace found in Copycat, but a
-  computationally expensive (and therefore energy-intensive) LLM is also
-  required to plan, orchestrate, and collate tool outputs into an
-  answer. In the Copycat architecture, responsibility for co-ordination
-  is distributed between codelets and slipnet nodes with only
-  lightweight mediation by the coderack’s scheduling.
-
-An agentic system with Copycat-like distributed orchestration between
-perhaps smaller language models or other neural networks might have the
-potential to reduce expensive LLM calls while also expanding the
-flexible behaviour of Copycat beyond its micro-domain (Wright 2026).
-This warrants further research into the Copycat architecture so that it
-can be further experimented on and better understood. But such research
-is hampered by the lack of a Copycat implementation that can be run in
-modern programming environments. This was the motivation for the
-reproduction study described in this paper.
+workspace. The program lacks a central orchestrator: choices are mostly
+made as a result of the interactions of many small components.
 
 ## FARG models and software
 
-FARG models typically centre around a set of components similar to those
-that make up Copycat, including a workspace where structures are built,
-a Slipnet which keeps track of relevant concepts, a coderack which
-schedules codelets, and a temperature score which measures the quality
-of the workspace and controls the degree of randomness in the program.
-Across models, implementations of these components vary and they are
-sometimes referred to with different names. Some models have other extra
-components.
+FARG models typically centre around a set of components similar to the
+workspace, slipnet, coderack, and temperature. Each model works in a
+particular micro-domain designed to test a particular type of perception
+or reasoning.
 
-Each model works in a particular micro-domain designed to test a
-particular type of perception or reasoning: Copycat (Mitchell 1993) and
-Metacat (Marshall 1999) make analogies between transformations of letter
-strings; Tabletop (French 1995) also makes analogies, but between
-objects pointed to on a table; Capyblanca (Linhares 2014) makes
-analogies in chess; Letter-spirit (Hofstadter and McGraw 1995) completes
-the design of fonts once given some examples (a kind of visual
-analogy-making); Jumbo (Hofstadter 1995) and Numbo (Defays 1995) build
-hierarchical structures of letters and numbers respectively in order to
-play an anagram or maths game; Seqsee (Mahabal 2010) finds patterns in
-sequences of numbers in order to predict the next element; Musicat
-(Nichols 2012) finds patterns in sequences of musical notes.
+Copycat (Mitchell 1993) and Metacat (Marshall 1999) make analogies
+between transformations of letter strings; Tabletop (French 1995) also
+makes analogies, but between objects pointed to on a table; Capyblanca
+(Linhares 2014) makes analogies in chess; Letter-spirit (Hofstadter and
+McGraw 1995) completes the design of fonts once given some examples (a
+kind of visual analogy-making); Jumbo (Hofstadter 1995) and Numbo
+(Defays 1995) build hierarchical structures of letters and numbers
+respectively in order to play an anagram or maths game; Seqsee (Mahabal
+2010) finds patterns in sequences of numbers in order to predict the
+next element; Musicat (Nichols 2012) finds patterns in sequences of
+musical notes.
 
 The original code for many (but not all) of these models is available
 online.[^2] The models were developed over an extended period of time
-using different programming languages, many of which are no longer
-supported on modern computers.
+using different programming languages, some of which are difficult to
+run on modern computers.
 
 ## The original Copycat
 
 The original implementation of Copycat[^3] consists of nearly 12,000
-lines of Common Lisp, but which will not run with modern Lisp
-interpreters as it relies on outdated dependencies.
+lines of Common Lisp. It does not run unmodified in contemporary
+environments due to its dependence on obsolete software and
+dependencies. The code includes the implementations of the various
+components described in
+<a href="#sec-background" class="quarto-xref">Section 2</a>, written in
+a mixed object-oriented/procedural style. For the most part, it matches
+closely with the description of the model by Mitchell (Mitchell 1993).
 
-The code includes the implementations of the various components
-described above as well as the method for building answers and handling
-snags described below. Code is interspersed with calls to a graphical
-user interface used to display the workspace structures and slipnet
-activations and is written in a mixed object-oriented/procedural style.
+But it also includes important functionality that Mitchell does not
+describe in detail, including: the steps involved in using a
+transformation rule to generate the answer string; how the program
+recognizes when a string cannot be built based on the rule (this is
+called hitting a *snag*); and how the program handles snags. Snag
+handling is discussed in more detail in
+<a href="#sec-snags" class="quarto-xref">Section 6.1</a>.
 
-It also contains various parameters that can be altered such as the
+The code contains various parameters that can be altered such as the
 frequency with which slipnet nodes’ activations should be updated;
 weights used in functions for using temperature to alter probability
-distributions; and the configuration of the slipnet with nodes
-representing concepts relevant to the domain (e.g. A, B, C,
-LETTER-CATEGORY, LEFT, LEFTMOST, OPPOSITE) and the weights of their
-connections.
+distributions; the configuration of the slipnet with nodes representing
+concepts relevant to the domain (e.g. A, B, C, LETTER-CATEGORY, LEFT,
+LEFTMOST, OPPOSITE); and the weights of slipnet connections.
+
+The original implementation’s code is also interspersed with calls to a
+graphical user interface used to display the workspace structures and
+slipnet activations.
 
 Readers should consult Mitchell (Mitchell 1993) or Hofstadter
 (Hofstadter and Fluid Analogies Research Group 1995) for a full
@@ -181,106 +120,166 @@ architecture provides a large amount of implementation detail.
 
 ## Other implementations and generalizations
 
-As one of the better known FARG models, Copycat has been reproduced
+As one of the better known FARG models, Copycat has been re-implemented
 before with implementations made available online, including in Java[^4]
-and in Python.[^5] Metacat, which is an extension of Copycat implemented
-in Scheme,[^6] also has a lot in common with the original Copycat
-implementation.
+and in Python[^5], but none of these appear to be accompanied by a full
+replication study including statistical comparison.
 
-Apart from Metacat, none of these projects appear to have been made with
-a view to extending Copycat or to building a more general model. Other
-projects exist online which have sought to build a more general FARG
-model, such as Paradex[^7] and PySeqsee,[^8] but they no longer seem to
-be active.
+Metacat, which is an extension of Copycat implemented in Scheme,[^6]
+also has much in common with the original Copycat implementation. Apart
+from Metacat, none of the re-implementations appear to have been made
+with a view to extending Copycat or to building a more general model.
+Other projects exist online which have sought to build a more general
+FARG model, such as Paradex[^7] and PySeqsee,[^8] but they no longer
+seem to be active.
 
 # Methods
 
 The benchmark comprises the five target problems and 24 variations
-reported by Mitchell (Mitchell 1993). Published answer frequencies,
-answer-conditional final-temperature means and standard errors, and
-problem-level codelet-count means and standard errors were transcribed
-from the source. The problems are treated as a fixed benchmark, not as a
-random sample from a wider population of analogy problems.
+reported by Mitchell (Mitchell 1993). Published results were transcribed
+from chart labels in chapters 4 and 5 of Mitchell (Mitchell 1993). These
+include: answer frequencies; mean final temperature per unique problem
+answer (with standard errors); and mean codelet counts per problem (with
+standard errors).
 
-The experiments used Python 3.13, Copycat 0.1.1, and Cattykit 0.1.3.
-Each implementation was run 1,000 times on every problem, with the model
-instantiated anew using seeds 0–999; all runs continued until an answer
-was produced and no experimental runs were excluded. The same seed set
-was used for the full-precision baseline, the two-decimal quantization
-variant, and the faithful-original coderack-removal variant. The
-quantization and coderack patches are described in their respective
-sections below.
+The experiments used the Python re-implementation of Copycat (version
+0.1.1) available in the Cattykit repository (version 0.1.3) and were run
+with Python 3.13. Copycat was run 1,000 times on every problem, with the
+model instantiated anew using seeds 0–999; all runs continued until an
+answer was produced and no experimental runs were excluded.[^9]
 
-Answer distributions were compared using total variation (TV) distance,
-with empirical overlap defined as one minus TV distance. Temperature
-error was calculated only for answers observed in both implementations
-and summarized both equally across answers and weighted by the published
-answer frequencies; unmatched answer categories were counted separately.
-For a mean difference, the standardized discrepancy was calculated using
-the square root of the sum of the two squared standard errors; RMS z is
-the root mean square of these discrepancies across comparisons.
-Codelet-count error is the absolute difference between means divided by
-the published mean. Monte Carlo analyses used 10,000 samples with seed
-0.[^9]
+There are three dimensions along which successful replication of the
+original study can be judged: similarity of answer distributions
+produced by reference and re-implementation; similarity of final
+temperatures for the same answers; and similarity of codelets run per
+problem.
+
+Answer distributions are compared using total variation (TV) distance.
+Each answer distribution is represented as a probability vector, with
+one component for each answer observed in either distribution. TV
+distance is half the sum of the absolute differences between
+corresponding answer probabilities. A distance of zero indicates
+identical distributions; values closer to 1 indicate greater
+discrepancy. Subtracting the TV distance from one gives the empirical
+distributional overlap of the two implementations.
+
+The TV distances can be compared to a 95% reference range of distances
+that would be expected from running the original Copycat experiments a
+second time and comparing their outputs with the reported results. For
+each problem, the reference answer frequencies are treated as a fixed
+probability distribution and a simulated sample of 1,000 answers can be
+drawn from that distribution to produce a new set of answer frequencies.
+The TV distance of sample and original reported distribution is
+calculated and a 95% reference range is built by taking the 2.5th and
+97.5th percentiles from the distance calculations across 10,000
+simulations.
+
+Temperature error is calculated only for answers observed in both
+implementations and summarized both equally across answers and weighted
+by the published answer frequencies (to reduce the influence of
+outliers). For a mean difference, the standardized discrepancy is
+calculated using the square root of the sum of the two squared standard
+errors; RMS z is the root mean square of these discrepancies across
+comparisons, excluding answers observed fewer than twice in either
+implementation, for which the standard error cannot be estimated. For
+the purpose of this study, the original temperatures are converted to 2
+decimal place floats between 0 and 1 so that they have the same
+representation as in the re-implementation.
+
+Codelet count error is calculated per problem as the original study only
+reports mean codelet counts per problem. The relative error is used for
+codelet counts as codelet counts have no upper bound (whereas
+temperature lies on a fixed scale). It is calculated as the absolute
+difference between means divided by the published mean.
+
+## Obstacles encountered
+
+The re-implementation of the Copycat model was relatively free of
+obstacles as the original code is well-documented by both inline
+comments and the aforementioned publications. Furthermore it was
+possible during development to use LLM-based coding agents to perform
+code reviews by asking them to compare the two implementations. This
+sped up the search for discrepancies towards the end of development.
+
+There were more obstacles when it came to a full replication of
+Mitchell’s experiments on the model. Mitchell (Mitchell 1993) does not
+describe how 1,000 runs were performed, including whether or not random
+seeds were used, if so how they were chosen, and how the program was
+reset between runs (i.e. was it given a new seed or were components
+deleted or set back to their starting state?). The selection method of
+random seeds could affect the resulting distribution of behaviours.
+
+Furthermore, Mitchell does not provide raw results of experiments: final
+temperatures and run lengths are reported as summary statistics (mean
+and standard error). This prevents a full comparison of final
+temperature and run length distributions. The statistics are also
+rounded to one decimal place, thus limiting the precision of
+cross-implementation comparison of the means and standard errors.
+
+## Criteria for successful replication
+
+Because Copycat is stochastic and because of the aforementioned
+obstacles, it is unreasonable to expect a re-implementation to perfectly
+replicate the results described by Mitchell and no hard pass/fail
+thresholds are used in this study. But a successful replication ought to
+have a high overlap of answer distributions for each of the 29 problems
+with TV distance between re-implementation and reference answers also
+falling within the 95% reference range in most cases. Mean absolute
+error of mean final temperature (weighted by answer frequency) should
+also be low. Higher errors for answers with low frequencies can be
+tolerated since the same answer can be output alongside a range of
+temperature values. Mean relative error of mean codelets run should also
+be low, but similar run length is a less direct measure of behavioural
+agreement since it is path dependent and could be affected by the slight
+variations in answers and temperatures.
 
 # The re-implementation of Copycat
 
-The Python re-implementation described in this paper has been designed
-for the future purpose of building a generalized library out of the
-components of FARG models called Cattykit.[^10] Eventually it is planned
-that Cattykit will contain the components needed to recreate previously
-built models for the purpose of experimentation; to develop novel models
-with a similar structure; and to integrate these models within a
-neuro-symbolic architecture as described by Wright (Wright 2026).
+The Python re-implementation is a manual translation into
+object-oriented Python of the original Lisp source code. The main
+differences introduced in the re-implementation include:
 
-The current state of the Copycat re-implementation[^11] is still a
-self-contained model, but it has been written in a style that will
-facilitate this future abstraction: components are object-oriented; and
-parameters are largely kept out of the code and placed in configuration
-files, especially the nodes and link weights of the Slipnet.
-
-The main differences introduced in this re-implementation include:
-
-- The use of floating point numbers instead of integers between 0 and
-  100 for values such as temperature, slipnode activations, and
-  workspace structure strengths. The effect of this is discussed below;
-- A fix to a bug found in the removal of codelets from the coderack;
+- A bug fix relating to removal of excess codelets from the coderack. In
+  Copycat, the coderack cannot contain more than 100 codelets. When
+  codelets are added that would breach that maximum, older codelets
+  should be removed probabilistically, weighted by their age and
+  urgency. The original implementation removes codelets without removing
+  their corresponding removal probability and codelets therefore lose
+  alignment with their probability of being removed. In practice a
+  sensitivity comparison shows that this makes little difference to
+  overall behaviour, likely because relatively few codelets are removed
+  at one time[^10].
+- Use of floating point numbers instead of integers between 0 and 100
+  for values such as temperature, slipnode activations, and workspace
+  structure strengths. (In the evaluation described in
+  <a href="#sec-evaluation" class="quarto-xref">Section 5</a>, a
+  quantization patch rounds numbers to two decimal places in order to
+  more closely mirror the original Copycat source code’s use of integers
+  between 0 and 100. A further experiment in
+  <a href="#sec-quantization" class="quarto-xref">Section 6.2</a>
+  explores the effect of removing this patch);
 - Use of a matrix to define connections in the slipnet so that spreading
   activation could in future benefit from a parallelized GPU back-end.
 
 # Evaluation
 
-Mitchell (Mitchell 1993) reports the results from running Copycat 1,000
-times each on 29 problems (5 target problems and 24 variations),
-recording: the answers given and their frequency; the mean final
-temperature (with standard error) for each answer; and the mean number
-of codelets run when solving each problem (also with standard error).
-
-Fidelity of the Python re-implementation was assessed by comparing its
-answers, mean temperatures, and mean run lengths with the published
-summaries for the same problems.
-<a href="#fig-target-problems-solution-frequency"
-class="quarto-xref">Figure 1</a> shows the distribution of answers given
-by the re-implementation for each of the five target problems;
-<a href="#fig-target-problems-temperature-by-solution"
-class="quarto-xref">Figure 2</a> shows the distribution of final
-temperatures for each answer;
-<a href="#fig-target-problems-codelets-run-by-solution"
-class="quarto-xref">Figure 3</a> shows the distribution of codelets run
-for each answer.
-
-As discussed in the following sections, statistics collected from runs
-of the re-implementation display close similarity to the statistics
-reported for the original Lisp implementation.
+Statistics collected from runs of the re-implementation display close
+similarity to the statistics reported for the original Lisp
+implementation. Comparison statistics are summarized in
+<a href="#tbl-comparison-statistics" class="quarto-xref">Table 1</a>.
+The re-implementation closely replicates answer distributions,
+temperatures (subject to limitations of historical summaries), and mean
+run lengths.
 
 <div id="fig-target-problems-solution-frequency">
 
 <img src="figures/target_problems-solution-frequency.png"
 style="width:90.0%" />
 
-Figure 1: Answer-frequency distributions for the five basic target
-problems. Horizontal rules separate problems; answer labels are ordered
-by frequency within each problem.
+Figure 1: Answer frequency distributions. Horizontal rules separate
+problems; answer labels are ordered by frequency within each problem.
+Only results for the five target problems are shown for the sake of
+readability.
 
 </div>
 
@@ -289,9 +288,10 @@ by frequency within each problem.
 <img src="figures/target_problems-temperature-by-solution.png"
 style="width:90.0%" />
 
-Figure 2: Final-temperature distributions for answers to the five basic
-target problems. Horizontal rules separate problems; answer labels are
-ordered by frequency within each problem.
+Figure 2: Final temperature distribution. Horizontal rules separate
+problems; answer labels are ordered by frequency within each problem.
+Only results for the five target problems are shown for the sake of
+readability.
 
 </div>
 
@@ -300,125 +300,93 @@ ordered by frequency within each problem.
 <img src="figures/target_problems-codelets-run-by-solution.png"
 style="width:90.0%" />
 
-Figure 3: Codelets-run distributions for answers to the five basic
-target problems. Horizontal rules separate problems; answer labels are
-ordered by frequency within each problem.
+Figure 3: Codelets run distributions. Horizontal rules separate
+problems; answer labels are ordered by frequency within each problem.
+Only results for the five target problems are shown for the sake of
+readability.
 
 </div>
 
-## Comparison statistics
+<div id="tbl-comparison-statistics">
 
-| Measure                                    |  Value |
-|:-------------------------------------------|-------:|
-| Mean answer TV distance                    |  0.022 |
-| Max answer TV distance                     |  0.058 |
-| Mean runs with reproduction-only answers   |  1.414 |
-| Temperature unweighted mean absolute error |  0.027 |
-| Temperature weighted mean absolute error   |  0.005 |
-| Temperature max absolute error             |  0.259 |
-| Temperature RMS z                          |  1.583 |
-| Temperature max \|z\|                      | 12.180 |
-| Codelets-run mean relative error           |  0.071 |
-| Codelets-run max relative error            |  0.418 |
-| Codelets-run RMS z                         |  3.857 |
+Table 1: Comparison statistics for the baseline replication across 29
+problems.
+
+| Measure                                    | Value |
+|:-------------------------------------------|------:|
+| Mean answer TV distance                    | 0.021 |
+| Max answer TV distance                     | 0.055 |
+| Mean runs with reproduction-only answers   | 1.207 |
+| Temperature unweighted mean absolute error | 0.037 |
+| Temperature weighted mean absolute error   | 0.005 |
+| Temperature max absolute error             | 0.460 |
+| Temperature RMS z                          | 1.194 |
+| Temperature max \|z\|                      | 4.992 |
+| Codelets-run mean relative error           | 0.033 |
+| Codelets-run max relative error            | 0.144 |
+| Codelets-run RMS z                         | 1.693 |
+
+</div>
 
 ## Answer distributions
 
-The re-implementation of Copycat outputs similar answers with similar
-frequency to the original implementation. The modal answer is identical
-for all 29 problems. Most answers occurring in at least 1% of historical
-runs also occur in the reproduction, with one exception. The
-reproduction on average generates between one and two new answers not
-reported in the original results but only once generates a previously
-unreported answer at a frequency above 1%.
+The re-implementation of Copycat outputs mostly the same answers with
+similar frequency to the original implementation. The modal answer is
+identical for 28 of the 29 problems. For one problem, the two nearly
+tied most frequent answers are reversed[^11]. All answers occurring in
+at least 1% of historical runs also occur in the replication study, and
+all answers occurring in at least 1% of replication runs are also
+reported in the historical study.
 
-**?@tbl-comparison-statistics** quantifies the similarity of answer
-distribution between the two distributions with total variation distance
-(TV distance). Each answer distribution is represented as a probability
-vector, with one component for each answer observed in either
-distribution. TV distance is half the sum of the absolute differences
-between corresponding answer probabilities. A distance of zero indicates
-identical distributions; values closer to 1 indicate greater
-discrepancy. Subtracting the TV distance from one gives an estimate of
-the probability mass overlap between the two implementations. The
-average TV distance across all problems is 0.022, indicating a mean
-empirical overlap of 97.8%. Overlap is (slightly) below 95% for just two
-of the 29 problems tested.
-
-22 out of the 29 problems resulted in an answer distribution that has a
-TV distance within the 95% Monte Carlo reference ranges found with 1,000
-run samples from the original implementation’s reported answer
-distributions. 7 problems marginally exceeded their 95% Monte Carlo
-reference ranges. The re-implementation therefore closely reproduces the
-published answer distributions in absolute terms, but its TV distances
-are slightly larger than expected from finite-sample variation under a
-plug-in model treating published frequencies as fixed.
+The average TV distance across all problems is 0.021, indicating a mean
+empirical overlap of 97.9%. Overlap is (slightly) below 95% for just one
+of the 29 problems tested. 24 out of the 29 problems resulted in an
+answer distribution that has a TV distance within their 95% Monte Carlo
+reference range. 5 problems marginally exceeded their 95% reference
+range, but those ranges do not account for uncertainty in the published
+frequencies. The re-implementation therefore closely replicates the
+published answer distributions.
 
 ## Final temperatures
 
-As well as producing an answer, Copycat also provides a final
-temperature score, which summarizes the strength and connectedness of
-structures in the workspace and can act as an approximate measure of
-answer quality. Because answers can be generated as a result of
-different underlying structures or with other structures present that do
-not contribute to an answer, the same answer generated many times can be
-accompanied by a range of final temperatures
-(<a href="#fig-target-problems-temperature-by-solution"
-class="quarto-xref">Figure 2</a> shows the distribution of temperatures
-for answers to each of the five target problems). Over one thousand
-runs, an accurate reproduction of Copycat should not only produce a
-similar distribution of answers, but also similar mean temperature
-scores for each answer. The full temperature distributions for the
-original implementation are not available, so comparisons are limited to
-its reported means and standard errors.
+Mean final temperatures for corresponding answers are also generally
+similar between reference and re-implementation. Across the 29 problems,
+the mean absolute error is 0.005 when weighted by answer frequency and
+0.037 when answers within each problem are given equal weight. The
+higher unweighted error reflects, in part, larger discrepancies for many
+infrequent answers. The largest difference is 46 percentage points for
+an answer observed only once in each implementation; such a mean is
+sensitive to the outcome of a single run.
 
-In most cases, the final temperatures output by the reproduction are
-indeed similar to those of the original implementation. The difference
-between reproduction and reference temperature for each problem’s
-solution (the absolute error between the means) is usually close to zero
-and the size of the difference is usually acceptable considering the
-variance recorded in reference results.
-
-**?@tbl-comparison-statistics** reports the mean and maximum of absolute
-error for the temperatures associated with the answers of each problem,
-both unweighted (giving equal emphasis to the mean temperature scores of
-each answer regardless of output frequency), and weighted by answer
-frequency. Mean temperatures are rarely more than one percentage point
-away from those of the original implementation, though in the worst case
-(with infrequent answers) the temperature can be 26 percentage points
-away. The unweighted mean absolute error across all 29 problems is
-0.027, but the answer frequency weighted mean is 0.005. The root mean
-square of the standardized temperature-mean discrepancies is 1.583. This
-summarizes mean-level disagreement relative to the reported sampling
-errors; it does not establish that the underlying temperature
-distributions have the same shape.
+Excluding answers observed only once in either implementation, for which
+a standard error cannot be estimated, the root mean square of the
+standardized discrepancy is 1.194. The discrepancies are therefore, in
+aggregate, approximately the same order of magnitude as the combined
+reported sampling errors.
 
 ## Run lengths
 
-For each problem, Mitchell (Mitchell 1993) also reports the mean
-codelets run (and standard error) when Copycat is given that input. It
-is therefore possible to check if effort (in terms of codelets run) is
-comparable between the two implementations.
+Mean run lengths are similar between the two implementations across the
+benchmark. The mean relative error in codelets run is 3.3%. Agreement
+varied by problem: the largest relative error is 14.4%, but only one
+other problem has an error above 10%.
 
-The re-implementation has a similar mean number of codelets run to the
-original for many problems, though the difference is more noticeable
-than for answers and temperatures. Relative error is used because run
-lengths vary substantially in scale between problems, whereas
-temperature is always on the fixed scale between 0 and 1.
+Run length is a less direct measure of behavioural agreement than the
+answers produced. It depends on the sequence of structures built and
+codelets selected during a run, so implementations may reach similar
+answers with different amounts of search. The root mean square of the
+standardized discrepancy of mean run length is 1.693, which indicates
+slightly greater discrepancies than can be expected from sampling along,
+but since this incorporates all 1,000 runs per problem, outliers are not
+excluded.
 
-The high root mean square of the standardized mean differences for
-codelets run of nearly 4 indicates that the re-implementation is less
-aligned with the original in terms of run length than might be desired.
-The mean relative error in codelets run (7.1%) is higher than the mean
-absolute error for temperature. It also varies by problem: the maximum
-is 41.8% and 8 out of the 29 problems had errors above 10%. Some
-variation in the number of codelets run is tolerable as the quantity and
-exact identity of codelets run is path dependent and can vary
-substantially depending on the structures built and the changing
-temperature during the run. As discussed below, a variant using
-two-decimal quantization produces mean run lengths closer to the
-published results, suggesting that numerical precision contributes to
-some of the disagreement.
+# Further analysis of the re-implementation
+
+Having established that the Python re-implementation closely matches the
+original implementation of Copycat, it is possible to perform more novel
+analysis of Copycat. This section explores Copycat’s snag handling
+procedure and the effect of replacing temperature, activations, and
+other values with full precision 64-bit floating point numbers.
 
 ## Snags
 
@@ -430,28 +398,38 @@ Figure 4: Snag count distributions across the 29 problems.
 
 </div>
 
+<div id="fig-problem-5-xyd-codelets-vs-snags">
+
+<img src="figures/problem_5_xyd-codelets-vs-snags.png"
+style="width:60.0%" />
+
+Figure 5: Codelets run vs snags encountered for runs on problem abc -\>
+abd ==\> xyz with answer xyd
+
+</div>
+
 Sometimes when solving a problem, Copycat can encounter a *snag* (also
 referred to by Mitchell (Mitchell 1993) as an *impasse*). This happens
 when a rule is built that cannot be applied to the letters in the target
 string. For example, when producing a solution for the problem
 `abc -> abd ==> xyz`, Copycat might construct a rule to replace the
-letter `z` with its successor. Since `z` has no successor, Copycat
+letter `z` with its successor. But since `z` has no successor, Copycat
 cannot apply the rule.
 
-In descriptions of the Copycat architecture, Mitchell (Mitchell 1993)
-does not provide great detail of how snags are recognized and handled or
-how often they occur for each problem (other than that they occur on
-average 9 times per run for the `xyz` problem, page 133). The
+In descriptions of the Copycat architecture, Mitchell (Mitchell 1993,
+133) does not provide great detail of how snags are recognized and
+handled or how often they occur for each problem (other than that they
+occur on average 9 times per run for the `xyz` problem). The
 re-implementation allows further statistical analysis in this direction
 and shows (see
 <a href="#fig-all-problems-snag-count" class="quarto-xref">Figure 4</a>)
-no snags were encountered across 1,000 runs for most of problems and
+no snags were encountered across 1,000 runs for most of the problems and
 that observed snags were concentrated in problems where solutions can
 relate to the ends of the alphabet or for groups with different numbers
 of letters.
 
-Snag handling runs as part of answer construction which runs
-deterministically once a rule translator codelet has built a rule for
+Snag handling occurs during answer construction, which proceeds
+deterministically once a rule-translator codelet has built a rule for
 producing an answer. When a snag is hit, Copycat clamps its temperature
 to maximum, marks structures in the workspace as *snag structures*,
 deletes any proposed structures, deletes the translated rule, clamps the
@@ -474,14 +452,13 @@ This is largely associated with repeated snags occurring when the
 program tries to find the successor to `z`.
 <a href="#fig-problem-5-xyd-codelets-vs-snags"
 class="quarto-xref">Figure 5</a> shows a strong positive association
-between snags encountered and codelets run for the 821 runs producing
-this answer (Pearson’s *r* = 0.981, 95% CI \[0.978, 0.984\]). Across the
-10 recorded problems which encountered snags, linear regression
-estimates an association of between 342 and 2,962 additional codelets
-per additional snag. This association is partly mechanical: a snag
-requires more codelets to be run to fix it and more codelets running
-creates more opportunities for snags. It should therefore not be
-interpreted as an unqualified causal effect.
+between snags encountered and codelets run for the 835 runs producing
+this answer (Pearson’s *r* = 0.980, 95% CI \[0.977, 0.982\]). Across the
+9 recorded problems which encountered snags, linear regression estimates
+an association of between 349 and 1,341 additional codelets per
+additional snag. This association is partly mechanical: a snag forces
+more codelets to run so that it can be fixed and more codelets running
+on a hard problem increases opportunities for snags.
 
 Snag handling is deterministic, requires a more global view of the
 workspace, and is tailored to a specific subset of Copycat’s problems.
@@ -492,145 +469,117 @@ might therefore be judged to be incompatible with the broader FARG
 approach to AI and it has indeed been further addressed in the model
 Metacat, an extension of Copycat which Marshall (Marshall 1999)
 describes as having *self-watching* capabilities. This will be the
-subject of a future reproduction study.
-
-<div id="fig-problem-5-xyd-codelets-vs-snags">
-
-<img src="figures/problem_5_xyd-codelets-vs-snags.png"
-style="width:90.0%" />
-
-Figure 5: Codelets run vs snags encountered for runs on problem abc -\>
-abd ==\> xyz with answer xyd
-
-</div>
+subject of a future replication study.
 
 ## Comparison of numeric quantization methods
 
-| Measure | Full precision | Two-decimal quantization |
+<div id="tbl-quantization-comparison">
+
+Table 2: Comparison of two decimal place quantization and full precision
+variants across 29 problems.
+
+| Measure | Two-decimal quantization | Full precision |
 |:---|---:|---:|
-| Mean answer TV distance | 0.022 | 0.021 |
-| Max answer TV distance | 0.058 | 0.055 |
-| Mean runs with reproduction-only answers | 1.414 | 1.586 |
-| Temperature unweighted mean absolute error | 0.027 | 0.037 |
+| Mean answer TV distance | 0.021 | 0.021 |
+| Max answer TV distance | 0.055 | 0.058 |
+| Mean runs with reproduction-only answers | 1.207 | 1.034 |
+| Temperature unweighted mean absolute error | 0.037 | 0.027 |
 | Temperature weighted mean absolute error | 0.005 | 0.005 |
-| Temperature max absolute error | 0.259 | 0.460 |
-| Temperature RMS z | 1.583 | 1.593 |
-| Temperature max \|z\| | 12.180 | 9.412 |
-| Codelets-run mean relative error | 0.071 | 0.033 |
-| Codelets-run max relative error | 0.418 | 0.144 |
-| Codelets-run RMS z | 3.857 | 1.693 |
-| Mean snag count on snaggable problems | 3.086 | 3.079 |
-| Max snag count | 72 | 64 |
+| Temperature max absolute error | 0.460 | 0.259 |
+| Temperature RMS z | 1.194 | 1.567 |
+| Temperature max \|z\| | 4.992 | 12.180 |
+| Codelets-run mean relative error | 0.033 | 0.071 |
+| Codelets-run max relative error | 0.144 | 0.418 |
+| Codelets-run RMS z | 1.693 | 3.857 |
+| Mean snag count on snaggable problems | 3.079 | 3.086 |
+| Max snag count | 64 | 72 |
+
+</div>
 
 As described above, this re-implementation of Copycat makes use of
-floating point numbers for values such as slipnode activation. This was
-motivated by the use of floating point to allow for richer
-representations in the activations and weights in neural networks, and
-the hope that future iterations of this architecture could be integrated
-with neural representations. Comparing the re-implementation with a
-patched version that rounds floating point numbers to two decimal places
-shows that both variants have similar agreement with the published
-answers and temperature means, while the quantized variant agrees more
-closely with the published mean run lengths.
+floating point numbers for values such as slipnode activation, but in
+the above experiments, a patch was used which rounded floating point
+numbers to two decimal places so as to better match the original Copycat
+implementation. Removal of the patch so that floating point numbers use
+64-bit precision results in similar answer distributions and
+temperatures for each answer. But it results on average in much longer
+run lengths.
 
-**?@tbl-quantization-comparison** shows that the two variants have
-similar levels of agreement with the published answer frequencies and
-temperature means. The quantized version’s answer distributions are
-slightly closer to the published results (with 23 out of the 29 problems
-within the 95% Monte Carlo reference range), while the full-precision
-version has slightly smaller temperature-error measures.
+<a href="#tbl-quantization-comparison" class="quarto-xref">Table 2</a>
+shows that both variants have high agreement with the published answer
+frequencies and temperature means. Their answer distributions have the
+same TV distance from the reported results and their average temperature
+errors are very low. Only a slight increase in the overall discrepancy
+in temperature scores is observed for the 64-bit version.
 
 The main difference between the two is evident in search effort
-(measured in codelets executed). In this experiment, quantization is
-implemented by a program patch that adds a rounding step whenever any
-floating point number is assigned to an object’s attribute (e.g. the
-temperature, slipnode activations, and workspace structure strength
-values). It also rounds NumPy state, probability calculations,
-temperature-adjusted values, and weighted-selection weights. There can
-therefore be no advantage to quantization in terms of memory usage (the
-same underlying data type is used) or to wall-clock run-time per codelet
-(the rounding steps add extra operations). Using two-decimal-place
-quantization more than halves the mean relative error against the
-published codelet counts and reduces the maximum relative error from
-41.8% to 14%. This brings mean run lengths more in line with those
-reported for the original implementation. The aggregate snag rate is
-nearly unchanged: six of the ten baseline problems in which snags were
-observed have lower mean counts under quantization, while four have
-higher counts.
+(measured in codelets executed). The quantization patch is implemented
+with a rounding step whenever any floating point number is assigned to
+an object’s attribute (e.g. the temperature, slipnode activations, and
+workspace structure strength values). It also rounds NumPy state,
+probability calculations, temperature-adjusted values, and
+weighted-selection weights. There can therefore be no advantage to
+quantization in terms of memory usage (the same underlying data type is
+used) or to wall-clock run-time per codelet (the rounding steps add
+extra operations). But removing the two decimal place quantization patch
+more than doubles the mean relative error against the published codelet
+counts and increases the maximum relative error from 14.4% to 41.8%.
+Using higher precision for temperature, activations, strength values,
+and other numbers therefore has little effect on answers and
+temperatures but substantially increases the effort required to find
+answers. The aggregate snag rate is nearly unchanged. Each program
+version observes at least one snag in a set of 9 different problems, the
+union of which contains 10 unique problems. Across these, six have lower
+mean snag counts with the quantization patch, while four have higher
+counts. The increase in codelet counts is therefore not explained by an
+increase in snags.
 
 Rounding values in the program introduces slight changes at which values
 cross certain thresholds. Many of these values are used to calculate
 codelet urgencies which determine the urgency bin that each codelet is
-placed in. Successive rounding up and down may have increased separation
-between beneficial and harmful structures, slipnodes, and codelets and
-reduced time spent exploring pathways that do not lead to a solution.
-
-## Comparison of coderack removal methods
-
-| Measure | Fixed weighted removal | Faithful original removal |
-|:---|---:|---:|
-| Mean answer TV distance | 0.022 | 0.025 |
-| Max answer TV distance | 0.058 | 0.086 |
-| Mean runs with reproduction-only answers | 1.414 | 1.448 |
-| Temperature unweighted mean absolute error | 0.027 | 0.027 |
-| Temperature weighted mean absolute error | 0.005 | 0.006 |
-| Temperature max absolute error | 0.259 | 0.304 |
-| Temperature RMS z | 1.583 | 1.463 |
-| Temperature max \|z\| | 12.180 | 7.135 |
-| Codelets-run mean relative error | 0.071 | 0.080 |
-| Codelets-run max relative error | 0.418 | 0.414 |
-| Codelets-run RMS z | 3.857 | 4.166 |
-| Mean snag count on snaggable problems | 3.086 | 3.097 |
-| Max snag count | 72 | 91 |
-
-One change to the program introduced in the re-implementation is the
-method for removing codelets from the coderack. In Copycat, the coderack
-cannot contain more than 100 codelets, so when codelets are added that
-would breach that maximum, older codelets need to be removed
-probabilistically, weighted by their age and urgency. A slight bug in
-the original implementation removes codelets without removing their
-corresponding removal probability weight and codelets therefore lose
-alignment with their probability of being removed.
-
-As shown by **?@tbl-coderack-removal-comparison**, the fixed and
-faithful-original variants have similar levels of agreement with the
-published answer frequencies, temperature means, and mean run lengths.
-This comparison is relative to the historical summaries and does not
-directly estimate a paired effect of the bug fix.
+placed in. Successive rounding up and down might be increasing the
+separation between beneficial and harmful structures, slipnodes, and
+codelets and therefore reducing time spent exploring pathways that do
+not lead to a solution.
 
 # Conclusion
 
 This paper introduces a Python re-implementation of the analogy-making
-model Copycat. On the fixed 29-problem benchmark, the Python
-re-implementation closely reproduces the published answer frequencies
-and generally reproduces the reported conditional temperature means.
-Agreement in mean run length is weaker, but two-decimal quantization
-increases alignment in this dimension. The re-implementation has allowed
-for further analysis of how the model encounters and handles *snags*,
-and of the relationship between numeric quantization and search effort.
-This paper also describes a minor bug fix.
+model Copycat. On the 29-problem benchmark, the Python re-implementation
+closely reproduces the published answer frequencies and generally
+reproduces the reported conditional temperature means and mean run
+lengths. This replication study has allowed for further analysis of how
+Copycat encounters and handles *snags*, and of the relationship between
+numeric quantization and search effort.
 
 ## Limitations
 
-This paper has generally avoided discussion of statistical significance.
-With 1,000 runs per problem, even small discrepancies may be estimated
-precisely. Evaluation therefore assesses reproduction primarily through
-effect sizes, rather than treating a non-significant difference as
-evidence of equivalence.
+The statistical comparisons show close behavioural agreement on the
+29-problem benchmark, but do not establish that the two implementations
+are logically equivalent. The original study does not report its random
+seeds, so the comparison concerns distributions and summary statistics
+rather than matching individual runs.
+
+The published answer frequencies permit a direct comparison of empirical
+answer distributions. However, the original raw run-level temperature
+and codelet count data are unavailable, so those comparisons are
+restricted to the reported means and standard errors. Rounding of the
+published statistics also limits the precision of the comparisons,
+particularly for infrequent answers.
 
 ## Future Work
 
-This Copycat re-implementation is situated within a broader program of
-research and software engineering that aims to build a more generalized
-library - Cattykit - for use in the development of FARG-style models of
-Artificial Intelligence which could in future be used as part of
-experimental neuro-symbolic architectures. The most likely next steps in
-this program will be: a reproduction study of Metacat, an architecture
-which extends Copycat with so-called *self-watching* capabilities; and
-the abstraction of common components from Copycat and Metacat into a
-shared library. Concurrent with the development of the Cattykit library,
-will be the development of Cattycam, a tool for observing the inner
-workings of Cattykit models.
+This Copycat replication study is situated in a broader program of
+research aimed towards a more generalized library - Cattykit - for use
+in the development of FARG-style models of artificial intelligence which
+could in future be used as part of experimental neuro-symbolic
+architectures described by Wright (Wright 2026). The most likely next
+steps in this program will be: a replication study of Metacat, an
+architecture which extends Copycat with so-called *self-watching*
+capabilities; and the abstraction of common components from Copycat and
+Metacat into a shared library. Concurrent with the development of the
+Cattykit library, will be the development of Cattycam, a tool for
+observing the inner workings of Cattykit models.
 
 # References
 
@@ -750,6 +699,12 @@ Kolonin, and Michael Bennett. Springer Nature Switzerland.
     and
     <https://github.com/georgeawright/cattykit/tree/copycat-reproduction-v0.1.0/datasets/copycat-reproduction>.
 
-[^10]: <https://github.com/georgeawright/cattykit>
+[^10]: A full comparison of behaviour with the fixed vs faithful
+    coderack removal method can be found here:
+    <https://github.com/georgeawright/cattykit/blob/main/papers/copycat-reproduction/tables/coderack-removal-method-comparison.md>.
 
-[^11]: <https://github.com/georgeawright/cattykit/tree/main/models/copycat>
+[^11]: For problem *abcm -\> abcn ==\> rijk*, the re-implementation’s
+    most frequent answer, *rijl* (frequency=420) is the second most
+    frequent answer for the original (frequency=391). The original’s
+    most frequent answer, *sijk* (frequency=398) is the second most
+    frequent answer for the re-implementation (frequency=418).
