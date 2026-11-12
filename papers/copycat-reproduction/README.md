@@ -13,19 +13,19 @@ cognitive science and artificial intelligence, but further study of it
 is constrained by the difficulty of running its original Lisp
 implementation on contemporary computers. This paper presents a
 replication study of Mitchell’s \[@Mitchell1993\] published experiments
-on Copycat involving 1,000 runs on each of a set of 29 analogy problems,
-using a Python re-implementation of the model. The re-implementation’s
-overall answer distributions, mean final temperature scores per answer,
-and mean run length per problem are close to the originally reported
-values (the mean empirical overlap in answer distributions is 97.9%;
-mean absolute error in temperature scores weighted by answer frequency
-is 0.005; and mean relative error in codelets run is 0.033). This
-re-implementation permits further analysis of the model including: a
-statistical analysis of the effects of increasing the precision of the
-temperature score and other internal numerical values; and an analysis
-of the handling of so-called snags. The re-implementation also provides
-a basis for further study and extension of Copycat and related
-architectures.
+on Copycat involving 1,000 runs on each of a set of 29 analogy problems.
+The study uses a Python re-implementation of Copycat. The
+re-implementation’s overall answer distributions, mean final temperature
+scores per answer, and mean run length per problem are close to the
+originally reported values (the mean empirical overlap in answer
+distributions is 97.9%; mean absolute error in temperature scores
+weighted by answer frequency is 0.005; and mean relative error in
+codelets run is 0.033). An accurate re-implementation permits further
+analysis of the model including: a statistical analysis of the effects
+of increasing the precision of the temperature score and other internal
+numerical values; and an analysis of the handling of so-called snags.
+The re-implementation also provides a basis for further study and
+extension of Copycat and related architectures.
 
 ## Cite this paper
 
