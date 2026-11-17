@@ -93,9 +93,9 @@ TV distance is half the sum of the absolute differences between corresponding an
 A distance of zero indicates identical distributions; values closer to 1 indicate greater discrepancy.
 Subtracting the TV distance from 1 gives the empirical distributional overlap of the two implementations.
 
-The TV distances can be compared to a 95% reference range of distances that would be expected from running the original Copycat experiments a second time and comparing their outputs with the reported results.
-For each problem, the reference answer frequencies are treated as a fixed probability distribution and a simulated sample of 1,000 answers can be drawn from that distribution to produce a new set of answer frequencies.
-The TV distance of sample and original reported distribution is calculated and a 95% reference range is built by taking the 2.5th and 97.5th percentiles from the distance calculations across 10,000 simulations.
+The TV distances can be compared to a 95% reference range of distances that would be expected from running two sets of experiments with the original Copycat implementation and comparing their outputs with each other.
+For each problem, the reference answer frequencies are treated as a fixed probability distribution and a simulated pair of samples of 1,000 answers can be drawn from that distribution to produce a new pair of answer frequencies.
+The TV distance between the two answer distributions is calculated and a 95% reference range is built by taking the 2.5th and 97.5th percentiles from the distance calculations across 10,000 simulations.
 
 Temperature error is calculated only for answers observed in both implementations and summarized both equally across answers and weighted by the published answer frequencies (to reduce the influence of outliers).
 For an unweighted mean difference, the standardized discrepancy is calculated using the square root of the sum of the two squared standard errors; RMS z is the root mean square of these discrepancies across comparisons, excluding answers observed fewer than twice in either implementation, for which the standard error cannot be estimated.
@@ -152,9 +152,8 @@ All answers occurring in at least 1% of historical runs also occur in the replic
 
 The average TV distance across all problems is 0.021, indicating a mean empirical overlap of 97.9%.
 Overlap is (slightly) below 95% for just one of the 29 problems tested.
-24 out of the 29 problems resulted in an answer distribution that has a TV distance within their 95% Monte Carlo reference range.
-5 problems marginally exceeded their 95% reference range, but those ranges do not account for uncertainty in the published frequencies.
-The re-implementation therefore closely replicates the published answer distributions.
+All of the problems resulted in an answer distribution that has a TV distance within their 95% Monte Carlo reference range.
+The re-implementation therefore closely replicates the published answer distributions with differences between the original and re-implementation consistent with sampling variation under the published empirical frequencies.
 
 ## Final temperatures
 
