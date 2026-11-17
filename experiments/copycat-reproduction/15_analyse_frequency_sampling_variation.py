@@ -1,9 +1,9 @@
 """Calibrate baseline answer TV distances against multinomial variation.
 
 For each source problem, the published answer frequencies define a plug-in
-multinomial distribution. The analysis simulates one reproduction-sized sample
-and compares it with the fixed published frequency vector, matching the
-published-versus-reproduction comparison. It records the resulting
+multinomial distribution. The analysis simulates two independent samples of
+the published run count and compares their answer frequencies, matching the
+two-sample published-versus-reproduction comparison. It records the resulting
 total-variation-distance reference distribution.
 """
 
@@ -84,9 +84,10 @@ def _simulated_tv_distances(
     resamples: int,
     generator: np.random.Generator,
 ) -> np.ndarray:
-    """Simulate TV distances from one sample to fixed published frequencies."""
-    sample = generator.multinomial(sample_size, probabilities, size=resamples)
-    return np.abs(sample / sample_size - probabilities).sum(axis=1) / 2
+    """Simulate TV distances between independent pairs of samples."""
+    first = generator.multinomial(sample_size, probabilities, size=resamples)
+    second = generator.multinomial(sample_size, probabilities, size=resamples)
+    return np.abs(first / sample_size - second / sample_size).sum(axis=1) / 2
 
 
 def _comparison_distances(path: Path) -> pd.DataFrame:
