@@ -7,7 +7,6 @@ import json
 from pathlib import Path
 
 import pandas as pd
-from copycat_reproduction.experiment_helpers import reproduction_from_raw_results
 from copycat_reproduction.paths import (
     GOLD_PATH,
     QUANTIZATION_DATASETS,
@@ -30,18 +29,20 @@ def main(gold_path: Path = GOLD_PATH) -> None:
         raise FileNotFoundError(f"Missing original result data: {gold_path}")
     TABLES.mkdir(parents=True, exist_ok=True)
     original = json.loads(gold_path.read_text(encoding="utf-8"))
-    raw_paths = (
+    result_paths = (
         (
             "two_decimal_quantization",
             REPRODUCTION_DATASETS / "reproduction_raw_results.csv",
+            REPRODUCTION_DATASETS / "reproduction_copycat_results.json",
         ),
         (
             "full_precision",
             QUANTIZATION_DATASETS / "unquantized_raw_results.csv",
+            QUANTIZATION_DATASETS / "unquantized_copycat_results.json",
         ),
     )
     runs_by_method = {}
-    for name, raw_path in raw_paths:
+    for name, raw_path, _ in result_paths:
         if not raw_path.is_file():
             raise FileNotFoundError(f"Required raw results are missing: {raw_path}")
         runs_by_method[name] = pd.read_csv(raw_path)
@@ -51,8 +52,11 @@ def main(gold_path: Path = GOLD_PATH) -> None:
         for problem in runs.loc[runs["snag_count"] > 0, "problem"]
     }
     summary_rows = []
-    for name, raw_runs in runs_by_method.items():
-        reproduction = reproduction_from_raw_results(raw_runs)
+    for name, _, summary_path in result_paths:
+        if not summary_path.is_file():
+            raise FileNotFoundError(f"Required summary results are missing: {summary_path}")
+        raw_runs = runs_by_method[name]
+        reproduction = json.loads(summary_path.read_text(encoding="utf-8"))
         comparison = comparison_table(reproduction, original)
         comparison.to_csv(
             QUANTIZATION_DATASETS / f"quantization_{name}_comparison.csv",

@@ -1,4 +1,4 @@
-"""Compare baseline and alternative coderack-removal results from raw CSVs."""
+"""Compare baseline and alternative coderack-removal results."""
 
 from __future__ import annotations
 
@@ -7,7 +7,6 @@ import json
 from pathlib import Path
 
 import pandas as pd
-from copycat_reproduction.experiment_helpers import reproduction_from_raw_results
 from copycat_reproduction.paths import (
     CODERACK_REMOVAL_DATASETS,
     GOLD_PATH,
@@ -36,23 +35,28 @@ def main(gold_path: Path = GOLD_PATH) -> None:
     snaggable_problems = set(
         baseline_runs.loc[baseline_runs["snag_count"] > 0, "problem"]
     )
-    raw_paths = (
+    result_paths = (
         (
             "fixed_weighted_removal",
             REPRODUCTION_DATASETS / "reproduction_raw_results.csv",
+            REPRODUCTION_DATASETS / "reproduction_copycat_results.json",
         ),
         (
             "faithful_original_removal",
             CODERACK_REMOVAL_DATASETS
             / "coderack_removal_faithful_original_removal_raw_results.csv",
+            CODERACK_REMOVAL_DATASETS
+            / "coderack_removal_faithful_original_removal_results.json",
         ),
     )
     summary_rows = []
-    for name, raw_path in raw_paths:
+    for name, raw_path, summary_path in result_paths:
         if not raw_path.is_file():
             raise FileNotFoundError(f"Required raw results are missing: {raw_path}")
         raw_runs = pd.read_csv(raw_path)
-        reproduction = reproduction_from_raw_results(raw_runs)
+        if not summary_path.is_file():
+            raise FileNotFoundError(f"Required summary results are missing: {summary_path}")
+        reproduction = json.loads(summary_path.read_text(encoding="utf-8"))
         comparison = comparison_table(reproduction, original)
         comparison.to_csv(
             CODERACK_REMOVAL_DATASETS / f"coderack_removal_{name}_comparison.csv",
