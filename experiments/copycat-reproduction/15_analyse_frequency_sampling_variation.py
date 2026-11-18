@@ -126,6 +126,7 @@ def _reference_summary(
                 "reference_tv_distance_lower_95": float(np.quantile(distances, 0.025)),
                 "reference_tv_distance_upper_95": float(np.quantile(distances, 0.975)),
                 "seed": seed,
+                # an array of distances (length == resamples)
                 "_reference_distances": distances,
             }
         )
@@ -153,12 +154,14 @@ def _study_summary(
         columns={"solution_total_variation_distance": "observed_tv_distance"}
     )
     reference_distances = reference["_reference_distances"].tolist()
+    # Measure the proportion of simulated distances at or below the observed distance.
     observed["observed_tv_distance_percentile"] = [
         float((distances <= distance).mean())
         for distances, distance in zip(
             reference_distances, observed["observed_tv_distance"], strict=True
         )
     ]
+    # Measure the proportion of simulated distances at or above the observed distance.
     observed["reference_distances_at_least_observed"] = [
         float((distances >= distance).mean())
         for distances, distance in zip(
