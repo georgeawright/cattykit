@@ -41,7 +41,6 @@ def main(iterations: int = 1000) -> None:
             result_case(
                 problem,
                 result.summary.loc[result.summary["problem"] == problem],
-                case["source"],
                 case["id"],
             )
         )
@@ -49,7 +48,7 @@ def main(iterations: int = 1000) -> None:
         json.dumps(
             {
                 "schema_version": template["schema_version"],
-                "source_work": template["source_work"],
+                "data_source": "Cattykit Copycat experiment runs",
                 "basic_problems": template["basic_problems"],
                 "results": reproduced_cases,
             },

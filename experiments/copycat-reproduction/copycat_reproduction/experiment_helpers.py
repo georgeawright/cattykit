@@ -12,14 +12,13 @@ from .paths import TEMPLATE_PATH
 
 
 def result_case(
-    problem: str, summary: pd.DataFrame, source: dict[str, Any], problem_id: str
+    problem: str, summary: pd.DataFrame, problem_id: str
 ) -> dict[str, Any]:
     """Convert a Cattykit run summary into the Copycat result-data schema."""
     solutions = summary[summary["solution"] != "Total"]
     total = summary[summary["solution"] == "Total"].iloc[0]
     return {
         "problem": problem,
-        "source": source,
         "solutions": {
             str(row.solution): {
                 "frequency": int(row.frequency),
@@ -68,13 +67,12 @@ def reproduction_from_raw_results(raw_results: pd.DataFrame) -> dict[str, Any]:
             result_case(
                 case["problem"],
                 summarize_runs(runs, case["problem"]),
-                case["source"],
                 case["id"],
             )
         )
     return {
         "schema_version": template["schema_version"],
-        "source_work": template["source_work"],
+        "data_source": "Cattykit Copycat experiment runs",
         "basic_problems": template["basic_problems"],
         "results": reproduced_cases,
     }

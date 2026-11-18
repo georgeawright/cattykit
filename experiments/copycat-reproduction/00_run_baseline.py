@@ -18,12 +18,13 @@ RESULTS_PATH = REPRODUCTION_DATASETS / "reproduction_copycat_results.json"
 
 
 def main(iterations: int = 1000) -> None:
-    """Run every source problem once per seed; do not perform analysis or plotting."""
+    """Run every source problem once per seed and generate results csv."""
     if iterations < 1:
         raise ValueError("iterations must be at least 1")
     REPRODUCTION_DATASETS.mkdir(parents=True, exist_ok=True)
     template = json.loads(TEMPLATE_PATH.read_text(encoding="utf-8"))
     cases_by_problem = {case["problem"]: case for case in template["results"]}
+    # Run each problem with "quantized" patch of Copycat and collect summaries.
     with quantized_copycat(2):
         result = run_experiment(
             "copycat",
@@ -36,6 +37,7 @@ def main(iterations: int = 1000) -> None:
                 f"[{number}/{total}] {problem}"
             ),
         )
+    # Save raw runs and build the reproduced results for each problem.
     result.save_raw_runs_csv(RAW_RESULTS_PATH)
     reproduced_cases = []
     for problem, case in cases_by_problem.items():
@@ -43,15 +45,15 @@ def main(iterations: int = 1000) -> None:
             result_case(
                 problem,
                 result.summary.loc[result.summary["problem"] == problem],
-                case["source"],
                 case["id"],
             )
         )
+    # Write the reproduced results with their experiment provenance.
     RESULTS_PATH.write_text(
         json.dumps(
             {
                 "schema_version": template["schema_version"],
-                "source_work": template["source_work"],
+                "data_source": "Cattykit Copycat experiment runs",
                 "basic_problems": template["basic_problems"],
                 "results": reproduced_cases,
             },
@@ -62,6 +64,7 @@ def main(iterations: int = 1000) -> None:
     )
 
 
+# Parse the command-line run count and start the experiment.
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--iterations", type=int, default=1000)

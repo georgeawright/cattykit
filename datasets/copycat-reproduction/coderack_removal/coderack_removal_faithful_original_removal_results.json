@@ -1,28 +1,6 @@
 {
   "schema_version": 1,
-  "source_work": {
-    "citation": "Mitchell, M. (1993). Analogy-Making as Perception: A Computer Model. MIT Press. doi:10.5555/152203",
-    "source_kind": "Numerical labels manually transcribed from bar charts",
-    "transformations": {
-      "temperature": {
-        "source_unit": "integer percent, 0\u2013100",
-        "stored_unit": "decimal proportion, 0\u20131",
-        "formula": "stored_value = source_value / 100",
-        "reported_precision": {
-          "mean": "whole percentage point (stored rounding half-width: 0.005)",
-          "standard_error": "0.1 percentage point (stored rounding half-width: 0.0005; lower bound truncated at zero)"
-        }
-      },
-      "codelets": {
-        "source_unit": "codelets run",
-        "stored_unit": "codelets run",
-        "reported_precision": {
-          "mean": "whole codelet (rounding half-width: 0.5)",
-          "standard_error": "0.1 codelet (rounding half-width: 0.05; lower bound truncated at zero)"
-        }
-      }
-    }
-  },
+  "data_source": "Cattykit Copycat experiment runs",
   "basic_problems": [
     "abc -> abd ==> iijjkk -> ?",
     "abc -> abd ==> ijk -> ?",
@@ -33,9 +11,6 @@
   "results": [
     {
       "problem": "abc -> abd ==> ijk -> ?",
-      "source": {
-        "page": 76
-      },
       "solutions": {
         "ijl": {
           "frequency": 974,
@@ -66,9 +41,6 @@
     },
     {
       "problem": "abc -> abd ==> iijjkk -> ?",
-      "source": {
-        "page": 79
-      },
       "solutions": {
         "iijjll": {
           "frequency": 776,
@@ -114,9 +86,6 @@
     },
     {
       "problem": "abc -> abd ==> kji -> ?",
-      "source": {
-        "page": 80
-      },
       "solutions": {
         "kjh": {
           "frequency": 548,
@@ -162,9 +131,6 @@
     },
     {
       "problem": "abc -> abd ==> mrrjjj -> ?",
-      "source": {
-        "page": 81
-      },
       "solutions": {
         "mrrkkk": {
           "frequency": 733,
@@ -215,9 +181,6 @@
     },
     {
       "problem": "abc -> abd ==> xyz -> ?",
-      "source": {
-        "page": 82
-      },
       "solutions": {
         "xyd": {
           "frequency": 834,
@@ -263,9 +226,6 @@
     },
     {
       "problem": "abc -> abd ==> ijklmnop -> ?",
-      "source": {
-        "page": 142
-      },
       "solutions": {
         "ijklmnoq": {
           "frequency": 920,
@@ -336,9 +296,6 @@
     },
     {
       "problem": "abc -> abd ==> xlg -> ?",
-      "source": {
-        "page": 144
-      },
       "solutions": {
         "xlh": {
           "frequency": 986,
@@ -359,9 +316,6 @@
     },
     {
       "problem": "abc -> abd ==> xcg -> ?",
-      "source": {
-        "page": 145
-      },
       "solutions": {
         "xch": {
           "frequency": 970,
@@ -392,9 +346,6 @@
     },
     {
       "problem": "abc -> abd ==> abcd -> ?",
-      "source": {
-        "page": 146
-      },
       "solutions": {
         "abce": {
           "frequency": 919,
@@ -430,9 +381,6 @@
     },
     {
       "problem": "abc -> abd ==> cde -> ?",
-      "source": {
-        "page": 147
-      },
       "solutions": {
         "cdf": {
           "frequency": 811,
@@ -463,9 +411,6 @@
     },
     {
       "problem": "abc -> abd ==> cab -> ?",
-      "source": {
-        "page": 148
-      },
       "solutions": {
         "dab": {
           "frequency": 446,
@@ -506,9 +451,6 @@
     },
     {
       "problem": "abc -> abd ==> cmg -> ?",
-      "source": {
-        "page": 149
-      },
       "solutions": {
         "cmh": {
           "frequency": 700,
@@ -534,9 +476,6 @@
     },
     {
       "problem": "abc -> qbc ==> ijk -> ?",
-      "source": {
-        "page": 150
-      },
       "solutions": {
         "qjk": {
           "frequency": 996,
@@ -562,9 +501,6 @@
     },
     {
       "problem": "aabc -> aabd ==> ijkk -> ?",
-      "source": {
-        "page": 151
-      },
       "solutions": {
         "ijll": {
           "frequency": 620,
@@ -615,9 +551,6 @@
     },
     {
       "problem": "abcm -> abcn ==> rijk -> ?",
-      "source": {
-        "page": 152
-      },
       "solutions": {
         "rijl": {
           "frequency": 439,
@@ -683,9 +616,6 @@
     },
     {
       "problem": "abc -> abd ==> hhwwqq -> ?",
-      "source": {
-        "page": 154
-      },
       "solutions": {
         "hhwwrr": {
           "frequency": 702,
@@ -721,9 +651,6 @@
     },
     {
       "problem": "abc -> abd ==> lmfgop -> ?",
-      "source": {
-        "page": 156
-      },
       "solutions": {
         "lmfgoq": {
           "frequency": 556,
@@ -764,9 +691,6 @@
     },
     {
       "problem": "abc -> abd ==> lmnfghopq -> ?",
-      "source": {
-        "page": 157
-      },
       "solutions": {
         "lmnfghpqr": {
           "frequency": 493,
@@ -812,9 +736,6 @@
     },
     {
       "problem": "aabbcc -> aabbcd ==> iijjkk -> ?",
-      "source": {
-        "page": 158
-      },
       "solutions": {
         "iijjkl": {
           "frequency": 871,
@@ -870,9 +791,6 @@
     },
     {
       "problem": "abc -> abd ==> edc -> ?",
-      "source": {
-        "page": 159
-      },
       "solutions": {
         "edb": {
           "frequency": 668,
@@ -903,9 +821,6 @@
     },
     {
       "problem": "abc -> abd ==> cba -> ?",
-      "source": {
-        "page": 159
-      },
       "solutions": {
         "dba": {
           "frequency": 887,
@@ -936,9 +851,6 @@
     },
     {
       "problem": "abc -> abd ==> mrr -> ?",
-      "source": {
-        "page": 161
-      },
       "solutions": {
         "mss": {
           "frequency": 669,
@@ -979,9 +891,6 @@
     },
     {
       "problem": "abc -> abd ==> mmrrrjjjj -> ?",
-      "source": {
-        "page": 162
-      },
       "solutions": {
         "mmrrrkkkk": {
           "frequency": 719,
@@ -1032,9 +941,6 @@
     },
     {
       "problem": "abc -> abd ==> rssttt -> ?",
-      "source": {
-        "page": 163
-      },
       "solutions": {
         "rssuuu": {
           "frequency": 720,
@@ -1095,9 +1001,6 @@
     },
     {
       "problem": "abc -> abd ==> xpqdef -> ?",
-      "source": {
-        "page": 164
-      },
       "solutions": {
         "xpqefg": {
           "frequency": 521,
@@ -1153,9 +1056,6 @@
     },
     {
       "problem": "abc -> qbc ==> xyz -> ?",
-      "source": {
-        "page": 165
-      },
       "solutions": {
         "qyz": {
           "frequency": 997,
@@ -1186,9 +1086,6 @@
     },
     {
       "problem": "rst -> rsu ==> xyz -> ?",
-      "source": {
-        "page": 166
-      },
       "solutions": {
         "xyu": {
           "frequency": 982,
@@ -1224,9 +1121,6 @@
     },
     {
       "problem": "abc -> abd ==> glz -> ?",
-      "source": {
-        "page": 167
-      },
       "solutions": {
         "hlz": {
           "frequency": 593,
@@ -1257,9 +1151,6 @@
     },
     {
       "problem": "abc -> abd ==> cmz -> ?",
-      "source": {
-        "page": 168
-      },
       "solutions": {
         "dmz": {
           "frequency": 910,
