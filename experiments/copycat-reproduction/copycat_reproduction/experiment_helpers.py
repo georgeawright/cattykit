@@ -49,7 +49,7 @@ def reproduction_from_raw_results(raw_results: pd.DataFrame) -> dict[str, Any]:
         missing = ", ".join(sorted(missing_columns))
         raise ValueError(f"Raw results CSV is missing required columns: {missing}.")
     template = json.loads(TEMPLATE_PATH.read_text(encoding="utf-8"))
-    reproduced_cases = []
+    observed_cases = []
     for case in template["results"]:
         problem_results = raw_results.loc[raw_results["problem"] == case["problem"]]
         if problem_results.empty:
@@ -63,7 +63,7 @@ def reproduction_from_raw_results(raw_results: pd.DataFrame) -> dict[str, Any]:
             }
             for row in problem_results.itertuples(index=False)
         ]
-        reproduced_cases.append(
+        observed_cases.append(
             result_case(
                 case["problem"],
                 summarize_runs(runs, case["problem"]),
@@ -74,5 +74,5 @@ def reproduction_from_raw_results(raw_results: pd.DataFrame) -> dict[str, Any]:
         "schema_version": template["schema_version"],
         "data_source": "Cattykit Copycat experiment runs",
         "basic_problems": template["basic_problems"],
-        "results": reproduced_cases,
+        "results": observed_cases,
     }

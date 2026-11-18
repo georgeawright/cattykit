@@ -37,25 +37,24 @@ def main(iterations: int = 1000) -> None:
                 f"[{number}/{total}] {problem}"
             ),
         )
-    # Save raw runs and build the reproduced results for each problem.
     result.save_raw_runs_csv(RAW_RESULTS_PATH)
-    reproduced_cases = []
+    # Compile and save observed results.
+    observed_cases = []
     for problem, case in cases_by_problem.items():
-        reproduced_cases.append(
+        observed_cases.append(
             result_case(
                 problem,
                 result.summary.loc[result.summary["problem"] == problem],
                 case["id"],
             )
         )
-    # Write the reproduced results with their experiment provenance.
     RESULTS_PATH.write_text(
         json.dumps(
             {
                 "schema_version": template["schema_version"],
                 "data_source": "Cattykit Copycat experiment runs",
                 "basic_problems": template["basic_problems"],
-                "results": reproduced_cases,
+                "results": observed_cases,
             },
             indent=2,
         )
@@ -64,7 +63,6 @@ def main(iterations: int = 1000) -> None:
     )
 
 
-# Parse the command-line run count and start the experiment.
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--iterations", type=int, default=1000)

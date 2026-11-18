@@ -35,9 +35,9 @@ def main(iterations: int = 1000) -> None:
         ),
     )
     result.save_raw_runs_csv(RAW_RESULTS_PATH)
-    reproduced_cases = []
+    observed_cases = []
     for problem, case in cases_by_problem.items():
-        reproduced_cases.append(
+        observed_cases.append(
             result_case(
                 problem,
                 result.summary.loc[result.summary["problem"] == problem],
@@ -50,7 +50,7 @@ def main(iterations: int = 1000) -> None:
                 "schema_version": template["schema_version"],
                 "data_source": "Cattykit Copycat experiment runs",
                 "basic_problems": template["basic_problems"],
-                "results": reproduced_cases,
+                "results": observed_cases,
             },
             indent=2,
         )
