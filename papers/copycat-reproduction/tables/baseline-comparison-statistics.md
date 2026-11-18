@@ -2,7 +2,7 @@
 |:-------------------------------------------|--------:|
 | Mean answer TV distance                    |   0.021 |
 | Max answer TV distance                     |   0.055 |
-| Mean runs with reproduction-only answers   |   1.207 |
+| Mean runs with observed-only answers       |   1.207 |
 | Temperature unweighted mean absolute error |   0.037 |
 | Temperature weighted mean absolute error   |   0.005 |
 | Temperature max absolute error             |   0.460 |

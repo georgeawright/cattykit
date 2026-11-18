@@ -31,12 +31,6 @@ The reproduction script writes complete per-problem outputs here:
   temperature, and codelets-run count.
 - `reproduction_comparison.csv` contains all 29 per-problem comparison
   statistics.
-- `reproduction_comparison_error_summary.csv` summarizes the comparison-error
-  distributions.
-- `temperature_analysis_coverage.csv` reports, for every problem and in total,
-  answer categories and runs with temperature data comparable across both
-  implementations, plus original-only and reproduction-only categories.
-
 For example:
 
 ```sh

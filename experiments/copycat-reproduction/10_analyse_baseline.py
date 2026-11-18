@@ -10,18 +10,10 @@ from copycat_reproduction.paths import GOLD_PATH, REPRODUCTION_DATASETS, TABLES
 from copycat_reproduction.table_helpers import (
     comparison_markdown,
     comparison_table,
-    error_summary,
-    temperature_coverage_summary,
 )
 
 RESULTS_PATH = REPRODUCTION_DATASETS / "reproduction_copycat_results.json"
 COMPARISON_CSV_PATH = REPRODUCTION_DATASETS / "reproduction_comparison.csv"
-ERROR_SUMMARY_CSV_PATH = (
-    REPRODUCTION_DATASETS / "reproduction_comparison_error_summary.csv"
-)
-TEMPERATURE_COVERAGE_CSV_PATH = (
-    REPRODUCTION_DATASETS / "temperature_analysis_coverage.csv"
-)
 MARKDOWN_PATH = TABLES / "baseline-comparison-statistics.md"
 
 
@@ -32,17 +24,12 @@ def main(gold_path: Path = GOLD_PATH) -> None:
     if not gold_path.is_file():
         raise FileNotFoundError(f"Missing original result data: {gold_path}")
     TABLES.mkdir(parents=True, exist_ok=True)
-    reproduction = json.loads(RESULTS_PATH.read_text(encoding="utf-8"))
+    observed = json.loads(RESULTS_PATH.read_text(encoding="utf-8"))
     original = json.loads(gold_path.read_text(encoding="utf-8"))
-    comparison = comparison_table(reproduction, original)
-    error = error_summary(comparison)
+    comparison = comparison_table(observed, original)
     comparison.to_csv(COMPARISON_CSV_PATH, index=False)
-    error.to_csv(ERROR_SUMMARY_CSV_PATH, index=False)
-    temperature_coverage_summary(comparison).to_csv(
-        TEMPERATURE_COVERAGE_CSV_PATH, index=False
-    )
     MARKDOWN_PATH.write_text(
-        comparison_markdown(comparison, error),
+        comparison_markdown(comparison),
         encoding="utf-8",
     )
 
