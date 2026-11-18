@@ -1,9 +1,9 @@
 """Calibrate baseline answer TV distances against multinomial variation.
 
 For each source problem, the published answer frequencies define a plug-in
-multinomial distribution. The analysis simulates one reproduction-sized sample
-and compares it with the fixed published frequency vector, matching the
-published-versus-reproduction comparison. It records the resulting
+multinomial distribution. The analysis simulates two independent samples of
+the published run count and compares their answer frequencies, matching the
+two-sample published-versus-reproduction comparison. It records the resulting
 total-variation-distance reference distribution.
 """
 
@@ -84,9 +84,10 @@ def _simulated_tv_distances(
     resamples: int,
     generator: np.random.Generator,
 ) -> np.ndarray:
-    """Simulate TV distances from one sample to fixed published frequencies."""
-    sample = generator.multinomial(sample_size, probabilities, size=resamples)
-    return np.abs(sample / sample_size - probabilities).sum(axis=1) / 2
+    """Simulate TV distances between independent pairs of samples."""
+    first = generator.multinomial(sample_size, probabilities, size=resamples)
+    second = generator.multinomial(sample_size, probabilities, size=resamples)
+    return np.abs(first / sample_size - second / sample_size).sum(axis=1) / 2
 
 
 def _comparison_distances(path: Path) -> pd.DataFrame:
@@ -125,6 +126,7 @@ def _reference_summary(
                 "reference_tv_distance_lower_95": float(np.quantile(distances, 0.025)),
                 "reference_tv_distance_upper_95": float(np.quantile(distances, 0.975)),
                 "seed": seed,
+                # an array of distances (length == resamples)
                 "_reference_distances": distances,
             }
         )
@@ -152,12 +154,14 @@ def _study_summary(
         columns={"solution_total_variation_distance": "observed_tv_distance"}
     )
     reference_distances = reference["_reference_distances"].tolist()
+    # Measure the proportion of simulated distances at or below the observed distance.
     observed["observed_tv_distance_percentile"] = [
         float((distances <= distance).mean())
         for distances, distance in zip(
             reference_distances, observed["observed_tv_distance"], strict=True
         )
     ]
+    # Measure the proportion of simulated distances at or above the observed distance.
     observed["reference_distances_at_least_observed"] = [
         float((distances >= distance).mean())
         for distances, distance in zip(

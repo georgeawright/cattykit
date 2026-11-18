@@ -81,14 +81,13 @@ def run_method(name: str, method: RemovalMethod, iterations: int) -> None:
         result_case(
             case["problem"],
             result.summary.loc[result.summary["problem"] == case["problem"]],
-            case["source"],
             case["id"],
         )
         for case in template["results"]
     ]
     reproduction: dict[str, Any] = {
         "schema_version": template["schema_version"],
-        "source_work": template["source_work"],
+        "data_source": "Cattykit Copycat experiment runs",
         "basic_problems": template["basic_problems"],
         "results": cases,
     }

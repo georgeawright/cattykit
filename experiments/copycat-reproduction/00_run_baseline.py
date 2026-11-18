@@ -18,12 +18,13 @@ RESULTS_PATH = REPRODUCTION_DATASETS / "reproduction_copycat_results.json"
 
 
 def main(iterations: int = 1000) -> None:
-    """Run every source problem once per seed; do not perform analysis or plotting."""
+    """Run every source problem once per seed and generate results csv."""
     if iterations < 1:
         raise ValueError("iterations must be at least 1")
     REPRODUCTION_DATASETS.mkdir(parents=True, exist_ok=True)
     template = json.loads(TEMPLATE_PATH.read_text(encoding="utf-8"))
     cases_by_problem = {case["problem"]: case for case in template["results"]}
+    # Run each problem with "quantized" patch of Copycat and collect summaries.
     with quantized_copycat(2):
         result = run_experiment(
             "copycat",
@@ -37,13 +38,13 @@ def main(iterations: int = 1000) -> None:
             ),
         )
     result.save_raw_runs_csv(RAW_RESULTS_PATH)
-    reproduced_cases = []
+    # Compile and save observed results.
+    observed_cases = []
     for problem, case in cases_by_problem.items():
-        reproduced_cases.append(
+        observed_cases.append(
             result_case(
                 problem,
                 result.summary.loc[result.summary["problem"] == problem],
-                case["source"],
                 case["id"],
             )
         )
@@ -51,9 +52,9 @@ def main(iterations: int = 1000) -> None:
         json.dumps(
             {
                 "schema_version": template["schema_version"],
-                "source_work": template["source_work"],
+                "data_source": "Cattykit Copycat experiment runs",
                 "basic_problems": template["basic_problems"],
-                "results": reproduced_cases,
+                "results": observed_cases,
             },
             indent=2,
         )
