@@ -3,6 +3,7 @@ from unittest.mock import Mock
 
 import numpy as np
 import pytest
+from cattykit.precision_policies import FullPrecision
 
 from copycat import Slipnet
 from copycat.codelets.scouts.bond_scouts import (
@@ -37,6 +38,7 @@ def test_get_node_activation():
         0.5,
         3,
         Mock(),
+        FullPrecision(),
     )
 
     assert 1.0 == slipnet.get_node_activation("cat")
@@ -201,6 +203,7 @@ def test_activate_node_from_workspace():
         0.5,
         3,
         Mock(),
+        FullPrecision(),
     )
     slipnet.activate_node_from_workspace("cat")
 

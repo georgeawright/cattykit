@@ -13,7 +13,7 @@ class Description(WorkspaceStructure):
     def __init__(
         self, argument_object: "WorkspaceObject", facet: Slipnode, descriptor: Slipnode
     ):
-        super().__init__()
+        super().__init__(argument_object.string.precision_policy)
         self.argument_object = argument_object
         self.facet = facet
         self.descriptor = descriptor

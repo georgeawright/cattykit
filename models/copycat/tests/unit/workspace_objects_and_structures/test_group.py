@@ -1,3 +1,4 @@
+from cattykit.precision_policies import FullPrecision
 from types import SimpleNamespace
 from unittest.mock import Mock
 
@@ -17,7 +18,9 @@ class MockLetter:
 
 
 def test_has_recursive_group_member():
-    string = SimpleNamespace()
+    string = SimpleNamespace(
+        precision_policy=FullPrecision(),
+    )
     predecessor_category = SimpleNamespace()
     succesor_category = SimpleNamespace()
     left_category = SimpleNamespace()
@@ -42,7 +45,16 @@ def test_has_recursive_group_member():
 
 
 def test_has_description():
-    group = Group(None, None, None, [], [], None, None, None)
+    group = Group(
+        SimpleNamespace(precision_policy=FullPrecision()),
+        None,
+        None,
+        [],
+        [],
+        None,
+        None,
+        None,
+    )
     description = SimpleNamespace(
         facet=SimpleNamespace(name="test_facet"),
         descriptor=SimpleNamespace(name="test_descriptor"),
@@ -69,10 +81,11 @@ def test_get_bonds_to_be_flipped_uses_semantic_comparison_in_reverse_direction()
     existing_reverse_bond.get_flipped_version.return_value = Mock()
     proposed_bond.equates_to.return_value = True
     string = SimpleNamespace(
+        precision_policy=FullPrecision(),
         bonds_by_role={
             source: {target: None},
             target: {source: existing_reverse_bond},
-        }
+        },
     )
     group = Group(string, 0, 1, [], [proposed_bond], None, None, None)
 
@@ -144,7 +157,9 @@ def test_is_distinguished_by(
     other_group_descriptors,
     expected,
 ):
-    string = SimpleNamespace()
+    string = SimpleNamespace(
+        precision_policy=FullPrecision(),
+    )
 
     slipnodes = {
         d: SimpleNamespace(name=d)
@@ -193,13 +208,23 @@ def test_calculate_internal_strength(
         degree_of_association=bond_category_degree_of_association
     )
     group_category = Mock()
-    group_category.get_related_node = (
-        lambda x: related_node if x == "bond_category" else None
+    group_category.get_related_node = lambda x: (
+        related_node if x == "bond_category" else None
     )
     letters = [SimpleNamespace() for _ in range(length)]
     for letter in letters:
         letter.letters = [letter]
-    group = Group(None, 0, 1, letters, [], group_category, None, None, bond_facet)
+    group = Group(
+        SimpleNamespace(precision_policy=FullPrecision()),
+        0,
+        1,
+        letters,
+        [],
+        group_category,
+        None,
+        None,
+        bond_facet,
+    )
 
     assert group.calculate_internal_strength() == pytest.approx(expected)
 
@@ -214,7 +239,10 @@ def test_calculate_internal_strength(
 def test_external_strength_is_one_if_spans_whole_string_else_local_support(
     string_length, group_length, spans, expected
 ):
-    string = SimpleNamespace(letters=[SimpleNamespace() for _ in range(string_length)])
+    string = SimpleNamespace(
+        precision_policy=FullPrecision(),
+        letters=[SimpleNamespace() for _ in range(string_length)],
+    )
     letters = [SimpleNamespace() for _ in range(group_length)]
     for letter in letters:
         letter.letters = [letter]
@@ -237,7 +265,7 @@ def test_calculate_external_strength():
     letter_category = SimpleNamespace(name="letter_category")
 
     string_length = 6
-    string = SimpleNamespace(letters=[])
+    string = SimpleNamespace(precision_policy=FullPrecision(), letters=[])
     letter_0 = MockLetter(id="l0", string_position=0, string=string)
     letter_1 = MockLetter(id="l1", string_position=1, string=string)
     letter_2 = MockLetter(id="l2", string_position=2, string=string)
@@ -330,7 +358,9 @@ def test_calculate_external_strength():
 
 
 def test_intra_string_happiness_and_unhappiness():
-    string = SimpleNamespace()
+    string = SimpleNamespace(
+        precision_policy=FullPrecision(),
+    )
 
     letter_1 = MockLetter(id="l1", string_position=0, string=string)
     letter_2 = MockLetter(id="l2", string_position=1, string=string)

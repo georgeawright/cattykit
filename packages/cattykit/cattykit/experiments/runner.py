@@ -37,7 +37,9 @@ class RunningAnswerDisplay:
         for line in lines:
             print(f"\033[2K{line}")
         width = get_terminal_size(fallback=(80, 24)).columns
-        self.lines_printed = sum(max(1, (len(line) + width - 1) // width) for line in lines)
+        self.lines_printed = sum(
+            max(1, (len(line) + width - 1) // width) for line in lines
+        )
 
 
 @dataclass
@@ -63,6 +65,7 @@ def run_experiment(
     record_attributes: list[str] | None = None,
     summary_function: SummaryFunction = summarize_runs,
     progress_callback: ProgressCallback | None = None,
+    model_config: dict[str, Any] | None = None,
 ) -> ExperimentResult:
     """Run every problem once per seed with configurable recordings and summaries."""
     record_attributes = record_attributes or []
@@ -82,7 +85,11 @@ def run_experiment(
             display = RunningAnswerDisplay() if interactive else None
             runs = []
             for seed in range(iterations):
-                model = load_model(model_name, config={"seed": seed}, logger=logger)
+                model = load_model(
+                    model_name,
+                    config={**(model_config or {}), "seed": seed},
+                    logger=logger,
+                )
                 try:
                     answer = model.solve(problem)
                     run: dict[str, Any] = {

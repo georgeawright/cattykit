@@ -25,7 +25,7 @@ class Rule(WorkspaceStructure):
         replaced_facet: Optional[Slipnode] = None,
         relation: Optional[Slipnode] = None,
     ):
-        super().__init__()
+        super().__init__(workspace.precision_policy)
         self.workspace = workspace
         self.source_object_category = source_object_category
         self.source_facet = source_facet

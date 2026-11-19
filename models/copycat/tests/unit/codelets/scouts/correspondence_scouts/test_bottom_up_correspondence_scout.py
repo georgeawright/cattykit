@@ -1,3 +1,4 @@
+from cattykit.precision_policies import FullPrecision
 from types import SimpleNamespace
 from unittest.mock import Mock
 
@@ -48,6 +49,7 @@ def test_run():
             )
 
     class MockWorkspace:
+        precision_policy = FullPrecision()
         def __init__(self, initial_string, target_string):
             self.initial_string = initial_string
             self.target_string = target_string

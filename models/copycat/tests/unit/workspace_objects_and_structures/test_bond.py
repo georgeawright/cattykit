@@ -1,3 +1,4 @@
+from cattykit.precision_policies import FullPrecision
 from types import SimpleNamespace
 
 import pytest
@@ -9,7 +10,11 @@ class MockLetter:
     def __init__(self, left_position, string):
         self.left_position = left_position
         self.right_position = left_position
-        self.string = string
+        self.string = (
+            string
+            if string is not None
+            else SimpleNamespace(precision_policy=FullPrecision())
+        )
 
     def distance_from(self, other):
         return abs(self.left_position - other.left_position)
@@ -18,7 +23,7 @@ class MockLetter:
 class MockGroup:
     def __init__(self, left_position):
         self.left_position = left_position
-        self.string = SimpleNamespace()
+        self.string = SimpleNamespace(precision_policy=FullPrecision())
 
 
 def test_choose_neighbour():
@@ -26,7 +31,7 @@ def test_choose_neighbour():
         def __len__(self):
             return 3
 
-    string = MockString()
+    string = MockString(precision_policy=FullPrecision())
     object_0 = MockLetter(left_position=0, string=string)
     object_1 = MockLetter(left_position=1, string=string)
     object_2 = MockLetter(left_position=2, string=string)
@@ -132,7 +137,7 @@ def test_calculate_external_strength():
     successor_category = SimpleNamespace(name="successor_category")
     letter_category = SimpleNamespace(name="letter_category")
 
-    string = SimpleNamespace()
+    string = SimpleNamespace(precision_policy=FullPrecision())
 
     object_0 = MockLetter(left_position=0, string=string)
     object_1 = MockLetter(left_position=1, string=string)

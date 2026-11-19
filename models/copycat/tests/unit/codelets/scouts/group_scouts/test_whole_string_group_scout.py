@@ -1,3 +1,4 @@
+from cattykit.precision_policies import FullPrecision
 from types import SimpleNamespace
 from unittest.mock import Mock
 
@@ -54,6 +55,7 @@ def test_run():
             )
 
     class MockWorkspaceString:
+        precision_policy = FullPrecision()
         length = 0
         leftmost_object = None
         bonds = []

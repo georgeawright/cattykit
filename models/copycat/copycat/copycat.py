@@ -3,6 +3,7 @@ import random
 from typing import Optional
 
 from cattykit.logging import ModelLogger, NullLogger
+from cattykit.precision_policies import DecimalPlaces, PrecisionPolicy
 
 from .answer_builder import AnswerBuilder
 from .codelets import (
@@ -59,8 +60,25 @@ class Copycat:
         initially_clamped_nodes: list[str],
         initial_slipnode_clamp_time: int,
         logger: ModelLogger,
+        precision_policy: PrecisionPolicy,
         seed: int | None = None,
     ):
+        self.precision_policy = precision_policy
+        components = (
+            slipnet,
+            workspace,
+            workspace.initial_string,
+            workspace.modified_string,
+            workspace.target_string,
+            workspace.answer_string,
+        )
+        if any(
+            component.precision_policy is not self.precision_policy
+            for component in components
+        ):
+            raise ValueError(
+                "Copycat components must share the same precision policy instance"
+            )
         self.slipnet = slipnet
         self.coderack = coderack
         self.workspace = workspace
@@ -88,8 +106,10 @@ class Copycat:
         hyperparameters_file: str,
         logger: ModelLogger | None = None,
         seed: int | None = None,
+        precision_policy: PrecisionPolicy | None = None,
     ):
         logger = logger if logger is not None else NullLogger("copycat")
+        policy = precision_policy if precision_policy is not None else DecimalPlaces(2)
         with open(hyperparameters_file) as f:
             hyperparameters = json.load(f)
         with open(slipnet_json_file) as f:
@@ -104,11 +124,12 @@ class Copycat:
             ],
             initially_clamped_nodes=hyperparameters["initially_clamped_nodes"],
             logger=logger,
+            precision_policy=policy,
         )
         with open(coderack_json_file) as f:
             coderack_json = json.load(f)
         coderack = Coderack.from_json(coderack_json, logger)
-        workspace = Workspace.setup(logger)
+        workspace = Workspace.setup(logger, policy)
         return cls(
             slipnet,
             coderack=coderack,
@@ -118,6 +139,7 @@ class Copycat:
             initial_slipnode_clamp_time=hyperparameters["initial_slipnode_clamp_time"],
             logger=logger,
             seed=seed,
+            precision_policy=policy,
         )
 
     def solve(self, string: str) -> str | None:
@@ -264,7 +286,7 @@ class Copycat:
             rule_weakness = (
                 1 - self.workspace.rule.total_strength if self.workspace.rule else 1
             )
-            self.temperature = (
+            self.temperature = self.precision_policy.quantize(
                 self.workspace.total_unhappiness * 0.8 + rule_weakness * 0.2
             )
         time = 0 if self.coderack is None else self.coderack.number_of_codelets_run

@@ -19,7 +19,7 @@ class Correspondence(WorkspaceStructure):
         target: "WorkspaceObject",
         concept_mappings: List[ConceptMapping],
     ):
-        super().__init__()
+        super().__init__(workspace.precision_policy)
         self.workspace = workspace
         self.source = source
         self.target = target
