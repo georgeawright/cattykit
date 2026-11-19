@@ -9,6 +9,7 @@ from pathlib import Path
 from copycat_reproduction.paths import GOLD_PATH, REPRODUCTION_DATASETS, TABLES
 from copycat_reproduction.table_helpers import (
     comparison_markdown,
+    comparison_summary,
     comparison_table,
 )
 
@@ -29,7 +30,7 @@ def main(gold_path: Path = GOLD_PATH) -> None:
     comparison = comparison_table(observed, original)
     comparison.to_csv(COMPARISON_CSV_PATH, index=False)
     MARKDOWN_PATH.write_text(
-        comparison_markdown(comparison),
+        comparison_markdown(comparison_summary(comparison)),
         encoding="utf-8",
     )
 

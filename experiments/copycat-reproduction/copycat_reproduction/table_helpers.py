@@ -141,89 +141,12 @@ def _id_sort_key(problem_id: str) -> tuple[int, ...]:
     return tuple(int(part) for part in problem_id.split("."))
 
 
-def comparison_markdown(comparison: pd.DataFrame) -> str:
-    """Render a concise paper-facing baseline summary table."""
-    temperature_count = int(comparison["temperature_z_count"].sum())
-    temperature_chi_square = float(comparison["temperature_z_chi_square"].sum())
-    codelet_chi_square = float((comparison["codelets_z_stat"] ** 2).sum())
-    table = pd.DataFrame(
-        [
-            (
-                "Mean answer TV distance",
-                comparison["solution_total_variation_distance"].mean(),
-            ),
-            (
-                "Max answer TV distance",
-                comparison["solution_total_variation_distance"].max(),
-            ),
-            (
-                "Mean runs with observed-only answers",
-                comparison["observed_only_run_count"].mean(),
-            ),
-            (
-                "Temperature unweighted mean absolute error",
-                comparison["temperature_mean_absolute_error"].mean(),
-            ),
-            (
-                "Temperature weighted mean absolute error",
-                comparison["temperature_run_frequency_weighted_mean_absolute_error"].mean(),
-            ),
-            (
-                "Temperature max absolute error",
-                comparison["temperature_max_absolute_error"].max(),
-            ),
-            (
-                "Temperature RMS z",
-                sqrt(temperature_chi_square / temperature_count)
-                if temperature_count
-                else 0.0,
-            ),
-            (
-                r"Temperature max \|z\|",
-                comparison["temperature_max_absolute_z_stat"].max(),
-            ),
-            (
-                "Codelets-run mean relative error",
-                comparison["codelets_relative_error"].mean(),
-            ),
-            (
-                "Codelets-run max relative error",
-                comparison["codelets_relative_error"].max(),
-            ),
-            ("Codelets-run RMS z", sqrt(codelet_chi_square / len(comparison))),
-        ],
-        columns=["Measure", "Value"],
-    )
-    table["Value"] = table["Value"].map(
-        lambda value: value if isinstance(value, str) else f"{float(value):.3f}"
-    )
-    return (
-        table.to_markdown(
-            index=False,
-            disable_numparse=True,
-            colalign=("left", "right"),
-        )
-        + "\n"
-    )
-
-
-def method_summary_row(
-    method: str,
-    comparison: pd.DataFrame,
-    raw_runs: pd.DataFrame,
-    snaggable_problems: set[str],
-) -> dict[str, Any]:
-    """Build one row of the three-method comparison table."""
-    if "snag_count" not in raw_runs.columns:
-        raise ValueError("Raw results must include snag_count for method summaries.")
-    snaggable_runs = raw_runs.loc[raw_runs["problem"].isin(snaggable_problems)]
-    if snaggable_runs.empty:
-        raise ValueError("Raw results contain no runs for the snaggable problem set.")
+def comparison_summary(comparison: pd.DataFrame) -> dict[str, Any]:
+    """Summarize per-problem comparisons across the benchmark."""
     temperature_count = int(comparison["temperature_z_count"].sum())
     temperature_chi_square = float(comparison["temperature_z_chi_square"].sum())
     codelets_chi_square = float((comparison["codelets_z_stat"] ** 2).sum())
     return {
-        "method": method,
         "answer_tv_distance_mean": comparison[
             "solution_total_variation_distance"
         ].mean(),
@@ -259,6 +182,57 @@ def method_summary_row(
         "codelets_run_z_p_value": chi_square_survival_function(
             codelets_chi_square, len(comparison)
         ),
+    }
+
+
+def comparison_markdown(summary: Mapping[str, Any]) -> str:
+    """Render a concise paper-facing baseline summary table."""
+    measures = [
+        ("Mean answer TV distance", "answer_tv_distance_mean"),
+        ("Max answer TV distance", "answer_tv_distance_max"),
+        ("Mean runs with observed-only answers", "mean_observed_only_answer_run_count"),
+        (
+            "Temperature unweighted mean absolute error",
+            "temperature_mean_absolute_error",
+        ),
+        (
+            "Temperature weighted mean absolute error",
+            "temperature_run_frequency_weighted_mean_absolute_error",
+        ),
+        ("Temperature max absolute error", "temperature_max_absolute_error"),
+        ("Temperature RMS z", "temperature_rms_z_stat"),
+        (r"Temperature max \|z\|", "temperature_max_absolute_z_stat"),
+        ("Codelets-run mean relative error", "codelets_run_mean_relative_error"),
+        ("Codelets-run max relative error", "codelets_run_max_relative_error"),
+        ("Codelets-run RMS z", "codelets_run_rms_z_stat"),
+    ]
+    table = pd.DataFrame(
+        [(label, f"{float(summary[key]):.3f}") for label, key in measures],
+        columns=["Measure", "Value"],
+    )
+    return (
+        table.to_markdown(
+            index=False, disable_numparse=True, colalign=("left", "right")
+        )
+        + "\n"
+    )
+
+
+def method_summary_row(
+    method: str,
+    comparison: pd.DataFrame,
+    raw_runs: pd.DataFrame,
+    snaggable_problems: set[str],
+) -> dict[str, Any]:
+    """Build one row of the three-method comparison table."""
+    if "snag_count" not in raw_runs.columns:
+        raise ValueError("Raw results must include snag_count for method summaries.")
+    snaggable_runs = raw_runs.loc[raw_runs["problem"].isin(snaggable_problems)]
+    if snaggable_runs.empty:
+        raise ValueError("Raw results contain no runs for the snaggable problem set.")
+    return {
+        "method": method,
+        **comparison_summary(comparison),
         "mean_snag_count_on_snaggable_problems": round(
             snaggable_runs["snag_count"].sum() / len(snaggable_runs), 3
         ),
