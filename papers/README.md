@@ -5,7 +5,7 @@ as part of the development of the software in this repository.
 
 ## Contents
 
-- [Reproducing Copycat: a Python Re-implementation of a Classic Model of Analogy-Making](copycat-reproduction/)
+- [Reproducing Copycat: a Python Re-implementation of a Classic Model of Analogy-Making](copycat-replication/)
 
 ## Shared bibliography
 
