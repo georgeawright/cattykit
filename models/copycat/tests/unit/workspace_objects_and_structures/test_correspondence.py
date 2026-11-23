@@ -1,3 +1,4 @@
+from cattykit.precision_policies import FullPrecision
 from types import SimpleNamespace
 
 import pytest
@@ -7,19 +8,19 @@ from copycat.workspace_objects_and_structures import Correspondence, Group, Lett
 
 def test_is_incompatible_argumentwise_with():
     correspondence_1 = Correspondence(
-        None,
+        SimpleNamespace(precision_policy=FullPrecision()),
         source="A",
         target="a",
         concept_mappings=[],
     )
     correspondence_2 = Correspondence(
-        None,
+        SimpleNamespace(precision_policy=FullPrecision()),
         source="A",
         target="b",
         concept_mappings=[],
     )
     correspondence_3 = Correspondence(
-        None,
+        SimpleNamespace(precision_policy=FullPrecision()),
         source="B",
         target="b",
         concept_mappings=[],
@@ -41,25 +42,25 @@ def test_is_incompatible_conceptually_with():
     mapping_3.is_distinguishing = False
 
     correspondence_1 = Correspondence(
-        None,
+        SimpleNamespace(precision_policy=FullPrecision()),
         source="A",
         target="B",
         concept_mappings=[mapping_1],
     )
     correspondence_2 = Correspondence(
-        None,
+        SimpleNamespace(precision_policy=FullPrecision()),
         source="C",
         target="D",
         concept_mappings=[mapping_2],
     )
     correspondence_3 = Correspondence(
-        None,
+        SimpleNamespace(precision_policy=FullPrecision()),
         source="C",
         target="D",
         concept_mappings=[mapping_3],
     )
     correspondence_4 = Correspondence(
-        None,
+        SimpleNamespace(precision_policy=FullPrecision()),
         source="A",
         target="B",
         concept_mappings=[],
@@ -74,22 +75,64 @@ def test_is_incompatible_structurally_with():
     letter_a_1 = Letter(None, None, 0)
     letter_a_2 = Letter(None, None, 1)
     letter_b = Letter(None, None, 2)
-    group_a_a = Group(None, 0, 1, [letter_a_1, letter_a_2], [], None, None, None)
-    group_a_b = Group(None, 0, 1, [letter_a_1, letter_b], [], None, None, None)
+    group_a_a = Group(
+        SimpleNamespace(precision_policy=FullPrecision()),
+        0,
+        1,
+        [letter_a_1, letter_a_2],
+        [],
+        None,
+        None,
+        None,
+    )
+    group_a_b = Group(
+        SimpleNamespace(precision_policy=FullPrecision()),
+        0,
+        1,
+        [letter_a_1, letter_b],
+        [],
+        None,
+        None,
+        None,
+    )
     letter_i_1 = Letter(None, None, 0)
     letter_i_2 = Letter(None, None, 1)
     letter_j = Letter(None, None, 2)
-    group_i_i = Group(None, 0, 1, [letter_i_1, letter_i_2], [], None, None, None)
-    group_i_j = Group(None, 0, 1, [letter_i_1, letter_j], [], None, None, None)
+    group_i_i = Group(
+        SimpleNamespace(precision_policy=FullPrecision()),
+        0,
+        1,
+        [letter_i_1, letter_i_2],
+        [],
+        None,
+        None,
+        None,
+    )
+    group_i_j = Group(
+        SimpleNamespace(precision_policy=FullPrecision()),
+        0,
+        1,
+        [letter_i_1, letter_j],
+        [],
+        None,
+        None,
+        None,
+    )
 
     correspondence_1 = Correspondence(
-        None, source=letter_a_1, target=letter_i_1, concept_mappings=[]
+        SimpleNamespace(precision_policy=FullPrecision()),
+        source=letter_a_1,
+        target=letter_i_1,
+        concept_mappings=[],
     )
 
     assert correspondence_1.is_incompatible_structurally_with(correspondence_1) is False
 
     correspondence_2 = Correspondence(
-        None, source=letter_a_2, target=letter_i_2, concept_mappings=[]
+        SimpleNamespace(precision_policy=FullPrecision()),
+        source=letter_a_2,
+        target=letter_i_2,
+        concept_mappings=[],
     )
     letter_a_1.group = group_a_a
     letter_a_2.group = group_a_a
@@ -99,17 +142,26 @@ def test_is_incompatible_structurally_with():
     assert correspondence_1.is_incompatible_structurally_with(correspondence_2) is False
 
     correspondence_3 = Correspondence(
-        None, source=group_a_a, target=group_i_j, concept_mappings=[]
+        SimpleNamespace(precision_policy=FullPrecision()),
+        source=group_a_a,
+        target=group_i_j,
+        concept_mappings=[],
     )
 
     assert correspondence_1.is_incompatible_structurally_with(correspondence_3) is False
     assert correspondence_3.is_incompatible_structurally_with(correspondence_1) is False
 
     group_correspondence = Correspondence(
-        None, source=group_a_b, target=group_i_i, concept_mappings=[]
+        SimpleNamespace(precision_policy=FullPrecision()),
+        source=group_a_b,
+        target=group_i_i,
+        concept_mappings=[],
     )
     incompatible_member_correspondence = Correspondence(
-        None, source=letter_a_1, target=letter_j, concept_mappings=[]
+        SimpleNamespace(precision_policy=FullPrecision()),
+        source=letter_a_1,
+        target=letter_j,
+        concept_mappings=[],
     )
     letter_a_1.correspondence = incompatible_member_correspondence
     assert (
@@ -120,7 +172,10 @@ def test_is_incompatible_structurally_with():
     )
 
     unrelated_correspondence = Correspondence(
-        None, source=letter_a_2, target=letter_i_2, concept_mappings=[]
+        SimpleNamespace(precision_policy=FullPrecision()),
+        source=letter_a_2,
+        target=letter_i_2,
+        concept_mappings=[],
     )
     assert (
         group_correspondence.is_incompatible_structurally_with(unrelated_correspondence)
@@ -159,20 +214,20 @@ def test_is_incompatible_boundarywise_with():
     )
 
     group_correspondence_identity = Correspondence(
-        None,
+        SimpleNamespace(precision_policy=FullPrecision()),
         source=source_group,
         target=target_group,
         concept_mappings=[identity_mapping],
     )
 
     left_correspondence_identity = Correspondence(
-        None,
+        SimpleNamespace(precision_policy=FullPrecision()),
         source=source_left,
         target=target_left,
         concept_mappings=[identity_mapping],
     )
     right_correspondence_identity = Correspondence(
-        None,
+        SimpleNamespace(precision_policy=FullPrecision()),
         source=source_right,
         target=target_right,
         concept_mappings=[identity_mapping],
@@ -194,13 +249,13 @@ def test_is_incompatible_boundarywise_with():
     )
 
     left_correspondence_opposite = Correspondence(
-        None,
+        SimpleNamespace(precision_policy=FullPrecision()),
         source=source_left,
         target=target_right,
         concept_mappings=[opposite_mapping],
     )
     right_correspondence_opposite = Correspondence(
-        None,
+        SimpleNamespace(precision_policy=FullPrecision()),
         source=source_right,
         target=target_left,
         concept_mappings=[identity_mapping],
@@ -222,7 +277,7 @@ def test_is_incompatible_boundarywise_with():
     )
 
     unrelated_correspondence = Correspondence(
-        None,
+        SimpleNamespace(precision_policy=FullPrecision()),
         source=SimpleNamespace(),
         target=SimpleNamespace(),
         concept_mappings=[],
@@ -248,31 +303,31 @@ def test_supports():
     mapping_3.is_distinguishing = True
 
     correspondence_1 = Correspondence(
-        None,
+        SimpleNamespace(precision_policy=FullPrecision()),
         source="A",
         target="B",
         concept_mappings=[mapping_1],
     )
     correspondence_2 = Correspondence(
-        None,
+        SimpleNamespace(precision_policy=FullPrecision()),
         source="C",
         target="D",
         concept_mappings=[mapping_2],
     )
     correspondence_3 = Correspondence(
-        None,
+        SimpleNamespace(precision_policy=FullPrecision()),
         source="C",
         target="D",
         concept_mappings=[mapping_3],
     )
     correspondence_4 = Correspondence(
-        None,
+        SimpleNamespace(precision_policy=FullPrecision()),
         source="A",
         target="B",
         concept_mappings=[],
     )
     correspondence_5 = Correspondence(
-        None,
+        SimpleNamespace(precision_policy=FullPrecision()),
         source="A",
         target="D",
         concept_mappings=[],
@@ -298,7 +353,7 @@ def test_get_relevant_distinguishing_mappings():
     relevant_distinguishing.is_relevant = True
 
     correspondence = Correspondence(
-        None,
+        SimpleNamespace(precision_policy=FullPrecision()),
         source=None,
         target=None,
         concept_mappings=[
@@ -333,7 +388,7 @@ def test_is_internally_coherent():
     relevant_distinguishing.is_relevant = True
 
     correspondence = Correspondence(
-        None,
+        SimpleNamespace(precision_policy=FullPrecision()),
         source=None,
         target=None,
         concept_mappings=[
@@ -350,8 +405,8 @@ def test_is_internally_coherent():
     second_relevant_distinguishing.is_relevant = True
     correspondence.concept_mappings.append(second_relevant_distinguishing)
 
-    relevant_distinguishing.supports = (
-        lambda other: other == second_relevant_distinguishing
+    relevant_distinguishing.supports = lambda other: (
+        other == second_relevant_distinguishing
     )
 
     assert correspondence.is_internally_coherent()
@@ -364,7 +419,7 @@ def test_calculate_internal_strength():
     relevant_distinguishing.strength = 0.5
 
     correspondence = Correspondence(
-        None,
+        SimpleNamespace(precision_policy=FullPrecision()),
         source=None,
         target=None,
         concept_mappings=[relevant_distinguishing],
@@ -376,8 +431,8 @@ def test_calculate_internal_strength():
     second_relevant_distinguishing.is_distinguishing = True
     second_relevant_distinguishing.is_relevant = True
     second_relevant_distinguishing.strength = 0.8
-    relevant_distinguishing.supports = (
-        lambda other: other == second_relevant_distinguishing
+    relevant_distinguishing.supports = lambda other: (
+        other == second_relevant_distinguishing
     )
     correspondence.concept_mappings.append(second_relevant_distinguishing)
 
@@ -385,7 +440,7 @@ def test_calculate_internal_strength():
 
 
 def test_calculate_external_strength():
-    workspace = SimpleNamespace(correspondences=[])
+    workspace = SimpleNamespace(correspondences=[], precision_policy=FullPrecision())
 
     mapping_1 = SimpleNamespace()
     mapping_1.is_distinguishing = True

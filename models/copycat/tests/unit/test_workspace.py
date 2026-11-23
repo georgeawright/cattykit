@@ -2,12 +2,13 @@ from types import SimpleNamespace
 from typing import NamedTuple
 from unittest.mock import Mock
 
+from cattykit.precision_policies import FullPrecision
 from copycat import Workspace
 
 
 def create_workspace(initial_string, modified_string, target_string, answer_string):
     workspace = Workspace(
-        initial_string, modified_string, target_string, answer_string, Mock()
+        initial_string, modified_string, target_string, answer_string, Mock(), FullPrecision()
     )
     workspace._log = Mock()
     workspace._log_correspondence = Mock()

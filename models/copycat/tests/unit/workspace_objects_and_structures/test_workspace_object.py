@@ -1,3 +1,4 @@
+from cattykit.precision_policies import FullPrecision
 from types import SimpleNamespace
 
 import pytest
@@ -11,9 +12,8 @@ def test_has_description():
         facet=SimpleNamespace(name="test_facet"),
         descriptor=SimpleNamespace(name="test_descriptor"),
     )
-    description.equates_to = (
-        lambda d: d.facet == description.facet
-        and d.descriptor == description.descriptor
+    description.equates_to = lambda d: (
+        d.facet == description.facet and d.descriptor == description.descriptor
     )
     assert not object.has_description(description)
     object.descriptions.append(description)
@@ -83,7 +83,7 @@ def test_left_and_right_neighbours():
 
 
 def test_is_middle_in_string_with_ungrouped_neighbours():
-    string = SimpleNamespace(letters=[])
+    string = SimpleNamespace(letters=[], precision_policy=FullPrecision())
     left = WorkspaceObject(string=string, left_position=0, right_position=0)
     middle = WorkspaceObject(string=string, left_position=1, right_position=1)
     right = WorkspaceObject(string=string, left_position=2, right_position=2)
@@ -96,7 +96,7 @@ def test_is_middle_in_string_with_ungrouped_neighbours():
 
 
 def test_is_middle_in_string_with_neighbours_in_same_enclosing_group():
-    string = SimpleNamespace(letters=[])
+    string = SimpleNamespace(letters=[], precision_policy=FullPrecision())
     letters = [
         WorkspaceObject(string=string, left_position=i, right_position=i)
         for i in range(6)

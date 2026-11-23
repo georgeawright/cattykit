@@ -1,3 +1,4 @@
+from cattykit.precision_policies import FullPrecision
 from types import SimpleNamespace
 import pytest
 
@@ -14,7 +15,13 @@ from copycat.workspace_objects_and_structures import Description
 )
 def test_is_relevant(is_active, expected):
     facet = SimpleNamespace(is_active=is_active)
-    description = Description(argument_object=None, facet=facet, descriptor=None)
+    description = Description(
+        argument_object=SimpleNamespace(
+            string=SimpleNamespace(precision_policy=FullPrecision())
+        ),
+        facet=facet,
+        descriptor=None,
+    )
 
     assert expected == description.is_relevant
 
@@ -30,7 +37,13 @@ def test_is_relevant(is_active, expected):
 )
 def test_is_bond_description(facet_name, expected):
     facet = SimpleNamespace(name=facet_name)
-    description = Description(argument_object=None, facet=facet, descriptor=None)
+    description = Description(
+        argument_object=SimpleNamespace(
+            string=SimpleNamespace(precision_policy=FullPrecision())
+        ),
+        facet=facet,
+        descriptor=None,
+    )
 
     assert expected == description.is_bond_description
 
@@ -45,13 +58,19 @@ def test_is_bond_description(facet_name, expected):
 )
 def test_calculate_internal_strength(descriptor_depth, expected):
     descriptor = SimpleNamespace(conceptual_depth=descriptor_depth)
-    description = Description(argument_object=None, facet=None, descriptor=descriptor)
+    description = Description(
+        argument_object=SimpleNamespace(
+            string=SimpleNamespace(precision_policy=FullPrecision())
+        ),
+        facet=None,
+        descriptor=descriptor,
+    )
 
     assert expected == description.calculate_internal_strength()
 
 
 def test_calculate_external_strength():
-    string = SimpleNamespace(objects=[])
+    string = SimpleNamespace(objects=[], precision_policy=FullPrecision())
     argument = SimpleNamespace(string=string)
     string.objects.append(argument)
     facet = SimpleNamespace(activation=0.5)

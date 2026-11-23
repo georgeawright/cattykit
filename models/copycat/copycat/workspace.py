@@ -4,6 +4,7 @@ import random
 from typing import Dict, List, Optional
 
 from cattykit.logging import ModelLogger
+from cattykit.precision_policies import FullPrecision, PrecisionPolicy
 
 from .codelets import (
     BottomUpBondScout,
@@ -39,6 +40,7 @@ class Workspace:
         target_string: WorkspaceString,
         answer_string: WorkspaceString,
         logger: ModelLogger,
+        precision_policy: PrecisionPolicy,
     ):
         """
         The workspace contains:
@@ -54,6 +56,7 @@ class Workspace:
         - inter-string correspondences between objects
         - and can contain a rule.
         """
+        self.precision_policy = precision_policy
         self.initial_string = initial_string
         self.modified_string = modified_string
         self.target_string = target_string
@@ -70,13 +73,21 @@ class Workspace:
         self.snag_object: Optional[WorkspaceObject] = None
 
     @classmethod
-    def setup(cls, logger: ModelLogger):
-        initial_string = WorkspaceString("initial", logger)
-        modified_string = WorkspaceString("modified", logger)
-        target_string = WorkspaceString("target", logger)
-        answer_string = WorkspaceString("answer", logger)
+    def setup(
+        cls, logger: ModelLogger, precision_policy: PrecisionPolicy | None = None
+    ):
+        policy = precision_policy if precision_policy is not None else FullPrecision()
+        initial_string = WorkspaceString("initial", logger, policy)
+        modified_string = WorkspaceString("modified", logger, policy)
+        target_string = WorkspaceString("target", logger, policy)
+        answer_string = WorkspaceString("answer", logger, policy)
         return cls(
-            initial_string, modified_string, target_string, answer_string, logger
+            initial_string,
+            modified_string,
+            target_string,
+            answer_string,
+            logger,
+            policy,
         )
 
     def initialize(self, problem: str, slipnet) -> None:
@@ -337,10 +348,12 @@ class Workspace:
     def intra_string_unhappiness(self) -> float:
         """Returns average of intra-string unhappiness of objects in the workspace
         weighted by the relative importance of each object in its string."""
-        return self._average_weighted_unhappiness(
-            sum(
-                obj.relative_importance * obj.intra_string_unhappiness
-                for obj in self.objects
+        return self.precision_policy.quantize(
+            self._average_weighted_unhappiness(
+                sum(
+                    obj.relative_importance * obj.intra_string_unhappiness
+                    for obj in self.objects
+                )
             )
         )
 
@@ -348,10 +361,12 @@ class Workspace:
     def inter_string_unhappiness(self) -> float:
         """Returns average of inter-string unhappiness of objects in the workspace
         weighted by the relative importance of each object in its string."""
-        return self._average_weighted_unhappiness(
-            sum(
-                obj.relative_importance * obj.inter_string_unhappiness
-                for obj in self.objects
+        return self.precision_policy.quantize(
+            self._average_weighted_unhappiness(
+                sum(
+                    obj.relative_importance * obj.inter_string_unhappiness
+                    for obj in self.objects
+                )
             )
         )
 
@@ -359,10 +374,12 @@ class Workspace:
     def total_unhappiness(self):
         """Returns average of the total unhappiness of objects in the workspace
         weighted by the relative importance of each object in its string."""
-        return self._average_weighted_unhappiness(
-            sum(
-                obj.relative_importance * obj.total_unhappiness
-                for obj in self.objects
+        return self.precision_policy.quantize(
+            self._average_weighted_unhappiness(
+                sum(
+                    obj.relative_importance * obj.total_unhappiness
+                    for obj in self.objects
+                )
             )
         )
 

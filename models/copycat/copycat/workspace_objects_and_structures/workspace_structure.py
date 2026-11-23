@@ -1,8 +1,12 @@
 from copycat.tools import fake_reciprocal
+from cattykit.precision_policies import FullPrecision
 
 
 class WorkspaceStructure:
-    def __init__(self):
+    def __init__(self, precision_policy=None):
+        self.precision_policy = (
+            precision_policy if precision_policy is not None else FullPrecision()
+        )
         self.internal_strength = 0
         self.external_strength = 0
         self.total_strength = 0
@@ -12,11 +16,12 @@ class WorkspaceStructure:
         return self.hash_id
 
     def update_strength_values(self):
-        self.internal_strength = self.calculate_internal_strength()
-        self.external_strength = self.calculate_external_strength()
-        self.total_strength = self.calculate_total_strength()
-        self.total_weakness = fake_reciprocal(
-            (100 * self.total_strength) ** 0.95 / 100
+        q = self.precision_policy.quantize
+        self.internal_strength = q(self.calculate_internal_strength())
+        self.external_strength = q(self.calculate_external_strength())
+        self.total_strength = q(self.calculate_total_strength())
+        self.total_weakness = q(
+            fake_reciprocal((100 * self.total_strength) ** 0.95 / 100)
         )
 
     def calculate_internal_strength(self):
@@ -46,6 +51,7 @@ class WorkspaceStructure:
         post: 0.0 <= _ <= 1.0
         post: _ >= internal_strength * internal_strength
         """
-        return internal_strength * internal_strength + external_strength * fake_reciprocal(
-            internal_strength
+        return (
+            internal_strength * internal_strength
+            + external_strength * fake_reciprocal(internal_strength)
         )

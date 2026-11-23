@@ -3,12 +3,21 @@ import random
 from typing import Dict, List
 
 from cattykit.logging import ModelLogger
+from cattykit.precision_policies import FullPrecision, PrecisionPolicy
 
 from .tools import select_item_from_list, temperature_adjust
 
 
 class WorkspaceString:
-    def __init__(self, string_id: str, logger: ModelLogger):
+    def __init__(
+        self,
+        string_id: str,
+        logger: ModelLogger,
+        precision_policy: PrecisionPolicy | None = None,
+    ):
+        self.precision_policy = (
+            precision_policy if precision_policy is not None else FullPrecision()
+        )
         self.string_id = string_id
         self.logger = logger
         self.letters = []
@@ -83,23 +92,25 @@ class WorkspaceString:
             if total_raw_importance == 0:
                 obj.relative_importance = 0
             else:
-                obj.relative_importance = self._relative_importance(
-                    obj.raw_importance, total_raw_importance
+                obj.relative_importance = self.precision_policy.quantize(
+                    self._relative_importance(obj.raw_importance, total_raw_importance)
                 )
             self.logger.log(
                 "attribute_updated", object=obj, attribute="relative_importance"
             )
 
     def update_intra_string_unhappiness(self):
-        self.intra_string_unhappiness = self._average_unhappiness(
-            [object_.intra_string_unhappiness for object_ in self.objects]
+        self.intra_string_unhappiness = self.precision_policy.quantize(
+            self._average_unhappiness(
+                [object_.intra_string_unhappiness for object_ in self.objects]
+            )
         )
         self.logger.log(
             "attribute_updated", object=self, attribute="intra_string_unhappiness"
         )
 
     def empty(self):
-        self.__init__(self.string_id, self.logger)
+        self.__init__(self.string_id, self.logger, self.precision_policy)
 
     def add_letter(self, letter):
         self.letters.append(letter)

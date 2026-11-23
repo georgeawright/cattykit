@@ -10,6 +10,7 @@ from typing import Any, cast
 
 from cattykit.logging import ModelLogger
 from cattykit.models import ModelPlugin
+from cattykit.precision_policies import PrecisionPolicy
 
 from .copycat import Copycat
 
@@ -30,12 +31,14 @@ def create_model(
     *,
     config: Mapping[str, Any] | None = None,
     logger: ModelLogger | None = None,
+    precision_policy: PrecisionPolicy | None = None,
     **kwargs: Any,
 ) -> Copycat:
     """Create a Copycat model from its bundled configuration files."""
     options = dict(config or {})
     config_directory = options.pop("config_directory", None)
     seed = options.pop("seed", None)
+    precision_policy = options.pop("precision_policy", precision_policy)
 
     if options:
         unexpected = ", ".join(sorted(options))
@@ -45,14 +48,17 @@ def create_model(
         random.seed(seed)
 
     if config_directory is not None:
-        return _load_copycat(Path(config_directory), logger, seed)
+        return _load_copycat(Path(config_directory), logger, seed, precision_policy)
 
     with as_file(_CONFIG_DIRECTORY) as bundled_config_directory:
-        return _load_copycat(bundled_config_directory, logger, seed)
+        return _load_copycat(bundled_config_directory, logger, seed, precision_policy)
 
 
 def _load_copycat(
-    config_directory: Path, logger: ModelLogger | None, seed: int | None
+    config_directory: Path,
+    logger: ModelLogger | None,
+    seed: int | None,
+    precision_policy: PrecisionPolicy | None,
 ) -> Copycat:
     """Load Copycat from a directory containing its JSON configuration files."""
     return cast(
@@ -63,5 +69,6 @@ def _load_copycat(
             str(config_directory / "hyperparameters.json"),
             logger=logger,
             seed=seed,
+            precision_policy=precision_policy,
         ),
     )

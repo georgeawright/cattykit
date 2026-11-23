@@ -20,7 +20,7 @@ class Bond(WorkspaceStructure):
         source_descriptor: "Slipnode",
         target_descriptor: "Slipnode",
     ):
-        super().__init__()
+        super().__init__(source.string.precision_policy)
         self.source = source
         self.target = target
         self.string = source.string

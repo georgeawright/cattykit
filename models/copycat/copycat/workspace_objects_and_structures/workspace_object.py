@@ -200,13 +200,14 @@ class WorkspaceObject:
         return self == other_object
 
     def update_values(self):
-        self.raw_importance = self.calculate_raw_importance()
-        self.intra_string_unhappiness = self.calculate_intra_string_unhappiness()
-        self.inter_string_unhappiness = self.calculate_inter_string_unhappiness()
-        self.total_unhappiness = self.calculate_total_unhappiness()
-        self.intra_string_salience = self.calculate_intra_string_salience()
-        self.inter_string_salience = self.calculate_inter_string_salience()
-        self.total_salience = self.calculate_total_salience()
+        q = self.string.precision_policy.quantize
+        self.raw_importance = q(self.calculate_raw_importance())
+        self.intra_string_unhappiness = q(self.calculate_intra_string_unhappiness())
+        self.inter_string_unhappiness = q(self.calculate_inter_string_unhappiness())
+        self.total_unhappiness = q(self.calculate_total_unhappiness())
+        self.intra_string_salience = q(self.calculate_intra_string_salience())
+        self.inter_string_salience = q(self.calculate_inter_string_salience())
+        self.total_salience = q(self.calculate_total_salience())
 
     def is_distinguished_by(self, descriptor: "Slipnode") -> bool:
         """True if no other object of the same type has the same descriptor."""

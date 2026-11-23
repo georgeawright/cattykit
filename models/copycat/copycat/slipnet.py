@@ -4,6 +4,7 @@ from typing import Callable, Dict, List, Optional
 import numpy as np
 
 from cattykit.logging import ModelLogger
+from cattykit.precision_policies import FullPrecision, PrecisionPolicy
 
 from .concept_mapping import ConceptMapping
 from .sliplink import Sliplink
@@ -29,7 +30,9 @@ class Slipnet:
         # probability(jumping to full activation) = activation ** exponent
         full_activation_probability_exponent: int,
         logger: ModelLogger,
+        precision_policy: PrecisionPolicy,
     ):
+        self.precision_policy = precision_policy
         self.nodes = nodes
         self.adjacency_table = adjacency_table
         self.number_of_nodes = len(nodes)
@@ -52,6 +55,7 @@ class Slipnet:
         workspace_activation: float = 1.0,
         full_activation_threshold: float = 0.50,
         full_activation_probability_exponent: int = 3,
+        precision_policy: PrecisionPolicy | None = None,
     ):
         number_of_nodes = len(nodes)
         node_index_lookup = {node.name: index for index, node in enumerate(nodes)}
@@ -87,6 +91,7 @@ class Slipnet:
             full_activation_threshold,
             full_activation_probability_exponent,
             logger,
+            precision_policy if precision_policy is not None else FullPrecision(),
         )
 
     @classmethod
@@ -99,6 +104,7 @@ class Slipnet:
         full_activation_probability_exponent: int,
         initially_clamped_nodes: List[str],
         logger: ModelLogger,
+        precision_policy: PrecisionPolicy | None = None,
     ):
         nodes = {
             node_data["name"]: Slipnode(
@@ -138,6 +144,7 @@ class Slipnet:
             workspace_activation=workspace_activation,
             full_activation_threshold=full_activation_threshold,
             full_activation_probability_exponent=full_activation_probability_exponent,
+            precision_policy=precision_policy,
         )
         for node in initially_clamped_nodes:
             slipnet.clamp_node(node)
@@ -180,12 +187,14 @@ class Slipnet:
         - activation decay according to nodes' conceptual depth
         - probabilistic jumping of node activations
         - clamped nodes remain active."""
-        self.node_activations = (
-            self.node_activations
-            + self._spread_activations()
-            + self._decay_activations()
-            + self.activation_buffers
-        ).clip(0, 1)
+        self.node_activations = self.precision_policy.quantize(
+            (
+                self.node_activations
+                + self._spread_activations()
+                + self._decay_activations()
+                + self.activation_buffers
+            ).clip(0, 1)
+        )
         self.activation_buffers.fill(0)  # reset buffers after applying them
         # here "clamp" is copycat terminology meaning to keep activation held at 1
         self.node_activations[self.clamped_nodes] = 1.0
@@ -333,7 +342,10 @@ class Slipnet:
         """calculates how much activation nodes should receive
         from active related nodes in the slipnet."""
         active_source_nodes = (self.node_activations == 1.0).astype(int)
-        new_activations = (active_source_nodes @ self.adjacency_table).ravel()
+        contributions = self.precision_policy.quantize(
+            active_source_nodes[:, None] * self.adjacency_table
+        )
+        new_activations = contributions.sum(axis=0).ravel()
         return new_activations
 
     def _boost_activations(self):
@@ -344,7 +356,9 @@ class Slipnet:
     def _decay_activations(self):
         """calculates how much nodes' activation should decay
         according to their conceptual depth."""
-        return -self.node_activations * (1 - self.node_depths)
+        return -self.precision_policy.quantize(
+            self.node_activations * (1 - self.node_depths)
+        )
 
     def _probabilistically_activate_nodes(self):
         """Probabilistically fully boost nodes with activation above threshold."""

@@ -2,6 +2,7 @@ from types import SimpleNamespace
 from unittest.mock import Mock
 
 import pytest
+from cattykit.precision_policies import DecimalPlaces
 
 
 from copycat import Copycat
@@ -11,7 +12,9 @@ def test_logs_answer_letters_created_by_answer_builder():
     events = []
     copycat = Copycat.__new__(Copycat)
     copycat.coderack = SimpleNamespace(number_of_codelets_run=12)
-    copycat.logger = SimpleNamespace(log=lambda kind, **data: events.append((kind, data)))
+    copycat.logger = SimpleNamespace(
+        log=lambda kind, **data: events.append((kind, data))
+    )
     old_letter = SimpleNamespace(hash_id=1)
     new_letter = SimpleNamespace(
         hash_id=2,
@@ -48,10 +51,18 @@ def test_logs_answer_letters_created_by_answer_builder():
     ],
 )
 def test_update_temperature(rule_strength, workspace_unhappiness, expected):
+    policy = DecimalPlaces(2)
+    string = SimpleNamespace(precision_policy=policy)
     workspace = SimpleNamespace(
         total_unhappiness=workspace_unhappiness,
         rule=SimpleNamespace(total_strength=rule_strength),
+        precision_policy=policy,
+        initial_string=string,
+        modified_string=string,
+        target_string=string,
+        answer_string=string,
     )
-    copycat = Copycat(None, None, workspace, None, None, None, Mock())
+    slipnet = SimpleNamespace(precision_policy=policy)
+    copycat = Copycat(slipnet, None, workspace, None, None, None, Mock(), policy)
     copycat._update_temperature()
     assert copycat.temperature == pytest.approx(expected)
