@@ -142,6 +142,7 @@ def _regression_row(problem: str, runs: pd.DataFrame) -> dict[str, object]:
     return {
         "problem": problem,
         "examples": examples,
+        "runs_with_snags": int((snag_count > 0).sum()),
         "snag_count_minimum": int(snag_count.min()),
         "snag_count_maximum": int(snag_count.max()),
         "mean_snag_count": float(snag_count.mean()),
