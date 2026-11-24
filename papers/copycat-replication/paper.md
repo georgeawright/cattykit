@@ -148,10 +148,10 @@ answer (with standard errors); and mean codelet counts per problem (with
 standard errors).
 
 The experiments used the Python re-implementation of Copycat (version
-0.1.2) available in the Cattykit repository (version 0.1.4) and were run
-with Python 3.13. Copycat was run 1,000 times on every problem, with the
-model instantiated anew using seeds 0–999; all runs continued until an
-answer was produced and no experimental runs were excluded.[^9]
+0.1.2) available in the Cattykit repository (version 0.1.4)[^9] and were
+run with Python 3.13. Copycat was run 1,000 times on every problem, with
+the model instantiated anew using seeds 0–999; all runs continued until
+an answer was produced and no experimental runs were excluded.[^10]
 
 There are three dimensions along which successful replication of the
 original study can be judged: similarity of answer distributions
@@ -254,7 +254,7 @@ include:
   codelets therefore lose alignment with their probability of being
   removed. In practice a sensitivity comparison shows that this makes
   little difference to overall behaviour, likely because relatively few
-  codelets are removed at a time[^10].
+  codelets are removed at a time[^11].
 - Use of floating point numbers instead of integers between 0 and 100
   for values such as temperature, slipnode activations, and workspace
   structure strengths such that whole integer steps in the original
@@ -465,7 +465,7 @@ repeated snags occurring when the program tries to find the successor to
 class="quarto-xref">Figure 6</a> shows a strong positive association
 between snags encountered and codelets run for the 809 runs producing
 this answer (Pearson’s *r* = 0.981). Across the 5 recorded problems
-which produced snags in at least 10% of runs[^11], linear regression
+which produced snags in at least 10% of runs[^12], linear regression
 estimates an association of between 346 and 567 additional codelets per
 additional snag. This association is partly mechanical: a snag forces
 more codelets to run so that it can be fixed and more codelets running
@@ -708,16 +708,18 @@ Kolonin, and Michael Bennett. Springer Nature Switzerland.
 
 [^8]: <https://github.com/amahabal/PySeqsee>
 
-[^9]: The experiment scripts, locked software environment, raw results,
+[^9]: <https://github.com/georgeawright/cattykit>
+
+[^10]: The experiment scripts, locked software environment, raw results,
     and generated summaries are provided at
     <https://github.com/georgeawright/cattykit/tree/copycat-replication-v0.1.0/experiments/copycat-replication>
     and
     <https://github.com/georgeawright/cattykit/tree/copycat-replication-v0.1.0/datasets/copycat-replication>.
 
-[^10]: A full comparison of behaviour with the fixed vs faithful
+[^11]: A full comparison of behaviour with the fixed vs faithful
     coderack removal method can be found here:
     <https://github.com/georgeawright/cattykit/blob/main/papers/copycat-replication/tables/coderack-removal-method-comparison.md>.
 
-[^11]: Seven *snaggable* problems only saw snags in 1% or fewer runs so
+[^12]: Seven *snaggable* problems only saw snags in 1% or fewer runs so
     cannot be used to reliably predict the degree of association between
     snags and run lengths.

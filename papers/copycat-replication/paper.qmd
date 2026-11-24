@@ -86,7 +86,7 @@ Other projects exist online which have sought to build a more general FARG model
 
 The benchmark comprises the five target problems and 24 variations reported by Mitchell [@Mitchell1993]. Published results were transcribed from chart labels in chapters 4 and 5 of Mitchell [@Mitchell1993]. These include: answer frequencies; mean final temperature per unique problem answer (with standard errors); and mean codelet counts per problem (with standard errors).
 
-The experiments used the Python re-implementation of Copycat (version 0.1.2) available in the Cattykit repository (version 0.1.4) and were run with Python 3.13. Copycat was run 1,000 times on every problem, with the model instantiated anew using seeds 0--999; all runs continued until an answer was produced and no experimental runs were excluded.[^replication-artifacts]
+The experiments used the Python re-implementation of Copycat (version 0.1.2) available in the Cattykit repository (version 0.1.4)[^cattykit] and were run with Python 3.13. Copycat was run 1,000 times on every problem, with the model instantiated anew using seeds 0--999; all runs continued until an answer was produced and no experimental runs were excluded.[^replication-artifacts]
 
 There are three dimensions along which successful replication of the original study can be judged: similarity of answer distributions produced by reference and re-implementation; similarity of final temperatures for the same answers; and similarity of codelets run per problem.
 
@@ -272,7 +272,6 @@ This Copycat replication study is situated in a broader program of research aime
 [^paradex]: <https://github.com/fargonauts/paradex>
 [^pyseqsee]: <https://github.com/amahabal/PySeqsee>
 [^cattykit]: <https://github.com/georgeawright/cattykit>
-[^copycat-source]: <https://github.com/georgeawright/cattykit/tree/main/models/copycat>
 [^replication-artifacts]: The experiment scripts, locked software environment, raw results, and generated summaries are provided at <https://github.com/georgeawright/cattykit/tree/copycat-replication-v0.1.0/experiments/copycat-replication> and <https://github.com/georgeawright/cattykit/tree/copycat-replication-v0.1.0/datasets/copycat-replication>.
 [^coderack-bug]: A full comparison of behaviour with the fixed vs faithful coderack removal method can be found here: <https://github.com/georgeawright/cattykit/blob/main/papers/copycat-replication/tables/coderack-removal-method-comparison.md>.
 [^infrequently-snagging-problems]: Seven _snaggable_ problems only saw snags in 1% or fewer runs so cannot be used to reliably predict the degree of association between snags and run lengths.
