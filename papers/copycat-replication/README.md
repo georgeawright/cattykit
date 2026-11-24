@@ -10,7 +10,7 @@ number of codelets operating in a shared workspace and uses a
 temperature score to rate workspace quality and modulate its own degree
 of randomness. Copycat became influential within certain branches of
 cognitive science and artificial intelligence, but further study of it
-is constrained by the difficulty of running its original Lisp
+has been constrained by the difficulty of running its original Lisp
 implementation on contemporary computers. This paper presents a
 replication study of Mitchell’s \[@Mitchell1993\] published experiments
 on Copycat involving 1,000 runs on each of a set of 29 analogy problems.
