@@ -228,8 +228,9 @@ def _save_problem_snag_count_figure(
     plt.close(figure)
 
 
-def _save_problem_5_xyd_scatter(raw_results: pd.DataFrame) -> None:
+def save_problem_5_xyd_scatter(raw_results_path: Path) -> None:
     """Plot codelets against snags for the ``xyd`` runs of template problem 5."""
+    raw_results = pd.read_csv(raw_results_path)
     template = json.loads(TEMPLATE_PATH.read_text(encoding="utf-8"))
     problem = next(
         case["problem"] for case in template["results"] if str(case["id"]) == "5"
@@ -307,4 +308,3 @@ def save_basic_problem_figures(
     FIGURES.mkdir(parents=True, exist_ok=True)
     _save_combined_figures(basic_runs_by_problem, solution_label_width, filename_prefix)
     _save_problem_snag_count_figure(all_runs_by_problem, filename_prefix)
-    _save_problem_5_xyd_scatter(raw_results)
