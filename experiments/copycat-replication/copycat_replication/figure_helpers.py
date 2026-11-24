@@ -218,7 +218,7 @@ def _save_problem_snag_count_figure(
     axis.set(xlabel="Snags per run", ylabel="Problem")
     _style_axis(axis)
     _style_problem_labels(axis)
-    figure.subplots_adjust(left=0.30, right=0.96, bottom=0.24, top=0.94)
+    figure.subplots_adjust(left=0.34, right=0.97, bottom=0.06, top=0.98)
     figure.savefig(
         FIGURES / f"{filename_prefix}all_problems-snag-count.png",
         dpi=300,
