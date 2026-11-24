@@ -1,7 +1,7 @@
 PAPER ?=
 
 ifeq ($(PAPER),)
-$(error PAPER is not set. Use: make PAPER=copycat-reproduction)
+$(error PAPER is not set. Use: make PAPER=copycat-replication)
 endif
 
 DIR = $(PAPER)
