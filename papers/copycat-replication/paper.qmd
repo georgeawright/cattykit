@@ -5,6 +5,9 @@ date: "24 November 2026"
 abstract: |
   Copycat is a stochastic computer model of analogy-making developed by Mitchell [@Mitchell1993]. It solves analogies on strings via a large number of _codelets_ operating in a shared workspace and uses a temperature score to rate workspace quality and modulate its own degree of randomness. Copycat became influential within certain branches of cognitive science and artificial intelligence, but further study of it has been constrained by the difficulty of running its original Lisp implementation on contemporary computers. This paper presents a replication study of Mitchell's [@Mitchell1993] published experiments on Copycat involving 1,000 runs on each of a set of 29 analogy problems. The study uses a Python re-implementation of Copycat. The re-implementation's overall answer distributions, mean final temperature scores per answer, and mean run length per problem are close to the originally reported values (the mean empirical overlap in answer distributions is 98.3%; mean absolute error in temperature scores weighted by answer frequency is 0.005; and mean relative error in codelets run is 0.030). An accurate re-implementation permits further analysis of the model including: a statistical analysis of the effects of increasing the precision of the temperature score and other internal numerical values; and an analysis of the handling of so-called _snags_. The re-implementation also provides a basis for further study and extension of Copycat and related architectures.
 number-sections: true
+header-includes:
+  - '\DeclareUnicodeCharacter{2192}{\ensuremath{\rightarrow}}'
+  - '\DeclareUnicodeCharacter{21D2}{\ensuremath{\Rightarrow}}'
 bibliography: ../references.bib
 filters:
   - quarto
@@ -154,7 +157,7 @@ All answers occurring in at least 1% of historical runs also occur in the replic
 
 The average TV distance across all problems is 0.017, indicating a mean empirical overlap of 98.3%.
 Overlap is above 95% for all of the 29 problems tested.
-All but one of the problems resulted in an answer distribution that has a TV distance within their 95% Monte Carlo reference range (see @fig-all-problems-tv-reference). One (`abc -> abd ==> xyz -> ?`) falls below the lower reference bound and is therefore closer to the original reported results than expected.
+All but one of the problems resulted in an answer distribution that has a TV distance within their 95% Monte Carlo reference range (see @fig-all-problems-tv-reference). One (`abc → abd ⇒ xyz → ?`) falls below the lower reference bound and is therefore closer to the original reported results than expected.
 The re-implementation therefore closely replicates the published answer distributions with differences between the original and re-implementation largely consistent with sampling variation under the published empirical frequencies.
 
 ## Final temperatures
@@ -185,11 +188,11 @@ Having established that the Python re-implementation closely matches the origina
 
 ![Snag count distributions across the 29 problems.](figures/all_problems-snag-count.png){#fig-all-problems-snag-count width=90%}
 
-![Codelets run vs snags encountered for `abc -> abd ==> xyz -> xyd`.](figures/problem_5_xyd-codelets-vs-snags.png){#fig-problem-5-xyd-codelets-vs-snags width=60%}
+![Codelets run vs snags encountered for `abc → abd ⇒ xyz → xyd`.](figures/problem_5_xyd-codelets-vs-snags.png){#fig-problem-5-xyd-codelets-vs-snags width=60%}
 
 Sometimes when solving a problem, Copycat can encounter a _snag_ (also referred to by Mitchell [@Mitchell1993] as an _impasse_).
 This happens when a rule is built that cannot be applied to the letters in the target string.
-For example, when producing a solution for the problem `abc -> abd ==> xyz`, Copycat might construct a rule to replace the letter `z` with its successor.
+For example, when producing a solution for the problem `abc → abd ⇒ xyz`, Copycat might construct a rule to replace the letter `z` with its successor.
 But since `z` has no successor, Copycat cannot apply the rule.
 
 In descriptions of the Copycat architecture, Mitchell does not provide great detail of how snags are recognized and handled or how often they occur for each problem (other than that they occur on average 9 times per run for the `xyz` problem [@Mitchell1993, p. 133]).
@@ -202,7 +205,7 @@ Fewer equivalent structures increase the likelihood that the _snag state_ will b
 
 Handling snags allows Copycat to continue trying to find a solution.
 As noted by Mitchell [@Mitchell1993, p. 133], this can often result in the same problematic structures being retried, something which humans can also be prone to when they try to solve hard problems.
-This can be seen in @fig-target-problems-combined, where the relatively mundane answer to `abc -> abd ==> xyz -> xyd` has a very wide distribution of run lengths.
+This can be seen in @fig-target-problems-combined, where the relatively mundane answer to `abc → abd ⇒ xyz → xyd` has a very wide distribution of run lengths.
 This is largely associated with repeated snags occurring when the program tries to find the successor to `z`.
 @fig-problem-5-xyd-codelets-vs-snags shows a strong positive association between snags encountered and codelets run for the 809 runs producing this answer (Pearson's *r* = 0.981).
 Across the 5 recorded problems which produced snags in at least 10% of runs[^infrequently-snagging-problems], linear regression estimates an association of between 346 and 567 additional codelets per additional snag.

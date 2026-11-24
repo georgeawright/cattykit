@@ -1,6 +1,10 @@
 # \[Re\] Copycat: a Replication of the Classic Model of Analogy-Making
 George Alexander Wright
-2026-11-11
+2026-11-24
+
+\DeclareUnicodeCharacter{2192}{\ensuremath{\rightarrow}}
+
+\DeclareUnicodeCharacter{21D2}{\ensuremath{\Rightarrow}}
 
 # Introduction
 
@@ -344,7 +348,7 @@ empirical overlap of 98.3%. Overlap is above 95% for all of the 29
 problems tested. All but one of the problems resulted in an answer
 distribution that has a TV distance within their 95% Monte Carlo
 reference range (see <a href="#fig-all-problems-tv-reference"
-class="quarto-xref">Figure 2</a>). One (`abc -> abd ==> xyz -> ?`) falls
+class="quarto-xref">Figure 2</a>). One (`abc → abd ⇒ xyz → ?`) falls
 below the lower reference bound and is therefore closer to the original
 reported results than expected. The re-implementation therefore closely
 replicates the published answer distributions with differences between
@@ -411,8 +415,7 @@ Figure 5: Snag count distributions across the 29 problems.
 <img src="figures/problem_5_xyd-codelets-vs-snags.png"
 style="width:60.0%" />
 
-Figure 6: Codelets run vs snags encountered for
-`abc -> abd ==> xyz -> xyd`.
+Figure 6: Codelets run vs snags encountered for `abc → abd ⇒ xyz → xyd`.
 
 </div>
 
@@ -420,9 +423,9 @@ Sometimes when solving a problem, Copycat can encounter a *snag* (also
 referred to by Mitchell (Mitchell 1993) as an *impasse*). This happens
 when a rule is built that cannot be applied to the letters in the target
 string. For example, when producing a solution for the problem
-`abc -> abd ==> xyz`, Copycat might construct a rule to replace the
-letter `z` with its successor. But since `z` has no successor, Copycat
-cannot apply the rule.
+`abc → abd ⇒ xyz`, Copycat might construct a rule to replace the letter
+`z` with its successor. But since `z` has no successor, Copycat cannot
+apply the rule.
 
 In descriptions of the Copycat architecture, Mitchell does not provide
 great detail of how snags are recognized and handled or how often they
@@ -455,7 +458,7 @@ same problematic structures being retried, something which humans can
 also be prone to when they try to solve hard problems. This can be seen
 in
 <a href="#fig-target-problems-combined" class="quarto-xref">Figure 1</a>,
-where the relatively mundane answer to `abc -> abd ==> xyz -> xyd` has a
+where the relatively mundane answer to `abc → abd ⇒ xyz → xyd` has a
 very wide distribution of run lengths. This is largely associated with
 repeated snags occurring when the program tries to find the successor to
 `z`. <a href="#fig-problem-5-xyd-codelets-vs-snags"
