@@ -1,0 +1,9 @@
+[project]
+name = "original-metacat-analysis"
+version = "0.1.0"
+description = "Experiments with the original Metacat implementation"
+requires-python = ">=3.13"
+dependencies = ["original-metacat"]
+
+[tool.uv.sources]
+original-metacat = { path = "original_metacat", editable = true }

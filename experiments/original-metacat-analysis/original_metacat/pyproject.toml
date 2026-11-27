@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "original-metacat"
+version = "0.1.0"
+description = "Python interface to the original Metacat implementation"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.setuptools]
+packages = ["original_metacat"]
+
+[tool.setuptools.package-dir]
+original_metacat = "."
+
+[tool.setuptools.package-data]
+original_metacat = ["Dockerfile", "adapter.ss", "archives.sha256", "swl-repl-load.patch", "README.md"]

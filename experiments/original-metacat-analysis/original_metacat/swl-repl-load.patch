@@ -1,0 +1,33 @@
+--- a/src/swl/init.ss
++++ b/src/swl/init.ss
+@@ -909,11 +909,15 @@
+                  (lambda (args)
+-                   (if (and (not (null? args))
+-                            (string=? (car args) "--edit"))
+-                       (if (null? (cdr args))
+-                           (new-edit)
+-                           (let* ([fn (cadr args)] [upfn (path-parent fn)])
+-                             (unless (string=? upfn "")
+-                               (current-directory upfn))
+-                             (for-each new-edit (cdr args))))
+-                       (begin (for-each load args) (new-repl 'default)))))
++                   (cond
++                     [(and (= (length args) 2) (string=? (car args) "--repl-load"))
++                      (new-repl 'default
++                        (lambda (repl)
++                          (send repl insert-expression (format "(load ~s)~%" (cadr args))))
++                        void)]
++                     [(and (not (null? args)) (string=? (car args) "--edit"))
++                      (if (null? (cdr args))
++                          (new-edit)
++                          (let* ([fn (cadr args)] [upfn (path-parent fn)])
++                            (unless (string=? upfn "") (current-directory upfn))
++                            (for-each new-edit (cdr args))))]
++                     [else (for-each load args) (new-repl 'default)])))
+   
+@@ -922,3 +926,4 @@
+ 
+-               (start-swl-server args))
++               (unless (and (pair? args) (string=? (car args) "--repl-load"))
++                 (start-swl-server args)))
+   

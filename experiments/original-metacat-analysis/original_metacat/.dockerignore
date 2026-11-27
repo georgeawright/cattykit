@@ -1,0 +1,6 @@
+*
+!Dockerfile
+!*.py
+!adapter.ss
+!archives.sha256
+!swl-repl-load.patch

@@ -2,11 +2,14 @@
 .direnv
 .envrc
 .venv
+.build/
 __pycache__
 .DS_store
 *.egg-info/
 build/
 dist/
+*.tgz
+*.tar.gz
 
 *.sqlite
 *.sqlite-journal

@@ -1,0 +1,19 @@
+version = 1
+revision = 3
+requires-python = ">=3.13"
+
+[[package]]
+name = "original-metacat"
+version = "0.1.0"
+source = { editable = "original_metacat" }
+
+[[package]]
+name = "original-metacat-analysis"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "original-metacat" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "original-metacat", editable = "original_metacat" }]
